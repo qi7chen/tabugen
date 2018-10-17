@@ -6,7 +6,7 @@
 PredefFileDirOption = "filedir"
 PredefFilenameOption = "filename"
 PredefSkipFileOption = "skip"
-PredefCommentOption = "comment"
+
 
 PredefMetaSheet = "meta"
 PredefStructTypeRow = "type-row"
@@ -15,3 +15,12 @@ PredefCommentRow = "comment-row"
 PredefDataStartRow = "data-start-row"
 PredefDataEndRow = "data-end-row"
 PredefClassName = "class-name"
+PredefClassComment = "class-comment"
+
+PredefParseKVMode = "parse-kv-mode"
+PredefKeyValueColumn = "key-value-column"
+PredefKeyColumn = "key-column"
+PredefValueColumn = "value-column"
+
+
+OptionOutDataDir = "outdata-dir"

@@ -18,6 +18,7 @@ class ExcelImporter:
         self.filenames = []
         self.meta = {}
 
+    @staticmethod
     def name():
         return "excel"
 
@@ -111,8 +112,8 @@ class ExcelImporter:
         struct = {}
         struct['fields'] = []
 
-        if predef.PredefCommentOption in self.meta:
-            struct['comment'] = self.meta[predef.PredefCommentOption]
+        if predef.PredefClassComment in self.meta:
+            struct['comment'] = self.meta[predef.PredefClassComment]
 
         class_name = sheet.title
         if predef.PredefClassName in self.meta:
@@ -160,8 +161,17 @@ class ExcelImporter:
             print(field)
             struct['fields'].append(field)
 
+        data_rows = rows[data_start_index - 1: data_end_index]
+        data_rows = self.pad_data_rows(data_rows, struct)
+        data_rows = self.validate_data_rows(data_rows, struct)
+        struct["options"] = self.meta
+        struct["data-rows"] = data_rows
+
+        return struct
+
+
+    def pad_data_rows(self, rows, struct):
         # pad empty row
-        data_rows = rows[data_start_index-1 : data_end_index]
         max_row_len = len(struct['fields'])
         for row in rows:
             if len(row) > max_row_len:
@@ -170,29 +180,48 @@ class ExcelImporter:
         for i in range(len(row)):
             for j in range(len(row), max_row_len):
                 rows[i].append("")
-
-        struct["data"] = data_rows
-        struct["options"] = self.meta
-        for row in data_rows:
-            print(row)
-
-        return struct
+        return rows
 
 
+    # 将excel里配置为整数，但存储形式为浮点的进行四舍五入
+    def validate_data_rows(self, rows, struct):
+        new_rows = []
+        fields = struct['fields']
+        for row in rows:
+            assert len(row) >= len(fields), (len(fields), len(row), row)
+            for j in range(len(row)):
+                if j >= len(fields):
+                    continue
+                typename = fields[j]['type_name']
+                if descriptor.is_integer_type(typename) and len(row[j]) > 0:
+                    f = float(row[j])  # test if ok
+                    if row[j].find('.') >= 0:
+                        print('round interger', row[j], '-->', round(f))
+                        row[j] = str(round(float(row[j])))
+                else:
+                    if descriptor.is_floating_type(typename) and len(row[j]) > 0:
+                        f = float(row[j])  # test if ok
+
+            # skip all empty row
+            is_all_empty = True
+            for text in row:
+                if len(text.strip()) > 0:
+                    is_all_empty = False
+                    break
+            if not is_all_empty:
+                new_rows.append(row)
+        return new_rows
+
+
+    # import all
     def import_all(self):
-        result = {
-            "version": util.version_string,
-            "commnet": "excel",
-            "timestamp": datetime.now(),
-        }
-
         descriptors = []
         for filename in self.filenames:
             print("start parse", filename)
             wb = openpyxl.load_workbook(filename, data_only=True)
             descriptor = self.import_one(wb)
             descriptors.append(descriptor)
-        result["descriptors"] = descriptors
+        return descriptors
 
 
     def import_one(self, wb):

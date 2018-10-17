@@ -2,10 +2,38 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import os
+import random
+import string
+import shutil
+import tempfile
+import filecmp
+import codecs
 import unittest
 
 
 version_string = '1.0.1'
+
+
+# 最长串的大小
+def max_field_length(table, key, f):
+    max_len = 0
+    for v in table:
+        n = len(v[key])
+        if f is not None:
+            n = len(f(v[key]))
+        if n > max_len:
+            max_len = n
+    return max_len
+
+
+# 空格对齐
+def pad_spaces(text, min_len):
+    if len(text) < min_len:
+        for n in range(min_len - len(text)):
+            text += ' '
+    return text
+
 
 
 # snake case to camel case
@@ -16,6 +44,11 @@ def camel_case(s):
     if len(components) == 1:
         return s[0].upper() + s[1:]
     return ''.join(x.title() for x in components)
+
+
+def random_word(length):
+   letters = string.ascii_lowercase
+   return ''.join(random.choice(letters) for i in range(length))
 
 
 def parse_args(text):
@@ -87,7 +120,21 @@ def read_sheet_to_csv(sheet):
         rows.append(row)
     return rows
 
-    
+
+# compare file content and save to file if not equal
+def compare_and_save_file(filename, content, enc):
+    # first write content to a temporary file
+    tmp_filename = '%s/taxi_%s' % (tempfile.gettempdir(), random_word(10))
+    f = codecs.open(tmp_filename, 'w', enc)
+    f.writelines(content)
+    f.close()
+
+    # move to destination path if content not equal
+    if os.path.isfile(filename) and filecmp.cmp(tmp_filename, filename):
+        print('file content not modified', filename)
+    else:
+        shutil.move(tmp_filename, filename)
+
     
 class TestUtils(unittest.TestCase):
 

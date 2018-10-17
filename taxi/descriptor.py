@@ -58,7 +58,7 @@ abstract_type_names = {
 }
 
 
-#
+# get name of an integer type
 def get_name_of_type(t):
     return type_names[t]
 
@@ -80,6 +80,7 @@ def is_primitive_type(name):
     return True
 
 
+# get integer type by name
 def get_type_by_name(name):
     for k, v in abstract_type_names.items():
         if name.find(k) >= 0:
@@ -88,6 +89,18 @@ def get_type_by_name(name):
         if v == name:
             return k
     return Type_Unknown
+
+
+# is integer type
+def is_integer_type(typ):
+    table = ['int8', 'uint8', 'int16', 'uint16', 'int', 'int32', 'uint32', 'int64', 'uint64', ]
+    return typ in table
+
+
+# is floating point
+def is_floating_type(typ):
+    return typ == 'float' or typ == 'float32' or typ == 'float64'
+
 
 
 class TestTypeNames(unittest.TestCase):
