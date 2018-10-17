@@ -19,7 +19,7 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(description="Export game configuration to source code")
     parser.add_argument("-m", "--mode", help="mode of importer, mysql or excel", default="excel")
-    parser.add_argument("-i", "--import-args", help="arguments of importer", default="")
+    parser.add_argument("-a", "--import-args", help="arguments of importer", default="")
     parser.add_argument("-g", "--generator", help="generator name", default="cppv1")
     parser.add_argument("-e", "--export-args", help="arguments of exporter", default="")
     args = parser.parse_args()

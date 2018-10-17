@@ -102,6 +102,27 @@ def is_floating_type(typ):
     return typ == 'float' or typ == 'float32' or typ == 'float64'
 
 
+# 是否抽象类型, map, array
+def is_abstract_type(typename):
+    if typename.startswith('map<'):
+        return 'map'
+    elif typename.startswith('array<'):
+        return 'array'
+
+
+# array<int> --> int
+def array_element_type(typename):
+    assert typename.startswith('array<'), typename
+    return typename[6:-1]
+
+
+# map<int, string> --> int, string
+def map_key_value_types(typename):
+    assert typename.startswith('map<'), typename
+    names = [x.strip() for x in typename[4:-1].split(',')]
+    assert len(names) == 2
+    return names[0], names[1]
+
 
 class TestTypeNames(unittest.TestCase):
 

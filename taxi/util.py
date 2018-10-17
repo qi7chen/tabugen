@@ -12,7 +12,7 @@ import codecs
 import unittest
 
 
-version_string = '1.0.1'
+version_string = '1.1.0'
 
 
 # 最长串的大小
@@ -52,8 +52,9 @@ def random_word(length):
 
 
 def parse_args(text):
-    assert len(text) > 0, text
     map = {}
+    if len(text) == 0:
+        return map
     for item in text.split(','):
         kv = item.split('=')
         assert len(kv) == 2, kv
@@ -122,7 +123,7 @@ def read_sheet_to_csv(sheet):
 
 
 # compare file content and save to file if not equal
-def compare_and_save_file(filename, content, enc):
+def compare_and_save_content(filename, content, enc):
     # first write content to a temporary file
     tmp_filename = '%s/taxi_%s' % (tempfile.gettempdir(), random_word(10))
     f = codecs.open(tmp_filename, 'w', enc)

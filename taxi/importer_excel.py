@@ -4,7 +4,6 @@
 
 import os
 import unittest
-from datetime import datetime
 import openpyxl
 import descriptor
 import predef
@@ -46,13 +45,14 @@ class ExcelImporter:
         filedir = self.options.get(predef.PredefFileDirOption, "")
         if filedir != "":
             filenames = self.enum_files(filedir)
+
         filename = self.options.get(predef.PredefFilenameOption, "")
         if filename != "":
             filenames.append(filename)
 
         skip_names = []
-        if self.options.get(predef.PredefFileDirOption, "") != "":
-            skip_names = self.options[predef.PredefFileDirOption].split(' ')
+        if self.options.get(predef.PredefSkipFileOption, "") != "":
+            skip_names = self.options[predef.PredefSkipFileOption].split(' ')
 
         for filename in filenames:
             ignored = False
@@ -63,6 +63,7 @@ class ExcelImporter:
                         ignored = True
             if not ignored:
                 self.filenames.append(filename)
+        # print(self.filenames)
 
 
     def parse_meta_sheet(self, sheet):
@@ -87,10 +88,6 @@ class ExcelImporter:
 
         self.meta = meta
 
-        print("show sheet meta below:")
-        for k, v in meta.items():
-            print(k, "=", v)
-
 
     def parse_data_sheet(self, sheet):
         rows = util.read_sheet_to_csv(sheet)
@@ -112,8 +109,7 @@ class ExcelImporter:
         struct = {}
         struct['fields'] = []
 
-        if predef.PredefClassComment in self.meta:
-            struct['comment'] = self.meta[predef.PredefClassComment]
+        struct['comment'] = self.meta.get(predef.PredefClassComment, "")
 
         class_name = sheet.title
         if predef.PredefClassName in self.meta:
@@ -158,7 +154,7 @@ class ExcelImporter:
             if comment_index > 0:
                 field["comment"] = rows[comment_index][i]
 
-            print(field)
+            #print(field)
             struct['fields'].append(field)
 
         data_rows = rows[data_start_index - 1: data_end_index]

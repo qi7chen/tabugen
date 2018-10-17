@@ -21,6 +21,16 @@ PredefParseKVMode = "parse-kv-mode"
 PredefKeyValueColumn = "key-value-column"
 PredefKeyColumn = "key-column"
 PredefValueColumn = "value-column"
+PredefValueTypeColumn = "value-type-column"
+PredefCommentColumn = "comment-column"
 
+PredefGetMethodKeys = "get-keys"
+PredefRangeMethodKeys = "range-keys"
 
 OptionOutDataDir = "outdata-dir"
+OptionAutoVector = "auto-vector"
+OptionDataOnly = "data-only"
+OptionDelimeters = "delimeters"
+
+DefaultDelim1 = '|'
+DefaultDelim2 = '='
