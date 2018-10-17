@@ -30,6 +30,7 @@ PredefRangeMethodKeys = "range-keys"
 OptionOutDataDir = "outdata-dir"
 OptionAutoVector = "auto-vector"
 OptionDataOnly = "data-only"
+OptionNoData = "no-data"
 OptionDelimeters = "delimeters"
 
 DefaultDelim1 = '|'

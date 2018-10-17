@@ -442,12 +442,15 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         cpp_content += 'using namespace std;\n\n'
 
         data_only = params.get(predef.OptionDataOnly, False)
+        no_data = params.get(predef.OptionNoData, False)
+
 
         class_content = ''
         for struct in descriptors:
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
-            self.write_data_rows(struct, params)
+            if not no_data:
+                self.write_data_rows(struct, params)
             if not data_only:
                 header_content += self.gen_cpp_header(struct)
                 class_content += self.gen_cpp_source(struct)

@@ -104,7 +104,7 @@ class MySQLImporter:
         descriptors = []
         for status in self.tables:
             struct = self.import_one(status)
-            print(struct)
+            # print(struct)
             descriptors.append(struct)
         return descriptors
 
@@ -150,9 +150,9 @@ class MySQLImporter:
 
             fields.append(field)
 
-        options["primary_keys"] = ','.join(primary_keys)
-        options["unique_keys"] = ','.join(unique_keys)
-        options["index_keys"] = ','.join(index_keys)
+        options["primary_keys"] = primary_keys
+        options["unique_keys"] = unique_keys
+        options["index_keys"] = index_keys
         struct["options"] = options
         struct["fields"] = fields
         return struct
