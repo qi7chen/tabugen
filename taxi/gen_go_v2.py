@@ -165,6 +165,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         content += 'import (\n'
         content += '\t"fatchoy/storage"\n'
         content += '\t"database/sql"\n'
+        content += '\t"strconv"\n'
         content += ')\n\n'
 
         for struct in descriptors:

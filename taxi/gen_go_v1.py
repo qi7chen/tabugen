@@ -9,6 +9,10 @@ import descriptor
 import predef
 import util
 
+
+TAB_SPACE = '\t'
+
+
 # Go code generator
 class GoV1Generator(basegen.CodeGeneratorBase):
 
@@ -33,33 +37,36 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
 
     # 生成赋值方法
-    def gen_field_assgin_stmt(self, name, typename, valuetext, tips):
+    def gen_field_assgin_stmt(self, name, typename, valuetext, tabs, tips):
         content = ''
+        space = TAB_SPACE * tabs
         if typename == 'string':
-            return '%s = %s\n' % (name, valuetext)
-        content += 'var value = MustParseTextValue("%s", %s, %s)\n' % (typename, valuetext, tips)
-        content += '%s = value.(%s)\n' % (name, typename)
+            return '%s%s = %s\n' % (space, name, valuetext)
+        else:
+            content += '%svar value = MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
+            content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delimeters):
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
         if delimeters == '':
             delimeters = predef.DefaultDelim1
 
+        space = TAB_SPACE * tabs
         content = ''
         elem_type = descriptor.array_element_type(typename)
         elem_type = map_go_type(elem_type)
 
-        content += '  for _, item := range strings.Split(%s, "%s") {\n' % (row_name, delimeters)
-        content += '    var value = MustParseTextValue("%s", item, %s)\n' % (elem_type, row_name)
-        content += '    %s%s = append(p.%s, value.(%s))\n' % (prefix, name, name, elem_type)
-        content += '  }\n'
+        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, delimeters)
+        content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
+        content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
+        content += '%s}\n' % space
         return content
 
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, delimeters):
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
         delim1 = predef.DefaultDelim1
         delim2 = predef.DefaultDelim2
         if delimeters != '':
@@ -68,21 +75,24 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             delim1 = delist[0]
             delim2 = delist[1]
 
+        space = TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
         key_type = map_go_type(k)
         val_type = map_go_type(v)
 
         content = ''
-        content += '  %s%s = map[%s]%s{}\n' % (prefix, name, key_type, val_type)
-        content += '  for _, text := range strings.Split(%s, "%s") {\n' % (row_name, delim1)
-        content += '     if text == "" {\n\t\tcontinue\n}\n'
-        content += '     var item = strings.Split(text, "%s")\n' % delim2
-        content += '     var value = MustParseTextValue("%s", item[0], %s)\n' % (key_type, row_name)
-        content += '     var key = value.(%s)\n' % key_type
-        content += '     value = MustParseTextValue("%s", item[1], %s)\n' % (val_type, row_name)
-        content += '     var val = value.(%s)\n' % val_type
-        content += '     %s%s[key] = val\n' % (prefix, name)
-        content += '\t}\n'
+        content += '%s%s%s = map[%s]%s{}\n' % (space, prefix, name, key_type, val_type)
+        content += '%sfor _, text := range strings.Split(%s, "%s") {\n' % (space, row_name, delim1)
+        content += '%s    if text == "" {\n' % space
+        content += '%s        continue\n' % space
+        content += '%s    }\n' % space
+        content += '%s    var item = strings.Split(text, "%s")\n' % (space, delim2)
+        content += '%s    var value = MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var key = value.(%s)\n' % (space, key_type)
+        content += '%s    value = MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    var val = value.(%s)\n' % (space, val_type)
+        content += '%s    %s%s[key] = val\n' % (space, prefix, name)
+        content += '%s}\n' % space
         return content
 
 
@@ -142,15 +152,14 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, delimeters)
+                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, delimeters, 2)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, delimeters)
+                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, delimeters, 2)
             else:
-                content += 'var value = MustParseTextValue("%s", %s, rows[%d])\n' % (typename, valuetext, idx)
-                content += 'p.%s = value.(%s)\n' % (name, typename)
-            content += '}\n'
+                content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, idx)
+            content += '%s}\n' % TAB_SPACE
             idx += 1
-        content += '    return nil\n'
+        content += '%sreturn nil\n' % TAB_SPACE
         content += '}\n\n'
         return content
 
@@ -181,19 +190,19 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             field_name = field['camel_case_name']
             valuetext = 'row[%d]' % idx
             if origin_type_name.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters)
+                content += self.gen_field_array_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters, 2)
             elif origin_type_name.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters)
+                content += self.gen_field_map_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters, 2)
             else:
                 if field_name in vec_names:
                     name = '%s[%d]' % (vec_name, vec_idx)
-                    content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 'row')
+                    content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, 'row')
                     vec_idx += 1
                 else:
-                    content += self.gen_field_assgin_stmt('p.'+field_name, typename, valuetext, 'row')
-            content += '}\n'
+                    content += self.gen_field_assgin_stmt('p.'+field_name, typename, valuetext, 2, 'row')
+            content += '%s}\n' % TAB_SPACE
             idx += 1
-        content += 'return nil\n'
+        content += '%sreturn nil\n' % TAB_SPACE
         content += '}\n\n'
         return content
 
@@ -217,7 +226,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '\t    log.Errorf("%s: parse row %%d, %%v", len(rows), err)\n' % struct['name']
         content += '\t    return nil, err\n'
         content += '\t}\n'
-        content += 'return &item, nil\n'
+        content += '\treturn &item, nil\n'
         content += '}\n\n'
         return content
 
@@ -236,22 +245,22 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '\tvar list []*%s\n' % struct['name']
         content += '\tvar r = csv.NewReader(buf)\n'
         content += '\tfor i := 0; ; i++ {\n'
-        content += '\t row, err := r.Read()\n'
-        content += '    if err == io.EOF {\n'
-        content += '        break\n'
-        content += '    }\n'
-        content += '    if err != nil {\n'
-        content += '        log.Errorf("%s: read csv %%v", err)\n' % struct['name']
-        content += '        return nil, err\n'
-        content += '    }\n'
-        content += '    var item %s\n' % struct['name']
-        content += '    if err := item.ParseFromRow(row); err != nil {\n'
-        content += '\t     log.Errorf("%s: parse row %%d, %%s, %%v", i+1, row, err)\n' % struct['name']
-        content += '    return nil, err\n'
-        content += '}\n'
-        content += '\tlist = append(list, &item)\n'
-        content += '}\n'
-        content += 'return list, nil\n'
+        content += '\t    row, err := r.Read()\n'
+        content += '\t    if err == io.EOF {\n'
+        content += '\t        break\n'
+        content += '\t    }\n'
+        content += '\t    if err != nil {\n'
+        content += '\t        log.Errorf("%s: read csv %%v", err)\n' % struct['name']
+        content += '\t        return nil, err\n'
+        content += '\t    }\n'
+        content += '\t    var item %s\n' % struct['name']
+        content += '\t    if err := item.ParseFromRow(row); err != nil {\n'
+        content += '\t        log.Errorf("%s: parse row %%d, %%s, %%v", i+1, row, err)\n' % struct['name']
+        content += '\t        return nil, err\n'
+        content += '\t    }\n'
+        content += '\t    list = append(list, &item)\n'
+        content += '\t}\n'
+        content += '\treturn list, nil\n'
         content += '}\n\n'
         return content
 
@@ -270,8 +279,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
         content += 'package %s\n' % params['pkg']
         content += 'import (\n'
-        content += '"encoding/csv"\n'
-        content += '"io"\n'
+        content += '    "encoding/csv"\n'
+        content += '    "io"\n'
+        content += '    "strconv"\n'
         content += ')\n'
         content += self.gen_const_names(descriptors)
 
@@ -288,6 +298,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         if data_only:
             return
+
+        content += PARSE_FUNC_TEMPLATE
 
         outdir = params.get(predef.OptionOutSourceDir, '.')
         filename = outdir + '/stub.go'
@@ -337,3 +349,64 @@ def map_go_type(typ):
         value_type = type_mapping[v]
         return 'map[%s]%s' % (key_type, value_type)
     assert False, typ
+
+
+# MustParseTextValue函数实现
+PARSE_FUNC_TEMPLATE = """
+//
+func MustParseTextValue(typename, valueText string, msgtips interface{}) interface{} {
+	switch typename {
+	case "bool":
+		b, err := strconv.ParseBool(valueText)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		return b
+
+	case "float32", "float64":
+		f, err := strconv.ParseFloat(valueText, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "float32" {
+			return float32(f)
+		}
+		return f // float64
+
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		n, err := strconv.ParseUint(valueText, 10, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "uint" {
+			return uint(n)
+		} else if typename == "uint8" {
+			return uint8(n)
+		} else if typename == "uint16" {
+			return uint16(n)
+		} else if typename == "uint32" {
+			return uint32(n)
+		}
+		return n // uint64
+
+	case "int", "int8", "int16", "int32", "int64":
+		n, err := strconv.ParseInt(valueText, 10, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "int" {
+			return int(n)
+		} else if typename == "int8" {
+			return int8(n)
+		} else if typename == "int16" {
+			return int16(n)
+		} else if typename == "int32" {
+			return int32(n)
+		}
+		return n // int64
+
+	default:
+		return valueText
+	}
+}
+"""

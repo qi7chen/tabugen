@@ -10,6 +10,15 @@ import predef
 import util
 
 
+# ParseBoolean函数
+PARSE_FUNC_TEMPLATE = """
+    public static bool ParseBoolean(string text)
+    {
+        text = text.Trim().ToLower();
+        return text == "1" || text == "true" || text == "yes" || text == "on";
+    }
+"""
+
 TAB_SPACE = '    '
 
 # C# code generator
@@ -33,6 +42,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         space = TAB_SPACE * tabs
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
+        elif typename.lower().find('bool') >= 0:
+            content += '%s%s = AutogenConfigData.ParseBoolean(%s);\n' % (space, name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, cs_box_type(typename), valuetext)
         return content
@@ -194,11 +205,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             if field['name'] not in vec_names:
                 name = name_with_default_value(field, typename)
                 name = util.pad_spaces(name, max_name_len + 8)
-                content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                content += '    public %s %s // %s\n' % (typename, name, field['comment'])
             elif not vec_done:
                 name = '%s[%d];' % (vec_name, len(vec_names))
                 name = util.pad_spaces(name, max_name_len + 8)
-                content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                content += '    public %s %s // %s\n' % (typename, name, field['comment'])
                 vec_done = True
 
         return content
@@ -236,7 +247,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             delimeters = struct['options'][predef.OptionDelimeters]
 
         content = '%spublic static void Load() {\n' % TAB_SPACE
-        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"/csv/%s.csv";\n' % (TAB_SPACE*2, struct['name'].lower())
+        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"csv/%s.csv";\n' % (TAB_SPACE*2, struct['name'].lower())
         content += '%sstring[] lines = File.ReadAllLines(csvpath, Encoding.UTF8);\n' % (TAB_SPACE*2)
         content += '%svar rows = new List<List<string>>();\n' % (TAB_SPACE * 2)
         content += '%sforeach(string line in lines)\n' % (TAB_SPACE*2)
@@ -255,7 +266,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void Load() {\n' % TAB_SPACE
         content += '%sdata_ = new List<%s>();\n' % (TAB_SPACE * 2, struct['name'])
-        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"/csv/%s.csv";\n' % (TAB_SPACE*2, struct['name'].lower())
+        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"csv/%s.csv";\n' % (TAB_SPACE*2, struct['name'].lower())
         content += '%sstring[] lines = File.ReadAllLines(csvpath, Encoding.UTF8);\n' % (TAB_SPACE*2)
         content += '%sforeach(string line in lines)\n' % (TAB_SPACE * 2)
         content += '%s{\n' % (TAB_SPACE * 2)
@@ -274,8 +285,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '    {\n'
         for struct in descriptors:
             content += '        %s.Load();\n' % struct['name']
-        content += '    return true;\n'
+        content += '        return true;\n'
         content += '    }\n'
+        content += PARSE_FUNC_TEMPLATE
         content += '}\n\n'
         return content
 
