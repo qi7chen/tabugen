@@ -44,6 +44,7 @@ class ExcelImporter:
         filenames = []
         filedir = self.options.get(predef.PredefFileDirOption, "")
         if filedir != "":
+            print('parse files in directory:', filedir)
             filenames = self.enum_files(filedir)
 
         filename = self.options.get(predef.PredefFilenameOption, "")
