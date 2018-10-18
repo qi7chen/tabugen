@@ -17,7 +17,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
     @staticmethod
     def name():
-        return "gov2"
+        return "go-v2"
 
 
     def gen_go_struct(self, struct, params):
@@ -180,7 +180,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
             content += '\n'
             content += self.gen_remove_stamt_method(struct, params)
 
-        outdir = params.get(predef.OptionOutDataDir, '.')
+        outdir = params.get(predef.OptionOutSourceDir, '.')
         filename = outdir + '/stub.go'
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)

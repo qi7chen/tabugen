@@ -17,7 +17,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
     @staticmethod
     def name():
-        return "cppv1"
+        return "cpp-v1"
 
 
     def get_instance_data_name(self, name):
@@ -194,7 +194,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     def gen_struct_data_method(self, struct):
         content = ''
         varname = self.get_instance_data_name(struct['name'])
-        if struct['options']['parse-kv-mode']:
+        if struct['options'][predef.PredefParseKVMode]:
             content += 'const %s* %s::Instance()\n' % (struct['name'], struct['name'])
             content += '{\n'
             content += '    BEATS_ASSERT(%s != nullptr);\n' % varname
@@ -295,11 +295,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
     # KV模式的Load()方法
     def gen_kv_struct_load_method(self, struct):
-        content = ''
         rows = struct['data-rows']
-        keycol = struct['options']['key-column']
-        valcol = struct['options']['value-column']
-        typcol = int(struct['options']['value-type-column'])
+        keycol = struct['options'][predef.PredefKeyColumn]
+        valcol = struct['options'][predef.PredefValueColumn]
+        typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
         keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
@@ -346,7 +345,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     # 生成Load()方法
     def gen_struct_load_method(self, struct):
         content = ''
-        if struct['options']['parse-kv-mode']:
+        if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_struct_load_method(struct)
 
         varname = self.get_instance_data_name(struct['name'])
@@ -463,7 +462,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             static_define_content += self.gen_global_static_define(struct)
         static_define_content += '}\n\n'
 
-        outdir = params.get(predef.OptionOutDataDir, '.')
+        outdir = params.get(predef.OptionOutSourceDir, '.')
         filename = outdir + '/AutogenConfig.h'
         util.compare_and_save_content(filename, header_content, 'gbk')
         print('wrote header file to', filename)
@@ -485,6 +484,7 @@ def map_cpp_type(typ):
         'int16':    'int16_t',
         'uint16':   'uint16_t',
         'int':      'int',
+        'uint':     'uint32_t',
         'int32':    'int32_t',
         'uint32':   'uint32_t',
         'int64':    'int64_t',
@@ -527,6 +527,7 @@ def name_with_default_value(field, typename):
     return line
 
 
+# 默认值
 def default_value_by_type(typename):
     if typename == 'bool':
         return 'false'
@@ -537,6 +538,7 @@ def default_value_by_type(typename):
     return ''
 
 
+# POD类型
 def is_pod_type(typ):
     assert len(typ.strip()) > 0
     return not typ.startswith('std::')  # std::string, std::vector, std::map

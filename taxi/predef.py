@@ -28,6 +28,7 @@ PredefGetMethodKeys = "get-keys"
 PredefRangeMethodKeys = "range-keys"
 
 OptionOutDataDir = "outdata-dir"
+OptionOutSourceDir = "outsrc-dir"
 OptionAutoVector = "auto-vector"
 OptionDataOnly = "data-only"
 OptionNoData = "no-data"

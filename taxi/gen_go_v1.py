@@ -17,7 +17,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
     @staticmethod
     def name():
-        return "gov1"
+        return "go-v1"
 
 
     def get_const_key_name(self, name):
@@ -45,7 +45,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # 生成array赋值
     def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delimeters):
         if delimeters == '':
-            delimeters = '|'
+            delimeters = predef.DefaultDelim1
 
         content = ''
         elem_type = descriptor.array_element_type(typename)
@@ -60,8 +60,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
     # 生成map赋值
     def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, delimeters):
-        delim1 = '|'
-        delim2 = '='
+        delim1 = predef.DefaultDelim1
+        delim2 = predef.DefaultDelim2
         if delimeters != '':
             delist = [x.strip() for x in delimeters.split(',')]
             assert len(delist) == 2, delimeters
@@ -289,7 +289,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if data_only:
             return
 
-        outdir = params.get(predef.OptionOutDataDir, '.')
+        outdir = params.get(predef.OptionOutSourceDir, '.')
         filename = outdir + '/stub.go'
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
@@ -303,6 +303,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             os.system(cmd)
 
 
+# Go类型映射
 def map_go_type(typ):
     type_mapping = {
         'bool':     'bool',
@@ -311,6 +312,7 @@ def map_go_type(typ):
         'int16':    'int16',
         'uint16':   'uint16',
         'int':      'int',
+        'uint':      'uint',
         'int32':    'int32',
         'uint32':   'uint32',
         'int64':    'int64',

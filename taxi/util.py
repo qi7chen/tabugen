@@ -12,7 +12,7 @@ import codecs
 import unittest
 
 
-version_string = '1.1.0'
+version_string = '1.2.0'
 
 
 # 最长串的大小

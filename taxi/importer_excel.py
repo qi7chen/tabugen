@@ -154,7 +154,7 @@ class ExcelImporter:
             if comment_index > 0:
                 field["comment"] = rows[comment_index][i]
 
-            #print(field)
+            # print(field)
             struct['fields'].append(field)
 
         data_rows = rows[data_start_index - 1: data_end_index]
