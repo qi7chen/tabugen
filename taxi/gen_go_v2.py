@@ -186,7 +186,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()
-        print('wrote to %s' % filename)
+        print('wrote source to %s' % filename)
 
         gopath = os.getenv('GOPATH')
         if gopath is not None:

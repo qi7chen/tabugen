@@ -24,14 +24,8 @@ generator_registry = {
 }
 
 
-
-
 def get_importer(name):
-    return importer_registry[name]
-
-
-
-
+    return importer_registry.get(name, None)
 
 def get_generator(name):
-    return generator_registry[name]
+    return generator_registry.get(name, None)

@@ -4,6 +4,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+
 import argparse
 import registry
 import util
@@ -11,11 +12,17 @@ import util
 
 def run(args):
     generator = registry.get_generator(args.generator)
+    assert generator is not None
+
     importer = registry.get_importer(args.mode)
+    assert importer is not None
+
     importer.initialize(args.import_args)
     descriptors = importer.import_all()
     print(len(descriptors), 'file parsed')
-    generator.run(descriptors, args.export_args)
+
+    if len(descriptors) > 0:
+        generator.run(descriptors, args.export_args)
 
 
 def main():
