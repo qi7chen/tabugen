@@ -17,20 +17,21 @@ enum TypeEnum {
     Int16     = 5;
     Uint16    = 6;
     Int       = 7;
-    Int32     = 8;
-    Uint32    = 9;
-    Int64     = 10;
-    Uint64    = 11;
-    Float     = 12;
-    Float32   = 13;
-    Float64   = 14;
-    String    = 15;
-    Enum      = 16;
-    Bytes     = 17;
-    DateTime  = 18;
-    Array     = 19;
-    Map       = 20;
-    Any       = 21;
+    Uint      = 8;
+    Int32     = 9;
+    Uint32    = 10;
+    Int64     = 11;
+    Uint64    = 12;
+    Float     = 13;
+    Float32   = 14;
+    Float64   = 15;
+    String    = 16;
+    Enum      = 17;
+    Bytes     = 18;
+    DateTime  = 19;
+    Array     = 20;
+    Map       = 21;
+    Any       = 22;
 };
 
 message StructDescriptor {

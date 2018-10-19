@@ -12,20 +12,21 @@ Type_Uint8 = 4
 Type_Int16 = 5
 Type_Uint16 = 6
 Type_Int = 7
-Type_Int32 = 8
-Type_Uint32 = 9
-Type_Int64 = 10
-Type_Uint64 = 11
-Type_Float = 12
-Type_Float32 = 13
-Type_Float64 = 14
-Type_String = 15
-Type_Enum = 16
-Type_Bytes = 17
-Type_DateTime = 18
-Type_Array = 19
-Type_Map = 20
-Type_Any = 21
+Type_Uint = 8
+Type_Int32 = 9
+Type_Uint32 = 10
+Type_Int64 = 11
+Type_Uint64 = 12
+Type_Float = 13
+Type_Float32 = 14
+Type_Float64 = 15
+Type_String = 16
+Type_Enum = 17
+Type_Bytes = 18
+Type_DateTime = 19
+Type_Array = 20
+Type_Map = 21
+Type_Any = 22
 
 type_names = {
     Type_Nil:      "nil",
@@ -35,6 +36,7 @@ type_names = {
 	Type_Int16:    "int16",
 	Type_Uint16:   "uint16",
 	Type_Int:      "int",
+    Type_Uint:     "uint32",
 	Type_Int32:    "int32",
 	Type_Uint32:   "uint32",
 	Type_Int64:    "int64",
@@ -93,7 +95,7 @@ def get_type_by_name(name):
 
 # is integer type
 def is_integer_type(typ):
-    table = ['int8', 'uint8', 'int16', 'uint16', 'int', 'int32', 'uint32', 'int64', 'uint64', ]
+    table = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64', ]
     return typ in table
 
 
