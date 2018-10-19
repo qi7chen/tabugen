@@ -3,7 +3,6 @@
 # See accompanying files LICENSE.
 
 
-PredefFileDirOption = "filedir"
 PredefFilenameOption = "filename"
 PredefSkipFileOption = "skip"
 

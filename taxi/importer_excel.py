@@ -42,13 +42,13 @@ class ExcelImporter:
 
     def make_filenames(self):
         filenames = []
-        filedir = self.options.get(predef.PredefFileDirOption, "")
-        if filedir != "":
-            print('parse files in directory:', filedir)
-            filenames = self.enum_files(filedir)
-
-        filename = self.options.get(predef.PredefFilenameOption, "")
-        if filename != "":
+        filename = self.options[predef.PredefFilenameOption]
+        assert os.path.exists(filename)
+        if os.path.isdir(filename):    # filename is a directory
+            print('parse files in directory:', filename)
+            filenames = self.enum_files(filename)
+        else:
+            assert os.path.isfile(filename)
             filenames.append(filename)
 
         skip_names = []
@@ -64,7 +64,6 @@ class ExcelImporter:
                         ignored = True
             if not ignored:
                 self.filenames.append(filename)
-        # print(self.filenames)
 
 
     def parse_meta_sheet(self, sheet):
@@ -177,7 +176,16 @@ class ExcelImporter:
         for i in range(len(row)):
             for j in range(len(row), max_row_len):
                 rows[i].append("")
-        return rows
+
+        # 删除未导出的列
+        new_rows = []
+        fields = sorted(struct['fields'], key=lambda field: field['column_index'])
+        for row in rows:
+            new_row = []
+            for field in fields:
+                new_row.append(row[field['column_index']-1])
+            new_rows.append(new_row)
+        return new_rows
 
 
     # 将excel里配置为整数，但存储形式为浮点的进行四舍五入
