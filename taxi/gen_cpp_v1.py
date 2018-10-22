@@ -9,8 +9,10 @@ import basegen
 import predef
 import util
 
+
 # C++ code generator
 class CppV1Generator(basegen.CodeGeneratorBase):
+    TAB_SPACE = '    '
 
     def __init__(self):
         pass
@@ -19,51 +21,32 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     def name():
         return "cpp-v1"
 
-
     def get_instance_data_name(self, name):
-        return '_instance_%s_data' % name.lower()
-
-
-    def get_struct_keys(self, struct, keyname):
-        if keyname not in struct['options']:
-            return []
-
-        key_tuples = []
-        column_keys = struct['options'][keyname].split(',')
-        assert len(column_keys) > 0, struct['name']
-
-        for column in column_keys:
-            idx, field = self.get_field_by_column_index(struct, int(column))
-            typename = map_cpp_type(field['original_type_name'])
-            name = field['name']
-            key_tuples.append((typename, name))
-        return key_tuples
-
+        return '_instance_%s' % name.lower()
 
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = self.get_struct_keys(struct, key)
+        keys = self.get_struct_keys(struct, key, map_cpp_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
         return ' && '.join(args)
 
-
     # array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delim):
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delim, tabs):
         if delim == '':
             delim = predef.DefaultDelim1
-        content = ''
+        space = self.TAB_SPACE * tabs
         elemt_type = map_cpp_type(descriptor.array_element_type(typename))
-        content += '            const vector<string>& array = Split(%s, "%s");\n' % (row_name, delim)
-        content += '            for (size_t i = 0; i < array.size(); i++)\n'
-        content += '            {\n'
-        content += '                %s%s.push_back(to<%s>(array[i]));\n' % (prefix, name, elemt_type)
-        content += '            }\n'
+        content = ''
+        content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, delim)
+        content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
+        content += '%s{\n' % space
+        content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
+        content += '%s}\n' % space
         return content
 
-
     # map赋值
-    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, delims):
+    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, delims, tabs):
         delim1 = predef.DefaultDelim1
         delim2 = predef.DefaultDelim2
         if delims != '':
@@ -74,22 +57,24 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         k, v = descriptor.map_key_value_types(typename)
         key_type = map_cpp_type(k)
         val_type = map_cpp_type(v)
+        space = self.TAB_SPACE * tabs
         content = ''
-        content += '            const vector<string>& mapitems = Split(%s, "%s");\n' % (row_name, delim1)
-        content += '            for (size_t i = 0; i < mapitems.size(); i++)\n'
-        content += '            {\n'
-        content += '                const vector<string>& kv = Split(mapitems[i], "%s");\n' % delim2
-        content += '                BEATS_ASSERT(kv.size() == 2);\n'
-        content += '                if(kv.size() == 2)\n'
-        content += '                {\n'
-        content += '                    BEATS_ASSERT(%s%s.count(kv[0]) == 0);\n' % (prefix, name)
-        content += '                    %s%s[to<%s>(kv[0])] = to<%s>(kv[1]);\n' % (prefix, name, key_type, val_type)
-        content += '                }\n'
-        content += '            }\n'
+        content += '%sconst auto& mapitems = Split(%s, "%s");\n' % (space, row_name, delim1)
+        content += '%sfor (size_t i = 0; i < mapitems.size(); i++)\n' % space
+        content += '%s{\n' % space
+        content += '%s    const auto& kv = Split(mapitems[i], "%s");\n' % (space, delim2)
+        content += '%s    BEATS_ASSERT(kv.size() == 2);\n' % space
+        content += '%s    if(kv.size() == 2)\n' % space
+        content += '%s    {\n' % space
+        content += '%s        const string& key = to<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        BEATS_ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
+        content += '%s        %s%s[key] = to<%s>(kv[1]);\n' % (space, prefix, name, val_type)
+        content += '%s    }\n' % space
+        content += '%s}\n' % space
         return content
 
-
-    def gen_all_field_assign_stmt(self, struct):
+    # 生成字段赋值
+    def gen_all_field_assign_stmt(self, struct, prefix, tabs):
         content = ''
         idx = 0
         delimeters = ''
@@ -98,31 +83,29 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         vec_names, vec_name = self.get_field_range(struct)
         vec_idx = 0
+        space = self.TAB_SPACE * tabs
         for field in struct['fields']:
             origin_type = field['original_type_name']
             typename = map_cpp_type(origin_type)
 
             if typename != 'std::string' and field['name'] in vec_names:
-                content += '        item.%s[%d] = %s;\n' % (vec_name, vec_idx, default_value_by_type(origin_type))
+                content += '%s%s.%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
 
-            content += '        if (!row[%d].empty())\n' % idx
-            content += '        {\n'
+            content += '%sif (!row[%d].empty())\n' % (space, idx)
+            content += '%s{\n' % space
             if origin_type.startswith('array'):
-                content += self.gen_field_array_assign_stmt('item.', field['original_type_name'], field['name'],
-                                                       'row[%d]' % idx, delimeters)
+                content += self.gen_field_array_assign_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), delimeters, tabs + 1)
             elif origin_type.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('item.', field['original_type_name'], field['name'],
-                                                     'row[%d]' % idx, delimeters)
+                content += self.gen_field_map_assgin_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), delimeters, tabs + 1)
             else:
                 if field['name'] in vec_names:
-                    content += '            item.%s[%d] = to<%s>(row[%d]);\n' % (vec_name, vec_idx, typename, idx)
+                    content += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, vec_name, vec_idx, typename, idx)
                     vec_idx += 1
                 else:
-                    content += '            item.%s = to<%s>(row[%d]);\n' % (field['name'], typename, idx)
-            content += '        }\n'
+                    content += '%s%s%s = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, field['name'], typename, idx)
+            content += '%s}\n' % space
             idx += 1
         return content
-
 
     # 生成class定义结构
     def gen_cpp_struct_define(self, struct):
@@ -154,31 +137,34 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         return content
 
-
     # class静态函数声明
     def gen_struct_method_declare(self, struct):
         content = ''
-        content += '    static int Load();\n'
+
         if struct['options'][predef.PredefParseKVMode]:
+            content += '    static int Load(const char* filepath = nullptr);\n'
+            content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % struct['name']
             content += '    static const %s* Instance();\n' % struct['name']
             return content
 
+        content += '    static int Load(const char* filepath = nullptr);\n'
+        content += '    static int ParseFromRow(const std::vector<StringPiece>& row, %s* ptr);\n' % struct['name']
         content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
-        get_keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys)
-        if len(get_keys) == 0:
-            return content
 
-        get_args = []
-        for tpl in get_keys:
-            typename = tpl[0]
-            if not is_pod_type(typename):
-                typename = 'const %s&' % typename
-            get_args.append(typename + ' ' + tpl[1])
+        if predef.PredefGetMethodKeys in struct['options']:
+            get_keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, map_cpp_type)
+            if len(get_keys) > 0:
+                get_args = []
+                for tpl in get_keys:
+                    typename = tpl[0]
+                    if not is_pod_type(typename):
+                        typename = 'const %s&' % typename
+                    get_args.append(typename + ' ' + tpl[1])
 
-        content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
+                content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
 
         if predef.PredefRangeMethodKeys in struct['options']:
-            range_keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys)
+            range_keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, map_cpp_type)
             range_args = []
             for tpl in range_keys:
                 typename = tpl[0]
@@ -188,7 +174,6 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             content += '    static std::vector<const %s*> GetRange(%s);\n' % (struct['name'], ', '.join(range_args))
 
         return content
-
 
     # 生成GetData()方法
     def gen_struct_data_method(self, struct):
@@ -208,6 +193,123 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             content += '}\n\n'
         return content
 
+    # 生成KV模式的Parse方法
+    def gen_kv_parse_method(self, struct):
+        rows = struct['data-rows']
+        keycol = struct['options'][predef.PredefKeyColumn]
+        valcol = struct['options'][predef.PredefValueColumn]
+        typcol = int(struct['options'][predef.PredefValueTypeColumn])
+        assert keycol > 0 and valcol > 0 and typcol > 0
+
+        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
+        validx, valfield = self.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
+
+        delimeters = ''
+        if predef.OptionDelimeters in struct['options']:
+            delimeters = struct['options'][predef.OptionDelimeters]
+
+        content = ''
+        content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
+        content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += '{\n'
+        content += '    BEATS_ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
+        content += '    BEATS_ASSERT(ptr != nullptr);\n'
+        idx = 0
+        for row in rows:
+            name = rows[idx][keyidx].strip()
+            origin_typename = rows[idx][typeidx].strip()
+            typename = map_cpp_type(origin_typename)
+            content += '%sif (!rows[%d][%d].empty())\n' % (self.TAB_SPACE, idx, validx)
+            content += '%s{\n' % self.TAB_SPACE
+            row_name = 'rows[%d][%d]' % (idx, validx)
+
+            if origin_typename.startswith('array'):
+                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, delimeters, 2)
+            elif origin_typename.startswith('map'):
+                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, delimeters, 2)
+            else:
+                content += '%sptr->%s = to<%s>(%s);\n' % (self.TAB_SPACE*2, name, typename, row_name)
+            content += '%s}\n' % self.TAB_SPACE
+            idx += 1
+        content += '    return 0;\n'
+        content += '}\n'
+        return content
+
+    # 生成ParseFromRow方法
+    def gen_parse_method(self, struct):
+        if struct['options'][predef.PredefParseKVMode]:
+            return self.gen_kv_parse_method(struct)
+
+        content = ''
+        content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
+        content += 'int %s::ParseFromRow(const vector<StringPiece>& row, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += '{\n'
+        content += '    BEATS_ASSERT(row.size() >= %d);\n' % len(struct['fields'])
+        content += '    BEATS_ASSERT(ptr != nullptr);\n'
+        content += self.gen_all_field_assign_stmt(struct, 'ptr->', 1)
+        content += '    return 0;\n'
+        content += '}\n'
+        return content
+
+    # KV模式的Load()方法
+    def gen_kv_struct_load_method(self, struct):
+        content = 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
+        content += '{\n'
+        content += '    if (filepath == nullptr)\n'
+        content += '    {\n'
+        content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
+        content += '    }\n'
+        content += '    const auto& rows = CResourceManager::GetInstance()->ReadCsvToRows(filepath);\n'
+        content += '    %s* dataptr = BEATS_NEW(%s, "autogen", filepath);\n' % (struct['name'], struct['name'])
+        content += '    %s::ParseFromRows(rows, dataptr);\n' % struct['name']
+        varname = self.get_instance_data_name(struct['name'])
+        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
+        content += '    %s = dataptr;\n' % varname
+        content += '    return 0;\n'
+        content += '}\n\n'
+        return content
+
+    # 生成Load()方法
+    def gen_struct_load_method(self, struct):
+        content = ''
+        if struct['options'][predef.PredefParseKVMode]:
+            return self.gen_kv_struct_load_method(struct)
+
+        varname = self.get_instance_data_name(struct['name'])
+        content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
+        content += '{\n'
+        content += '    if (filepath == nullptr)\n'
+        content += '    {\n'
+        content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
+        content += '    }\n'
+        content += '    vector<%s>* dataptr = BEATS_NEW(vector<%s>, "autogen", filepath);\n' % (struct['name'], struct['name'])
+        content += '    const auto& rows = CResourceManager::GetInstance()->ReadCsvToRows(filepath);\n'
+        content += '    BEATS_ASSERT(!rows.empty());\n'
+        content += '    for (size_t i = 0; i < rows.size(); i++)\n'
+        content += '    {\n'
+        content += '        const auto& row = rows[i];\n'
+        content += '        %s item;\n' % struct['name']
+        content += '        %s::ParseFromRow(row, &item);\n' % struct['name']
+        content += '        dataptr->push_back(item);\n'
+        content += '    }\n'
+        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
+        content += '    %s = dataptr;\n' % varname
+        content += '    return 0;\n'
+        content += '}\n\n'
+        return content
+
+
+    # class静态成员定义
+    def gen_global_static_define(self, struct):
+        content = ''
+        content = ''
+        varname = self.get_instance_data_name(struct['name'])
+        if struct['options'][predef.PredefParseKVMode]:
+            content += '    static %s* %s = nullptr;\n' % (struct['name'], varname)
+        else:
+            content += '    static std::vector<%s>* %s = nullptr;\n' % (struct['name'], varname)
+        return content
 
     # 生成Get()方法
     def gen_struct_get_method(self, struct):
@@ -215,7 +317,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys)
+        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, map_cpp_type)
         if len(keys) == 0:
             return content
 
@@ -240,11 +342,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '        }\n'
         content += '    }\n'
         content += '    BEATS_ASSERT(false, "%s.Get: no item found%s", %s);\n' % (
-        struct['name'], ' {}' * len(arg_names), ', '.join(arg_names))
+            struct['name'], ' {}' * len(arg_names), ', '.join(arg_names))
         content += '    return nullptr;\n'
         content += '}\n\n'
         return content
-
 
     # 生成GetRange()方法
     def gen_struct_range_method(self, struct):
@@ -255,7 +356,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if predef.PredefRangeMethodKeys not in struct['options']:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys)
+        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, map_cpp_type)
         assert len(keys) > 0
 
         formal_param = []
@@ -269,7 +370,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             arg_names.append(tpl[1])
 
         content += 'std::vector<const %s*> %s::GetRange(%s)\n' % (
-        struct['name'], struct['name'], ', '.join(formal_param))
+            struct['name'], struct['name'], ', '.join(formal_param))
         content += '{\n'
         content += '    const vector<%s>* dataptr = GetData();\n' % struct['name']
         content += '    std::vector<const %s*> range;\n' % struct['name']
@@ -287,103 +388,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '        }\n'
         content += '    }\n'
         content += '    BEATS_ASSERT(!range.empty(), "%s.GetRange: no item found%s", %s);\n' % (
-        struct['name'], ' {}' * len(arg_names), ', '.join(arg_names))
+            struct['name'], ' {}' * len(arg_names), ', '.join(arg_names))
         content += '    return range;\n'
         content += '}\n\n'
         return content
 
-
-    # KV模式的Load()方法
-    def gen_kv_struct_load_method(self, struct):
-        rows = struct['data-rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
-
-        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        validx, valfield = self.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
-
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
-
-        content = 'int %s::Load()\n' % struct['name']
-        content += '{\n'
-        content += '    const char* csvpath = "/csv/%s.csv";\n' % struct['name'].lower()
-        content += '    %s* dataptr = BEATS_NEW(%s, "autogen", csvpath);\n' % (struct['name'], struct['name'])
-        content += '    const vector<vector<string>>& rows = CResourceManager::GetInstance()->ReadCsvToRows(csvpath);\n'
-        content += '    BEATS_ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
-        idx = 0
-        for row in rows:
-            name = rows[idx][keyidx].strip()
-            origin_typename = rows[idx][typeidx].strip()
-            typename = map_cpp_type(origin_typename)
-            content += '    if (!rows[%d][%d].empty())\n' % (idx, validx)
-            content += '    {\n'
-            row_name = 'rows[%d][%d]' % (idx, validx)
-
-            if typename == 'std::string':
-                content += '        dataptr->%s = %s;\n' % (name, row_name)
-            elif origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('dataptr->', origin_typename, name, row_name, delimeters)
-            elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('dataptr->', origin_typename, name, row_name, delimeters)
-            else:
-                content += '        dataptr->%s = to<%s>(%s);\n' % (name, typename, row_name)
-            content += '    }\n'
-            idx += 1
-        varname = self.get_instance_data_name(struct['name'])
-        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
-        content += '    %s = dataptr;\n' % varname
-        content += '    return 0;\n'
-        content += '}\n\n'
-        return content
-
-
-    # 生成Load()方法
-    def gen_struct_load_method(self, struct):
-        content = ''
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_struct_load_method(struct)
-
-        varname = self.get_instance_data_name(struct['name'])
-        content += 'int %s::Load()\n' % struct['name']
-        content += '{\n'
-        content += '    const char* csvpath = "/csv/%s.csv";\n' % struct['name'].lower()
-        content += '    vector<%s>* dataptr = BEATS_NEW(vector<%s>, "autogen", csvpath);\n' % (
-        struct['name'], struct['name'])
-        content += '    const vector<vector<string>>& rows = CResourceManager::GetInstance()->ReadCsvToRows(csvpath);\n'
-        content += '    BEATS_ASSERT(rows.size() > 0);\n'
-        content += '    for (size_t i = 0; i < rows.size(); i++)\n'
-        content += '    {\n'
-        content += '        const vector<string>& row = rows[i];\n'
-        content += '        BEATS_ASSERT(row.size() >= %d);\n' % len(struct['fields'])
-        content += '        %s item;\n' % struct['name']
-        content += self.gen_all_field_assign_stmt(struct)
-        content += '        dataptr->push_back(item);\n'
-        content += '    }\n'
-        content += '    BEATS_ASSERT(dataptr->size() > 0);\n'
-        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
-        content += '    %s = dataptr;\n' % varname
-        content += '    return 0;\n'
-        content += '}\n\n'
-        return content
-
-
-    # class静态成员定义
-    def gen_global_static_define(self, struct):
-        content = ''
-        content = ''
-        varname = self.get_instance_data_name(struct['name'])
-        if struct['options'][predef.PredefParseKVMode]:
-            content += '    static %s* %s = nullptr;\n' % (struct['name'], varname)
-        else:
-            content += '    static std::vector<%s>* %s = nullptr;\n' % (struct['name'], varname)
-        return content
-
-
+    # 生成全局Load和Clear方法
     def gen_global_function(self, descriptors):
         content = ''
         clear_method_content = '// load all configurations\nvoid ClearAllAutogenConfig()\n{\n'
@@ -397,7 +407,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += clear_method_content
         return content
 
-
+    # 生成头文件声明
     def gen_cpp_header(self, struct):
         content = ''
         content += self.gen_cpp_struct_define(struct)
@@ -406,16 +416,17 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '};\n\n'
         return content
 
-
+    # 生成源文件定义
     def gen_cpp_source(self, struct):
         content = ''
         content += self.gen_struct_data_method(struct)
         content += self.gen_struct_get_method(struct)
         content += self.gen_struct_range_method(struct)
         content += self.gen_struct_load_method(struct)
+        content += self.gen_parse_method(struct)
         return content
 
-
+    #
     def run(self, descriptors, args):
         params = util.parse_args(args)
         h_include_headers = [
@@ -446,6 +457,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         class_content = ''
         for struct in descriptors:
+            print('start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
             if not no_data:

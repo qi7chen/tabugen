@@ -116,6 +116,7 @@ class MySQLImporter:
             "name": status["name"],
             "comment": status["comment"],
             "camel_case_name": util.camel_case(status["name"]),
+            "source": status["schema"],
         }
         options = {}
         primary_keys = []

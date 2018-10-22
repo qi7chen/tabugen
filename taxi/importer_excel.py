@@ -225,6 +225,7 @@ class ExcelImporter:
             print("start parse", filename)
             wb = openpyxl.load_workbook(filename, data_only=True)
             descriptor = self.import_one(wb)
+            descriptor['source'] = filename
             descriptors.append(descriptor)
         return descriptors
 

@@ -13,6 +13,7 @@ class CodeGeneratorBase:
     def __init__(self):
         pass
 
+    # 根据'column_index'查找一个字段
     def get_field_by_column_index(self, struct, column_idx):
         assert column_idx > 0
         idx = 0
@@ -20,10 +21,26 @@ class CodeGeneratorBase:
             if field["column_index"] == column_idx:
                 return idx, field
             idx += 1
-        assert False
+        print(struct['fields'])
+        assert False, column_idx
 
+    # 获取字段
+    def get_struct_keys(self, struct, keyname, keymapping):
+        if keyname not in struct['options']:
+            return []
 
-    #读取KV模式的字段
+        key_tuples = []
+        column_keys = struct['options'][keyname].split(',')
+        assert len(column_keys) > 0, struct['name']
+
+        for column in column_keys:
+            idx, field = self.get_field_by_column_index(struct, int(column))
+            typename = keymapping(field['original_type_name'])
+            name = field['name']
+            key_tuples.append((typename, name))
+        return key_tuples
+
+    # 读取KV模式的字段
     def get_struct_kv_fields(self, struct):
         rows = struct["data-rows"]
         keycol = struct["options"][predef.PredefKeyColumn]
@@ -61,8 +78,7 @@ class CodeGeneratorBase:
 
         return fields
 
-
-    #KV模式读取
+    # KV模式读取
     def setup_key_value_mode(self, struct):
         struct["options"][predef.PredefParseKVMode] = False
         kvcolumns = struct["options"].get(predef.PredefKeyValueColumn, "")
@@ -73,7 +89,7 @@ class CodeGeneratorBase:
             struct["options"][predef.PredefKeyColumn] = int(kv[0])
             struct["options"][predef.PredefValueColumn] = int(kv[1])
 
-
+    # 注释
     def setup_comment(self, struct):
         comment = struct.get("comment", "")
         if comment == "":
@@ -81,8 +97,7 @@ class CodeGeneratorBase:
             if comment != "":
                 struct["comment"] = comment
 
-
-    #将数据写入csv文件
+    # 将数据写入csv文件
     def write_data_rows(self, struct, args):
         datadir = "."
         if predef.OptionOutDataDir in args:
@@ -121,3 +136,35 @@ class CodeGeneratorBase:
         assert len(name) > 0, struct["name"]
         name = re.sub("[0-9]", "", name)    # remove number char
         return names, name
+
+    # 内部class
+    def setup_inner_class(self, struct):
+        if predef.PredefParseKVMode in struct["options"]:
+            return  # not available in KV mode
+
+        if predef.PredefInnerClassRange not in struct["options"]:
+            return
+
+        fields = struct['fields']
+        inner_start = 1
+        inner_end = len(fields)
+        inner_step = 1
+        name = struct["options"][predef.PredefInnerClassName]
+        field_range = struct["options"][predef.PredefInnerClassRange].split(',')
+        assert len(field_range) >= 2
+        inner_step = field_range[0]
+        inner_start = field_range[1]
+        assert inner_step < len(fields)
+        inner_start < len(fields)
+        if len(field_range) >= 3:
+            inner_end = field_range[2]
+            assert inner_end < len(fields)
+
+        new_fields = []
+        for i in range(len(fields)):
+            if i < inner_start:
+                new_fields.append(fields[i])
+            else:
+                break
+
+

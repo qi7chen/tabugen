@@ -3,7 +3,7 @@
 # See accompanying files LICENSE.
 
 
-PredefFilenameOption = "filename"
+PredefFilenameOption = "file"
 PredefSkipFileOption = "skip"
 
 
@@ -25,6 +25,9 @@ PredefCommentColumn = "comment-column"
 
 PredefGetMethodKeys = "get-keys"
 PredefRangeMethodKeys = "range-keys"
+
+PredefInnerClassRange = "inner-class-range"
+PredefInnerClassName = "inner-class-name"
 
 OptionOutDataDir = "outdata-dir"
 OptionOutSourceDir = "outsrc-dir"

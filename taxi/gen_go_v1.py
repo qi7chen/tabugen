@@ -10,11 +10,9 @@ import predef
 import util
 
 
-TAB_SPACE = '\t'
-
-
 # Go code generator
 class GoV1Generator(basegen.CodeGeneratorBase):
+    TAB_SPACE = '\t'
 
     def __init__(self):
         pass
@@ -39,7 +37,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # 生成赋值方法
     def gen_field_assgin_stmt(self, name, typename, valuetext, tabs, tips):
         content = ''
-        space = TAB_SPACE * tabs
+        space = self.TAB_SPACE * tabs
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
@@ -53,7 +51,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if delimeters == '':
             delimeters = predef.DefaultDelim1
 
-        space = TAB_SPACE * tabs
+        space = self.TAB_SPACE * tabs
         content = ''
         elem_type = descriptor.array_element_type(typename)
         elem_type = map_go_type(elem_type)
@@ -75,7 +73,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             delim1 = delist[0]
             delim2 = delist[1]
 
-        space = TAB_SPACE * tabs
+        space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
         key_type = map_go_type(k)
         val_type = map_go_type(v)
@@ -157,7 +155,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
                 content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, delimeters, 2)
             else:
                 content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, idx)
-            content += '%s}\n' % TAB_SPACE
+            content += '%s}\n' % self.TAB_SPACE
             idx += 1
         content += '%sreturn nil\n' % TAB_SPACE
         content += '}\n\n'
@@ -200,9 +198,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
                     vec_idx += 1
                 else:
                     content += self.gen_field_assgin_stmt('p.'+field_name, typename, valuetext, 2, 'row')
-            content += '%s}\n' % TAB_SPACE
+            content += '%s}\n' % self.TAB_SPACE
             idx += 1
-        content += '%sreturn nil\n' % TAB_SPACE
+        content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
         return content
 
@@ -289,6 +287,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         no_data = params.get(predef.OptionNoData, False)
 
         for struct in descriptors:
+            print('start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
             if not no_data:
