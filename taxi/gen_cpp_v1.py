@@ -210,7 +210,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             delimeters = struct['options'][predef.OptionDelimeters]
 
         content = ''
-        content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
+        content += '// parse data object from csv rows\n'
         content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
         content += '    BEATS_ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
@@ -242,7 +242,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             return self.gen_kv_parse_method(struct)
 
         content = ''
-        content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
+        content += '// parse data object from an csv row\n'
         content += 'int %s::ParseFromRow(const vector<StringPiece>& row, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
         content += '    BEATS_ASSERT(row.size() >= %d);\n' % len(struct['fields'])
@@ -254,7 +254,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
     # KV模式的Load()方法
     def gen_kv_struct_load_method(self, struct):
-        content = 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
+        content = ''
+        content += '// load data from csv file\n'
+        content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
         content += '{\n'
         content += '    if (filepath == nullptr)\n'
         content += '    {\n'
@@ -293,6 +295,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             return self.gen_kv_struct_load_method(struct)
 
         varname = self.get_instance_data_name(struct['name'])
+        content += '// load data from csv file\n'
         content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
         content += '{\n'
         content += '    if (filepath == nullptr)\n'
