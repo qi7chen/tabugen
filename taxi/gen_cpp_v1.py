@@ -260,7 +260,23 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    {\n'
         content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
         content += '    }\n'
-        content += '    const auto& rows = CResourceManager::GetInstance()->ReadCsvToRows(filepath);\n'
+        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
+        content += '    CSerializer serializer(path.c_str());\n'
+        content += '    StringPiece content((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '    vector<vector<StringPiece>> rows;\n'
+        content += '    auto lines = Split(content, "\\r\\n");\n'
+        content += '    BEATS_ASSERT(!lines.empty());\n'
+        content += '    for (size_t i = 0; i < lines.size(); i++)\n'
+        content += '    {\n'
+        content += '        if (!lines[i].empty())\n'
+        content += '        {\n'
+        content += '            const auto& row = Split(lines[i], ",");\n'
+        content += '            if (!row.empty())\n'
+        content += '            {\n'
+        content += '                rows.push_back(row);\n'
+        content += '            }\n'
+        content += '        }\n'
+        content += '    }\n'
         content += '    %s* dataptr = BEATS_NEW(%s, "autogen", filepath);\n' % (struct['name'], struct['name'])
         content += '    %s::ParseFromRows(rows, dataptr);\n' % struct['name']
         varname = self.get_instance_data_name(struct['name'])
@@ -284,14 +300,23 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
         content += '    }\n'
         content += '    vector<%s>* dataptr = BEATS_NEW(vector<%s>, "autogen", filepath);\n' % (struct['name'], struct['name'])
-        content += '    const auto& rows = CResourceManager::GetInstance()->ReadCsvToRows(filepath);\n'
-        content += '    BEATS_ASSERT(!rows.empty());\n'
-        content += '    for (size_t i = 0; i < rows.size(); i++)\n'
+        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
+        content += '    CSerializer serializer(path.c_str());\n'
+        content += '    StringPiece content((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '    auto lines = Split(content, "\\r\\n");\n'
+        content += '    BEATS_ASSERT(!lines.empty());\n'
+        content += '    for (size_t i = 0; i < lines.size(); i++)\n'
         content += '    {\n'
-        content += '        const auto& row = rows[i];\n'
-        content += '        %s item;\n' % struct['name']
-        content += '        %s::ParseFromRow(row, &item);\n' % struct['name']
-        content += '        dataptr->push_back(item);\n'
+        content += '        if (!lines[i].empty())\n'
+        content += '        {\n'
+        content += '            const auto& row = Split(lines[i], ",");\n'
+        content += '            if (!row.empty())\n'
+        content += '            {\n'
+        content += '                %s item;\n' % struct['name']
+        content += '                %s::ParseFromRow(row, &item);\n' % struct['name']
+        content += '                dataptr->push_back(item);\n'
+        content += '            }\n'
+        content += '        }\n'
         content += '    }\n'
         content += '    BEATS_SAFE_DELETE(%s);\n' % varname
         content += '    %s = dataptr;\n' % varname

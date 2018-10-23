@@ -12,10 +12,10 @@ import util
 
 def run(args):
     generator = registry.get_generator(args.generator)
-    assert generator is not None
+    assert generator is not None, args.generator
 
     importer = registry.get_importer(args.mode)
-    assert importer is not None
+    assert importer is not None, args.mode
 
     importer.initialize(args.import_args)
     descriptors = importer.import_all()
