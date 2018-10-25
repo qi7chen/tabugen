@@ -341,16 +341,16 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '    // get a range of items by key\n'
         content += '    List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
-        content += '        List<%s> range;\n' % struct['name']
+        content += '        var range = new List<%s>();\n' % struct['name']
         content += '        foreach (%s item in GetData())\n' % struct['name']
         content += '        {\n'
-        content += '            if (%s)\n' % self.gen_equal_stmt('data.', struct, 'range-keys')
+        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'range-keys')
         content += '            {\n'
         content += '                range.Add(item);\n'
         content += '            }\n'
         content += '            else \n'
         content += '            {\n'
-        content += '                if (!range.empty()) \n'
+        content += '                if (range.Count > 0) \n'
         content += '                    break;\n'
         content += '            }\n'
         content += '        }\n'
