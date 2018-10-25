@@ -304,11 +304,10 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             arg_names.append(tpl[1])
 
         content = ''
-        content += '    // get an items by key'
+        content += '    // get an items by key\n'
         content += '    %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
-        content += '        List<%s> data = GetData();\n' % struct['name']
-        content += '        foreach (%s item in data)\n' % struct['name']
+        content += '        foreach (%s item in GetData())\n' % struct['name']
         content += '        {\n'
         content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'get-keys')
         content += '            {\n'
@@ -339,12 +338,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             arg_names.append(tpl[1])
 
         content = ''
-        content += '    // get a range of items by key'
+        content += '    // get a range of items by key\n'
         content += '    List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
-        content += '        List<%s> data = GetData();\n' % struct['name']
         content += '        List<%s> range;\n' % struct['name']
-        content += '        foreach (%s item in data)\n' % struct['name']
+        content += '        foreach (%s item in GetData())\n' % struct['name']
         content += '        {\n'
         content += '            if (%s)\n' % self.gen_equal_stmt('data.', struct, 'range-keys')
         content += '            {\n'
