@@ -32,13 +32,16 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         return ' && '.join(args)
 
     # array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delim, tabs):
-        if delim == '':
-            delim = predef.DefaultDelim1
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
+        assert len(array_delim) == 1
+        array_delim = array_delim.strip()
+        if array_delim == '\\':
+            array_delim = '\\\\'
+
         space = self.TAB_SPACE * tabs
         elemt_type = map_cpp_type(descriptor.array_element_type(typename))
         content = ''
-        content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, delim)
+        content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -46,14 +49,15 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         return content
 
     # map赋值
-    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, delims, tabs):
-        delim1 = predef.DefaultDelim1
-        delim2 = predef.DefaultDelim2
-        if delims != '':
-            delist = [x.strip() for x in delims.split(',')]
-            assert len(delist) == 2, delims
-            delim1 = delist[0]
-            delim2 = delist[1]
+    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
+        assert len(map_delims) == 2, map_delims
+        delim1 = map_delims[0].strip()
+        if delim1 == '\\':
+            delim1 = '\\\\'
+        delim2 = map_delims[1].strip()
+        if delim2 == '\\':
+            delim2 = '\\\\'
+
         k, v = descriptor.map_key_value_types(typename)
         key_type = map_cpp_type(k)
         val_type = map_cpp_type(v)
@@ -77,9 +81,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     def gen_all_field_assign_stmt(self, struct, prefix, tabs):
         content = ''
         idx = 0
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_names, vec_name = self.get_field_range(struct)
         vec_idx = 0
@@ -94,9 +97,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             content += '%sif (!row[%d].empty())\n' % (space, idx)
             content += '%s{\n' % space
             if origin_type.startswith('array'):
-                content += self.gen_field_array_assign_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), delimeters, tabs + 1)
+                content += self.gen_field_array_assign_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), array_delim, tabs + 1)
             elif origin_type.startswith('map'):
-                content += self.gen_field_map_assgin_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), delimeters, tabs + 1)
+                content += self.gen_field_map_assgin_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), map_delims, tabs + 1)
             else:
                 if field['name'] in vec_names:
                     content += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, vec_name, vec_idx, typename, idx)
@@ -205,9 +208,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         validx, valfield = self.get_field_by_column_index(struct, valcol)
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         content = ''
         content += '// parse data object from csv rows\n'
@@ -225,9 +227,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             row_name = 'rows[%d][%d]' % (idx, validx)
 
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, delimeters, 2)
+                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, array_delim, 2)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, delimeters, 2)
+                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, map_delims, 2)
             else:
                 content += '%sptr->%s = to<%s>(%s);\n' % (self.TAB_SPACE*2, name, typename, row_name)
             content += '%s}\n' % self.TAB_SPACE
@@ -503,15 +505,15 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             static_define_content += self.gen_global_static_define(struct)
         static_define_content += '}\n\n'
 
-        outdir = params.get(predef.OptionOutSourceDir, '.')
-        filename = outdir + '/AutogenConfig.h'
+        outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
+        filename = outputfile + '.h'
         util.compare_and_save_content(filename, header_content, 'gbk')
         print('wrote header file to', filename)
 
         cpp_content += static_define_content
         cpp_content += self.gen_global_function(descriptors)
         cpp_content += class_content
-        filename = outdir + '/AutogenConfig.cpp'
+        filename = outputfile + '.cpp'
         util.compare_and_save_content(filename, cpp_content, 'gbk')
         print('wrote source file to', filename)
 

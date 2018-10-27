@@ -233,6 +233,7 @@ class ExcelImporter:
     def import_one(self, wb):
         sheet_names = wb.sheetnames
         assert len(sheet_names) > 0
+        assert predef.PredefMetaSheet in sheet_names, 'no meta sheet found'
         sheet = wb[predef.PredefMetaSheet]
         assert sheet is not None
         self.parse_meta_sheet(sheet)
