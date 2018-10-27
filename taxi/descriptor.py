@@ -4,6 +4,7 @@
 
 import unittest
 
+# type enum
 Type_Unknown = 0
 Type_Nil = 1
 Type_Bool = 2
@@ -28,6 +29,7 @@ Type_Array = 20
 Type_Map = 21
 Type_Any = 22
 
+# text name of a type
 type_names = {
     Type_Nil:      "nil",
     Type_Bool:     "bool",
@@ -53,6 +55,7 @@ type_names = {
 	Type_Any:      "any",
 }
 
+# non-primitive type names
 abstract_type_names = {
 	"array": Type_Array,
 	"map":   Type_Map,
