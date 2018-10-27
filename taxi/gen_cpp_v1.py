@@ -485,6 +485,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         data_only = params.get(predef.OptionDataOnly, False)
         no_data = params.get(predef.OptionNoData, False)
 
+        if 'pkg' in params:
+            header_content += '\nnamespace %s\n{\n\n' % params['pkg']
+            cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
 
         class_content = ''
         for struct in descriptors:
@@ -505,6 +508,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             static_define_content += self.gen_global_static_define(struct)
         static_define_content += '}\n\n'
 
+        if 'pkg' in params:
+            header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
         outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
         filename = outputfile + '.h'
         util.compare_and_save_content(filename, header_content, 'gbk')
@@ -513,6 +518,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         cpp_content += static_define_content
         cpp_content += self.gen_global_function(descriptors)
         cpp_content += class_content
+        if 'pkg' in params:
+            cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
         filename = outputfile + '.cpp'
         util.compare_and_save_content(filename, cpp_content, 'gbk')
         print('wrote source file to', filename)
