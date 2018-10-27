@@ -1,0 +1,8 @@
+Guide_01,eAT_CreateBuilding,BigSupplyDepot,1\2\3,Food=10;Gas=100,建造1个引擎控制室
+Guide_02,eAT_CreateBuilding,CrystalRefinery,4\5\6,Food=10;Gas=100,建造1个太空温室
+Guide_03,eAT_ReachLevel,SoldierLandingship,7\8,Food=10;Gas=100,将大力神登陆艇升至2级
+Guide_04,eAT_DefeatNpc,NPC,9\10,Food=10;Gas=100,解放1个太空殖民地
+Guide_05,eAT_CreateBuilding,Vault,11\12\13,Food=10;Gas=100,建造1个保险库
+Guide_06,eAT_CreateBuilding,GhostTower,14\15,Food=10;Gas=100,建造1个幽灵哨塔
+Guide_07,eAT_UpgradeHero,ColonelZhang,16\17\18,Food=10;Gas=100,将章北海等级提升至2级
+Guide_08,eAT_UpgradeSoldier,Marine,19\20,Food=10;Gas=100,将陆战队等级提升至2级
