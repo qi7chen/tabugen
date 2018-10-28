@@ -30,15 +30,19 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 * taxi的设计目标是小巧简短，不希望做成大而全，也就是应该用其它格式（比如JSON）来做配置表的时候就别用excel；
 
-* taxi使用python3编写，依赖openpyxl和pymysql，借助[pyinstaller](http://www.pyinstaller.org/)可以打包为执行档发布；
+* taxi使用python3编写，依赖[openpyxl](https://openpyxl.readthedocs.io/)和[pymysql](https://github.com/PyMySQL/PyMySQL)，借助[pyinstaller](http://www.pyinstaller.org/)可以打包为执行档发布；
 
 
 目前支持了2种类型的导入器：
 
-## MySQL
-这个是把MySQL里的table导出为一个结构体定义，并生成相应的Select, Insert和Update语句，一个是减少手写SQL容易带来的错误，二个是旨在做一个简单的对象关系映射(ORM)
+## 导入MySQL
+这个模式是把MySQL里的table导出为一个结构体定义，并生成相应的Select, Insert和Update语句。
 
-## Excel
+这个模式的目的，一个是减少手写SQL容易带来的错误，二个是旨在做一个简单的对象关系映射(ORM)。
+
+## 导入Excel
+这个模式把excel表格导出为代码和数据配置。
+
 按taxi的规则，一个excel配置表包含了两大内容，一个是对数据的定义，包括每一列的名称、类型等，还有一些配合导出的选项，二个是数据本身。
 
 数据定义部分将会导出为结构及相关函数代码定义，而数据本身将会转为另一个csv格式的文件。
@@ -51,17 +55,17 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 前3行代表这一列的数据类型定义，从第4行开始为数据内容。
 
-另外，每一个excel表格都必须带有一个名为meta的sheet，这个sheet里定义相关的程序导出参数。
+另外，每一个excel表格都必须带有一个名为**meta**的sheet，在这个sheet里定义相关的程序导出参数。
 
-请查看examples目录下的示例
+请查看examples目录下的示例：
 
-* [示例1](examples/basic) 演示excel配置的基础用法；
-* [示例2](examples/global-var) 演示如何配置全局参数表；
-* [示例3](examples/array-map) 演示如何使用array和map类型；
-* [示例4](examples/sql) 演示如何从MySQL数据库导出代码；
+* [示例1](examples/basic) 演示excel配置的基础用法
+* [示例2](examples/global-var) 演示如何配置全局参数表
+* [示例3](examples/array-map) 演示如何使用array和map类型
+* [示例4](examples/sql) 演示如何从MySQL数据库导出代码
 
 
 # TO-DO
 
-* 增加Java和Lua语言的代码生成器；
-* 支持excel表格内的嵌入类型定义；
+* 增加Java和Lua语言的代码生成器
+* 支持excel表格内的嵌入类型定义
