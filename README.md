@@ -55,10 +55,10 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 请查看examples目录下的示例
 
-* [基本用例](examples/basic)
-* [使用全局参数表](examples/global-var)
-* [使用array和map类型的支持](examples/array-map)
-* [导出MySQL表](examples/sql)
+* [示例1](examples/basic) 演示excel配置的基础用法；
+* [示例2](examples/global-var) 演示如何配置全局参数表；
+* [示例3](examples/array-map) 演示如何使用array和map类型；
+* [示例4](examples/sql) 演示如何从MySQL数据库导出代码；
 
 
 # TO-DO
