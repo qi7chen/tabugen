@@ -26,11 +26,11 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 # taxi的设计
 
-* taxi关注的是两个点，即导入和生成，对应的有导入器和生成器，导入器(importer) 把数据导入为中间格式(descriptor)，生成器(generator)根据中间格式生成对应编程语言的代码；
+* taxi关注的是两个点，即导入和生成，对应代码中的设计有定义导入器(importer)和生成器(generator)，导入器把数据导为一个描述格式(descriptor)，生成器根据描述格式生成对应编程语言的代码；
 
-* taxi的设计目标是简短而有效，不希望做成大而全，也就是该用JSON的地方还是推荐你用JSON；
+* taxi的设计目标是小巧简短，不希望做成大而全，也就是应该用其它格式（比如JSON）来做配置表的时候就别用excel；
 
-* taxi使用python编写，借助pyinstall可以打包为执行档发布；
+* taxi使用python3编写，依赖openpyxl和pymysql，借助[pyinstaller](http://www.pyinstaller.org/)可以打包为执行档发布；
 
 
 目前支持了2种类型的导入器：
