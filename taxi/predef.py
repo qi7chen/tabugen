@@ -30,11 +30,12 @@ PredefInnerClassRange = "inner-class-range"
 PredefInnerClassName = "inner-class-name"
 
 OptionOutDataDir = "outdata-dir"
-OptionOutSourceDir = "outsrc-dir"
+OptionOutSourceFile = "out-src-file"
 OptionAutoVector = "auto-vector"
 OptionDataOnly = "data-only"
 OptionNoData = "no-data"
-OptionDelimeters = "delimeters"
+OptionArrayDelimeter = "array-delim"
+OptionMapDelimeters = "map-delim"
 
-DefaultDelim1 = '|'
-DefaultDelim2 = '='
+DefaultArrayDelimiter = '\\'
+DefaultMapDelimiters = '=;'

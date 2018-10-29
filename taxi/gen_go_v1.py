@@ -47,16 +47,18 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
-        if delimeters == '':
-            delimeters = predef.DefaultDelim1
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
+        assert len(array_delim) == 1
+        array_delim = array_delim.strip()
+        if array_delim == '\\':
+            array_delim = '\\\\'
 
         space = self.TAB_SPACE * tabs
         content = ''
         elem_type = descriptor.array_element_type(typename)
         elem_type = map_go_type(elem_type)
 
-        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, delimeters)
+        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
         content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
@@ -64,14 +66,14 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
-        delim1 = predef.DefaultDelim1
-        delim2 = predef.DefaultDelim2
-        if delimeters != '':
-            delist = [x.strip() for x in delimeters.split(',')]
-            assert len(delist) == 2, delimeters
-            delim1 = delist[0]
-            delim2 = delist[1]
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
+        assert len(map_delims) == 2, map_delims
+        delim1 = map_delims[0].strip()
+        if delim1 == '\\':
+            delim1 = '\\\\'
+        delim2 = map_delims[1].strip()
+        if delim2 == '\\':
+            delim2 = '\\\\'
 
         space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
@@ -131,9 +133,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         validx, valfield = self.get_field_by_column_index(struct, valcol)
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         content += 'func (p *%s) ParseFromRows(rows [][]string) error {\n' % struct['camel_case_name']
         content += '\tif len(rows) < %d {\n' % len(rows)
@@ -150,14 +151,14 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, delimeters, 2)
+                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, array_delim, 2)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, delimeters, 2)
+                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, map_delims, 2)
             else:
                 content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, idx)
             content += '%s}\n' % self.TAB_SPACE
             idx += 1
-        content += '%sreturn nil\n' % TAB_SPACE
+        content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
         return content
 
@@ -167,9 +168,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
 
-        delimeters = ''
-        if predef.DefaultDelim1 in struct['options']:
-            delimeters = struct['options'][predef.DefaultDelim1]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
         vec_names, vec_name = self.get_field_range(struct)
@@ -188,9 +188,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             field_name = field['camel_case_name']
             valuetext = 'row[%d]' % idx
             if origin_type_name.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters, 2)
+                content += self.gen_field_array_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, array_delim, 2)
             elif origin_type_name.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, delimeters, 2)
+                content += self.gen_field_map_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, map_delims, 2)
             else:
                 if field_name in vec_names:
                     name = '%s[%d]' % (vec_name, vec_idx)
@@ -300,8 +300,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         content += PARSE_FUNC_TEMPLATE
 
-        outdir = params.get(predef.OptionOutSourceDir, '.')
-        filename = outdir + '/stub.go'
+        filename = params.get(predef.OptionOutSourceFile, 'config.go')
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()

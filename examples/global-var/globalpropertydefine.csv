@@ -1,0 +1,9 @@
+GoldExchangeTimeFactor1,金币兑换时间参数1,float,1
+GoldExchangeTimeFactor2,金币兑换时间参数2,float,0.25
+GoldExchangeTimeFactor3,金币兑换时间参数3,float,0.1
+GoldExchangeResource1Price,金币兑换资源1价格,uint32,200
+GoldExchangeResource2Price,金币兑换资源2价格,uint32,180
+GoldExchangeResource3Price,金币兑换资源3价格,uint32,150
+GoldExchangeResource4Price,金币兑换资源4价格,uint32,20
+FreeCompleteSeconds,免费立即完成时间,uint32,300
+CancelBuildReturnPercent,取消建造后返还资源比例,uint32,50

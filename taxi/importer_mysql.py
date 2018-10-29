@@ -19,16 +19,16 @@ class MySQLImporter:
     def name():
         return "mysql"
 
-
     def initialize(self, argtext):
         options = util.parse_args(argtext)
         self.make_conn(options)
         if "db" not in options:
             for name in self.get_database_names():
-                self.tables = self.get_all_table_status(name)
+                tables = self.get_all_table_status(name, '')
+                self.tables += tables
         else:
-            self.tables = self.get_all_table_status(options["db"])
-
+            tablename = options.get('table', '')
+            self.tables = self.get_all_table_status(options['db'], tablename)
 
     def make_conn(self, opt):
         host = opt.get("host", "localhost")
@@ -39,7 +39,6 @@ class MySQLImporter:
         conn = pymysql.connect(host=host, user=user, port=port, password=passwd, db=db, charset="utf8")
         self.conn = conn
 
-
     def query_stmt(self, stmt):
         cur = self.conn.cursor()
         cur.execute(stmt)
@@ -47,7 +46,6 @@ class MySQLImporter:
         cur.close()
         self.conn.commit()
         return rows
-
 
     def get_database_names(self):
         names = []
@@ -58,34 +56,42 @@ class MySQLImporter:
                 names.append(name)
         return names
 
-
-    def get_all_table_status(self, schema):
+    def get_all_table_status(self, schema, tablename):
         tables = []
-        self.query_stmt("USE `%s`;" % schema)
-        for row in self.query_stmt("SHOW TABLES;"):
-            status = {"schema": schema}
-            for row in self.query_stmt("SHOW TABLE STATUS LIKE '%s'" % row[0]):
-                status["name"] = row[0]
-                # status["engine"] = row[1]
-                # status["version"] = row[2]
-                # status["row_format"] = row[3]
-                # status["rows"] = row[4]
-                # status["avg_row_len"] = row[5]
-                # status["data_len"] = row[6]
-                # status["max_data_len"] = row[7]
-                # status["index_len"] = row[8]
-                # status["data_free"] = row[9]
-                # status["auto_incr"] = row[10]
-                # status["create_time"] = str(row[11])
-                # status["update_time"] = row[12]
-                # status["check_time"] = row[13]
-                # status["collation"] = row[14]
-                # status["checksum"] = row[15]
-                # status["create_options"] = row[16]
-                status["comment"] = row[17]
-            tables.append(status)
-        return tables
+        names = []
 
+        self.query_stmt("USE `%s`;" % schema)
+
+        if len(tablename) > 0:
+            names.append(tablename)
+        else:
+            for row in self.query_stmt("SHOW TABLES;"):
+                name = row[0]
+                names.append(name)
+
+        for name in names:
+            info = {"schema": schema}
+            for row in self.query_stmt("SHOW TABLE STATUS LIKE '%s'" % name):
+                info["name"] = row[0]
+                # info["engine"] = row[1]
+                # info["version"] = row[2]
+                # info["row_format"] = row[3]
+                # info["rows"] = row[4]
+                # info["avg_row_len"] = row[5]
+                # info["data_len"] = row[6]
+                # info["max_data_len"] = row[7]
+                # info["index_len"] = row[8]
+                # info["data_free"] = row[9]
+                # info["auto_incr"] = row[10]
+                # info["create_time"] = str(row[11])
+                # info["update_time"] = row[12]
+                # info["check_time"] = row[13]
+                # info["collation"] = row[14]
+                # info["checksum"] = row[15]
+                # info["create_options"] = row[16]
+                info["comment"] = row[17]
+            tables.append(info)
+        return tables
 
     def get_table_column_status(self, name):
         columns = []
@@ -99,24 +105,22 @@ class MySQLImporter:
             columns.append(column)
         return columns
 
-
     def import_all(self):
         descriptors = []
-        for status in self.tables:
-            struct = self.import_one(status)
+        for info in self.tables:
+            struct = self.import_one(info)
             # print(struct)
             descriptors.append(struct)
         return descriptors
 
-
-    def import_one(self, status):
-        self.query_stmt("USE `%s`;" % status["schema"])
-        name = status["name"]
+    def import_one(self, table):
+        self.query_stmt("USE `%s`;" % table["schema"])
+        name = table["name"]
         struct = {
-            "name": status["name"],
-            "comment": status["comment"],
-            "camel_case_name": util.camel_case(status["name"]),
-            "source": status["schema"],
+            "name": table["name"],
+            "comment": table["comment"],
+            "camel_case_name": util.camel_case(table["name"]),
+            "source": table["schema"],
         }
         options = {}
         primary_keys = []
@@ -158,8 +162,6 @@ class MySQLImporter:
         struct["fields"] = fields
         return struct
 
-
-
 def convert_mysql_type(name):
     name = name.lower()
     if name.startswith("tinyint"):
@@ -197,7 +199,7 @@ def convert_mysql_type(name):
 class TestMySQLImporter(unittest.TestCase):
 
     def test_parse_args(self):
-        args = "user=devel,passwd=r026^p0Y1Xa,db=choy_battle"
+        args = "user=devel,passwd=r026^p0Y1Xa,db=test"
         importer = MySQLImporter()
         importer.initialize(args)
         importer.import_all()

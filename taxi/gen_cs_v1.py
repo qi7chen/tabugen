@@ -58,15 +58,17 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
-        if delimeters == '':
-            delimeters = predef.DefaultDelim1
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
+        assert len(array_delim) == 1
+        array_delim = array_delim.strip()
+        if array_delim == '\\':
+            array_delim = '\\\\'
 
         content = ''
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = map_cs_type(elem_type)
-        content += "%sforeach(string item in %s.Split('%s')) {\n" % (space, row_name, delimeters)
+        content += "%sforeach(string item in %s.Split('%s')) {\n" % (space, row_name, array_delim)
         content += self.gen_field_assgin_stmt('var value', elem_type, 'item', tabs + 1)
         content += '%s    %s%s.Add(value);\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -74,14 +76,15 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, delimeters, tabs):
-        delim1 = predef.DefaultDelim1
-        delim2 = predef.DefaultDelim2
-        if delimeters != '':
-            delist = [x.strip() for x in delimeters.split(',')]
-            assert len(delist) == 2, delimeters
-            delim1 = delist[0]
-            delim2 = delist[1]
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
+        assert len(map_delims) == 2, map_delims
+        delim1 = map_delims[0].strip()
+        if delim1 == '\\':
+            delim1 = '\\\\'
+        delim2 = map_delims[1].strip()
+        if delim2 == '\\':
+            delim2 = '\\\\'
+
 
         space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
@@ -113,9 +116,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         validx, valfield = self.get_field_by_column_index(struct, valcol)
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         content = ''
         content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
@@ -135,9 +137,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('obj.', origin_typename, name, valuetext, delimeters, 3)
+                content += self.gen_field_array_assign_stmt('obj.', origin_typename, name, valuetext, array_delim, 3)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('obj.', origin_typename, name, valuetext, delimeters, 3)
+                content += self.gen_field_map_assign_stmt('obj.', origin_typename, name, valuetext, map_delims, 3)
             else:
                 content += self.gen_field_assgin_stmt('obj.' + name, typename, valuetext, 3)
             content += '%s}\n' % (self.TAB_SPACE*2)
@@ -152,9 +154,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
 
-        delimeters = ''
-        if predef.DefaultDelim1 in struct['options']:
-            delimeters = struct['options'][predef.DefaultDelim1]
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
         vec_names, vec_name = self.get_field_range(struct)
@@ -175,9 +176,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             field_name = field['name']
             valuetext = 'row[%d]' % idx
             if origin_type_name.startswith('array'):
-                content += self.gen_field_array_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, delimeters, 3)
+                content += self.gen_field_array_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, array_delim, 3)
             elif origin_type_name.startswith('map'):
-                content += self.gen_field_map_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, delimeters, 3)
+                content += self.gen_field_map_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, map_delims, 3)
             else:
                 if field_name in vec_names:
                     name = '%s[%d]' % (vec_name, vec_idx)
@@ -415,8 +416,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if 'pkg' in params:
             content += '\n}\n'  # namespace
 
-        outdir = params.get(predef.OptionOutSourceDir, '.')
-        filename = outdir + '/ConfigData.cs'
+        filename = params.get(predef.OptionOutSourceFile, 'ConfigData.cs')
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()

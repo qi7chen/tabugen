@@ -181,8 +181,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
             content += '\n'
             content += self.gen_remove_stamt_method(struct, params)
 
-        outdir = params.get(predef.OptionOutSourceDir, '.')
-        filename = outdir + '/stub.go'
+        filename = params.get(predef.OptionOutSourceFile, 'stub.go')
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()
