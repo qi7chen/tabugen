@@ -93,19 +93,22 @@ def common_prefix(s1, s2):
 
 # 是否是相似的列（归为数组）
 def is_vector_fields(prev, cur):
-    if prev["original_type_name"] == cur["original_type_name"]:
-        s1 = prev['name']
-        s2 = cur['name']
-        prefix = common_prefix(s1, s2)
-        if prefix == "":
-            return False
-        try:
-            n1 = int(s1[len(prefix):])
-            n2 = int(s1[len(prefix):])
-            return n1 + 1 == n2
-        except Exception:
-            return False
+    if prev["original_type_name"] != cur["original_type_name"]:
+        return False
 
+    name1 = prev['name']
+    name2 = cur['name']
+    prefix = common_prefix(name1, name2)
+    if prefix == "":
+        return False
+    if len(prefix) == len(name1) or len(prefix) == len(name2):
+        return False
+    s1 = name1[len(prefix)]
+    s2 = name2[len(prefix)]
+    if s1.isdigit() and s2.isdigit():
+        n1 = int(s1)
+        n2 = int(s2)
+        return n1 + 1 == n2
     return False
 
 

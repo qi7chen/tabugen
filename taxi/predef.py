@@ -38,4 +38,4 @@ OptionArrayDelimeter = "array-delim"
 OptionMapDelimeters = "map-delim"
 
 DefaultArrayDelimiter = '\\'
-DefaultMapDelimiters = '=;'
+DefaultMapDelimiters = ';='

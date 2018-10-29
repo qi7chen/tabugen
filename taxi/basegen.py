@@ -129,10 +129,10 @@ class CodeGeneratorBase:
                 else:
                     names.append(field["name"])
 
-        if len(names) == 0:
+        if len(names) < 2:
             return [], ""
 
-        name = util.common_prefix(names)
+        name = util.common_prefix(names[0], names[1])
         assert len(name) > 0, struct["name"]
         name = re.sub("[0-9]", "", name)    # remove number char
         return names, name

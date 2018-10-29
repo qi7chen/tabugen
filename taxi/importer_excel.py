@@ -43,7 +43,7 @@ class ExcelImporter:
     def make_filenames(self):
         filenames = []
         filename = self.options[predef.PredefFilenameOption]
-        assert os.path.exists(filename)
+        assert os.path.exists(filename), '%s not exist' % filename
         if os.path.isdir(filename):    # filename is a directory
             print('parse files in directory:', filename)
             filenames = self.enum_files(filename)
@@ -142,9 +142,12 @@ class ExcelImporter:
             assert field["name"] not in fields_names, field["name"]
             fields_names[field["name"]] = True
 
-            if prev_field is not None and util.is_vector_fields(prev_field, field):
-                prev_field["is_vector"] = True
-                field["is_vector"] = True
+            if prev_field is not None:
+                is_vector = util.is_vector_fields(prev_field, field)
+                # print('is vector', is_vector, prev_field, field)
+                if is_vector:
+                    prev_field["is_vector"] = True
+                    field["is_vector"] = True
             prev_field = field
 
             assert field["type"] != descriptor.Type_Unknown
