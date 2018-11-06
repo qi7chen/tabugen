@@ -36,6 +36,7 @@ class ExcelImporter:
         filenames = []
         for filename in files:
             if not util.is_ignored_filename(filename):
+                filename = os.path.abspath(filename)
                 filenames.append(filename)
         return filenames
 
@@ -49,6 +50,7 @@ class ExcelImporter:
             filenames = self.enum_files(filename)
         else:
             assert os.path.isfile(filename)
+            filename = os.path.abspath(filename)
             filenames.append(filename)
 
         skip_names = []

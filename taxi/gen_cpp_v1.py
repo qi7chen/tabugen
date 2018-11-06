@@ -2,6 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import os
 import time
 import unittest
 import descriptor
@@ -512,6 +513,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
         outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
         filename = outputfile + '.h'
+        filename = os.path.abspath(filename)
         util.compare_and_save_content(filename, header_content, 'gbk')
         print('wrote header file to', filename)
 
@@ -521,6 +523,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if 'pkg' in params:
             cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
         filename = outputfile + '.cpp'
+        filename = os.path.abspath(filename)
         util.compare_and_save_content(filename, cpp_content, 'gbk')
         print('wrote source file to', filename)
 

@@ -417,6 +417,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             content += '\n}\n'  # namespace
 
         filename = params.get(predef.OptionOutSourceFile, 'ConfigData.cs')
+        filename = os.path.abspath(filename)
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()

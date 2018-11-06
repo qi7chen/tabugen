@@ -301,6 +301,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += PARSE_FUNC_TEMPLATE
 
         filename = params.get(predef.OptionOutSourceFile, 'config.go')
+        filename = os.path.abspath(filename)
         f = codecs.open(filename, 'w', 'utf-8')
         f.writelines(content)
         f.close()
