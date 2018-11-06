@@ -2,6 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import os
 import csv
 import codecs
 import re
@@ -104,6 +105,7 @@ class CodeGeneratorBase:
             datadir = args[predef.OptionOutDataDir]
         filename = "%s/%s.csv" % (datadir, struct['name'].lower())
         rows = struct["data-rows"]
+        filename = os.path.abspath(filename)
         f = codecs.open(filename, "w", "utf-8")
         w = csv.writer(f)
         w.writerows(rows)
