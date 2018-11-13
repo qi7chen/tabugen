@@ -20,18 +20,52 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         return "go-v2"
 
 
+    def gen_getset(self, struct, params):
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
+        name = struct['camel_case_name']
+        name = params.get(predef.OptionNamePrefix, "") + name
+
+        content = ''
+        for field in struct['fields']:
+            typename = go_type_mapping[field['type_name']]
+            # getter
+            if not is_camelcase_field:
+                content += 'func (m *%s) %s() %s {\n' % (name, field['camel_case_name'], typename)
+                content += '    return %s' % field['name']
+                content += '}\n'
+
+            # setter
+            content += 'func (m *%s) Set%s(v %s) {\n' % (name, field['camel_case_name'], typename)
+            if is_camelcase_field:
+                content += '    m.%s = v' % field['camel_case_name']
+            else:
+                content += '    m.%s = v' % field['name']
+            content += '}\n'
+        return content
+
     def gen_go_struct(self, struct, params):
         content = '// %s\n' % struct['comment']
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
+
         content += 'type %s struct {\n' % name
         for field in struct['fields']:
             typename = go_type_mapping[field['type_name']]
             assert typename != "", field['type_name']
-            content += '\t%s %s `json:"%s"`// %s\n' % (
-            field['camel_case_name'], typename, field['name'], field['comment'])
+            if is_camelcase_field:
+                name = field['camel_case_name']
+                content += '\t%s %s `json:"%s"`// %s\n' % (name, typename, field['name'], field['comment'])
+            else:
+                name = field['name']
+                content += '\t%s %s // %s\n' % (name, typename, field['comment'])
         content += '}\n'
+
+        # getter and setter
+        opt = params.get(predef.OptionFieldGetterSetter, "")
+        if opt != "off":
+            content += self.gen_getset(struct, params)
+
         return content
 
 
@@ -60,8 +94,8 @@ class GoV2Generator(basegen.CodeGeneratorBase):
     def gen_select_stmt_variable(self, struct, params):
         clause, keys = self.gen_where_clause(struct)
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+
         content = '\tconst Sql%sStmt = "SELECT ' % name
         for i, field in enumerate(struct['fields']):
             content += '`%s`' % field['name']
@@ -76,13 +110,17 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
     # 生成Load方法
     def gen_load_method(self, struct, params):
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+
         content = 'func (p *%s) Load(rows *sql.Rows) error {\n' % name
         content += '\treturn rows.Scan('
         for i, field in enumerate(struct['fields']):
-            content += '&p.%s' % field['camel_case_name']
+            if is_camelcase_field:
+                content += '&p.%s' % field['camel_case_name']
+            else:
+                content += '&p.%s' % field['name']
             if i + 1 < len(struct['fields']):
                 content += ', '
         content += ')\n}\n'
@@ -90,9 +128,10 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
     # 生成insert语句
     def gen_insert_stmt_method(self, struct, params):
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+
         content = 'func (p *%s) InsertStmt() *storage.SqlOperation {\n' % name
         content += '\t return storage.NewSqlOperation("INSERT INTO `%s`(' % struct['name']
         mark = ''
@@ -104,7 +143,10 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         content += ') VALUES(%s)", ' % mark[:-2]
         clause = ''
         for field in struct['fields']:
-            clause += 'p.%s, ' % field['camel_case_name']
+            if is_camelcase_field:
+                clause += 'p.%s, ' % field['camel_case_name']
+            else:
+                clause += 'p.%s, ' % field['name']
         content += clause[:-2]
         content += ')\n}\n'
         return content
@@ -112,9 +154,10 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
     # 生成update语句
     def gen_update_stmt_method(self, struct, params):
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+
         clause, keys = self.gen_where_clause(struct)
         assert len(clause) > 0, struct
         content = 'func (p *%s) UpdateStmt() *storage.SqlOperation {\n' % name
@@ -129,10 +172,16 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         clause = ''
         for field in struct['fields']:
             if field['name'] not in keys:
-                clause += 'p.%s, ' % field['camel_case_name']
+                if is_camelcase_field:
+                    clause += 'p.%s, ' % field['camel_case_name']
+                else:
+                    clause += 'p.%s, ' % field['name']
         for field in struct['fields']:
             if field['name'] in keys:
-                clause += 'p.%s, ' % field['camel_case_name']
+                if is_camelcase_field:
+                    clause += 'p.%s, ' % field['camel_case_name']
+                else:
+                    clause += 'p.%s, ' % field['name']
         content += clause[:-2]
         content += ')\n}\n'
         return content
@@ -140,9 +189,10 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
     # 生成delete语句
     def gen_remove_stamt_method(self, struct, params):
+        is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
-        if 'prefix' in params:
-            name = params['prefix'] + name
+        name = params.get(predef.OptionNamePrefix, "") + name
+
         clause, keys = self.gen_where_clause(struct)
         assert len(clause) > 0, struct
         content = 'func (p *%s) DeleteStmt() *storage.SqlOperation {\n' % name
@@ -152,7 +202,10 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         clause = ''
         for field in struct['fields']:
             if field['name'] in keys:
-                clause += 'p.%s, ' % field['camel_case_name']
+                if is_camelcase_field:
+                    clause += 'p.%s, ' % field['camel_case_name']
+                else:
+                    clause += 'p.%s, ' % field['name']
         content += clause[:-2]
         content += ')\n}\n'
         return content

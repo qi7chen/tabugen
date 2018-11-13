@@ -29,6 +29,10 @@ PredefRangeMethodKeys = "range-keys"
 PredefInnerClassRange = "inner-class-range"
 PredefInnerClassName = "inner-class-name"
 
+OptionCamelcaseField = "camelcase-field"
+OptionFieldGetterSetter = "field-getset"
+OptionNamePrefix = "prefix"
+
 OptionOutDataDir = "outdata-dir"
 OptionOutSourceFile = "out-src-file"
 OptionAutoVector = "auto-vector"
