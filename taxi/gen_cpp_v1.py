@@ -93,7 +93,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             typename = map_cpp_type(origin_type)
 
             if typename != 'std::string' and field['name'] in vec_names:
-                content += '%s%s.%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
+                content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
 
             content += '%sif (!row[%d].empty())\n' % (space, idx)
             content += '%s{\n' % space
