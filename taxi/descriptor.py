@@ -124,7 +124,7 @@ def array_element_type(typename):
 # map<int, string> --> int, string
 def map_key_value_types(typename):
     assert typename.startswith('map<'), typename
-    names = [x.strip() for x in typename[4:-1].split(',')]
+    names = [x.strip() for x in typename[4:-1].split(' ')]
     assert len(names) == 2
     return names[0], names[1]
 
