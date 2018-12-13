@@ -251,10 +251,6 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         validx, valfield = self.get_field_by_column_index(struct, valcol)
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
-        delimeters = ''
-        if predef.OptionDelimeters in struct['options']:
-            delimeters = struct['options'][predef.OptionDelimeters]
-
         content = '%spublic static void Load() {\n' % self.TAB_SPACE
         content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"csv/%s.csv";\n' % (self.TAB_SPACE*2, struct['name'].lower())
         content += '%sstring[] lines = File.ReadAllLines(csvpath, Encoding.UTF8);\n' % (self.TAB_SPACE*2)
@@ -305,8 +301,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             arg_names.append(tpl[1])
 
         content = ''
-        content += '    // get an items by key\n'
-        content += '    %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    // get an item by key\n'
+        content += '    public %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
         content += '        foreach (%s item in GetData())\n' % struct['name']
         content += '        {\n'
