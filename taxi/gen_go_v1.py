@@ -41,7 +41,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
+            content += '%svar value = strutil.MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
@@ -59,7 +59,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         elem_type = map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
-        content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
+        content += '%s    var value = strutil.MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
@@ -87,9 +87,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var item = strings.Split(text, "%s")\n' % (space, delim2)
-        content += '%s    var value = MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var value = strutil.MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    value = strutil.MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -208,7 +208,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # KV模式下的Load方法
     def gen_load_method_kv(self, struct):
         content = ''
-        content += 'func Load%s(loader DataSourceLoader) (*%s, error) {\n' % (struct['name'], struct['name'])
+        content += 'func Load%s(loader fileutil.DataSourceLoader) (*%s, error) {\n' % (struct['name'], struct['name'])
         content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\treturn nil, err\n'
@@ -235,7 +235,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if struct['options']['parse-kv-mode']:
             return self.gen_load_method_kv(struct)
 
-        content += 'func Load%sList(loader DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
+        content += 'func Load%sList(loader fileutil.DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
         content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\t    return nil, err\n'
@@ -278,8 +278,11 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += 'package %s\n' % params['pkg']
         content += 'import (\n'
         content += '    "encoding/csv"\n'
+        content += '    "fatchoy/x/fileutil"\n'
+        content += '    "fatchoy/x/strutil"\n'
         content += '    "io"\n'
         content += '    "strconv"\n'
+        content += '    "strings"\n'
         content += ')\n'
         content += self.gen_const_names(descriptors)
 
@@ -297,8 +300,6 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         if data_only:
             return
-
-        content += PARSE_FUNC_TEMPLATE
 
         filename = params.get(predef.OptionOutSourceFile, 'config.go')
         filename = os.path.abspath(filename)
@@ -349,63 +350,3 @@ def map_go_type(typ):
         return 'map[%s]%s' % (key_type, value_type)
     assert False, typ
 
-
-# MustParseTextValue函数实现
-PARSE_FUNC_TEMPLATE = """
-//
-func MustParseTextValue(typename, valueText string, msgtips interface{}) interface{} {
-	switch typename {
-	case "bool":
-		b, err := strconv.ParseBool(valueText)
-		if err != nil {
-			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
-		}
-		return b
-
-	case "float32", "float64":
-		f, err := strconv.ParseFloat(valueText, 64)
-		if err != nil {
-			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
-		}
-		if typename == "float32" {
-			return float32(f)
-		}
-		return f // float64
-
-	case "uint", "uint8", "uint16", "uint32", "uint64":
-		n, err := strconv.ParseUint(valueText, 10, 64)
-		if err != nil {
-			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
-		}
-		if typename == "uint" {
-			return uint(n)
-		} else if typename == "uint8" {
-			return uint8(n)
-		} else if typename == "uint16" {
-			return uint16(n)
-		} else if typename == "uint32" {
-			return uint32(n)
-		}
-		return n // uint64
-
-	case "int", "int8", "int16", "int32", "int64":
-		n, err := strconv.ParseInt(valueText, 10, 64)
-		if err != nil {
-			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
-		}
-		if typename == "int" {
-			return int(n)
-		} else if typename == "int8" {
-			return int8(n)
-		} else if typename == "int16" {
-			return int16(n)
-		} else if typename == "int32" {
-			return int32(n)
-		}
-		return n // int64
-
-	default:
-		return valueText
-	}
-}
-"""
