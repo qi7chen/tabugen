@@ -10,13 +10,20 @@ import predef
 import util
 
 
-# ParseBoolean函数
-PARSE_FUNC_TEMPLATE = """
+CSharpStaticClassName = "AutogenConfigData"
+
+METHOD_TEMPLATE = """
     public static bool ParseBoolean(string text)
     {
         text = text.Trim().ToLower();
         return text == "1" || text == "true" || text == "yes" || text == "on";
     }
+    
+    public static string[] ReadFileLines(string name)
+    {
+        string filepath = string.Format("{0}csv/{1}.csv", ResourceManager.PersistentDataPath, name);
+        return File.ReadAllLines(filepath, Encoding.UTF8);
+    }  
 """
 
 
@@ -216,9 +223,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                 name = util.pad_spaces(name, max_name_len + 8)
                 content += '    public %s %s // %s\n' % (typename, name, field['comment'])
             elif not vec_done:
-                name = '%s[%d];' % (vec_name, len(vec_names))
+                name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
                 name = util.pad_spaces(name, max_name_len + 8)
-                content += '    public %s %s // %s\n' % (typename, name, field['comment'])
+                content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
                 vec_done = True
 
         return content
@@ -252,8 +259,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
         content = '%spublic static void Load() {\n' % self.TAB_SPACE
-        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"csv/%s.csv";\n' % (self.TAB_SPACE*2, struct['name'].lower())
-        content += '%sstring[] lines = File.ReadAllLines(csvpath, Encoding.UTF8);\n' % (self.TAB_SPACE*2)
+        content += '%sstring[] lines = %s.ReadFileLines(%s);\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
         content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE*2)
         content += '%s{\n' % (self.TAB_SPACE*2)
@@ -272,8 +278,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void Load() {\n' % self.TAB_SPACE
         content += '%sdata_ = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sstring csvpath = ResourceManager.PersistentDataPath + @"csv/%s.csv";\n' % (self.TAB_SPACE*2, struct['name'].lower())
-        content += '%sstring[] lines = File.ReadAllLines(csvpath, Encoding.UTF8);\n' % (self.TAB_SPACE*2)
+        content += '%sstring[] lines = %s.ReadFileLines(%s);\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
         content += "%sstring[] row = line.Split(',');\n" % (self.TAB_SPACE * 3)
@@ -302,7 +307,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         content += '    // get an item by key\n'
-        content += '    public %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    public static %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
         content += '        foreach (%s item in GetData())\n' % struct['name']
         content += '        {\n'
@@ -336,7 +341,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         content += '    // get a range of items by key\n'
-        content += '    List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    public static List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
         content += '        var range = new List<%s>();\n' % struct['name']
         content += '        foreach (%s item in GetData())\n' % struct['name']
@@ -358,14 +363,14 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     def gen_global_class(self, descriptors):
         content = ''
-        content += 'public class AutogenConfigData\n{\n'
+        content += 'public class %s\n{\n' % CSharpStaticClassName
         content += '    public static bool LoadAll() \n'
         content += '    {\n'
         for struct in descriptors:
             content += '        %s.Load();\n' % struct['name']
         content += '        return true;\n'
         content += '    }\n'
-        content += PARSE_FUNC_TEMPLATE
+        content += METHOD_TEMPLATE
         content += '}\n\n'
         return content
 
