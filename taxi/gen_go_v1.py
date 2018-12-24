@@ -293,26 +293,26 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             print('start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
-            if not no_data:
-                self.write_data_rows(struct, params)
             if not data_only:
                 content += self.generate(struct)
 
-        if data_only:
-            return
+        if not data_only:
+            filename = params.get(predef.OptionOutSourceFile, 'config.go')
+            filename = os.path.abspath(filename)
+            f = codecs.open(filename, 'w', 'utf-8')
+            f.writelines(content)
+            f.close()
+            print('wrote source to %s' % filename)
 
-        filename = params.get(predef.OptionOutSourceFile, 'config.go')
-        filename = os.path.abspath(filename)
-        f = codecs.open(filename, 'w', 'utf-8')
-        f.writelines(content)
-        f.close()
-        print('wrote source to %s' % filename)
+            gopath = os.getenv('GOPATH')
+            if gopath is not None:
+                cmd = gopath + '/bin/goimports -w ' + filename
+                print(cmd)
+                os.system(cmd)
 
-        gopath = os.getenv('GOPATH')
-        if gopath is not None:
-            cmd = gopath + '/bin/goimports -w ' + filename
-            print(cmd)
-            os.system(cmd)
+        if data_only or not no_data:
+            for struct in descriptors:
+                self.write_data_rows(struct, params)
 
 
 # Go类型映射
