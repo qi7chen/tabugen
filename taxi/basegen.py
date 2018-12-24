@@ -99,18 +99,26 @@ class CodeGeneratorBase:
                 struct["comment"] = comment
 
     # 将数据写入csv文件
-    def write_data_rows(self, struct, args):
+    def write_data_rows(self, struct, params):
         datadir = "."
-        if predef.OptionOutDataDir in args:
-            datadir = args[predef.OptionOutDataDir]
+        if predef.OptionOutDataDir in params:
+            datadir = params[predef.OptionOutDataDir]
 
+        # 置空不必要显示的内容
         rows = struct["data-rows"]
-        if struct['options'][predef.PredefParseKVMode]: # 置空不必要显示的内容
+        if struct['options'][predef.PredefParseKVMode]:
             typecol = int(struct['options'][predef.PredefValueTypeColumn])
             commentcol = int(struct['options'][predef.PredefCommentColumn])
             for row in rows:
                 row[typecol-1] = ''
                 row[commentcol-1] = ''
+        else:
+            if predef.OptionHideColumns in params:
+                text = struct["options"].get(predef.PredefHideColumns, "")
+                columns = [int(x.strip()) for x in text.split(',')]
+                for row in rows:
+                    for idx in columns:
+                        row[idx-1] = ''
 
         filename = "%s/%s.csv" % (datadir, struct['name'].lower())
         filename = os.path.abspath(filename)
