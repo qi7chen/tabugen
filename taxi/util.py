@@ -12,8 +12,9 @@ import codecs
 import unittest
 
 
-version_string = '1.2.4'
+version_string = '0.2.5'
 
+config_manager_name = "AutogenConfigManager"
 
 # 最长串的大小
 def max_field_length(table, key, f):
@@ -75,7 +76,7 @@ def is_ignored_filename(filename):
     return False
 
 
-# longest common prefix
+# 最长共同前缀
 def common_prefix(s1, s2):
     if len(s1) == 0 or len(s2) == 0:
         return ""
