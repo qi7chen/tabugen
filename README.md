@@ -28,7 +28,7 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 * taxi关注的是两个点，即导入和生成，对应代码中的设计有定义导入器(importer)和生成器(generator)，导入器把数据导为一个描述格式(descriptor)，生成器根据描述格式生成对应编程语言的代码；
 
-* taxi的设计目标是小巧简短，不希望做成大而全，也就是应该用其它格式（比如JSON）来做配置表的时候就别用excel；
+* taxi的设计目标是用精简合适的方案解决实际问题，不希望做成大而全框架，也就是在用其它格式（比如JSON）来做配置表更合适的时候请勿执着于excel；
 
 * taxi使用python3编写，依赖[openpyxl](https://openpyxl.readthedocs.io/)和[pymysql](https://github.com/PyMySQL/PyMySQL)，借助[pyinstaller](http://www.pyinstaller.org/)可以打包为执行档发布；
 
@@ -67,5 +67,5 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 # TO-DO
 
-* 增加Java和Lua语言的代码生成器
+* 增加Java语言的代码生成器
 * 支持excel表格内的嵌入类型定义
