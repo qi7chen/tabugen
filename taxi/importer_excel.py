@@ -9,7 +9,7 @@ import descriptor
 import predef
 import util
 
-
+# excel导入
 class ExcelImporter:
 
     def __init__(self):
@@ -27,6 +27,7 @@ class ExcelImporter:
         self.make_filenames()
 
 
+    # 从路径种搜索所有excel文件
     def enum_files(self, rootdir):
         files = []
         for dirpath, dirnames, filenames in os.walk(rootdir):
@@ -41,6 +42,7 @@ class ExcelImporter:
         return filenames
 
 
+    # 跳过忽略的文件名
     def make_filenames(self):
         filenames = []
         filename = self.options[predef.PredefFilenameOption]
@@ -68,6 +70,7 @@ class ExcelImporter:
                 self.filenames.append(filename)
 
 
+    # 解析excel表中的meta sheet
     def parse_meta_sheet(self, sheet):
         rows = util.read_sheet_to_csv(sheet)
         meta = {}
@@ -91,6 +94,7 @@ class ExcelImporter:
         self.meta = meta
 
 
+    # 解析数据列
     def parse_data_sheet(self, sheet):
         rows = util.read_sheet_to_csv(sheet)
         assert len(rows) > 0
@@ -171,6 +175,7 @@ class ExcelImporter:
         return struct
 
 
+    # 对齐数据行
     def pad_data_rows(self, rows, struct):
         # pad empty row
         max_row_len = len(struct['fields'])
@@ -223,7 +228,7 @@ class ExcelImporter:
         return new_rows
 
 
-    # import all
+    # 导入所有
     def import_all(self):
         descriptors = []
         for filename in self.filenames:
@@ -234,7 +239,7 @@ class ExcelImporter:
             descriptors.append(descriptor)
         return descriptors
 
-
+    # 导入单个文件
     def import_one(self, wb):
         sheet_names = wb.sheetnames
         assert len(sheet_names) > 0

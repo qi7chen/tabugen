@@ -30,6 +30,7 @@ class MySQLImporter:
             tablename = options.get('table', '')
             self.tables = self.get_all_table_status(options['db'], tablename)
 
+    # 建立数据库连接
     def make_conn(self, opt):
         host = opt.get("host", "localhost")
         port = int(opt.get("port", "3306"))
@@ -39,6 +40,7 @@ class MySQLImporter:
         conn = pymysql.connect(host=host, user=user, port=port, password=passwd, db=db, charset="utf8")
         self.conn = conn
 
+    # 执行查询
     def query_stmt(self, stmt):
         cur = self.conn.cursor()
         cur.execute(stmt)
@@ -47,6 +49,7 @@ class MySQLImporter:
         self.conn.commit()
         return rows
 
+    # 遍历数据库名称
     def get_database_names(self):
         names = []
         ignored_name = ["information_schema", "performance_schema", "mysql", "sys"]
@@ -56,6 +59,7 @@ class MySQLImporter:
                 names.append(name)
         return names
 
+    # 遍历所有table信息
     def get_all_table_status(self, schema, tablename):
         tables = []
         names = []
@@ -93,6 +97,7 @@ class MySQLImporter:
             tables.append(info)
         return tables
 
+    # 遍历table的column信息
     def get_table_column_status(self, name):
         columns = []
         for row in self.query_stmt("SHOW FULL COLUMNS FROM " + name):
@@ -105,6 +110,7 @@ class MySQLImporter:
             columns.append(column)
         return columns
 
+    # 导入所有
     def import_all(self):
         descriptors = []
         for info in self.tables:
@@ -113,6 +119,7 @@ class MySQLImporter:
             descriptors.append(struct)
         return descriptors
 
+    # 导入一个table
     def import_one(self, table):
         self.query_stmt("USE `%s`;" % table["schema"])
         name = table["name"]
@@ -162,6 +169,7 @@ class MySQLImporter:
         struct["fields"] = fields
         return struct
 
+# 数据库字段类型转换为编程语言识别类型
 def convert_mysql_type(name):
     name = name.lower()
     if name.startswith("tinyint"):
