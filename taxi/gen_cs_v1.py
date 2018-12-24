@@ -259,7 +259,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
         content = '%spublic static void Load() {\n' % self.TAB_SPACE
-        content += '%sstring[] lines = %s.ReadFileLines(%s);\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
+        content += '%sstring[] lines = %s.ReadFileLines("%s");\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
         content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE*2)
         content += '%s{\n' % (self.TAB_SPACE*2)
@@ -278,7 +278,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void Load() {\n' % self.TAB_SPACE
         content += '%sdata_ = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sstring[] lines = %s.ReadFileLines(%s);\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
+        content += '%sstring[] lines = %s.ReadFileLines("%s");\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
         content += "%sstring[] row = line.Split(',');\n" % (self.TAB_SPACE * 3)
