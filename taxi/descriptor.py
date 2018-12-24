@@ -62,6 +62,8 @@ abstract_type_names = {
 	"any":   Type_Any,
 }
 
+interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64']
+floating_types = ['float', 'float32', 'float64']
 
 # get name of an integer type
 def get_name_of_type(t):
@@ -98,13 +100,12 @@ def get_type_by_name(name):
 
 # is integer type
 def is_integer_type(typ):
-    table = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64', ]
-    return typ in table
+    return typ in interger_types
 
 
 # is floating point
 def is_floating_type(typ):
-    return typ == 'float' or typ == 'float32' or typ == 'float64'
+    return typ in floating_types
 
 
 # 是否抽象类型, map, array
@@ -123,10 +124,22 @@ def array_element_type(typename):
 
 # map<int, string> --> int, string
 def map_key_value_types(typename):
+    keytype = ''
+    valtype = ''
     assert typename.startswith('map<'), typename
-    names = [x.strip() for x in typename[4:-1].split(' ')]
-    assert len(names) == 2
-    return names[0], names[1]
+    typename = typename[4:]
+    for v in type_names.values():
+        if typename.startswith(v):
+            keytype = v
+            break
+    typename = typename[len(keytype) + 1:]
+    for v in type_names.values():
+        if typename.startswith(v):
+            valtype = v
+            break
+
+    assert len(keytype) > 0 and len(valtype) > 0
+    return keytype, valtype
 
 
 class TestTypeNames(unittest.TestCase):
