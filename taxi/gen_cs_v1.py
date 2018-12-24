@@ -58,7 +58,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = AutogenConfigData.ParseBoolean(%s);\n' % (space, name, valuetext)
+            content += '%s%s = %s.ParseBoolean(%s);\n' % (space, name, util.config_manager_name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, cs_box_type(typename), valuetext)
         return content
@@ -407,22 +407,25 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             print('start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
-            if not no_data:
-                self.write_data_rows(struct, params)
             if not data_only:
                 content += self.generate(struct)
 
-        content += self.gen_global_class(descriptors)
+        if not data_only:
+            content += self.gen_global_class(descriptors)
 
-        if 'pkg' in params:
-            content += '\n}\n'  # namespace
+            if 'pkg' in params:
+                content += '\n}\n'  # namespace
 
-        filename = params.get(predef.OptionOutSourceFile, 'ConfigData.cs')
-        filename = os.path.abspath(filename)
-        f = codecs.open(filename, 'w', 'utf-8')
-        f.writelines(content)
-        f.close()
-        print('wrote to %s' % filename)
+            filename = params.get(predef.OptionOutSourceFile, 'AutogenConfig.cs')
+            filename = os.path.abspath(filename)
+            f = codecs.open(filename, 'w', 'utf-8')
+            f.writelines(content)
+            f.close()
+            print('wrote to %s' % filename)
+
+        if not no_data or data_only:
+            for struct in descriptors:
+                self.write_data_rows(struct, params)
 
 
 # C#类型映射
