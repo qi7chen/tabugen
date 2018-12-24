@@ -103,8 +103,16 @@ class CodeGeneratorBase:
         datadir = "."
         if predef.OptionOutDataDir in args:
             datadir = args[predef.OptionOutDataDir]
-        filename = "%s/%s.csv" % (datadir, struct['name'].lower())
+
         rows = struct["data-rows"]
+        if struct['options'][predef.PredefParseKVMode]: # 置空不必要显示的内容
+            typecol = int(struct['options'][predef.PredefValueTypeColumn])
+            commentcol = int(struct['options'][predef.PredefCommentColumn])
+            for row in rows:
+                row[typecol-1] = ''
+                row[commentcol-1] = ''
+
+        filename = "%s/%s.csv" % (datadir, struct['name'].lower())
         filename = os.path.abspath(filename)
         f = codecs.open(filename, "w", "utf-8")
         w = csv.writer(f)

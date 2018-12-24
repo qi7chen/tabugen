@@ -264,9 +264,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    {\n'
         content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
         content += '    }\n'
-        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
-        content += '    CSerializer serializer(path.c_str());\n'
-        content += '    StringPiece content((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
         content += '    vector<vector<StringPiece>> rows;\n'
         content += '    auto lines = Split(content, "\\r\\n");\n'
         content += '    BEATS_ASSERT(!lines.empty());\n'
@@ -281,10 +279,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '            }\n'
         content += '        }\n'
         content += '    }\n'
-        content += '    %s* dataptr = BEATS_NEW(%s, "autogen", filepath);\n' % (struct['name'], struct['name'])
+        content += '    %s* dataptr = new %s();\n' % (struct['name'], struct['name'])
         content += '    %s::ParseFromRows(rows, dataptr);\n' % struct['name']
         varname = self.get_instance_data_name(struct['name'])
-        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
+        content += '    delete %s;\n' % varname
         content += '    %s = dataptr;\n' % varname
         content += '    return 0;\n'
         content += '}\n\n'
@@ -304,10 +302,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    {\n'
         content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
         content += '    }\n'
-        content += '    vector<%s>* dataptr = BEATS_NEW(vector<%s>, "autogen", filepath);\n' % (struct['name'], struct['name'])
-        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
-        content += '    CSerializer serializer(path.c_str());\n'
-        content += '    StringPiece content((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
+        content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
         content += '    auto lines = Split(content, "\\r\\n");\n'
         content += '    BEATS_ASSERT(!lines.empty());\n'
         content += '    for (size_t i = 0; i < lines.size(); i++)\n'
@@ -323,7 +319,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '            }\n'
         content += '        }\n'
         content += '    }\n'
-        content += '    BEATS_SAFE_DELETE(%s);\n' % varname
+        content += '    delete %s;\n' % varname
         content += '    %s = dataptr;\n' % varname
         content += '    return 0;\n'
         content += '}\n\n'
@@ -435,8 +431,17 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'void %s::ClearAll()\n' % util.config_manager_name
         content += '{\n'
         for struct in descriptors:
-            content += '    BEATS_SAFE_DELETE(%s);\n' % self.get_instance_data_name(struct['name'])
+            content += '    delete %s;\n' % self.get_instance_data_name(struct['name'])
+            content += '    %s = nullptr;\n' % self.get_instance_data_name(struct['name'])
         content += '}\n\n'
+
+        content += '//Load content of an asset file\n'
+        content += 'std::string %s::ReadFileContent(const std::string& filepath)\n' % util.config_manager_name
+        content += '{\n'
+        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
+        content += '    CSerializer serializer(path.c_str());\n'
+        content += '    return string((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '}\n\n\n'
 
         return content
 
@@ -476,8 +481,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         header_content += '    // Load all configurations\n'
         header_content += '    static void LoadAll();\n\n'
         header_content += '    // Clear all configurations\n'
-        header_content += '    static void ClearAll();\n'
-        header_content += '}\n\n'
+        header_content += '    static void ClearAll();\n\n'
+        header_content += '    //Load content of an asset file\n'
+        header_content += '    static std::string ReadFileContent(const std::string& filepath);\n'
+        header_content += '};\n\n'
 
         cpp_include_headers = [
             '#include "stdafx.h"',
@@ -503,37 +510,38 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             print('start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
-            if not no_data:
-                self.write_data_rows(struct, params)
+
             if not data_only:
                 header_content += self.gen_cpp_header(struct)
                 class_content += self.gen_cpp_source(struct)
 
-        if data_only:
-            return
+        if not data_only:
+            static_define_content = 'namespace \n{\n'
+            for struct in descriptors:
+                static_define_content += self.gen_global_static_define(struct)
+            static_define_content += '}\n\n'
 
-        static_define_content = 'namespace {\n'
-        for struct in descriptors:
-            static_define_content += self.gen_global_static_define(struct)
-        static_define_content += '}\n\n'
+            if 'pkg' in params:
+                header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
+            outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
+            filename = outputfile + '.h'
+            filename = os.path.abspath(filename)
+            util.compare_and_save_content(filename, header_content, 'gbk')
+            print('wrote header file to', filename)
 
-        if 'pkg' in params:
-            header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
-        outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
-        filename = outputfile + '.h'
-        filename = os.path.abspath(filename)
-        util.compare_and_save_content(filename, header_content, 'gbk')
-        print('wrote header file to', filename)
+            cpp_content += static_define_content
+            cpp_content += self.gen_manager_static_method(descriptors)
+            cpp_content += class_content
+            if 'pkg' in params:
+                cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
+            filename = outputfile + '.cpp'
+            filename = os.path.abspath(filename)
+            util.compare_and_save_content(filename, cpp_content, 'gbk')
+            print('wrote source file to', filename)
 
-        cpp_content += static_define_content
-        cpp_content += self.gen_manager_static_method(descriptors)
-        cpp_content += class_content
-        if 'pkg' in params:
-            cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
-        filename = outputfile + '.cpp'
-        filename = os.path.abspath(filename)
-        util.compare_and_save_content(filename, cpp_content, 'gbk')
-        print('wrote source file to', filename)
+        if not no_data or data_only:
+            for struct in descriptors:
+                self.write_data_rows(struct, params)
 
 
 # C++类型映射

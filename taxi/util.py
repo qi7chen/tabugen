@@ -126,7 +126,7 @@ def read_sheet_to_csv(sheet):
     return rows
 
 
-# compare file content and save to file if not equal
+# 比较内容不相同时再写入文件
 def compare_and_save_content(filename, content, enc):
     # first write content to a temporary file
     tmp_filename = '%s/taxi_%s' % (tempfile.gettempdir(), random_word(10))
@@ -137,6 +137,7 @@ def compare_and_save_content(filename, content, enc):
     # move to destination path if content not equal
     if os.path.isfile(filename) and filecmp.cmp(tmp_filename, filename):
         print('file content not modified', filename)
+        os.remove(tmp_filename)
     else:
         shutil.move(tmp_filename, filename)
 
