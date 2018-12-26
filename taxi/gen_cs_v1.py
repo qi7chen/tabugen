@@ -19,10 +19,35 @@ METHOD_TEMPLATE = """
         return text == "1" || text == "true" || text == "yes" || text == "on";
     }
     
-    public static string[] ReadFileLines(string name)
+    public static List<string> ReadTextToLines(string content)
     {
-        string filepath = string.Format("{0}csv/{1}.csv", ResourceManager.PersistentDataPath, name);
-        return File.ReadAllLines(filepath, Encoding.UTF8);
+        List<string> lines = new List<String>();
+        using (StringReader reader = new StringReader(content))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                lines.Add(line);
+            }
+        }
+        return lines;
+    }    
+    
+    public static IEnumerator ReadAssetFileToLines(string filename, Action<List<string>> fn)
+    {
+        string filepath = Path.Combine(Application.streamingAssetsPath, "csv", filename);
+        var www = UnityWebRequest.Get(filepath);
+        www.SendWebRequest();
+        yield return www;
+
+        if (www.isHttpError || www.isNetworkError)
+        {
+            throw new IOException(string.Format("Load asset {0}: {1}", filepath, www.error));
+        }
+
+        string content = www.downloadHandler.text;
+        var lines = ReadTextToLines(content);
+        fn(lines);
     }  
 """
 
@@ -128,7 +153,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRows(List<List<string>> rows) {\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%spublic static %s ParseFromRows(List<List<string>> rows)\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s{\n' % self.TAB_SPACE
         content += '%sif (rows.Count < %d) {\n' % (self.TAB_SPACE*2, len(rows))
         content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Count));\n' % (self.TAB_SPACE*3, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE*2)
@@ -169,7 +195,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRow(IList<string> row) {\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%spublic static %s ParseFromRow(IList<string> row)\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s{\n' % self.TAB_SPACE
         content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
         content += '%sthrow new ArgumentException(string.Format("%s: row length out of index {0}", row.Count));\n' % (self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE*2)
@@ -258,15 +285,15 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         validx, valfield = self.get_field_by_column_index(struct, valcol)
         typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
-        content = '%spublic static void Load() {\n' % self.TAB_SPACE
-        content += '%sstring[] lines = %s.ReadFileLines("%s");\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
+        content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
+        content += '%s{\n' % self.TAB_SPACE
         content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE*2)
         content += '%s{\n' % (self.TAB_SPACE*2)
-        content += "%sstring[] row = line.Split(',');\n" % (self.TAB_SPACE*3)
+        content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE*3)
         content += '%srows.Add(row.ToList());\n' % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%sdata_ = %s.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sdata_ = ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -276,13 +303,13 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             return self.gen_kv_struct_load_method(struct)
 
         content = ''
-        content = '%spublic static void Load() {\n' % self.TAB_SPACE
+        content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
+        content += '%s{\n' % self.TAB_SPACE
         content += '%sdata_ = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sstring[] lines = %s.ReadFileLines("%s");\n' % (self.TAB_SPACE*2, CSharpStaticClassName, struct['name'].lower())
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += "%sstring[] row = line.Split(',');\n" % (self.TAB_SPACE * 3)
-        content += "%svar obj = %s.ParseFromRow(row);\n" % (self.TAB_SPACE * 3, struct['name'])
+        content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)
+        content += "%svar obj = ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
         content += "%sdata_.Add(obj);\n" % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
@@ -364,11 +391,18 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def gen_global_class(self, descriptors):
         content = ''
         content += 'public class %s\n{\n' % CSharpStaticClassName
-        content += '    public static bool LoadAll() \n'
+        content += '    public static IEnumerator LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
         for struct in descriptors:
-            content += '        %s.Load();\n' % struct['name']
-        content += '        return true;\n'
+            content += '        yield return ReadAssetFileToLines("%s.csv", delegate (List<string> lines)\n' % struct['name'].lower()
+            content += '        {\n'
+            content += '            %s.LoadFromLines(lines);\n' % struct['name']
+            content += '        });\n'
+        content += '\n'
+        content += '        if (completeFunc != null)\n'
+        content += '        {\n'
+        content += '            completeFunc();\n'
+        content += '        }\n'
         content += '    }\n'
         content += METHOD_TEMPLATE
         content += '}\n\n'
@@ -392,10 +426,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
         content += 'using System;\n'
         content += 'using System.IO;\n'
-        content += 'using System.Text;\n'
         content += 'using System.Linq;\n'
         content += 'using System.Collections;\n'
         content += 'using System.Collections.Generic;\n'
+        content += 'using UnityEngine;\n'
+        content += 'using UnityEngine.Networking;\n'
 
         if 'pkg' in params:
             content += '\nnamespace %s\n{\n\n' % params['pkg']
