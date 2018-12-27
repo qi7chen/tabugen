@@ -261,15 +261,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def gen_static_data(self, struct):
         content = '\n'
         if struct['options'][predef.PredefParseKVMode]:
-            content += '    private static %s data_ = new %s(); // %s\n\n' % (struct['name'], struct['name'], struct['comment'])
-            content += '    public static %s GetData() {\n' % struct['name']
-            content += '        return data_;\n'
-            content += '    }\n\n'
+            content += '    private static %s data_ = null; // %s\n\n' % (struct['name'], struct['comment'])
+            content += '    public static %s Instance { get { return data_;} }\n\n' % struct['name']
         else:
-            content += '    private static List<%s> data_ = new List<%s>(); // %s\n\n' % (struct['name'], struct['name'], struct['comment'])
-            content += '    public static List<%s> GetData() {\n' % struct['name']
-            content += '        return data_;\n'
-            content += '    }\n\n'
+            content += '    private static List<%s> data_ = null; // %s\n\n' % (struct['name'], struct['comment'])
+            content += '    public static List<%s> Data { get { return data_; } } \n\n' % struct['name']
 
         return content
 
@@ -336,7 +332,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '    // get an item by key\n'
         content += '    public static %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
-        content += '        foreach (%s item in GetData())\n' % struct['name']
+        content += '        foreach (%s item in Data)\n' % struct['name']
         content += '        {\n'
         content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'get-keys')
         content += '            {\n'
@@ -371,7 +367,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '    public static List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
         content += '        var range = new List<%s>();\n' % struct['name']
-        content += '        foreach (%s item in GetData())\n' % struct['name']
+        content += '        foreach (%s item in Data)\n' % struct['name']
         content += '        {\n'
         content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'range-keys')
         content += '            {\n'
