@@ -33,21 +33,13 @@ METHOD_TEMPLATE = """
         return lines;
     }    
     
-    public static IEnumerator ReadAssetFileToLines(string filename, Action<List<string>> fn)
+    public static void ReadAssetFileToLines(string filename, Action<List<string>> fn)
     {
-        string filepath = Path.Combine(Application.streamingAssetsPath, "csv", filename);
-        var www = UnityWebRequest.Get(filepath);
-        www.SendWebRequest();
-        yield return www;
-
-        if (www.isHttpError || www.isNetworkError)
-        {
-            throw new IOException(string.Format("Load asset {0}: {1}", filepath, www.error));
-        }
-
-        string content = www.downloadHandler.text;
-        var lines = ReadTextToLines(content);
-        fn(lines);
+        string filepath = string.Format("csv/{0}", filename);
+        AssetsManager.GetStreamingContent(filepath, (content) => {
+            var lines = ReadTextToLines(content);
+            fn(lines);
+        });
     }  
 """
 
@@ -387,18 +379,17 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def gen_global_class(self, descriptors):
         content = ''
         content += 'public class %s\n{\n' % CSharpStaticClassName
-        content += '    public static IEnumerator LoadAllConfig(Action completeFunc) \n'
+        content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
-        for struct in descriptors:
-            content += '        yield return ReadAssetFileToLines("%s.csv", delegate (List<string> lines)\n' % struct['name'].lower()
+        for i in range(len(descriptors)):
+            struct = descriptors[i]
+            content += '        ReadAssetFileToLines("%s.csv", delegate (List<string> lines)\n' % struct['name'].lower()
             content += '        {\n'
             content += '            %s.LoadFromLines(lines);\n' % struct['name']
-            content += '        });\n'
-        content += '\n'
-        content += '        if (completeFunc != null)\n'
-        content += '        {\n'
-        content += '            completeFunc();\n'
-        content += '        }\n'
+            if i + 1 == len(descriptors):
+                content += '\n'
+                content += '            completeFunc?.Invoke();\n'
+            content += '        });\n\n'
         content += '    }\n'
         content += METHOD_TEMPLATE
         content += '}\n\n'
