@@ -253,11 +253,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def gen_static_data(self, struct):
         content = '\n'
         if struct['options'][predef.PredefParseKVMode]:
-            content += '    private static %s data_ = null; // %s\n\n' % (struct['name'], struct['comment'])
-            content += '    public static %s Instance { get { return data_;} }\n\n' % struct['name']
+            content += '    public static %s Instance { get; private set; }\n\n' % struct['name']
         else:
-            content += '    private static List<%s> data_ = null; // %s\n\n' % (struct['name'], struct['comment'])
-            content += '    public static List<%s> Data { get { return data_; } } \n\n' % struct['name']
+            content += '    public static List<%s> Data { get; private set; } \n\n' % struct['name']
 
         return content
 
@@ -281,7 +279,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE*3)
         content += '%srows.Add(row.ToList());\n' % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%sdata_ = ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
+        content += '%sInstance = ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -298,7 +296,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '%s{\n' % (self.TAB_SPACE * 2)
         content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)
         content += "%svar obj = ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        content += "%sdata_.Add(obj);\n" % (self.TAB_SPACE * 3)
+        content += "%sData.Add(obj);\n" % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
