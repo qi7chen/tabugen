@@ -407,11 +407,11 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '        {\n'
         content += '            range.push_back(&dataptr->at(i));\n'
         content += '        }\n'
-        content += '        else \n'
-        content += '        {\n'
-        content += '            if (!range.empty()) \n'
-        content += '                break;\n'
-        content += '        }\n'
+        # content += '        else \n'
+        # content += '        {\n'
+        # content += '            if (!range.empty()) \n'
+        # content += '                break;\n'
+        # content += '        }\n'
         content += '    }\n'
         content += '    BEATS_ASSERT(!range.empty(), "%s.GetRange: no item found%s", %s);\n' % (
             struct['name'], ' {}' * len(arg_names), ', '.join(arg_names))
