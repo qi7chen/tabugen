@@ -12,7 +12,8 @@ import codecs
 import unittest
 
 
-version_string = '0.2.5'
+
+version_string = '0.3.1'
 
 config_manager_name = "AutogenConfigManager"
 
@@ -112,6 +113,17 @@ def is_vector_fields(prev, cur):
         return n1 + 1 == n2
     return False
 
+#
+def remove_suffix_number(text):
+    n = len(text)
+    if n == 0:
+        return text
+    while n >= 0:
+        if 48 <= ord(text[n - 1]) <= 57:  # ['0', '9']
+            n -= 1
+        else:
+            break
+    return text[:n]
 
 def read_sheet_to_csv(sheet):
     rows = []
@@ -143,6 +155,17 @@ def compare_and_save_content(filename, content, enc):
 
     
 class TestUtils(unittest.TestCase):
+
+    def test_remove_suffix_number(self):
+        test_data = [
+            ('', ''),
+            ('1', ''),
+            ('test01', 'test'),
+        ]
+        for pair in test_data:
+            out = remove_suffix_number(pair[0])
+            print(pair[0], '-->', out)
+            self.assertEqual(pair[1], out)
 
     def test_parse_args(self):
         text = 'a=b,c=d,e=f'

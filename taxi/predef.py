@@ -30,8 +30,9 @@ PredefCommentColumn = "comment-column"      # KV模式中的注释所在列
 PredefGetMethodKeys = "get-keys"        # 生成的Get()函数的参数列表
 PredefRangeMethodKeys = "range-keys"    # 生成的GetRange()函数的参数列表
 
-PredefInnerClassRange = "inner-class-range"
-PredefInnerClassName = "inner-class-name"
+PredefInnerTypeRange = "inner-type-range"
+PredefInnerTypeClass = "inner-type-class"
+PredefInnerTypeName = "inner-type-name"
 
 OptionOutDataDir = "outdata-dir"        # 输出的csv文件路径
 OptionOutSourceFile = "out-src-file"    # 输出的源文件路径
@@ -42,8 +43,8 @@ OptionArrayDelimeter = "array-delim"    # array类型的分隔符，如|，不�
 OptionMapDelimeters = "map-delim"       # map类型的分隔符，如;=，不能使用csv的逗号
 OptionHideColumns = "hide-column"       # 开启隐藏模式
 
-DefaultArrayDelimiter = '\\'    # 默认的array分隔符号
-DefaultMapDelimiters = ';='     # 默认的map分隔符号
+DefaultArrayDelimiter = '|'    # 默认的array分隔符号
+DefaultMapDelimiters = '|='     # 默认的map分隔符号
 
 
 #

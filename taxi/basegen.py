@@ -6,6 +6,7 @@ import os
 import csv
 import codecs
 import re
+import json
 import predef
 import util
 
@@ -115,10 +116,12 @@ class CodeGeneratorBase:
         else:
             if predef.OptionHideColumns in params:
                 text = struct["options"].get(predef.PredefHideColumns, "")
-                columns = [int(x.strip()) for x in text.split(',')]
-                for row in rows:
-                    for idx in columns:
-                        row[idx-1] = ''
+                text = text.strip()
+                if len(text) > 0:
+                    columns = [int(x.strip()) for x in text.split(',')]
+                    for row in rows:
+                        for idx in columns:
+                            row[idx-1] = ''
 
         filename = "%s/%s.csv" % (datadir, struct['name'].lower())
         filename = os.path.abspath(filename)
@@ -129,7 +132,7 @@ class CodeGeneratorBase:
         print("wrote csv data to", filename)
 
     # 获取生成数组字段的范围
-    def get_field_range(self, struct, camel_case_name=False):
+    def get_vec_field_range(self, struct, camel_case_name=False):
         auto_vector = struct["options"].get(predef.OptionAutoVector, "off")
         if auto_vector == "off":
             return [], ""
@@ -155,34 +158,61 @@ class CodeGeneratorBase:
         name = re.sub("[0-9]", "", name)    # remove number char
         return names, name
 
-    # 内部class
-    def setup_inner_class(self, struct):
-        if predef.PredefParseKVMode in struct["options"]:
-            return  # not available in KV mode
+    #
+    def get_inner_class_range(self, struct):
+        if predef.PredefInnerTypeRange not in struct["options"]:
+            return 0, 0, 0
 
-        if predef.PredefInnerClassRange not in struct["options"]:
-            return
+        text = struct["options"].get(predef.PredefInnerTypeRange, "")
+        text = text.strip()
+        if len(text) == 0:
+            return 0, 0, 0
+
+        numbers = [int(x) for x in text.split(',')]
+        assert len(numbers) == 3
 
         fields = struct['fields']
-        inner_start = 1
-        inner_end = len(fields)
-        inner_step = 1
-        name = struct["options"][predef.PredefInnerClassName]
-        field_range = struct["options"][predef.PredefInnerClassRange].split(',')
-        assert len(field_range) >= 2
-        inner_step = field_range[0]
-        inner_start = field_range[1]
-        assert inner_step < len(fields)
-        inner_start < len(fields)
-        if len(field_range) >= 3:
-            inner_end = field_range[2]
-            assert inner_end < len(fields)
+        start = numbers[0] - 1
+        assert start > 0, text
+        end = numbers[1]
+        if end < 0:
+            end = len(fields)
+        else:
+            end += 1
+        step = numbers[2]
+        assert step >= 1, numbers
 
-        new_fields = []
-        for i in range(len(fields)):
-            if i < inner_start:
-                new_fields.append(fields[i])
+        assert (end - start) >= step, text
+        assert (end - start) % step == 0, text
+
+        return start, end, step
+
+    #内部嵌入的class
+    def get_inner_class_fields(self, struct, camel_case_name=False):
+        if predef.PredefInnerTypeRange not in struct["options"]:
+            return [], []
+
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        assert len(inner_class_type) > 0
+        inner_class_name = struct["options"][predef.PredefInnerTypeName]
+        assert len(inner_class_name) > 0
+
+        start, end, step = self.get_inner_class_range(struct)
+        fields = struct['fields']
+        inner_fields = []
+        for n in range(start, start + step):
+            field = fields[n]
+            content = json.dumps(field, allow_nan=False, ensure_ascii=False)  # use json to make a clone
+            newobj = json.loads(content)
+            newobj['name'] = util.remove_suffix_number(newobj['name'])
+            inner_fields.append(newobj)
+
+        field_names = []
+        for n in range(start, end):
+            field = fields[n]
+            if camel_case_name:
+                field_names.append(field["camel_case_name"])
             else:
-                break
+                field_names.append(field["name"])
 
-
+        return field_names, inner_fields
