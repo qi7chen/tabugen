@@ -4,11 +4,9 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-
 import argparse
 import registry
 import util
-
 
 def run(args):
     generator = registry.get_generator(args.generator)

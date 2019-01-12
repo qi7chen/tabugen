@@ -9,13 +9,17 @@ import shutil
 import tempfile
 import filecmp
 import codecs
+import datetime
 import unittest
-
 
 
 version_string = '0.3.1'
 
 config_manager_name = "AutogenConfigManager"
+
+
+def current_time():
+    return datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
 
 # 最长串的大小
 def max_field_length(table, key, f):
