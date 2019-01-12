@@ -95,30 +95,58 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '%s}\n' % space
         return content
 
-
     #生成struct定义
     def gen_go_struct(self, struct):
+        content = ''
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
             fields = self.get_struct_kv_fields(struct)
 
-        vec_done = False
-        vec_names, vec_name = self.get_field_range(struct)
+        inner_class_done = False
+        inner_typename = ''
+        inner_var_name = ''
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        if len(inner_fields) > 0:
+            content += self.gen_go_inner_struct(struct, inner_fields)
+            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
+            inner_var_name = struct["options"][predef.PredefInnerTypeName]
+            inner_typename = '[]%s' % inner_type_class
 
-        content = '// %s\n' % struct['comment']
+        vec_done = False
+        vec_names, vec_name = self.get_vec_field_range(struct)
+
+        content += '// %s\n' % struct['comment']
         content += 'type %s struct\n{\n' % struct['camel_case_name']
         for field in fields:
-            typename = map_go_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
+            field_name = field['name']
+            if field_name in inner_field_names:
+                if not inner_class_done:
+                    content += '    %s %s; //\n' % (inner_var_name, inner_typename)
+                    inner_class_done = True
+            else:
+                typename = map_go_type(field['original_type_name'])
+                assert typename != "", field['original_type_name']
 
-            if field['name'] not in vec_names:
-                content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-            elif not vec_done:
-                vec_done = True
-                content += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
+                if field_name not in vec_names:
+                    content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
+                elif not vec_done:
+                    vec_done = True
+                    content += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
 
         return content
 
+    # 内部class生成
+    def gen_go_inner_struct(self, struct, inner_fields):
+        content = ''
+        class_name = struct["options"][predef.PredefInnerTypeClass]
+        content += 'type %s struct {\n' % class_name
+        for field in inner_fields:
+            typename = map_go_type(field['original_type_name'])
+            assert typename != "", field['original_type_name']
+            content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
+        content += '};\n\n'
+
+        return content
 
     # KV模式的ParseFromRow方法
     def gen_kv_parse_method(self, struct):
@@ -171,8 +199,11 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
+        inner_class_done = False
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+
         vec_idx = 0
-        vec_names, vec_name = self.get_field_range(struct)
+        vec_names, vec_name = self.get_vec_field_range(struct)
 
         content = ''
         content += 'func (p *%s) ParseFromRow(row []string) error {\n' % struct['camel_case_name']
@@ -182,26 +213,55 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         idx = 0
         for field in struct['fields']:
-            content += '\tif row[%d] != "" {\n' % idx
-            origin_type_name = field['original_type_name']
-            typename = map_go_type(origin_type_name)
-            field_name = field['camel_case_name']
-            valuetext = 'row[%d]' % idx
-            if origin_type_name.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, array_delim, 2)
-            elif origin_type_name.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', field['original_type_name'], field['name'], valuetext, map_delims, 2)
+            fname = field['name']
+            prefix = 'p.'
+            if fname in inner_field_names:
+                if not inner_class_done:
+                    inner_class_done = True
+                    content += self.gen_inner_class_parse(struct, prefix, inner_fields)
             else:
-                if field_name in vec_names:
-                    name = '%s[%d]' % (vec_name, vec_idx)
-                    content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, 'row')
-                    vec_idx += 1
+                content += '\tif row[%d] != "" {\n' % idx
+                origin_type_name = field['original_type_name']
+                typename = map_go_type(origin_type_name)
+                field_name = field['camel_case_name']
+                valuetext = 'row[%d]' % idx
+                if origin_type_name.startswith('array'):
+                    content += self.gen_field_array_assign_stmt(prefix, field['original_type_name'], fname, valuetext, array_delim, 2)
+                elif origin_type_name.startswith('map'):
+                    content += self.gen_field_map_assign_stmt(prefix, field['original_type_name'], fname, valuetext, map_delims, 2)
                 else:
-                    content += self.gen_field_assgin_stmt('p.'+field_name, typename, valuetext, 2, 'row')
-            content += '%s}\n' % self.TAB_SPACE
+                    if field_name in vec_names:
+                        name = '%s[%d]' % (vec_name, vec_idx)
+                        content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 2, 'row')
+                        vec_idx += 1
+                    else:
+                        content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 2, 'row')
+                content += '%s}\n' % self.TAB_SPACE
             idx += 1
         content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
+        return content
+
+    # 生成内部class的赋值方法
+    def gen_inner_class_parse(self, struct, prefix, inner_fields):
+        content = ''
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        start, end, step = self.get_inner_class_range(struct)
+        assert start > 0 and end > 0 and step > 1
+        content += '    for i := %s; i < %s; i += %s {\n' % (start, end, step)
+        content += '        var item %s;\n' % inner_class_type
+        for n in range(step):
+            field = inner_fields[n]
+            origin_type = field['original_type_name']
+            typename = map_go_type(origin_type)
+            field_name = field['camel_case_name']
+            valuetext = 'row[i + %d]' % n
+            content += '        if row[i + %d] != "" {\n' % n
+            content += self.gen_field_assgin_stmt('item.' + field_name, typename, valuetext, 2, 'row')
+            content += '        }\n'
+        content += '        %s%s = append(%s%s, item);\n' % (prefix, inner_var_name, prefix, inner_var_name)
+        content += '    }\n'
         return content
 
 

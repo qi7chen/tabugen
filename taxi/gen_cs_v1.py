@@ -21,7 +21,7 @@ METHOD_TEMPLATE = """
     
     public static List<string> ReadTextToLines(string content)
     {
-        List<string> lines = new List<String>();
+        List<string> lines = new List<string>();
         using (StringReader reader = new StringReader(content))
         {
             string line;
@@ -42,7 +42,6 @@ METHOD_TEMPLATE = """
         });
     }  
 """
-
 
 
 # C# code generator
@@ -154,7 +153,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         idx = 0
         for row in rows:
-            content += '%sif (rows[%d][%d] != "") {\n' % (self.TAB_SPACE*2, idx, validx)
+            content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx, validx)
             name = rows[idx][keyidx].strip()
             name = util.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
@@ -176,6 +175,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     # 生成ParseFromRow方法
     def gen_parse_method(self, struct):
+        content = ''
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
 
@@ -183,9 +183,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
-        vec_names, vec_name = self.get_field_range(struct)
+        vec_names, vec_name = self.get_vec_field_range(struct)
 
-        content = ''
+        inner_class_done = False
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+
         content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
         content += '%spublic static %s ParseFromRow(IList<string> row)\n' % (self.TAB_SPACE, struct['camel_case_name'])
         content += '%s{\n' % self.TAB_SPACE
@@ -195,58 +197,126 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 2, struct['camel_case_name'], struct['camel_case_name'])
 
         idx = 0
+        prefix = 'obj.'
         for field in struct['fields']:
-            content += '%sif (row[%d] != "") {\n' % (self.TAB_SPACE*2, idx)
-            origin_type_name = field['original_type_name']
-            typename = map_cs_type(origin_type_name)
             field_name = field['name']
-            valuetext = 'row[%d]' % idx
-            if origin_type_name.startswith('array'):
-                content += self.gen_field_array_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, array_delim, 3)
-            elif origin_type_name.startswith('map'):
-                content += self.gen_field_map_assign_stmt('obj.', field['original_type_name'], field['name'], valuetext, map_delims, 3)
+            if field_name in inner_field_names:
+                if not inner_class_done:
+                    inner_class_done = True
+                    content += self.gen_cs_inner_class_assign(struct, prefix, inner_fields)
             else:
-                if field_name in vec_names:
-                    name = '%s[%d]' % (vec_name, vec_idx)
-                    content += self.gen_field_assgin_stmt('obj.'+name, typename, valuetext, 3)
-                    vec_idx += 1
+                content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx)
+                origin_type_name = field['original_type_name']
+                typename = map_cs_type(origin_type_name)
+                valuetext = 'row[%d]' % idx
+                if origin_type_name.startswith('array'):
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
+                elif origin_type_name.startswith('map'):
+                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, map_delims, 3)
                 else:
-                    content += self.gen_field_assgin_stmt('obj.'+field_name, typename, valuetext, 3)
-            content += '%s}\n' % (self.TAB_SPACE*2)
+                    if field_name in vec_names:
+                        name = '%s[%d]' % (vec_name, vec_idx)
+                        content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
+                        vec_idx += 1
+                    else:
+                        content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
+                content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
         content += '%sreturn obj;\n' % (self.TAB_SPACE*2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
+    # 生成内部类的parse
+    def gen_cs_inner_class_assign(self, struct, prefix, inner_fields):
+        content = ''
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        start, end, step = self.get_inner_class_range(struct)
+        assert start > 0 and end > 0 and step > 1
+        content += '        for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
+        content += '        {\n'
+        content += '            %s item = new %s();\n' % (inner_class_type, inner_class_type)
+        for n in range(step):
+            field = inner_fields[n]
+            origin_type = field['original_type_name']
+            typename = map_cs_type(origin_type)
+            valuetext = 'row[i + %d]' % n
+            content += '            if (row[i + %d].Length > 0) \n' % n
+            content += '            {\n'
+            content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
+            content += '            }\n'
+        content += '            %s%s.Add(item);\n' % (prefix, inner_var_name)
+        content += '        }\n'
+        return content
 
     # 生成结构体定义
     def gen_cs_struct(self, struct):
+        content = ''
+
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
             fields = self.get_struct_kv_fields(struct)
 
+        inner_class_done = False
+        inner_typename = ''
+        inner_var_name = ''
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        if len(inner_fields) > 0:
+            content += self.gen_cs_inner_class(struct, inner_fields)
+            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
+            inner_var_name = struct["options"][predef.PredefInnerTypeName]
+            inner_typename = 'List<%s>' % inner_type_class
+
+        content += '// %s\n' % struct['comment']
+        content += 'public class %s\n{\n' % struct['name']
+
         vec_done = False
-        vec_names, vec_name = self.get_field_range(struct)
+        vec_names, vec_name = self.get_vec_field_range(struct)
 
         max_name_len = util.max_field_length(fields, 'name', None)
         max_type_len = util.max_field_length(fields, 'original_type_name', map_cs_type)
+        if len(inner_typename) > max_type_len:
+            max_type_len = len(inner_typename)
 
-        content = '// %s\n' % struct['comment']
-        content += 'public class %s\n{\n' % struct['name']
         for field in fields:
+            field_name = field['name']
+            if field_name in inner_field_names:
+                if not inner_class_done:
+                    typename = util.pad_spaces(inner_typename, max_type_len)
+                    content += '    public %s %s = new %s(); \n' % (typename, inner_var_name, typename)
+                    inner_class_done = True
+            else:
+                typename = map_cs_type(field['original_type_name'])
+                assert typename != "", field['original_type_name']
+                typename = util.pad_spaces(typename, max_type_len + 1)
+                if field['name'] not in vec_names:
+                    name = name_with_default_value(field, typename)
+                    name = util.pad_spaces(name, max_name_len + 8)
+                    content += '    public %s %s // %s\n' % (typename, name, field['comment'])
+                elif not vec_done:
+                    name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
+                    name = util.pad_spaces(name, max_name_len + 8)
+                    content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
+                    vec_done = True
+
+        return content
+
+    #
+    def gen_cs_inner_class(self, struct, inner_fields):
+        content = ''
+        class_name = struct["options"][predef.PredefInnerTypeClass]
+        content += 'public class %s \n' % class_name
+        content += '{\n'
+        max_name_len = util.max_field_length(inner_fields, 'name', None)
+        max_type_len = util.max_field_length(inner_fields, 'original_type_name', map_cs_type)
+        for field in inner_fields:
             typename = map_cs_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = util.pad_spaces(typename, max_type_len + 1)
-            if field['name'] not in vec_names:
-                name = name_with_default_value(field, typename)
-                name = util.pad_spaces(name, max_name_len + 8)
-                content += '    public %s %s // %s\n' % (typename, name, field['comment'])
-            elif not vec_done:
-                name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
-                name = util.pad_spaces(name, max_name_len + 8)
-                content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
-                vec_done = True
-
+            name = name_with_default_value(field, typename)
+            name = util.pad_spaces(name, max_name_len + 8)
+            content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
+        content += '};\n\n'
         return content
 
 
@@ -267,9 +337,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        validx, valfield = self.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
+        # keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
+        # validx, valfield = self.get_field_by_column_index(struct, valcol)
+        # typeidx, typefield = self.get_field_by_column_index(struct, typcol)
 
         content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
@@ -291,7 +361,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sdata_ = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sData = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
         content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
         content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)

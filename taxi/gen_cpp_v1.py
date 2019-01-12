@@ -77,6 +77,28 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%s}\n' % space
         return content
 
+    # 内部class赋值
+    def gen_inner_class_field_assgin_stmt(self, struct, prefix, inner_fields):
+        content = ''
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        start, end, step = self.get_inner_class_range(struct)
+        assert start > 0 and end > 0 and step > 1
+        content += '    for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
+        content += '    {\n'
+        content += '        %s item;\n' % inner_class_type
+        for n in range(step):
+            field = inner_fields[n]
+            origin_type = field['original_type_name']
+            typename = map_cpp_type(origin_type)
+            content += '        if (!row[i + %d].empty()) \n' % n
+            content += '        {\n'
+            content += '            item.%s = to<%s>(row[i + %d]);\n' % (field['name'], typename, n)
+            content += '        }\n'
+        content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
+        content += '    }\n'
+        return content
+
     # 生成字段赋值
     def gen_all_field_assign_stmt(self, struct, prefix, tabs):
         content = ''
@@ -84,29 +106,38 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
-        vec_names, vec_name = self.get_field_range(struct)
+        inner_class_done = False
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+
+        vec_names, vec_name = self.get_vec_field_range(struct)
         vec_idx = 0
         space = self.TAB_SPACE * tabs
         for field in struct['fields']:
-            origin_type = field['original_type_name']
-            typename = map_cpp_type(origin_type)
-
-            if typename != 'std::string' and field['name'] in vec_names:
-                content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
-
-            content += '%sif (!row[%d].empty())\n' % (space, idx)
-            content += '%s{\n' % space
-            if origin_type.startswith('array'):
-                content += self.gen_field_array_assign_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), array_delim, tabs + 1)
-            elif origin_type.startswith('map'):
-                content += self.gen_field_map_assgin_stmt(prefix, origin_type, field['name'], ('row[%d]' % idx), map_delims, tabs + 1)
+            field_name = field['name']
+            if field_name in inner_field_names:
+                if not inner_class_done:
+                    inner_class_done = True
+                    content += self.gen_inner_class_field_assgin_stmt(struct, prefix, inner_fields)
             else:
-                if field['name'] in vec_names:
-                    content += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, vec_name, vec_idx, typename, idx)
-                    vec_idx += 1
+                origin_type = field['original_type_name']
+                typename = map_cpp_type(origin_type)
+
+                if typename != 'std::string' and field['name'] in vec_names:
+                    content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
+
+                content += '%sif (!row[%d].empty())\n' % (space, idx)
+                content += '%s{\n' % space
+                if origin_type.startswith('array'):
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), array_delim, tabs + 1)
+                elif origin_type.startswith('map'):
+                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), map_delims, tabs + 1)
                 else:
-                    content += '%s%s%s = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, field['name'], typename, idx)
-            content += '%s}\n' % space
+                    if field['name'] in vec_names:
+                        content += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, vec_name, vec_idx, typename, idx)
+                        vec_idx += 1
+                    else:
+                        content += '%s%s%s = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, field_name, typename, idx)
+                content += '%s}\n' % space
             idx += 1
         return content
 
@@ -118,25 +149,65 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             fields = self.get_struct_kv_fields(struct)
 
+        inner_class_done = False
+        inner_typename = ''
+        inner_var_name = ''
+        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        if len(inner_fields) > 0:
+            content += self.gen_inner_struct_define(struct, inner_fields)
+            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
+            inner_var_name = struct["options"][predef.PredefInnerTypeName]
+            inner_typename = 'std::vector<%s>' % inner_type_class
+
         vec_done = False
-        vec_names, vec_name = self.get_field_range(struct)
+        vec_names, vec_name = self.get_vec_field_range(struct)
 
         max_name_len = util.max_field_length(fields, 'name', None)
         max_type_len = util.max_field_length(fields, 'original_type_name', map_cpp_type)
+        if len(inner_typename) > max_type_len:
+            max_type_len = len(inner_typename)
 
         for field in fields:
+            field_name = field['name']
+            if field_name in inner_field_names:
+                if not inner_class_done:
+                    typename = util.pad_spaces(inner_typename, max_type_len + 1)
+                    name = util.pad_spaces(inner_var_name, max_name_len + 8)
+                    content += '    %s %s; //\n' % (typename, name)
+                    inner_class_done = True
+
+            else:
+                typename = map_cpp_type(field['original_type_name'])
+                assert typename != "", field['original_type_name']
+                typename = util.pad_spaces(typename, max_type_len + 1)
+                if field_name not in vec_names:
+                    name = name_with_default_value(field, typename)
+                    name = util.pad_spaces(name, max_name_len + 8)
+                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                elif not vec_done:
+                    name = '%s[%d];' % (vec_name, len(vec_names))
+                    name = util.pad_spaces(name, max_name_len + 8)
+                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                    vec_done = True
+
+        return content
+
+    # 内部class定义
+    def gen_inner_struct_define(self, struct, inner_fields):
+        content = ''
+        class_name = struct["options"][predef.PredefInnerTypeClass]
+        content += '    struct %s \n' % class_name
+        content += '    {\n'
+        max_name_len = util.max_field_length(inner_fields, 'name', None)
+        max_type_len = util.max_field_length(inner_fields, 'original_type_name', map_cpp_type)
+        for field in inner_fields:
             typename = map_cpp_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = util.pad_spaces(typename, max_type_len + 1)
-            if field['name'] not in vec_names:
-                name = name_with_default_value(field, typename)
-                name = util.pad_spaces(name, max_name_len + 8)
-                content += '    %s %s // %s\n' % (typename, name, field['comment'])
-            elif not vec_done:
-                name = '%s[%d];' % (vec_name, len(vec_names))
-                name = util.pad_spaces(name, max_name_len + 8)
-                content += '    %s %s // %s\n' % (typename, name, field['comment'])
-                vec_done = True
+            name = name_with_default_value(field, typename)
+            name = util.pad_spaces(name, max_name_len + 8)
+            content += '        %s %s // %s\n' % (typename, name, field['comment'])
+        content += '    };\n\n'
 
         return content
 
@@ -475,16 +546,6 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         ]
         header_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n#pragma once\n\n' % util.version_string
         header_content += '\n'.join(h_include_headers) + '\n\n'
-        header_content += 'class %s\n' % util.config_manager_name
-        header_content += '{\n'
-        header_content += 'public:\n'
-        header_content += '    // Load all configurations\n'
-        header_content += '    static void LoadAll();\n\n'
-        header_content += '    // Clear all configurations\n'
-        header_content += '    static void ClearAll();\n\n'
-        header_content += '    //Load content of an asset file\n'
-        header_content += '    static std::string ReadFileContent(const std::string& filepath);\n'
-        header_content += '};\n\n'
 
         cpp_include_headers = [
             '#include "stdafx.h"',
@@ -498,12 +559,23 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
         cpp_content += 'using namespace std;\n\n'
 
-        data_only = params.get(predef.OptionDataOnly, False)
-        no_data = params.get(predef.OptionNoData, False)
-
         if 'pkg' in params:
             header_content += '\nnamespace %s\n{\n\n' % params['pkg']
             cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
+
+        header_content += 'class %s\n' % util.config_manager_name
+        header_content += '{\n'
+        header_content += 'public:\n'
+        header_content += '    // Load all configurations\n'
+        header_content += '    static void LoadAll();\n\n'
+        header_content += '    // Clear all configurations\n'
+        header_content += '    static void ClearAll();\n\n'
+        header_content += '    //Load content of an asset file\n'
+        header_content += '    static std::string ReadFileContent(const std::string& filepath);\n'
+        header_content += '};\n\n'
+
+        data_only = params.get(predef.OptionDataOnly, False)
+        no_data = params.get(predef.OptionNoData, False)
 
         class_content = ''
         for struct in descriptors:
