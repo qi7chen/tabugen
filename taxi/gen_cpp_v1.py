@@ -594,7 +594,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         class_content = ''
         for struct in descriptors:
-            print('start generate', struct['source'])
+            print(util.current_time(), 'start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
 

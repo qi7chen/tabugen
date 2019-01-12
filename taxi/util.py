@@ -19,7 +19,7 @@ config_manager_name = "AutogenConfigManager"
 
 
 def current_time():
-    return datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 # 最长串的大小
 def max_field_length(table, key, f):

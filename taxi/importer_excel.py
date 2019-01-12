@@ -232,7 +232,7 @@ class ExcelImporter:
     def import_all(self):
         descriptors = []
         for filename in self.filenames:
-            print("start parse", filename)
+            print(util.current_time(), "start parse", filename)
             wb = openpyxl.load_workbook(filename, data_only=True)
             descriptor = self.import_one(wb)
             descriptor['source'] = filename

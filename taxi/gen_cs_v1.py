@@ -486,7 +486,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         no_data = params.get(predef.OptionNoData, False)
 
         for struct in descriptors:
-            print('start generate', struct['source'])
+            print(util.current_time(), 'start generate', struct['source'])
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
             if not data_only:
