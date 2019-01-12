@@ -10,6 +10,32 @@ import predef
 import util
 
 
+METHOD_TEMPLATE = """
+    // Load all configurations
+    static void LoadAll();
+
+    // Clear all configurations
+    static void ClearAll();
+
+    //Load content of an asset file
+    static std::string ReadFileContent(const std::string& filepath);
+"""
+
+PARSE_FUN_TEMPLATE = """
+// parse value from text
+template <typename T>
+inline T ParseValue(StringPiece text)
+{
+    text = trimWhitespace(text);
+    if (text.empty())
+    {
+        return T();
+    }
+    return to<T>(text);
+}
+"""
+
+
 # C++ code generator
 class CppV1Generator(basegen.CodeGeneratorBase):
     TAB_SPACE = '    '
@@ -38,14 +64,15 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if array_delim == '\\':
             array_delim = '\\\\'
 
-        space = self.TAB_SPACE * tabs
+        space = self.TAB_SPACE * (tabs + 1)
         elemt_type = map_cpp_type(descriptor.array_element_type(typename))
-        content = ''
+        content = '%s{\n' % (self.TAB_SPACE * tabs)
         content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
         content += '%s}\n' % space
+        content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
 
     # map赋值
@@ -61,8 +88,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         k, v = descriptor.map_key_value_types(typename)
         key_type = map_cpp_type(k)
         val_type = map_cpp_type(v)
-        space = self.TAB_SPACE * tabs
-        content = ''
+        space = self.TAB_SPACE * (tabs + 1)
+        content = '%s{\n' % (self.TAB_SPACE * tabs)
         content += '%sconst auto& mapitems = Split(%s, "%s");\n' % (space, row_name, delim1)
         content += '%sfor (size_t i = 0; i < mapitems.size(); i++)\n' % space
         content += '%s{\n' % space
@@ -70,11 +97,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%s    BEATS_ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const string& key = to<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        const %s& key = to<%s>(kv[0]);\n' % (space, key_type, key_type)
         content += '%s        BEATS_ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
         content += '%s        %s%s[key] = to<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
+        content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
 
     # 内部class赋值
@@ -91,10 +119,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             field = inner_fields[n]
             origin_type = field['original_type_name']
             typename = map_cpp_type(origin_type)
-            content += '        if (!row[i + %d].empty()) \n' % n
-            content += '        {\n'
-            content += '            item.%s = to<%s>(row[i + %d]);\n' % (field['name'], typename, n)
-            content += '        }\n'
+            content += '        item.%s = ParseValue<%s>(row[i + %d]);\n' % (field['name'], typename, n)
         content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
         content += '    }\n'
         return content
@@ -125,19 +150,16 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                 if typename != 'std::string' and field['name'] in vec_names:
                     content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
 
-                content += '%sif (!row[%d].empty())\n' % (space, idx)
-                content += '%s{\n' % space
                 if origin_type.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), array_delim, tabs + 1)
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), array_delim, tabs)
                 elif origin_type.startswith('map'):
-                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), map_delims, tabs + 1)
+                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), map_delims, tabs)
                 else:
                     if field['name'] in vec_names:
-                        content += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, vec_name, vec_idx, typename, idx)
+                        content += '%s%s%s[%d] = ParseValue<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        content += '%s%s%s = to<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs+1), prefix, field_name, typename, idx)
-                content += '%s}\n' % space
+                        content += '%s%s%s = ParseValue<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
             idx += 1
         return content
 
@@ -293,20 +315,16 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             name = rows[idx][keyidx].strip()
             origin_typename = rows[idx][typeidx].strip()
             typename = map_cpp_type(origin_typename)
-            content += '%sif (!rows[%d][%d].empty())\n' % (self.TAB_SPACE, idx, validx)
-            content += '%s{\n' % self.TAB_SPACE
             row_name = 'rows[%d][%d]' % (idx, validx)
-
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, array_delim, 2)
+                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, array_delim, 1)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, map_delims, 2)
+                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, map_delims, 1)
             else:
-                content += '%sptr->%s = to<%s>(%s);\n' % (self.TAB_SPACE*2, name, typename, row_name)
-            content += '%s}\n' % self.TAB_SPACE
+                content += '%sptr->%s = ParseValue<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
         content += '    return 0;\n'
-        content += '}\n'
+        content += '}\n\n'
         return content
 
     # 生成ParseFromRow方法
@@ -322,7 +340,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    BEATS_ASSERT(ptr != nullptr);\n'
         content += self.gen_all_field_assign_stmt(struct, 'ptr->', 1)
         content += '    return 0;\n'
-        content += '}\n'
+        content += '}\n\n'
         return content
 
     # KV模式的Load()方法
@@ -553,11 +571,13 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             '#include <memory>',
             '#include "AutogenConfig.h"',
             '#include "Utility/Conv.h"',
+            '#include "Utility/StringUtil.h"',
             '#include "Resource/ResourceManager.h"',
         ]
         cpp_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
         cpp_content += 'using namespace std;\n\n'
+        cpp_content += PARSE_FUN_TEMPLATE
 
         if 'pkg' in params:
             header_content += '\nnamespace %s\n{\n\n' % params['pkg']
@@ -566,12 +586,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         header_content += 'class %s\n' % util.config_manager_name
         header_content += '{\n'
         header_content += 'public:\n'
-        header_content += '    // Load all configurations\n'
-        header_content += '    static void LoadAll();\n\n'
-        header_content += '    // Clear all configurations\n'
-        header_content += '    static void ClearAll();\n\n'
-        header_content += '    //Load content of an asset file\n'
-        header_content += '    static std::string ReadFileContent(const std::string& filepath);\n'
+        header_content += METHOD_TEMPLATE
         header_content += '};\n\n'
 
         data_only = params.get(predef.OptionDataOnly, False)
