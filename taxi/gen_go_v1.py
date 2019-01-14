@@ -56,7 +56,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         content = ''
         elem_type = descriptor.array_element_type(typename)
-        elem_type = map_go_type(elem_type)
+        elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
         content += '%s    var value = strutil.MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
@@ -77,8 +77,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
-        key_type = map_go_type(k)
-        val_type = map_go_type(v)
+        key_type = lang.map_go_type(k)
+        val_type = lang.map_go_type(v)
 
         content = ''
         content += '%s%s%s = map[%s]%s{}\n' % (space, prefix, name, key_type, val_type)
@@ -124,7 +124,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
                     content += '    %s %s; //\n' % (inner_var_name, inner_typename)
                     inner_class_done = True
             else:
-                typename = map_go_type(field['original_type_name'])
+                typename = lang.map_go_type(field['original_type_name'])
                 assert typename != "", field['original_type_name']
 
                 if field_name not in vec_names:
@@ -141,7 +141,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         class_name = struct["options"][predef.PredefInnerTypeClass]
         content += 'type %s struct {\n' % class_name
         for field in inner_fields:
-            typename = map_go_type(field['original_type_name'])
+            typename = lang.map_go_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
         content += '};\n\n'
@@ -175,7 +175,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             name = rows[idx][keyidx].strip()
             name = util.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
-            typename = map_go_type(origin_typename)
+            typename = lang.map_go_type(origin_typename)
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
@@ -222,7 +222,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             else:
                 content += '\tif row[%d] != "" {\n' % idx
                 origin_type_name = field['original_type_name']
-                typename = map_go_type(origin_type_name)
+                typename = lang.map_go_type(origin_type_name)
                 field_name = field['camel_case_name']
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
@@ -254,7 +254,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         for n in range(step):
             field = inner_fields[n]
             origin_type = field['original_type_name']
-            typename = map_go_type(origin_type)
+            typename = lang.map_go_type(origin_type)
             field_name = field['camel_case_name']
             valuetext = 'row[i + %d]' % n
             content += '        if row[i + %d] != "" {\n' % n
@@ -373,40 +373,3 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if data_only or not no_data:
             for struct in descriptors:
                 self.write_data_rows(struct, params)
-
-
-# Go类型映射
-def map_go_type(typ):
-    type_mapping = {
-        'bool':     'bool',
-        'int8':     'int8',
-        'uint8':    'uint8',
-        'int16':    'int16',
-        'uint16':   'uint16',
-        'int':      'int',
-        'uint':      'uint',
-        'int32':    'int32',
-        'uint32':   'uint32',
-        'int64':    'int64',
-        'uint64':   'uint64',
-        'float':    'float32',
-        'float32':  'float32',
-        'float64':  'float64',
-        'enum':     'int',
-        'string':   'string',
-    }
-    abs_type = descriptor.is_abstract_type(typ)
-    if abs_type is None:
-        return type_mapping[typ]
-
-    if abs_type == 'array':
-        t = descriptor.array_element_type(typ)
-        elem_type = type_mapping[t]
-        return '[]%s' % elem_type
-    elif abs_type == 'map':
-        k, v = descriptor.map_key_value_types(typ)
-        key_type = type_mapping[k]
-        value_type = type_mapping[v]
-        return 'map[%s]%s' % (key_type, value_type)
-    assert False, typ
-

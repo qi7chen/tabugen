@@ -6,6 +6,7 @@ import os
 import codecs
 import basegen
 import predef
+import lang
 import util
 
 
@@ -19,7 +20,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
     def name():
         return "go-v2"
 
-
     def gen_getset(self, struct, params):
         is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
@@ -27,7 +27,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
         content = ''
         for field in struct['fields']:
-            typename = go_type_mapping[field['type_name']]
+            typename = lang.map_go_raw_type(field['type_name'])
             # getter
             if not is_camelcase_field:
                 content += 'func (m *%s) %s() %s {\n' % (name, field['camel_case_name'], typename)
@@ -51,7 +51,7 @@ class GoV2Generator(basegen.CodeGeneratorBase):
 
         content += 'type %s struct {\n' % name
         for field in struct['fields']:
-            typename = go_type_mapping[field['type_name']]
+            typename = lang.map_go_raw_type(field['type_name'])
             assert typename != "", field['type_name']
             if is_camelcase_field:
                 name = field['camel_case_name']
@@ -67,7 +67,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
             content += self.gen_getset(struct, params)
 
         return content
-
 
     # 生成where语句后缀
     def gen_where_clause(self, struct):
@@ -89,7 +88,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
                         content += ' AND '
         return content, keys
 
-
     # 生成select语句
     def gen_select_stmt_variable(self, struct, params):
         clause, keys = self.gen_where_clause(struct)
@@ -106,7 +104,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
             content += clause
         content += '"\n\n'
         return content
-
 
     # 生成Load方法
     def gen_load_method(self, struct, params):
@@ -151,7 +148,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         content += ')\n}\n'
         return content
 
-
     # 生成update语句
     def gen_update_stmt_method(self, struct, params):
         is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
@@ -186,7 +182,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         content += ')\n}\n'
         return content
 
-
     # 生成delete语句
     def gen_remove_stamt_method(self, struct, params):
         is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
@@ -209,7 +204,6 @@ class GoV2Generator(basegen.CodeGeneratorBase):
         content += clause[:-2]
         content += ')\n}\n'
         return content
-
 
     def run(self, descriptors, args):
         params = util.parse_args(args)
@@ -247,21 +241,3 @@ class GoV2Generator(basegen.CodeGeneratorBase):
             os.system(cmd)
 
 
-go_type_mapping = {
-    'bool': 'bool',
-    'int8': 'int8',
-    'uint8': 'uint8',
-    'int16': 'int16',
-    'uint16': 'uint16',
-    'int': 'int',
-    'int32': 'int32',
-    'uint32': 'uint32',
-    'int64': 'int64',
-    'uint64': 'uint64',
-    'float': 'float32',
-    'float32': 'float32',
-    'float64': 'float64',
-    'string': 'string',
-    'bytes': '[]byte',
-    'datetime': 'time.Time',
-}

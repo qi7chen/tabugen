@@ -7,6 +7,7 @@ import unittest
 import descriptor
 import basegen
 import predef
+import lang
 import util
 
 
@@ -51,7 +52,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         return '_instance_%s' % name.lower()
 
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = self.get_struct_keys(struct, key, map_cpp_type)
+        keys = self.get_struct_keys(struct, key, lang.map_cpp_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -65,7 +66,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             array_delim = '\\\\'
 
         space = self.TAB_SPACE * (tabs + 1)
-        elemt_type = map_cpp_type(descriptor.array_element_type(typename))
+        elemt_type = lang.map_cpp_type(descriptor.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
         content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
@@ -86,8 +87,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             delim2 = '\\\\'
 
         k, v = descriptor.map_key_value_types(typename)
-        key_type = map_cpp_type(k)
-        val_type = map_cpp_type(v)
+        key_type = lang.map_cpp_type(k)
+        val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
         content += '%sconst auto& mapitems = Split(%s, "%s");\n' % (space, row_name, delim1)
@@ -118,7 +119,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         for n in range(step):
             field = inner_fields[n]
             origin_type = field['original_type_name']
-            typename = map_cpp_type(origin_type)
+            typename = lang.map_cpp_type(origin_type)
             content += '        item.%s = ParseValue<%s>(row[i + %d]);\n' % (field['name'], typename, n)
         content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
         content += '    }\n'
@@ -145,10 +146,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                     content += self.gen_inner_class_field_assgin_stmt(struct, prefix, inner_fields)
             else:
                 origin_type = field['original_type_name']
-                typename = map_cpp_type(origin_type)
+                typename = lang.map_cpp_type(origin_type)
 
                 if typename != 'std::string' and field['name'] in vec_names:
-                    content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, default_value_by_type(origin_type))
+                    content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
 
                 if origin_type.startswith('array'):
                     content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), array_delim, tabs)
@@ -185,7 +186,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         vec_names, vec_name = self.get_vec_field_range(struct)
 
         max_name_len = util.max_field_length(fields, 'name', None)
-        max_type_len = util.max_field_length(fields, 'original_type_name', map_cpp_type)
+        max_type_len = util.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
         if len(inner_typename) > max_type_len:
             max_type_len = len(inner_typename)
 
@@ -199,11 +200,11 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                     inner_class_done = True
 
             else:
-                typename = map_cpp_type(field['original_type_name'])
+                typename = lang.map_cpp_type(field['original_type_name'])
                 assert typename != "", field['original_type_name']
                 typename = util.pad_spaces(typename, max_type_len + 1)
                 if field_name not in vec_names:
-                    name = name_with_default_value(field, typename)
+                    name = lang.name_with_default_cpp_value(field, typename)
                     name = util.pad_spaces(name, max_name_len + 8)
                     content += '    %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
@@ -221,12 +222,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    struct %s \n' % class_name
         content += '    {\n'
         max_name_len = util.max_field_length(inner_fields, 'name', None)
-        max_type_len = util.max_field_length(inner_fields, 'original_type_name', map_cpp_type)
+        max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_cpp_type)
         for field in inner_fields:
-            typename = map_cpp_type(field['original_type_name'])
+            typename = lang.map_cpp_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = util.pad_spaces(typename, max_type_len + 1)
-            name = name_with_default_value(field, typename)
+            name = lang.name_with_default_cpp_value(field, typename)
             name = util.pad_spaces(name, max_name_len + 8)
             content += '        %s %s // %s\n' % (typename, name, field['comment'])
         content += '    };\n\n'
@@ -248,23 +249,23 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
 
         if predef.PredefGetMethodKeys in struct['options']:
-            get_keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, map_cpp_type)
+            get_keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
             if len(get_keys) > 0:
                 get_args = []
                 for tpl in get_keys:
                     typename = tpl[0]
-                    if not is_pod_type(typename):
+                    if not lang.is_cpp_pod_type(typename):
                         typename = 'const %s&' % typename
                     get_args.append(typename + ' ' + tpl[1])
 
                 content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
 
         if predef.PredefRangeMethodKeys in struct['options']:
-            range_keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, map_cpp_type)
+            range_keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
             range_args = []
             for tpl in range_keys:
                 typename = tpl[0]
-                if not is_pod_type(typename):
+                if not lang.is_cpp_pod_type(typename):
                     typename = 'const %s&' % typename
                 range_args.append(typename + ' ' + tpl[1])
             content += '    static std::vector<const %s*> GetRange(%s);\n' % (struct['name'], ', '.join(range_args))
@@ -314,7 +315,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         for row in rows:
             name = rows[idx][keyidx].strip()
             origin_typename = rows[idx][typeidx].strip()
-            typename = map_cpp_type(origin_typename)
+            typename = lang.map_cpp_type(origin_typename)
             row_name = 'rows[%d][%d]' % (idx, validx)
             if origin_typename.startswith('array'):
                 content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, array_delim, 1)
@@ -432,7 +433,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, map_cpp_type)
+        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
         if len(keys) == 0:
             return content
 
@@ -440,7 +441,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         arg_names = []
         for tpl in keys:
             typename = tpl[0]
-            if not is_pod_type(typename):
+            if not lang.is_cpp_pod_type(typename):
                 typename = 'const %s&' % typename
             formal_param.append('%s %s' % (typename, tpl[1]))
             arg_names.append(tpl[1])
@@ -471,7 +472,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if predef.PredefRangeMethodKeys not in struct['options']:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, map_cpp_type)
+        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
         assert len(keys) > 0
 
         formal_param = []
@@ -479,7 +480,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         arg_names = []
         for tpl in keys:
             typename = tpl[0]
-            if not is_pod_type(typename):
+            if not lang.is_cpp_pod_type(typename):
                 typename = 'const %s&' % typename
             formal_param.append('%s %s' % (typename, tpl[1]))
             arg_names.append(tpl[1])
@@ -631,70 +632,3 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                 self.write_data_rows(struct, params)
 
 
-# C++类型映射
-def map_cpp_type(typ):
-    type_mapping = {
-        'bool':     'bool',
-        'int8':     'int8_t',
-        'uint8':    'uint8_t',
-        'int16':    'int16_t',
-        'uint16':   'uint16_t',
-        'int':      'int',
-        'uint':     'uint32_t',
-        'int32':    'int32_t',
-        'uint32':   'uint32_t',
-        'int64':    'int64_t',
-        'uint64':   'uint64_t',
-        'float':    'float',
-        'float32':  'float',
-        'float64':  'double',
-        'enum':     'enum',
-        'string':   'std::string',
-    }
-    abs_type = descriptor.is_abstract_type(typ)
-    if abs_type is None:
-        return type_mapping[typ]
-
-    if abs_type == 'array':
-        t = descriptor.array_element_type(typ)
-        elem_type = type_mapping[t]
-        return 'std::vector<%s>' % elem_type
-    elif abs_type == 'map':
-        k, v = descriptor.map_key_value_types(typ)
-        key_type = type_mapping[k]
-        value_type = type_mapping[v]
-        return 'std::map<%s, %s>' % (key_type, value_type)
-    assert False, typ
-
-
-# 为类型加上默认值
-def name_with_default_value(field, typename):
-    typename = typename.strip()
-    line = ''
-    if typename == 'bool':
-        line = '%s = false;' % field['name']
-    elif descriptor.is_integer_type(field['type_name']):
-        line = '%s = 0;' % field['name']
-    elif descriptor.is_floating_type(field['type_name']):
-        line = '%s = 0.0;' % field['name']
-    else:
-        line = '%s;' % field['name']
-    assert len(line) > 0
-    return line
-
-
-# 默认值
-def default_value_by_type(typename):
-    if typename == 'bool':
-        return 'false'
-    elif descriptor.is_integer_type(typename):
-        return '0'
-    elif descriptor.is_floating_type(typename):
-        return '0.0'
-    return ''
-
-
-# POD类型
-def is_pod_type(typ):
-    assert len(typ.strip()) > 0
-    return not typ.startswith('std::')  # std::string, std::vector, std::map
