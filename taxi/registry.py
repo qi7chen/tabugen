@@ -8,6 +8,7 @@ from gen_cpp_v1 import CppV1Generator
 from gen_cs_v1 import CSV1Generator
 from gen_go_v1 import GoV1Generator
 from gen_go_v2 import GoV2Generator
+from gen_java_v1 import JavaV1Generator
 
 # data importers
 importer_registry = {
@@ -21,6 +22,7 @@ generator_registry = {
     CSV1Generator.name(): CSV1Generator(),
     GoV1Generator.name(): GoV1Generator(),
     GoV2Generator.name(): GoV2Generator(),
+    JavaV1Generator.name(): JavaV1Generator(),
 }
 
 

@@ -186,3 +186,58 @@ def name_with_default_cs_value(field, typename):
         line = '%s;' % field['name']
     assert len(line) > 0
     return line
+
+# java类型
+def map_java_type(typ):
+    type_mapping = {
+        'bool':     'boolean',
+        'int8':     'byte',
+        'uint8':    'byte',
+        'int16':    'short',
+        'uint16':   'short',
+        'int':      'int',
+        'uint':     'int',
+        'int32':    'int',
+        'uint32':   'int',
+        'int64':    'long',
+        'uint64':   'long',
+        'float':    'float',
+        'float32':  'float',
+        'float64':  'double',
+        'enum':     'int',
+        'string':   'String',
+    }
+    abs_type = descriptor.is_abstract_type(typ)
+    if abs_type is None:
+        return type_mapping[typ]
+    if abs_type == 'array':
+        t = descriptor.array_element_type(typ)
+        elem_type = type_mapping[t]
+        return 'ArrayList<%s>' % elem_type
+    elif abs_type == 'map':
+        k, v = descriptor.map_key_value_types(typ)
+        key_type = type_mapping[k]
+        value_type = type_mapping[v]
+        return 'HashMap<%s, %s>' % (key_type, value_type)
+    assert False, typ
+
+# java默认值
+def name_with_default_java_value(field, typename):
+    typename = typename.strip()
+    line = ''
+    if typename == 'boolean':
+        line = '%s = false;' % field['name']
+    elif typename == 'String':
+        line = '%s = "";' % field['name']
+    elif descriptor.is_integer_type(field['type_name']):
+        line = '%s = 0;' % field['name']
+    elif descriptor.is_floating_type(field['type_name']):
+        line = '%s = 0.0f;' % field['name']
+    elif typename.startswith('ArrayList'):
+        line = '%s = new %s();' % (field['name'], typename)
+    elif typename.startswith('HashMap'):
+        line = '%s = new %s();' % (field['name'], typename)
+    else:
+        line = '%s;' % field['name']
+    assert len(line) > 0
+    return line
