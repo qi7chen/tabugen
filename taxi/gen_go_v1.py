@@ -7,6 +7,7 @@ import codecs
 import basegen
 import descriptor
 import predef
+import lang
 import util
 
 
