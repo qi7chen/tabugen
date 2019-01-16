@@ -13,7 +13,7 @@ import datetime
 import unittest
 
 
-version_string = '0.3.1'
+version_string = '0.3.3'
 
 config_manager_name = "AutogenConfigManager"
 
