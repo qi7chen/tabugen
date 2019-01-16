@@ -187,6 +187,20 @@ def name_with_default_cs_value(field, typename):
     assert len(line) > 0
     return line
 
+# java装箱类型
+def java_box_type(typ):
+    table = {
+        'boolean': 'Boolean',
+        'byte': 'Byte',
+        'short': 'Short',
+        'int': 'Integer',
+        'long': 'Long',
+        'float': 'Float',
+        'double': 'Double',
+        'String': 'String',
+    }
+    return table[typ]
+
 # java类型
 def map_java_type(typ):
     type_mapping = {
@@ -213,31 +227,31 @@ def map_java_type(typ):
     if abs_type == 'array':
         t = descriptor.array_element_type(typ)
         elem_type = type_mapping[t]
-        return 'ArrayList<%s>' % elem_type
+        return '%s[]' % elem_type
     elif abs_type == 'map':
         k, v = descriptor.map_key_value_types(typ)
-        key_type = type_mapping[k]
-        value_type = type_mapping[v]
-        return 'HashMap<%s, %s>' % (key_type, value_type)
+        key_type = java_box_type(type_mapping[k])
+        value_type = java_box_type(type_mapping[v])
+        return 'HashMap<%s,%s>' % (key_type, value_type)
     assert False, typ
 
 # java默认值
 def name_with_default_java_value(field, typename):
     typename = typename.strip()
-    line = ''
+    # print(typename)
     if typename == 'boolean':
-        line = '%s = false;' % field['name']
+        return '%s = false;' % field['name']
     elif typename == 'String':
-        line = '%s = "";' % field['name']
+        return '%s = "";' % field['name']
     elif descriptor.is_integer_type(field['type_name']):
-        line = '%s = 0;' % field['name']
+        return '%s = 0;' % field['name']
     elif descriptor.is_floating_type(field['type_name']):
-        line = '%s = 0.0f;' % field['name']
-    elif typename.startswith('ArrayList'):
-        line = '%s = new %s();' % (field['name'], typename)
+        return '%s = 0.0f;' % field['name']
     elif typename.startswith('HashMap'):
-        line = '%s = new %s();' % (field['name'], typename)
+        return '%s = new %s();' % (field['name'], typename)
     else:
-        line = '%s;' % field['name']
-    assert len(line) > 0
-    return line
+        return '%s = null;' % field['name']
+
+def is_java_primitive_type(typ):
+    table = ['boolean', 'byte', 'short', 'int', 'long', 'float', 'double', 'decimal']
+    return typ in table

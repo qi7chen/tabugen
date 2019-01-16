@@ -10,6 +10,42 @@ import descriptor
 import lang
 import util
 
+
+JAVA_CLASS_TEMPLATE = """
+
+import java.util.*;
+import java.io.*;
+
+public class %s {
+
+    // load file content to lines
+    public static String[] readFileToTextLines(String filepath) {
+        ArrayList<String> lines = new ArrayList<String>();
+        try {
+            File fin = new File(filepath);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fin), "UTF-8"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+            reader.close();
+        } catch(IOException ex) {
+            System.err.println(ex.getMessage());
+        }
+        return lines.toArray(new String[lines.size()]);
+    }
+
+    // parse text to boolean value
+    public static boolean parseBool(String text) {
+        if (!text.isEmpty()) {
+            return text.equals("1") || text.equalsIgnoreCase("on") ||
+                text.equalsIgnoreCase("yes")  || text.equalsIgnoreCase("true");
+        }
+        return false;
+    }
+
+"""
+
 # java生成器
 class JavaV1Generator(basegen.CodeGeneratorBase):
     TAB_SPACE = '    '
@@ -24,6 +60,24 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
     def get_instance_data_name(self, name):
         return '_instance_%s' % name.lower()
 
+    #
+    def gen_java_inner_class(self, struct, inner_fields):
+        content = ''
+        class_name = struct["options"][predef.PredefInnerTypeClass]
+        content += '    public class %s \n' % class_name
+        content += '    {\n'
+        max_name_len = util.max_field_length(inner_fields, 'name', None)
+        max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_java_type)
+        for field in inner_fields:
+            typename = lang.map_java_type(field['original_type_name'])
+            assert typename != "", field['original_type_name']
+            typename = util.pad_spaces(typename, max_type_len + 1)
+            name = lang.name_with_default_java_value(field, typename)
+            name = util.pad_spaces(name, max_name_len + 8)
+            content += '        public %s %s // %s\n' % (typename.strip(), name, field['comment'])
+        content += '    };\n\n'
+        return content
+
     def gen_java_class(self, struct):
         content = ''
 
@@ -31,18 +85,18 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             fields = self.get_struct_kv_fields(struct)
 
+        content += '// %s\n' % struct['comment']
+        content += 'public class %s\n{\n' % struct['name']
+
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
         inner_field_names, inner_fields = self.get_inner_class_fields(struct)
         if len(inner_fields) > 0:
-            content += self.gen_cs_inner_class(struct, inner_fields)
+            content += self.gen_java_inner_class(struct, inner_fields)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
             inner_typename = 'ArrayList<%s>' % inner_type_class
-
-        content += '// %s\n' % struct['comment']
-        content += 'public class %s\n{\n' % struct['name']
 
         vec_done = False
         vec_names, vec_name = self.get_vec_field_range(struct)
@@ -118,10 +172,14 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += "%for(String item : %s.split('%s')) {\n" % (space, row_name, array_delim)
-        content += self.gen_field_assgin_stmt('var value', elem_type, 'item', tabs + 1)
-        content += '%s    %s%s.Add(value);\n' % (space, prefix, name)
+        content += '%sString[] tokens = %s.split("\\\\%s", -1);\n' % (space, row_name, array_delim)
+        content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
+        content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
+        varname = '%s value' % elem_type
+        content += self.gen_field_assgin_stmt(varname, elem_type, 'tokens[i]', tabs + 1)
+        content += '%s    list[i] = value;\n' % space
         content += '%s}\n' % space
+        content += '%s%s%s = list;\n' % (space, prefix, name)
         return content
 
         # 生成map赋值
@@ -139,18 +197,42 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
-        content = ''
-        content += "%for(String text : %s.split('%s')) {\n" % (space, row_name, delim1)
+        content = '%sString[] tokens = %s.split("\\\\%s", -1);\n' % (space, row_name, delim1)
+        content += '%sfor(int i = 0; i < tokens.length; i++) {\n' % space
+        content += '%s    String text = tokens[i];\n' % space
         content += '%s    if (text.isEmpty()) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    String[] item = text.split('%s');\n" % (space, delim2)
+        content += '%s    String[] item = text.split("\\\\%s", -1);\n' % (space, delim2)
         prefix1 = '%s key' % key_type
         prefix2 = '%s value' % val_type
         content += self.gen_field_assgin_stmt(prefix1, key_type, 'item[0]', tabs + 1)
         content += self.gen_field_assgin_stmt(prefix2, val_type, 'item[1]', tabs + 1)
-        content += '%s    %s%s[key] = value;\n' % (space, prefix, name)
+        content += '%s    %s%s.put(key, value);\n' % (space, prefix, name)
         content += '%s}\n' % space
+        return content
+
+    # 生成内部类的parse
+    def gen_java_inner_class_assign(self, struct, prefix, inner_fields):
+        content = ''
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        start, end, step = self.get_inner_class_range(struct)
+        assert start > 0 and end > 0 and step > 1
+        content += '        for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
+        content += '        {\n'
+        content += '            %s item = new %s();\n' % (inner_class_type, inner_class_type)
+        for n in range(step):
+            field = inner_fields[n]
+            origin_type = field['original_type_name']
+            typename = lang.map_java_type(origin_type)
+            valuetext = 'row[i + %d]' % n
+            content += '            if (!row[i + %d].isEmpty()) \n' % n
+            content += '            {\n'
+            content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
+            content += '            }\n'
+        content += '            %s%s.add(item);\n' % (prefix, inner_var_name)
+        content += '        }\n'
         return content
 
     # 生成KV模式的Parse方法
@@ -169,20 +251,16 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         content = ''
-        content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRows(String[][] rows)\n' % (
-        self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s// parse fields data from text rows\n' % self.TAB_SPACE
+        content += '%spublic void parseFromRows(String[][] rows)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
         content += '%sif (rows.length < %d) {\n' % (self.TAB_SPACE * 2, len(rows))
         content += '%sthrow new RuntimeException(String.format("%s: row length out of index, %%d < %d", rows.length));\n' % (
-        self.TAB_SPACE * 3, struct['name'], len(rows))
+            self.TAB_SPACE * 3, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE * 2)
-        content += '%s%s obj = new %s();\n' % (
-        self.TAB_SPACE * 2, struct['camel_case_name'], struct['camel_case_name'])
 
         idx = 0
         for row in rows:
-            content += '%sif (!rows[%d][%d].isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
             name = rows[idx][keyidx].strip()
             name = util.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
@@ -190,15 +268,18 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('obj.', origin_typename, name, valuetext, array_delim,
-                                                            3)
+                content += '%s{\n' % (self.TAB_SPACE * 2)
+                content += self.gen_field_array_assign_stmt('this.', origin_typename, name, valuetext, array_delim, 3)
+                content += '%s}\n' % (self.TAB_SPACE * 2)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('obj.', origin_typename, name, valuetext, map_delims, 3)
+                content += '%s{\n' % (self.TAB_SPACE * 2)
+                content += self.gen_field_map_assign_stmt('this.', origin_typename, name, valuetext, map_delims, 3)
+                content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
-                content += self.gen_field_assgin_stmt('obj.' + name, typename, valuetext, 3)
-            content += '%s}\n' % (self.TAB_SPACE * 2)
+                content += '%sif (!rows[%d][%d].isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
+                content += self.gen_field_assgin_stmt('this.' + name, typename, valuetext, 3)
+                content += '%s}\n' % (self.TAB_SPACE * 2)
             idx += 1
-        content += '%sreturn obj;\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -217,42 +298,44 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         inner_class_done = False
         inner_field_names, inner_fields = self.get_inner_class_fields(struct)
 
-        content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRow(String[] row)\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s// parse fields data from text row\n' % self.TAB_SPACE
+        content += '%spublic void parseFromRow(String[] row)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
         content += '%sif (row.length < %d) {\n' % (self.TAB_SPACE * 2, len(struct['fields']))
         content += '%sthrow new RuntimeException(String.format("%s: row length out of index %%d", row.length));\n' % (
         self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE * 2)
-        content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 2, struct['camel_case_name'], struct['camel_case_name'])
 
         idx = 0
-        prefix = 'obj.'
+        prefix = 'this.'
         for field in struct['fields']:
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_cs_inner_class_assign(struct, prefix, inner_fields)
+                    content += self.gen_java_inner_class_assign(struct, prefix, inner_fields)
             else:
-                content += '%sif (!row[%d].isEmpty()) {\n' % (self.TAB_SPACE*2, idx)
                 origin_type_name = field['original_type_name']
                 typename = lang.map_java_type(origin_type_name)
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
+                    content += '%s{\n' % (self.TAB_SPACE * 2)
                     content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
+                    content += '%s}\n' % (self.TAB_SPACE * 2)
                 elif origin_type_name.startswith('map'):
+                    content += '%s{\n' % (self.TAB_SPACE * 2)
                     content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, map_delims, 3)
+                    content += '%s}\n' % (self.TAB_SPACE * 2)
                 else:
+                    content += '%sif (!row[%d].isEmpty()) {\n' % (self.TAB_SPACE * 2, idx)
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
                         content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
                         vec_idx += 1
                     else:
                         content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
-                content += '%s}\n' % (self.TAB_SPACE*2)
+                    content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
-        content += '%sreturn obj;\n' % (self.TAB_SPACE*2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -287,15 +370,17 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        content = '%spublic static void LoadFromLines(String[] lines)\n' % self.TAB_SPACE
+        content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
+        content += '%sString[] lines = %s.readFileToTextLines(filepath);' % (self.TAB_SPACE*2, util.config_manager_name)
         content += '%sString[][] rows = new String[lines.length][];\n' % (self.TAB_SPACE * 2)
         content += '%sfor(int i = 0; i < lines.length; i++)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
         content += '%sString line = lines[i];\n' % (self.TAB_SPACE * 3)
-        content += '%srows[i] = line.split(",");\n' % (self.TAB_SPACE * 3)
+        content += '%srows[i] = line.split("\\\\,", -1);\n' % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE * 2)
-        content += '%sinstance_ = ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
+        content += '%sinstance_ = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sinstance_.parseFromRows(rows);\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -305,32 +390,130 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
             return self.gen_kv_struct_load_method(struct)
 
         content = ''
-        content = '%spublic static void LoadFromLines(String[] lines)\n' % self.TAB_SPACE
+        content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%data_ = new ArrayList<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%for(String line : lines)\n' % (self.TAB_SPACE * 2)
+        content += '%sString[] lines = %s.readFileToTextLines(filepath);' % (self.TAB_SPACE * 2, util.config_manager_name)
+        content += '%sdata_ = new ArrayList<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sfor(String line : lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)
-        content += "%svar obj = ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        content += "%sData.Add(obj);\n" % (self.TAB_SPACE * 3)
+        content += '%sString[] row = line.split("\\\\,", -1);\n' % (self.TAB_SPACE * 3)
+        content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'], struct['name'])
+        content += "%sobj.parseFromRow(row);\n" % (self.TAB_SPACE * 3)
+        content += "%sdata_.add(obj);\n" % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
+    # 字段比较
+    def gen_equal_stmt(self, prefix, struct, key):
+        keys = self.get_struct_keys(struct, key, lang.map_java_type)
+        args = []
+        for tpl in keys:
+            if lang.is_java_primitive_type(tpl[0]):
+                args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
+            else:
+                args.append('%s%s.equals(%s)' % (prefix, tpl[1], tpl[1]))
+        return ' && '.join(args)
+
+    # 生成getBy()方法
+    def gen_get_method(self, struct):
+        if struct['options'][predef.PredefParseKVMode]:
+            return ''
+
+        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_java_type)
+        if len(keys) == 0:
+            return ''
+
+        formal_param = []
+        arg_names = []
+        for tpl in keys:
+            typename = tpl[0]
+            formal_param.append('%s %s' % (typename, tpl[1]))
+            arg_names.append(tpl[1])
+
+        content = ''
+        content += '    // get an item by key\n'
+        content += '    public static %s getBy(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    {\n'
+        content += '        for (%s item : data_)\n' % struct['name']
+        content += '        {\n'
+        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'get-keys')
+        content += '            {\n'
+        content += '                return item;\n'
+        content += '            }\n'
+        content += '        }\n'
+        content += '        return null;\n'
+        content += '    }\n\n'
+        return content
+
+        # 生成getRange()方法
+    def gen_range_method(self, struct):
+        if struct['options'][predef.PredefParseKVMode]:
+            return ''
+
+        if predef.PredefRangeMethodKeys not in struct['options']:
+            return ''
+
+        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_java_type)
+        assert len(keys) > 0
+
+        formal_param = []
+        arg_names = []
+        for tpl in keys:
+            typename = tpl[0]
+            formal_param.append('%s %s' % (typename, tpl[1]))
+            arg_names.append(tpl[1])
+
+        content = ''
+        content += '    // get a range of items by key\n'
+        content += '    public static ArrayList<%s> getRange(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    {\n'
+        content += '        ArrayList<%s> range = new ArrayList<%s>();\n' % (struct['name'], struct['name'])
+        content += '        for (%s item : data_)\n' % struct['name']
+        content += '        {\n'
+        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'range-keys')
+        content += '            {\n'
+        content += '                range.add(item);\n'
+        content += '            }\n'
+        content += '        }\n'
+        content += '        return range;\n'
+        content += '    }\n\n'
+        return content
+
+    # 生成对象及方法
     def generate_class(self, struct, params):
         content = '\n'
         content += self.gen_java_class(struct)
         content += self.gen_static_data(struct)
         content += self.gen_parse_method(struct)
         content += self.gen_load_method(struct)
+        content += self.gen_get_method(struct)
+        content += self.gen_range_method(struct)
         content += '}\n'
         return content
 
     def run(self, descriptors, args):
         params = util.parse_args(args)
-        assert 'pkg' in params  # java must define package name
+
+        mgr_content = ''
+        mgr_filename = '%s.java' % util.config_manager_name
+
+        basedir = ''
+        if 'pkg' in params:
+            package = params['pkg']
+            names = package.split('.')
+            basedir = '/'.join(names)
+            mgr_content = 'package %s;' % package
+            mgr_filename = '%s/%s' % (basedir, mgr_filename)
+            try:
+                print('make dir', basedir)
+                os.makedirs(basedir)
+            except Exception as e:
+                print(e)
 
         class_dict = {}
+        mgr_content += JAVA_CLASS_TEMPLATE % util.config_manager_name
+        load_func_content = '    public static void loadAllConfig() {\n'
 
         data_only = params.get(predef.OptionDataOnly, False)
         no_data = params.get(predef.OptionNoData, False)
@@ -341,15 +524,29 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
             self.setup_key_value_mode(struct)
             if not data_only:
                 content = ''
-                content += 'package %s;\n' % params['pkg']
+                filename = '%s.java' % struct['camel_case_name']
+                if 'pkg' in params:
+                    filename = '%s/%s' % (basedir, filename)
+                    content += 'package %s;\n\n' % params['pkg']
                 content += 'import java.util.*;\n'
                 content += '\n'
                 content += self.generate_class(struct, params)
-                class_dict[struct['camel_case_name']] = content
+                class_dict[filename] = content
 
-        for name in class_dict:
-            content = class_dict[name]
-            filename = '%s.java' % name
-            f = codecs.open(filename, 'w', 'utf-8')
-            f.writelines(content)
-            f.close()
+                load_func_content += '        %s.loadFromFile("csv/%s.csv");\n' % (struct['name'], struct['name'].lower())
+
+        load_func_content += '    }\n'
+        mgr_content += load_func_content
+        mgr_content += '}\n'
+        class_dict[mgr_filename] = mgr_content
+
+        if not data_only:
+            for filename in class_dict:
+                content = class_dict[filename]
+                f = codecs.open(filename, 'w', 'utf-8')
+                f.writelines(content)
+                f.close()
+
+        if not no_data or data_only:
+            for struct in descriptors:
+                self.write_data_rows(struct, params)
