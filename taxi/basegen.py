@@ -205,6 +205,7 @@ class CodeGeneratorBase:
             content = json.dumps(field, allow_nan=False, ensure_ascii=False)  # use json to make a clone
             newobj = json.loads(content)
             newobj['name'] = util.remove_suffix_number(newobj['name'])
+            newobj['camel_case_name'] = util.remove_suffix_number(newobj['camel_case_name'])
             inner_fields.append(newobj)
 
         field_names = []

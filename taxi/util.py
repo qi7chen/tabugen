@@ -164,6 +164,7 @@ class TestUtils(unittest.TestCase):
         test_data = [
             ('', ''),
             ('1', ''),
+            ('num1', 'num'),
             ('test01', 'test'),
         ]
         for pair in test_data:

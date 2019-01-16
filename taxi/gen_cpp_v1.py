@@ -97,7 +97,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%s    BEATS_ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const %s& key = to<%s>(kv[0]);\n' % (space, key_type, key_type)
+        content += '%s        const auto& key = to<%s>(kv[0]);\n' % (space, key_type)
         content += '%s        BEATS_ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
         content += '%s        %s%s[key] = to<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
