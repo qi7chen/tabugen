@@ -175,9 +175,11 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         content += '%sString[] tokens = %s.split("\\\\%s", -1);\n' % (space, row_name, array_delim)
         content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
+        content += '%sif (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * (tabs+1))
         varname = '%s value' % elem_type
-        content += self.gen_field_assgin_stmt(varname, elem_type, 'tokens[i]', tabs + 1)
-        content += '%s    list[i] = value;\n' % space
+        content += self.gen_field_assgin_stmt(varname, elem_type, 'tokens[i]', tabs + 2)
+        content += '%slist[i] = value;\n' % (self.TAB_SPACE * (tabs+2))
+        content += '%s}\n' % (self.TAB_SPACE * (tabs+1))
         content += '%s}\n' % space
         content += '%s%s%s = list;\n' % (space, prefix, name)
         return content
@@ -372,7 +374,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
 
         content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sString[] lines = %s.readFileToTextLines(filepath);' % (self.TAB_SPACE*2, util.config_manager_name)
+        content += '%sString[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE*2, util.config_manager_name)
         content += '%sString[][] rows = new String[lines.length][];\n' % (self.TAB_SPACE * 2)
         content += '%sfor(int i = 0; i < lines.length; i++)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
@@ -392,7 +394,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sString[] lines = %s.readFileToTextLines(filepath);' % (self.TAB_SPACE * 2, util.config_manager_name)
+        content += '%sString[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE * 2, util.config_manager_name)
         content += '%sdata_ = new ArrayList<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
         content += '%sfor(String line : lines)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
@@ -415,7 +417,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
                 args.append('%s%s.equals(%s)' % (prefix, tpl[1], tpl[1]))
         return ' && '.join(args)
 
-    # 生成getBy()方法
+    # 生成getItemBy()方法
     def gen_get_method(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
             return ''
@@ -433,7 +435,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         content += '    // get an item by key\n'
-        content += '    public static %s getBy(%s)\n' % (struct['name'], ', '.join(formal_param))
+        content += '    public static %s getItemBy(%s)\n' % (struct['name'], ', '.join(formal_param))
         content += '    {\n'
         content += '        for (%s item : data_)\n' % struct['name']
         content += '        {\n'

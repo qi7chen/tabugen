@@ -49,17 +49,14 @@ def is_cpp_pod_type(typ):
 # C++为类型加上默认值
 def name_with_default_cpp_value(field, typename):
     typename = typename.strip()
-    line = ''
     if typename == 'bool':
-        line = '%s = false;' % field['name']
+        return '%s = false;' % field['name']
     elif descriptor.is_integer_type(field['type_name']):
-        line = '%s = 0;' % field['name']
+        return '%s = 0;' % field['name']
     elif descriptor.is_floating_type(field['type_name']):
-        line = '%s = 0.0;' % field['name']
+        return '%s = 0.0;' % field['name']
     else:
-        line = '%s;' % field['name']
-    assert len(line) > 0
-    return line
+        return '%s;' % field['name']
 
 
 # C++默认值
@@ -169,23 +166,20 @@ def map_cs_type(typ):
 # C#默认值
 def name_with_default_cs_value(field, typename):
     typename = typename.strip()
-    line = ''
     if typename == 'bool':
-        line = '%s = false;' % field['name']
+        return '%s = false;' % field['name']
     elif typename == 'string':
-        line = '%s = "";' % field['name']
+        return '%s = "";' % field['name']
     elif descriptor.is_integer_type(field['type_name']):
-        line = '%s = 0;' % field['name']
+        return '%s = 0;' % field['name']
     elif descriptor.is_floating_type(field['type_name']):
-        line = '%s = 0.0f;' % field['name']
+        return '%s = 0.0f;' % field['name']
     elif typename.startswith('List'):
-        line = '%s = new %s();' % (field['name'], typename)
+        return '%s = new %s();' % (field['name'], typename)
     elif typename.startswith('Dictionary'):
-        line = '%s = new %s();' % (field['name'], typename)
+        return '%s = new %s();' % (field['name'], typename)
     else:
-        line = '%s;' % field['name']
-    assert len(line) > 0
-    return line
+        return '%s = null;' % field['name']
 
 # java装箱类型
 def java_box_type(typ):
