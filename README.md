@@ -59,13 +59,16 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 请查看examples目录下的示例：
 
-* [示例1](examples/basic) 演示excel配置的基础用法
-* [示例2](examples/global-var) 演示如何配置全局参数表
-* [示例3](examples/array-map) 演示如何使用array和map类型
-* [示例4](examples/sql) 演示如何从MySQL数据库导出代码
+* [示例1](examples/basic) 演示excel配置的基础用法，导出为C#(Unity);
+* [示例2](examples/global-var) 演示如何配置全局参数表，导出为C++;
+* [示例3](examples/array-map) 演示如何使用array和map类型，导出为Go;
+* [示例4](examples/inner-class) 演示如何在excel内部再定义嵌入类型，导出为Java;
+* [示例5](examples/sql) 演示如何从MySQL数据库导出代码，导出为Go;
 
+
+[bootstrap](bootstrap)内包含了各个导出器需要的API代码实现；
 
 # TO-DO
 
-* 增加Java语言的代码生成器
-* 支持excel表格内的嵌入类型定义
+* 增加更多语言的生成器
+
