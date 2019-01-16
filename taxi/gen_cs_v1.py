@@ -11,13 +11,18 @@ import lang
 import util
 
 
-CSharpStaticClassName = "AutogenConfigData"
 
-METHOD_TEMPLATE = """
-    public static bool ParseBoolean(string text)
+CSHARP_METHOD_TEMPLATE = """
+    public static bool ParseBool(string text)
     {
-        text = text.Trim().ToLower();
-        return text == "1" || text == "true" || text == "yes" || text == "on";
+        if (text.Length > 0)
+        {
+            return string.Equals(text, "1") ||
+                string.Equals(text, "on", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(text, "yes", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
     }
     
     public static List<string> ReadTextToLines(string content)
@@ -74,7 +79,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = %s.ParseBoolean(%s);\n' % (space, name, util.config_manager_name, valuetext)
+            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, util.config_manager_name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
@@ -91,9 +96,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%sforeach(string item in %s.Split('%s')) {\n" % (space, row_name, array_delim)
-        content += self.gen_field_assgin_stmt('var value', elem_type, 'item', tabs + 1)
-        content += '%s    %s%s.Add(value);\n' % (space, prefix, name)
+        content += "%svar items = %s.Split('%s');\n" % (space, row_name, array_delim)
+        content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
+        content += "%sfor(int i = 0; i < items.Length; i++) {\n" % space
+        content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
+        content += '%s    %s%s[i] = value;\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
 
@@ -108,14 +115,14 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if delim2 == '\\':
             delim2 = '\\\\'
 
-
         space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = ''
-        content += "%sforeach(string text in %s.Split('%s')) {\n" % (space, row_name, delim1)
+        content = "%svar items = %s.Split('%s');\n" % (space, row_name, delim1)
+        content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
+        content += "%sforeach(string text in items) {\n" % space
         content += '%s    if (text == "") {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
@@ -143,15 +150,16 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         content = ''
-        content += '%s// parse data object from csv rows\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRows(List<IList<string>> rows)\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
+        content += '%spublic void ParseFromRows(string[][] rows)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (rows.Count < %d) {\n' % (self.TAB_SPACE*2, len(rows))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Count));\n' % (self.TAB_SPACE*3, struct['name'], len(rows))
+        content += '%sif (rows.Length < %d) {\n' % (self.TAB_SPACE*2, len(rows))
+        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Length));\n' % (
+            self.TAB_SPACE*3, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 2, struct['camel_case_name'], struct['camel_case_name'])
 
         idx = 0
+        prefix = 'this.'
         for row in rows:
             content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx, validx)
             name = rows[idx][keyidx].strip()
@@ -161,14 +169,13 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('obj.', origin_typename, name, valuetext, array_delim, 3)
+                content += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, array_delim, 3)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('obj.', origin_typename, name, valuetext, map_delims, 3)
+                content += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, map_delims, 3)
             else:
-                content += self.gen_field_assgin_stmt('obj.' + name, typename, valuetext, 3)
+                content += self.gen_field_assgin_stmt(prefix + name, typename, valuetext, 3)
             content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
-        content += '%sreturn obj;\n' % (self.TAB_SPACE*2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -188,16 +195,16 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         inner_class_done = False
         inner_field_names, inner_fields = self.get_inner_class_fields(struct)
 
-        content += '%s// parse data object from an csv row\n' % self.TAB_SPACE
-        content += '%spublic static %s ParseFromRow(IList<string> row)\n' % (self.TAB_SPACE, struct['camel_case_name'])
+        content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
+        content += '%spublic void ParseFromRow(string[] row)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index {0}", row.Count));\n' % (self.TAB_SPACE * 3, struct['name'])
+        content += '%sif (row.Length < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
+        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index {0}", row.Length));\n' % (
+            self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 2, struct['camel_case_name'], struct['camel_case_name'])
 
         idx = 0
-        prefix = 'obj.'
+        prefix = 'this.'
         for field in struct['fields']:
             field_name = field['name']
             if field_name in inner_field_names:
@@ -222,7 +229,6 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                         content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
-        content += '%sreturn obj;\n' % (self.TAB_SPACE*2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -233,7 +239,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
         start, end, step = self.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
-        content += '        for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
+        content += '        %s%s = new %s[%d];\n' % (prefix, inner_var_name, inner_class_type, (end-start)/step)
+        content += '        for (int i = %s, j = 0; i < %s; i += %s, j++) \n' % (start, end, step)
         content += '        {\n'
         content += '            %s item = new %s();\n' % (inner_class_type, inner_class_type)
         for n in range(step):
@@ -245,7 +252,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             content += '            {\n'
             content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
             content += '            }\n'
-        content += '            %s%s.Add(item);\n' % (prefix, inner_var_name)
+        content += '            %s%s[j] = item;\n' % (prefix, inner_var_name)
         content += '        }\n'
         return content
 
@@ -265,7 +272,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             content += self.gen_cs_inner_class(struct, inner_fields)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = 'List<%s>' % inner_type_class
+            inner_typename = '%s[]' % inner_type_class
 
         content += '// %s\n' % struct['comment']
         content += 'public class %s\n{\n' % struct['name']
@@ -283,7 +290,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             if field_name in inner_field_names:
                 if not inner_class_done:
                     typename = util.pad_spaces(inner_typename, max_type_len)
-                    content += '    public %s %s = new %s(); \n' % (typename, inner_var_name, typename)
+                    content += '    public %s %s = null; \n' % (typename, inner_var_name)
                     inner_class_done = True
             else:
                 typename = lang.map_cs_type(field['original_type_name'])
@@ -325,7 +332,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             content += '    public static %s Instance { get; private set; }\n\n' % struct['name']
         else:
-            content += '    public static List<%s> Data { get; private set; } \n\n' % struct['name']
+            content += '    public static %s[] Data { get; private set; } \n\n' % struct['name']
 
         return content
 
@@ -337,19 +344,16 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        # keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        # validx, valfield = self.get_field_by_column_index(struct, valcol)
-        # typeidx, typefield = self.get_field_by_column_index(struct, typcol)
-
         content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%svar rows = new List<IList<string>>();\n' % (self.TAB_SPACE * 2)
-        content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE*2)
+        content += '%svar rows = new string[lines.Count][];\n' % (self.TAB_SPACE * 2)
+        content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE*2)
         content += '%s{\n' % (self.TAB_SPACE*2)
-        content += "%svar array = line.Split(',');\n" % (self.TAB_SPACE*3)
-        content += '%srows.Add(array);\n' % (self.TAB_SPACE * 3)
+        content += '%sstring line = lines[i];\n' % (self.TAB_SPACE * 3)
+        content += "%srows[i] = line.Split(',');\n" % (self.TAB_SPACE*3)
         content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%sInstance = ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
+        content += '%sInstance = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sInstance.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -361,13 +365,16 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sData = new List<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sforeach(string line in lines)\n' % (self.TAB_SPACE * 2)
+        content += '%svar list = new %s[lines.Count];\n' % (self.TAB_SPACE * 2, struct['name'])
+        content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
+        content += '%sstring line = lines[i];\n' % (self.TAB_SPACE * 3)
         content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)
-        content += "%svar obj = ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        content += "%sData.Add(obj);\n" % (self.TAB_SPACE * 3)
+        content += '%svar obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'])
+        content += "%sobj.ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
+        content += "%slist[i] = obj;\n" % (self.TAB_SPACE * 3)
         content += '%s}\n' % (self.TAB_SPACE * 2)
+        content += '%sData = list;\n' % (self.TAB_SPACE * 2)
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -441,7 +448,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     def gen_global_class(self, descriptors):
         content = ''
-        content += 'public class %s\n{\n' % CSharpStaticClassName
+        content += 'public class %s\n{\n' % util.config_manager_name
         content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
         for i in range(len(descriptors)):
@@ -454,7 +461,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                 content += '            if (completeFunc != null) completeFunc();\n'
             content += '        });\n\n'
         content += '    }\n'
-        content += METHOD_TEMPLATE
+        content += CSHARP_METHOD_TEMPLATE
         content += '}\n\n'
         return content
 

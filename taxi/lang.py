@@ -154,7 +154,7 @@ def map_cs_type(typ):
     if abs_type == 'array':
         t = descriptor.array_element_type(typ)
         elem_type = type_mapping[t]
-        return 'List<%s>' % elem_type
+        return '%s[]' % elem_type
     elif abs_type == 'map':
         k, v = descriptor.map_key_value_types(typ)
         key_type = type_mapping[k]
@@ -174,10 +174,6 @@ def name_with_default_cs_value(field, typename):
         return '%s = 0;' % field['name']
     elif descriptor.is_floating_type(field['type_name']):
         return '%s = 0.0f;' % field['name']
-    elif typename.startswith('List'):
-        return '%s = new %s();' % (field['name'], typename)
-    elif typename.startswith('Dictionary'):
-        return '%s = new %s();' % (field['name'], typename)
     else:
         return '%s = null;' % field['name']
 
