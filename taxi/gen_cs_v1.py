@@ -7,6 +7,7 @@ import codecs
 import descriptor
 import basegen
 import predef
+import lang
 import util
 
 
@@ -55,13 +56,12 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def name():
         return "cs-v1"
 
-
     def get_data_member_name(self, name):
         return name + 'Data'
 
     # 字段比较
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = self.get_struct_keys(struct, key, map_cs_type)
+        keys = self.get_struct_keys(struct, key, lang.map_cs_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -76,7 +76,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         elif typename.lower().find('bool') >= 0:
             content += '%s%s = %s.ParseBoolean(%s);\n' % (space, name, util.config_manager_name, valuetext)
         else:
-            content += '%s%s = %s.Parse(%s);\n' % (space, name, cs_box_type(typename), valuetext)
+            content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
 
 
@@ -90,7 +90,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
-        elem_type = map_cs_type(elem_type)
+        elem_type = lang.map_cs_type(elem_type)
         content += "%sforeach(string item in %s.Split('%s')) {\n" % (space, row_name, array_delim)
         content += self.gen_field_assgin_stmt('var value', elem_type, 'item', tabs + 1)
         content += '%s    %s%s.Add(value);\n' % (space, prefix, name)
@@ -111,8 +111,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         space = self.TAB_SPACE * tabs
         k, v = descriptor.map_key_value_types(typename)
-        key_type = map_cs_type(k)
-        val_type = map_cs_type(v)
+        key_type = lang.map_cs_type(k)
+        val_type = lang.map_cs_type(v)
 
         content = ''
         content += "%sforeach(string text in %s.Split('%s')) {\n" % (space, row_name, delim1)
@@ -157,7 +157,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             name = rows[idx][keyidx].strip()
             name = util.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
-            typename = map_cs_type(origin_typename)
+            typename = lang.map_cs_type(origin_typename)
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
@@ -207,7 +207,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             else:
                 content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx)
                 origin_type_name = field['original_type_name']
-                typename = map_cs_type(origin_type_name)
+                typename = lang.map_cs_type(origin_type_name)
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
                     content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
@@ -239,7 +239,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         for n in range(step):
             field = inner_fields[n]
             origin_type = field['original_type_name']
-            typename = map_cs_type(origin_type)
+            typename = lang.map_cs_type(origin_type)
             valuetext = 'row[i + %d]' % n
             content += '            if (row[i + %d].Length > 0) \n' % n
             content += '            {\n'
@@ -274,7 +274,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         vec_names, vec_name = self.get_vec_field_range(struct)
 
         max_name_len = util.max_field_length(fields, 'name', None)
-        max_type_len = util.max_field_length(fields, 'original_type_name', map_cs_type)
+        max_type_len = util.max_field_length(fields, 'original_type_name', lang.map_cs_type)
         if len(inner_typename) > max_type_len:
             max_type_len = len(inner_typename)
 
@@ -286,11 +286,11 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                     content += '    public %s %s = new %s(); \n' % (typename, inner_var_name, typename)
                     inner_class_done = True
             else:
-                typename = map_cs_type(field['original_type_name'])
+                typename = lang.map_cs_type(field['original_type_name'])
                 assert typename != "", field['original_type_name']
                 typename = util.pad_spaces(typename, max_type_len + 1)
                 if field['name'] not in vec_names:
-                    name = name_with_default_value(field, typename)
+                    name = lang.name_with_default_cs_value(field, typename)
                     name = util.pad_spaces(name, max_name_len + 8)
                     content += '    public %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
@@ -308,12 +308,12 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += 'public class %s \n' % class_name
         content += '{\n'
         max_name_len = util.max_field_length(inner_fields, 'name', None)
-        max_type_len = util.max_field_length(inner_fields, 'original_type_name', map_cs_type)
+        max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
         for field in inner_fields:
-            typename = map_cs_type(field['original_type_name'])
+            typename = lang.map_cs_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = util.pad_spaces(typename, max_type_len + 1)
-            name = name_with_default_value(field, typename)
+            name = lang.name_with_default_cs_value(field, typename)
             name = util.pad_spaces(name, max_name_len + 8)
             content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
         content += '};\n\n'
@@ -377,7 +377,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return ''
 
-        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, map_cs_type)
+        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
         if len(keys) == 0:
             return ''
 
@@ -411,7 +411,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if predef.PredefRangeMethodKeys not in struct['options']:
             return ''
 
-        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, map_cs_type)
+        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
         assert len(keys) > 0
 
         formal_param = []
@@ -459,7 +459,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         return content
 
 
-    def generate(self, struct):
+    def generate_class(self, struct):
         content = '\n'
         content += self.gen_cs_struct(struct)
         content += self.gen_static_data(struct)
@@ -490,7 +490,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             self.setup_comment(struct)
             self.setup_key_value_mode(struct)
             if not data_only:
-                content += self.generate(struct)
+                content += self.generate_class(struct)
 
         if not data_only:
             content += self.gen_global_class(descriptors)
@@ -510,63 +510,3 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                 self.write_data_rows(struct, params)
 
 
-# C#类型映射
-def map_cs_type(typ):
-    type_mapping = {
-        'bool':     'bool',
-        'int8':     'sbyte',
-        'uint8':    'byte',
-        'int16':    'short',
-        'uint16':   'ushort',
-        'int':      'int',
-        'uint':     'uint',
-        'int32':    'int',
-        'uint32':   'uint',
-        'int64':    'long',
-        'uint64':   'ulong',
-        'float':    'float',
-        'float32':  'float',
-        'float64':  'double',
-        'enum':     'int',
-        'string':   'string',
-    }
-    abs_type = descriptor.is_abstract_type(typ)
-    if abs_type is None:
-        return type_mapping[typ]
-
-    if abs_type == 'array':
-        t = descriptor.array_element_type(typ)
-        elem_type = type_mapping[t]
-        return 'List<%s>' % elem_type
-    elif abs_type == 'map':
-        k, v = descriptor.map_key_value_types(typ)
-        key_type = type_mapping[k]
-        value_type = type_mapping[v]
-        return 'Dictionary<%s, %s>' % (key_type, value_type)
-    assert False, typ
-
-
-# 装箱类型
-def cs_box_type(name):
-    return name
-
-# 默认值
-def name_with_default_value(field, typename):
-    typename = typename.strip()
-    line = ''
-    if typename == 'bool':
-        line = '%s = false;' % field['name']
-    elif typename == 'string':
-        line = '%s = "";' % field['name']
-    elif descriptor.is_integer_type(field['type_name']):
-        line = '%s = 0;' % field['name']
-    elif descriptor.is_floating_type(field['type_name']):
-        line = '%s = 0.0f;' % field['name']
-    elif typename.startswith('List'):
-        line = '%s = new %s();' % (field['name'], typename)
-    elif typename.startswith('Dictionary'):
-        line = '%s = new %s();' % (field['name'], typename)
-    else:
-        line = '%s;' % field['name']
-    assert len(line) > 0
-    return line
