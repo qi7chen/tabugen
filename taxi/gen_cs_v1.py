@@ -96,7 +96,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, array_delim)
+        content += "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, array_delim)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) {\n" % space
         content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
@@ -120,13 +120,13 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = "%svar items = %s.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, delim1)
+        content = "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, delim1)
         content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
         content += "%sforeach(string text in items) {\n" % space
         content += '%s    if (text.Length == 0) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, delim2)
+        content += "%s    var item = text.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, delim2)
         content += self.gen_field_assgin_stmt('var key', key_type, 'item[0]', tabs+1)
         content += self.gen_field_assgin_stmt('var value', val_type, 'item[1]', tabs + 1)
         content += '%s    %s%s[key] = value;\n' % (space, prefix, name)
