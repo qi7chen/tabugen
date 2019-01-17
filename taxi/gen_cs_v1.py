@@ -96,7 +96,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split('%s');\n" % (space, row_name, array_delim)
+        content += "%svar items = %s.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, array_delim)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) {\n" % space
         content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
@@ -120,13 +120,13 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = "%svar items = %s.Split('%s');\n" % (space, row_name, delim1)
+        content = "%svar items = %s.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, delim1)
         content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
         content += "%sforeach(string text in items) {\n" % space
-        content += '%s    if (text == "") {\n' % space
+        content += '%s    if (text.Length == 0) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split('%s');\n" % (space, delim2)
+        content += "%s    var item = text.Split('%s', StringSplitOptions.RemoveEmptyEntries);\n" % (space, delim2)
         content += self.gen_field_assgin_stmt('var key', key_type, 'item[0]', tabs+1)
         content += self.gen_field_assgin_stmt('var value', val_type, 'item[1]', tabs + 1)
         content += '%s    %s%s[key] = value;\n' % (space, prefix, name)
@@ -161,7 +161,6 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         idx = 0
         prefix = 'this.'
         for row in rows:
-            content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx, validx)
             name = rows[idx][keyidx].strip()
             name = util.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
@@ -169,12 +168,17 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
+                content += '%s{\n' % (self.TAB_SPACE * 2)
                 content += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, array_delim, 3)
+                content += '%s}\n' % (self.TAB_SPACE * 2)
             elif origin_typename.startswith('map'):
+                content += '%s{\n' % (self.TAB_SPACE * 2)
                 content += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, map_delims, 3)
+                content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
+                content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
                 content += self.gen_field_assgin_stmt(prefix + name, typename, valuetext, 3)
-            content += '%s}\n' % (self.TAB_SPACE*2)
+                content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
         content += '%s}\n\n' % self.TAB_SPACE
         return content
@@ -212,22 +216,26 @@ class CSV1Generator(basegen.CodeGeneratorBase):
                     inner_class_done = True
                     content += self.gen_cs_inner_class_assign(struct, prefix, inner_fields)
             else:
-                content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE*2, idx)
                 origin_type_name = field['original_type_name']
                 typename = lang.map_cs_type(origin_type_name)
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
+                    content += '%s{\n' % (self.TAB_SPACE * 2)
                     content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
+                    content += '%s}\n' % (self.TAB_SPACE * 2)
                 elif origin_type_name.startswith('map'):
+                    content += '%s{\n' % (self.TAB_SPACE * 2)
                     content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, map_delims, 3)
+                    content += '%s}\n' % (self.TAB_SPACE * 2)
                 else:
+                    content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
                         content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
                         vec_idx += 1
                     else:
                         content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
-                content += '%s}\n' % (self.TAB_SPACE*2)
+                    content += '%s}\n' % (self.TAB_SPACE*2)
             idx += 1
         content += '%s}\n\n' % self.TAB_SPACE
         return content

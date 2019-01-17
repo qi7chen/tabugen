@@ -172,7 +172,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * tabs
         elem_type = descriptor.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += '%sString[] tokens = %s.split("\\\\%s", -1);\n' % (space, row_name, array_delim)
+        content += '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, array_delim)
         content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
         content += '%sif (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * (tabs+1))
@@ -199,13 +199,13 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
-        content = '%sString[] tokens = %s.split("\\\\%s", -1);\n' % (space, row_name, delim1)
+        content = '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, delim1)
         content += '%sfor(int i = 0; i < tokens.length; i++) {\n' % space
         content += '%s    String text = tokens[i];\n' % space
         content += '%s    if (text.isEmpty()) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += '%s    String[] item = text.split("\\\\%s", -1);\n' % (space, delim2)
+        content += '%s    String[] item = text.split("\\\\%s");\n' % (space, delim2)
         prefix1 = '%s key' % key_type
         prefix2 = '%s value' % val_type
         content += self.gen_field_assgin_stmt(prefix1, key_type, 'item[0]', tabs + 1)
@@ -548,6 +548,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
                 f = codecs.open(filename, 'w', 'utf-8')
                 f.writelines(content)
                 f.close()
+                print('wrote source file to', filename)
 
         if not no_data or data_only:
             for struct in descriptors:
