@@ -68,7 +68,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(descriptor.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& array = Split(%s, "%s");\n' % (space, row_name, array_delim)
+        content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -91,10 +91,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& mapitems = Split(%s, "%s");\n' % (space, row_name, delim1)
+        content += '%sconst auto& mapitems = Split(%s, "%s", true);\n' % (space, row_name, delim1)
         content += '%sfor (size_t i = 0; i < mapitems.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const auto& kv = Split(mapitems[i], "%s");\n' % (space, delim2)
+        content += '%s    const auto& kv = Split(mapitems[i], "%s", true);\n' % (space, delim2)
         content += '%s    BEATS_ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
