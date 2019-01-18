@@ -351,10 +351,6 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// load data from csv file\n'
         content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
         content += '{\n'
-        content += '    if (filepath == nullptr)\n'
-        content += '    {\n'
-        content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
-        content += '    }\n'
         content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
         content += '    vector<vector<StringPiece>> rows;\n'
         content += '    auto lines = Split(content, "\\r\\n");\n'
@@ -389,10 +385,6 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// load data from csv file\n'
         content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
         content += '{\n'
-        content += '    if (filepath == nullptr)\n'
-        content += '    {\n'
-        content += '        filepath = "/csv/%s.csv";\n' % struct['name'].lower()
-        content += '    }\n'
         content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
         content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
         content += '    auto lines = Split(content, "\\r\\n");\n'
@@ -507,7 +499,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'void %s::LoadAll()\n' % util.config_manager_name
         content += '{\n'
         for struct in descriptors:
-            content += '    %s::Load();\n' % struct['name']
+            content += '    %s::Load("/csv/%s.csv");\n' % (struct['name'], struct['name'].lower())
         content += '}\n\n'
 
         content += 'void %s::ClearAll()\n' % util.config_manager_name
