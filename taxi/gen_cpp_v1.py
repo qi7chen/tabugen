@@ -240,12 +240,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content = ''
 
         if struct['options'][predef.PredefParseKVMode]:
-            content += '    static int Load(const char* filepath = nullptr);\n'
+            content += '    static int Load(const char* filepath);\n'
             content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % struct['name']
             content += '    static const %s* Instance();\n' % struct['name']
             return content
 
-        content += '    static int Load(const char* filepath = nullptr);\n'
+        content += '    static int Load(const char* filepath);\n'
         content += '    static int ParseFromRow(const std::vector<StringPiece>& row, %s* ptr);\n' % struct['name']
         content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
 
@@ -349,7 +349,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     def gen_kv_struct_load_method(self, struct):
         content = ''
         content += '// load data from csv file\n'
-        content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
+        content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
         content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
         content += '    vector<vector<StringPiece>> rows;\n'
@@ -383,7 +383,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         varname = self.get_instance_data_name(struct['name'])
         content += '// load data from csv file\n'
-        content += 'int %s::Load(const char* filepath /* = nullptr */)\n' % struct['name']
+        content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
         content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
         content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
