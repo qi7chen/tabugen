@@ -46,14 +46,14 @@ func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
 	}
 	if row[4] != "" {
 		p.Goods = map[string]uint32{}
-		for _, text := range strings.Split(row[4], "=") {
+		for _, text := range strings.Split(row[4], "&") {
 			if text == "" {
 				continue
 			}
-			var item = strings.Split(text, "&")
-			var value = MustParseTextValue("string", item[0], row[4])
+			var items = strings.Split(text, "=")
+			var value = MustParseTextValue("string", items[0], row[4])
 			var key = value.(string)
-			value = MustParseTextValue("uint32", item[1], row[4])
+			value = MustParseTextValue("uint32", items[1], row[4])
 			var val = value.(uint32)
 			p.Goods[key] = val
 		}
