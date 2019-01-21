@@ -104,6 +104,11 @@ class CodeGeneratorBase:
         datadir = "."
         if predef.OptionOutDataDir in params:
             datadir = params[predef.OptionOutDataDir]
+            try:
+                # print('make dir', datadir)
+                os.makedirs(datadir)
+            except Exception as e:
+                pass
 
         # 置空不必要显示的内容
         rows = struct["data-rows"]

@@ -13,36 +13,49 @@ import util
 
 JAVA_CLASS_TEMPLATE = """
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
+import java.util.function.Function;
 
 public class %s {
 
-    // load file content to lines
-    public static String[] readFileToTextLines(String filepath) {
-        ArrayList<String> lines = new ArrayList<String>();
+    // parse text to boolean value
+    public static boolean parseBool(String text) {
+        if (!text.isEmpty()) {
+            return text.equals("1") ||
+                    text.equalsIgnoreCase("on") ||
+                    text.equalsIgnoreCase("yes")  ||
+                    text.equalsIgnoreCase("true");
+        }
+        return false;
+    }
+
+    public static String readFileContent(String filepath) {
+        StringBuilder sb = new StringBuilder();
         try {
-            File fin = new File(filepath);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fin), "UTF-8"));
-            String line;
+            BufferedReader reader = new BufferedReader(new FileReader(filepath));
+            String line = null;
             while ((line = reader.readLine()) != null) {
-                lines.add(line);
+                sb.append(line);
+                sb.append('\\n'); // line break
             }
             reader.close();
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
         }
-        return lines.toArray(new String[lines.size()]);
+        return sb.toString();
     }
-
-    // parse text to boolean value
-    public static boolean parseBool(String text) {
-        if (!text.isEmpty()) {
-            return text.equals("1") || text.equalsIgnoreCase("on") ||
-                text.equalsIgnoreCase("yes")  || text.equalsIgnoreCase("true");
+    
+    // you can use your own file reader
+    public static Function<String, String> reader;
+    
+    public static String[] readFileToTextLines(String filename) {
+        if (reader == null) {
+            reader = (filepath)-> readFileContent(filepath);
         }
-        return false;
-    }
+        String content = reader.apply(filename);
+        return content.split("\\n", -1);
+    }    
 
 """
 
@@ -175,11 +188,11 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         content += '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, array_delim)
         content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
-        content += '%sif (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * (tabs+1))
+        content += '%s    if (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
         varname = '%s value' % elem_type
         content += self.gen_field_assgin_stmt(varname, elem_type, 'tokens[i]', tabs + 2)
-        content += '%slist[i] = value;\n' % (self.TAB_SPACE * (tabs+2))
-        content += '%s}\n' % (self.TAB_SPACE * (tabs+1))
+        content += '%s        list[i] = value;\n' % (self.TAB_SPACE * tabs)
+        content += '%s    }\n' % (self.TAB_SPACE * tabs)
         content += '%s}\n' % space
         content += '%s%s%s = list;\n' % (space, prefix, name)
         return content
@@ -256,9 +269,9 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         content += '%s// parse fields data from text rows\n' % self.TAB_SPACE
         content += '%spublic void parseFromRows(String[][] rows)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (rows.length < %d) {\n' % (self.TAB_SPACE * 2, len(rows))
-        content += '%sthrow new RuntimeException(String.format("%s: row length out of index, %%d < %d", rows.length));\n' % (
-            self.TAB_SPACE * 3, struct['name'], len(rows))
+        content += '%s    if (rows.length < %d) {\n' % (self.TAB_SPACE, len(rows))
+        content += '%s        throw new RuntimeException(String.format("%s: row length out of index, %%d < %d", rows.length));\n' % (
+            self.TAB_SPACE, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE * 2)
 
         idx = 0
@@ -374,15 +387,15 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
 
         content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sString[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE*2, util.config_manager_name)
-        content += '%sString[][] rows = new String[lines.length][];\n' % (self.TAB_SPACE * 2)
-        content += '%sfor(int i = 0; i < lines.length; i++)\n' % (self.TAB_SPACE * 2)
-        content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += '%sString line = lines[i];\n' % (self.TAB_SPACE * 3)
-        content += '%srows[i] = line.split("\\\\,", -1);\n' % (self.TAB_SPACE * 3)
-        content += '%s}\n' % (self.TAB_SPACE * 2)
-        content += '%sinstance_ = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sinstance_.parseFromRows(rows);\n' % (self.TAB_SPACE * 2)
+        content += '%s    String[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE, util.config_manager_name)
+        content += '%s    String[][] rows = new String[lines.length][];\n' % self.TAB_SPACE
+        content += '%s    for(int i = 0; i < lines.length; i++)\n' % self.TAB_SPACE
+        content += '%s    {\n' % self.TAB_SPACE
+        content += '%s        String line = lines[i];\n' % self.TAB_SPACE
+        content += '%s        rows[i] = line.split("\\\\,", -1);\n' % self.TAB_SPACE
+        content += '%s    }\n' % self.TAB_SPACE
+        content += '%s    instance_ = new %s();\n' % (self.TAB_SPACE, struct['name'])
+        content += '%s    instance_.parseFromRows(rows);\n' % self.TAB_SPACE
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -394,15 +407,17 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sString[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE * 2, util.config_manager_name)
-        content += '%sdata_ = new ArrayList<%s>();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sfor(String line : lines)\n' % (self.TAB_SPACE * 2)
-        content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += '%sString[] row = line.split("\\\\,", -1);\n' % (self.TAB_SPACE * 3)
-        content += '%s%s obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'], struct['name'])
-        content += "%sobj.parseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        content += "%sdata_.add(obj);\n" % (self.TAB_SPACE * 3)
-        content += '%s}\n' % (self.TAB_SPACE * 2)
+        content += '%s    String[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE, util.config_manager_name)
+        content += '%s    data_ = new ArrayList<%s>();\n' % (self.TAB_SPACE, struct['name'])
+        content += '%s    for(String line : lines)\n' % self.TAB_SPACE
+        content += '%s    {\n' % self.TAB_SPACE
+        content += '%s        if (line.isEmpty())\n' % self.TAB_SPACE
+        content += '%s            continue;\n' % self.TAB_SPACE
+        content += '%s        String[] row = line.split("\\\\,", -1);\n' % self.TAB_SPACE
+        content += '%s        %s obj = new %s();\n' % (self.TAB_SPACE, struct['name'], struct['name'])
+        content += "%s        obj.parseFromRow(row);\n" % self.TAB_SPACE
+        content += "%s        data_.add(obj);\n" % self.TAB_SPACE
+        content += '%s     }\n' % self.TAB_SPACE
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -500,10 +515,11 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         mgr_content = ''
         mgr_filename = '%s.java' % util.config_manager_name
 
-        basedir = ''
+        basedir = params.get(predef.OptionOutSourceFile, '.')
+        print(basedir)
         if 'pkg' in params:
             package = params['pkg']
-            names = package.split('.')
+            names = [basedir] + package.split('.')
             basedir = '/'.join(names)
             mgr_content = 'package %s;' % package
             mgr_filename = '%s/%s' % (basedir, mgr_filename)
@@ -511,7 +527,8 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
                 print('make dir', basedir)
                 os.makedirs(basedir)
             except Exception as e:
-                print(e)
+                # print(e)
+                pass
 
         class_dict = {}
         mgr_content += JAVA_CLASS_TEMPLATE % util.config_manager_name
@@ -527,6 +544,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
             if not data_only:
                 content = ''
                 filename = '%s.java' % struct['camel_case_name']
+                # print(filename)
                 if 'pkg' in params:
                     filename = '%s/%s' % (basedir, filename)
                     content += 'package %s;\n\n' % params['pkg']
@@ -535,7 +553,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
                 content += self.generate_class(struct, params)
                 class_dict[filename] = content
 
-                load_func_content += '        %s.loadFromFile("csv/%s.csv");\n' % (struct['name'], struct['name'].lower())
+                load_func_content += '        %s.loadFromFile("%s.csv");\n' % (struct['name'], struct['name'].lower())
 
         load_func_content += '    }\n'
         mgr_content += load_func_content
