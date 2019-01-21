@@ -18,8 +18,11 @@ CPP_METHOD_TEMPLATE = """
     // Clear all configurations
     static void ClearAll();
 
-    //Load content of an asset file
-    static std::string ReadFileContent(const std::string& filepath);
+    // Read content from an asset file
+    static std::string ReadFileContent(const char* filepath);
+    
+    // default loader
+    static std::function<std::string(const char*)> reader;
 """
 
 CPP_PARSE_FUN_TEMPLATE = """
@@ -96,11 +99,11 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%sfor (size_t i = 0; i < mapitems.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    const auto& kv = Split(mapitems[i], "%s", true);\n' % (space, delim2)
-        content += '%s    BEATS_ASSERT(kv.size() == 2);\n' % space
+        content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
         content += '%s        const auto& key = to<%s>(kv[0]);\n' % (space, key_type)
-        content += '%s        BEATS_ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
+        content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
         content += '%s        %s%s[key] = to<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
@@ -280,13 +283,13 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             content += 'const %s* %s::Instance()\n' % (struct['name'], struct['name'])
             content += '{\n'
-            content += '    BEATS_ASSERT(%s != nullptr);\n' % varname
+            content += '    ASSERT(%s != nullptr);\n' % varname
             content += '    return %s;\n' % varname
             content += '}\n\n'
         else:
             content += 'const std::vector<%s>* %s::GetData()\n' % (struct['name'], struct['name'])
             content += '{\n'
-            content += '    BEATS_ASSERT(%s != nullptr);\n' % varname
+            content += '    ASSERT(%s != nullptr);\n' % varname
             content += '    return %s;\n' % varname
             content += '}\n\n'
         return content
@@ -310,8 +313,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// parse data object from csv rows\n'
         content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
-        content += '    BEATS_ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
-        content += '    BEATS_ASSERT(ptr != nullptr);\n'
+        content += '    ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
+        content += '    ASSERT(ptr != nullptr);\n'
         idx = 0
         for row in rows:
             name = rows[idx][keyidx].strip()
@@ -338,8 +341,8 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// parse data object from an csv row\n'
         content += 'int %s::ParseFromRow(const vector<StringPiece>& row, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
-        content += '    BEATS_ASSERT(row.size() >= %d);\n' % len(struct['fields'])
-        content += '    BEATS_ASSERT(ptr != nullptr);\n'
+        content += '    ASSERT(row.size() >= %d);\n' % len(struct['fields'])
+        content += '    ASSERT(ptr != nullptr);\n'
         content += self.gen_all_field_assign_stmt(struct, 'ptr->', 1)
         content += '    return 0;\n'
         content += '}\n\n'
@@ -351,10 +354,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// load data from csv file\n'
         content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
-        content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
+        content += '    string content = %s::reader(filepath);\n' % util.config_manager_name
+        content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
+        content += '    sp.replaceAll("\\r\\n", " \\n");\n'
         content += '    vector<vector<StringPiece>> rows;\n'
-        content += '    auto lines = Split(content, "\\r\\n");\n'
-        content += '    BEATS_ASSERT(!lines.empty());\n'
+        content += '    auto lines = Split(sp, "\\n");\n'
+        content += '    ASSERT(!lines.empty());\n'
         content += '    for (size_t i = 0; i < lines.size(); i++)\n'
         content += '    {\n'
         content += '        if (!lines[i].empty())\n'
@@ -386,9 +391,11 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
         content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
-        content += '    string content = %s::ReadFileContent(filepath);\n' % util.config_manager_name
-        content += '    auto lines = Split(content, "\\r\\n");\n'
-        content += '    BEATS_ASSERT(!lines.empty());\n'
+        content += '    string content = %s::reader(filepath);\n' % util.config_manager_name
+        content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
+        content += '    sp.replaceAll("\\r\\n", " \\n");\n'
+        content += '    auto lines = Split(sp, "\\n");\n'
+        content += '    ASSERT(!lines.empty());\n'
         content += '    for (size_t i = 0; i < lines.size(); i++)\n'
         content += '    {\n'
         content += '        if (!lines[i].empty())\n'
@@ -442,7 +449,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'const %s* %s::Get(%s)\n' % (struct['name'], struct['name'], ', '.join(formal_param))
         content += '{\n'
         content += '    const vector<%s>* dataptr = GetData();\n' % struct['name']
-        content += '    BEATS_ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
+        content += '    ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
         content += '    for (size_t i = 0; i < dataptr->size(); i++)\n'
         content += '    {\n'
         content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, 'get-keys')
@@ -481,7 +488,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '{\n'
         content += '    const vector<%s>* dataptr = GetData();\n' % struct['name']
         content += '    std::vector<const %s*> range;\n' % struct['name']
-        content += '    BEATS_ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
+        content += '    ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
         content += '    for (size_t i = 0; i < dataptr->size(); i++)\n'
         content += '    {\n'
         content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, 'range-keys')
@@ -498,8 +505,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content = ''
         content += 'void %s::LoadAll()\n' % util.config_manager_name
         content += '{\n'
+        content += '    ASSERT(reader);\n'
         for struct in descriptors:
-            content += '    %s::Load("/csv/%s.csv");\n' % (struct['name'], struct['name'].lower())
+            content += '    %s::Load("%s.csv");\n' % (struct['name'], struct['name'].lower())
         content += '}\n\n'
 
         content += 'void %s::ClearAll()\n' % util.config_manager_name
@@ -510,11 +518,14 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '}\n\n'
 
         content += '//Load content of an asset file\n'
-        content += 'std::string %s::ReadFileContent(const std::string& filepath)\n' % util.config_manager_name
+        content += 'std::string %s::ReadFileContent(const char* filepath)\n' % util.config_manager_name
         content += '{\n'
-        content += '    const string& path = CResourceManager::GetInstance()->GetResourcePath(eRT_Resource) + filepath;\n'
-        content += '    CSerializer serializer(path.c_str());\n'
-        content += '    return string((const char*)serializer.GetBuffer(), serializer.GetWritePos());\n'
+        content += '    ASSERT(filepath != nullptr);\n'
+        content += '    std::ifstream ifs(filepath);\n'
+        content += '    ASSERT(!ifs.fail());\n'
+        content += '    std::string content;\n'
+        content += '    content.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());\n'
+        content += '    return std::move(content);\n'
         content += '}\n\n\n'
 
         return content
@@ -541,32 +552,46 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     #
     def run(self, descriptors, args):
         params = util.parse_args(args)
+        headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
+        sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
+
         h_include_headers = [
             '#include <stdint.h>',
             '#include <string>',
             '#include <vector>',
+            '#include <functional>',
             '#include "Utility/Range.h"',
         ]
         header_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n#pragma once\n\n' % util.version_string
         header_content += '\n'.join(h_include_headers) + '\n\n'
 
         cpp_include_headers = [
-            '#include "stdafx.h"',
+            '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
+            '#include <assert.h>',
             '#include <memory>',
-            '#include "AutogenConfig.h"',
+            '#include <fstream>',
             '#include "Utility/Conv.h"',
             '#include "Utility/StringUtil.h"',
-            '#include "Resource/ResourceManager.h"',
         ]
         cpp_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
+        if predef.OptionPchFile in params:
+            pchfile = '#include "%s"' % params[predef.OptionPchFile]
+            cpp_include_headers = [pchfile] + cpp_include_headers
+
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
         cpp_content += 'using namespace std;\n\n'
+        cpp_content += '#ifndef ASSERT\n'
+        cpp_content += '#define ASSERT assert\n'
+        cpp_content += '#endif\n\n'
         cpp_content += CPP_PARSE_FUN_TEMPLATE
 
         if 'pkg' in params:
             header_content += '\nnamespace %s\n{\n\n' % params['pkg']
             cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
+
+        cpp_content += 'std::function<std::string(const char*)> %s::reader = %s::ReadFileContent;\n\n' % (
+            util.config_manager_name, util.config_manager_name)
 
         header_content += 'class %s\n' % util.config_manager_name
         header_content += '{\n'
@@ -595,10 +620,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
             if 'pkg' in params:
                 header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
-            outputfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig')
-            filename = outputfile + '.h'
-            filename = os.path.abspath(filename)
-            util.compare_and_save_content(filename, header_content, 'gbk')
+
+            encoding = params.get(predef.OptionSourceEncoding, 'utf-8')
+            filename = os.path.abspath(headerfile)
+            util.compare_and_save_content(filename, header_content, encoding)
             print('wrote header file to', filename)
 
             cpp_content += static_define_content
@@ -606,9 +631,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             cpp_content += class_content
             if 'pkg' in params:
                 cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
-            filename = outputfile + '.cpp'
-            filename = os.path.abspath(filename)
-            util.compare_and_save_content(filename, cpp_content, 'gbk')
+
+            filename = os.path.abspath(sourcefile)
+            util.compare_and_save_content(filename, cpp_content, encoding)
             print('wrote source file to', filename)
 
         if not no_data or data_only:

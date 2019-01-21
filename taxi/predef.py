@@ -42,6 +42,8 @@ OptionNoData = "no-data"                # 只导出源文件，不导出数据
 OptionArrayDelimeter = "array-delim"    # array类型的分隔符，如|，不能使用csv的逗号
 OptionMapDelimeters = "map-delim"       # map类型的分隔符，如;=，不能使用csv的逗号
 OptionHideColumns = "hide-column"       # 开启隐藏模式
+OptionPchFile = "pch"                   # C++预编译头文件
+OptionSourceEncoding = "encoding"       # 源文件编码
 
 DefaultArrayDelimiter = '|'    # 默认的array分隔符号
 DefaultMapDelimiters = '|='     # 默认的map分隔符号
