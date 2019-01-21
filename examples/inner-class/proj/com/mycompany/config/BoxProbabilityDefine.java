@@ -65,11 +65,13 @@ public class BoxProbabilityDefine
         data_ = new ArrayList<BoxProbabilityDefine>();
         for(String line : lines)
         {
+            if (line.isEmpty())
+                continue;
             String[] row = line.split("\\,", -1);
             BoxProbabilityDefine obj = new BoxProbabilityDefine();
             obj.parseFromRow(row);
             data_.add(obj);
-        }
+         }
     }
 
     // get an item by key
