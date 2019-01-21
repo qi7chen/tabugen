@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 project (CppDemo)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
-set(UTILITY_SRC_DIR ${PROJECT_ROOT_DIR}/../../../bootstrap/cpp)
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -19,28 +18,28 @@ if (WIN32)
     )
 endif()
 
-include_directories(${UTILITY_SRC_DIR})
+include_directories(${PROJECT_ROOT_DIR})
 
 set(ALL_SRC_FILES 
     main.cpp
     AutoGenConfig.h
     AutoGenConfig.cpp
-    ${UTILITY_SRC_DIR}/Utility/Conv.h
-    ${UTILITY_SRC_DIR}/Utility/Conv.cpp
-    ${UTILITY_SRC_DIR}/Utility/Logging.h
-    ${UTILITY_SRC_DIR}/Utility/Logging.cpp
-    ${UTILITY_SRC_DIR}/Utility/Portability.h
-    ${UTILITY_SRC_DIR}/Utility/Preprocessor.h
-    ${UTILITY_SRC_DIR}/Utility/Range.cpp
-    ${UTILITY_SRC_DIR}/Utility/Range.h
-    ${UTILITY_SRC_DIR}/Utility/ScopeGuard.h
-    ${UTILITY_SRC_DIR}/Utility/SparseByteSet.h
-    ${UTILITY_SRC_DIR}/Utility/Traits.h
-    ${UTILITY_SRC_DIR}/Utility/UncaughtException.h
-    ${UTILITY_SRC_DIR}/Utility/StringUtil.h
-    ${UTILITY_SRC_DIR}/Utility/StringUtil.cpp
-    ${UTILITY_SRC_DIR}/Utility/WinUtil.h
-    ${UTILITY_SRC_DIR}/Utility/WinUtil.cpp
+    Utility/Conv.h
+    Utility/Conv.cpp
+    Utility/Logging.h
+    Utility/Logging.cpp
+    Utility/Portability.h
+    Utility/Preprocessor.h
+    Utility/Range.cpp
+    Utility/Range.h
+    Utility/ScopeGuard.h
+    Utility/SparseByteSet.h
+    Utility/Traits.h
+    Utility/UncaughtException.h
+    Utility/StringUtil.h
+    Utility/StringUtil.cpp
+    Utility/WinUtil.h
+    Utility/WinUtil.cpp
     )
 
     

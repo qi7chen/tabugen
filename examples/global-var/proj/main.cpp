@@ -27,8 +27,9 @@ static std::string readfile(const char* filepath)
 
 int main(int argc, char* argv[])
 {
-    config::AutogenConfigManager::reader = readfile;
-    config::AutogenConfigManager::LoadAll();
+    using namespace config;
+    AutogenConfigManager::reader = readfile;
+    AutogenConfigManager::LoadAll();
     std::cout << "FreeCompleteSeconds: " << GlobalPropertyDefine::Instance()->FreeCompleteSeconds << std::endl;
     return 0;
 }
