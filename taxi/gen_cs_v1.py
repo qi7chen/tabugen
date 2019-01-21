@@ -11,8 +11,11 @@ import lang
 import util
 
 
-
 CSHARP_METHOD_TEMPLATE = """
+    public delegate void ContentReader(string filepath, Action<string> cb);
+    
+    public static ContentReader reader = ReadFileContent;
+    
     public static bool ParseBool(string text)
     {
         if (text.Length > 0)
@@ -24,7 +27,7 @@ CSHARP_METHOD_TEMPLATE = """
         }
         return false;
     }
-    
+        
     public static List<string> ReadTextToLines(string content)
     {
         List<string> lines = new List<string>();
@@ -37,16 +40,15 @@ CSHARP_METHOD_TEMPLATE = """
             }
         }
         return lines;
-    }    
-    
-    public static void ReadAssetFileToLines(string filename, Action<List<string>> fn)
-    {
-        string filepath = string.Format("csv/{0}", filename);
-        AssetsManager.GetStreamingContent(filepath, (content) => {
-            var lines = ReadTextToLines(content);
-            fn(lines);
-        });
     }
+    
+    public static void ReadFileContent(string filepath, Action<string> cb)
+    {
+        StreamReader reader = new StreamReader(filepath);
+        var content = reader.ReadToEnd();
+        cb(content);
+    }
+    
 """
 
 
@@ -457,19 +459,21 @@ class CSV1Generator(basegen.CodeGeneratorBase):
     def gen_global_class(self, descriptors):
         content = ''
         content += 'public class %s\n{\n' % util.config_manager_name
+        content += CSHARP_METHOD_TEMPLATE
         content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
         for i in range(len(descriptors)):
             struct = descriptors[i]
-            content += '        ReadAssetFileToLines("%s.csv", delegate (List<string> lines)\n' % struct['name'].lower()
+            content += '        reader("%s.csv", (content) =>\n' % struct['name'].lower()
             content += '        {\n'
+            content += '            var lines = ReadTextToLines(content);\n'
             content += '            %s.LoadFromLines(lines);\n' % struct['name']
             if i + 1 == len(descriptors):
                 content += '\n'
                 content += '            if (completeFunc != null) completeFunc();\n'
             content += '        });\n\n'
         content += '    }\n'
-        content += CSHARP_METHOD_TEMPLATE
+
         content += '}\n\n'
         return content
 
