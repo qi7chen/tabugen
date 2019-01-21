@@ -25,23 +25,23 @@ set(ALL_SRC_FILES
     main.cpp
     AutoGenConfig.h
     AutoGenConfig.cpp
-    ${PROJECT_ROOT_DIR}/Utility/Conv.h
-    ${PROJECT_ROOT_DIR}/Utility/Conv.cpp
-    ${PROJECT_ROOT_DIR}/Utility/Logging.h
-    ${PROJECT_ROOT_DIR}/Utility/Logging.cpp
-    ${PROJECT_ROOT_DIR}/Utility/Portability.h
-    ${PROJECT_ROOT_DIR}/Utility/Preprocessor.h
-    ${PROJECT_ROOT_DIR}/Utility/Range.cpp
-    ${PROJECT_ROOT_DIR}/Utility/Range.h
-    ${PROJECT_ROOT_DIR}/Utility/ScopeGuard.h
-    ${PROJECT_ROOT_DIR}/Utility/SparseByteSet.h
-    ${PROJECT_ROOT_DIR}/Utility/Traits.h
-    ${PROJECT_ROOT_DIR}/Utility/UncaughtException.h
-    ${PROJECT_ROOT_DIR}/Utility/StringUtil.h
-    ${PROJECT_ROOT_DIR}/Utility/StringUtil.cpp
-    ${PROJECT_ROOT_DIR}/Utility/WinUtil.h
-    ${PROJECT_ROOT_DIR}/Utility/WinUtil.cpp
+    ${UTILITY_SRC_DIR}/Utility/Conv.h
+    ${UTILITY_SRC_DIR}/Utility/Conv.cpp
+    ${UTILITY_SRC_DIR}/Utility/Logging.h
+    ${UTILITY_SRC_DIR}/Utility/Logging.cpp
+    ${UTILITY_SRC_DIR}/Utility/Portability.h
+    ${UTILITY_SRC_DIR}/Utility/Preprocessor.h
+    ${UTILITY_SRC_DIR}/Utility/Range.cpp
+    ${UTILITY_SRC_DIR}/Utility/Range.h
+    ${UTILITY_SRC_DIR}/Utility/ScopeGuard.h
+    ${UTILITY_SRC_DIR}/Utility/SparseByteSet.h
+    ${UTILITY_SRC_DIR}/Utility/Traits.h
+    ${UTILITY_SRC_DIR}/Utility/UncaughtException.h
+    ${UTILITY_SRC_DIR}/Utility/StringUtil.h
+    ${UTILITY_SRC_DIR}/Utility/StringUtil.cpp
+    ${UTILITY_SRC_DIR}/Utility/WinUtil.h
+    ${UTILITY_SRC_DIR}/Utility/WinUtil.cpp
     )
 
     
-add_executable(${ProjectName} ${ALL_TEST_SRC_FILES})
+add_executable(CppDemo ${ALL_SRC_FILES})

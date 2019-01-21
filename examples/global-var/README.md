@@ -17,3 +17,10 @@
 * `key-value-column` 参数名称和参数值所在的列，以逗号分隔
 * `value-type-column`  参数值类型所在列
 * `comment-column`  参数注释所在列
+
+### export-args参数
+* `pkg` 生成的命名空间
+* `pch` C++的预编译头名称
+* `encoding` 源文件的编码格式
+* `out-src-file` 生成的源文件名称
+* `outdata-dir` 生成csv文件到哪个路径
