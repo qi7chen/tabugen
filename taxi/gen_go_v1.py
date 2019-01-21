@@ -91,10 +91,10 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '%s    if text == "" {\n' % space
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
-        content += '%s    var item = strings.Split(text, "%s")\n' % (space, delim2)
-        content += '%s    var value = MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var items = strings.Split(text, "%s")\n' % (space, delim2)
+        content += '%s    var value = MustParseTextValue("%s", items[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    value = MustParseTextValue("%s", items[1], %s)\n' % (space, val_type, row_name)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
