@@ -10,6 +10,10 @@ import predef
 import lang
 import util
 
+GO_VAR_TEMPLATE = """
+// you can use your own loader by resetting default loader
+var DefaultLoader DataSourceLoader
+"""
 
 # Go code generator
 class GoV1Generator(basegen.CodeGeneratorBase):
@@ -42,7 +46,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = strutil.MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
+            content += '%svar value = MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
@@ -60,7 +64,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
-        content += '%s    var value = strutil.MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
+        content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
@@ -88,9 +92,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var item = strings.Split(text, "%s")\n' % (space, delim2)
-        content += '%s    var value = strutil.MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var value = MustParseTextValue("%s", item[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = strutil.MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    value = MustParseTextValue("%s", item[1], %s)\n' % (space, val_type, row_name)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -269,8 +273,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # KV模式下的Load方法
     def gen_load_method_kv(self, struct):
         content = ''
-        content += 'func Load%s(loader fileutil.DataSourceLoader) (*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
+        content += 'func Load%s() (*%s, error) {\n' % (struct['name'], struct['name'])
+        content += '\tbuf, err := DefaultLoader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\treturn nil, err\n'
         content += '\t}\n'
@@ -296,8 +300,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if struct['options']['parse-kv-mode']:
             return self.gen_load_method_kv(struct)
 
-        content += 'func Load%sList(loader fileutil.DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
+        content += 'func Load%sList() ([]*%s, error) {\n' % (struct['name'], struct['name'])
+        content += '\tbuf, err := DefaultLoader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\t    return nil, err\n'
         content += '\t}\n'
@@ -339,13 +343,12 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += 'package %s\n' % params['pkg']
         content += 'import (\n'
         content += '    "encoding/csv"\n'
-        content += '    "fatchoy/x/fileutil"\n'
-        content += '    "fatchoy/x/strutil"\n'
         content += '    "io"\n'
-        content += '    "strconv"\n'
         content += '    "strings"\n'
         content += ')\n'
         content += self.gen_const_names(descriptors)
+
+        content += GO_VAR_TEMPLATE
 
         data_only = params.get(predef.OptionDataOnly, False)
         no_data = params.get(predef.OptionNoData, False)
