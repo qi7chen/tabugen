@@ -1,7 +1,13 @@
 ## SQL模式
 
-双击`导出Go.bat`文件即可导出Go代码，需要依赖Python, openpyxl, pymysql
+双击`导出Go.bat`文件即可导出Go代码
 
+需要依赖 openpyxl, pymysql
+
+`pip install openpyxl pymysql`
+
+
+从MySQL里的table导出为struct结构体，用于简单的关系数据库映射(ORM)
 
 ## 配置格式
 
