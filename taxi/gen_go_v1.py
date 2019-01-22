@@ -273,8 +273,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # KV模式下的Load方法
     def gen_load_method_kv(self, struct):
         content = ''
-        content += 'func Load%s() (*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := DefaultLoader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
+        content += 'func Load%s(loader DataSourceLoader) (*%s, error) {\n' % (struct['name'], struct['name'])
+        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\treturn nil, err\n'
         content += '\t}\n'
@@ -300,8 +300,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         if struct['options']['parse-kv-mode']:
             return self.gen_load_method_kv(struct)
 
-        content += 'func Load%sList() ([]*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := DefaultLoader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
+        content += 'func Load%sList(loader DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
+        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
         content += '\tif err != nil {\n'
         content += '\t    return nil, err\n'
         content += '\t}\n'
