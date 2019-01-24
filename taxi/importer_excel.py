@@ -8,6 +8,7 @@ import openpyxl
 import descriptor
 import predef
 import util
+from termcolor import colored
 
 # excel导入
 class ExcelImporter:
@@ -233,23 +234,25 @@ class ExcelImporter:
         descriptors = []
         for filename in self.filenames:
             print(util.current_time(), "start parse", filename)
-            wb = openpyxl.load_workbook(filename, data_only=True)
-            descriptor = self.import_one(wb)
-            descriptor['source'] = filename
-            descriptors.append(descriptor)
+            descriptor = self.import_one(filename)
+            if descriptor is not None:
+                descriptor['source'] = filename
+                descriptors.append(descriptor)
         return descriptors
 
     # 导入单个文件
-    def import_one(self, wb):
+    def import_one(self, filename):
+        wb = openpyxl.load_workbook(filename, data_only=True)
         sheet_names = wb.sheetnames
         assert len(sheet_names) > 0
-        assert predef.PredefMetaSheet in sheet_names, 'no meta sheet found'
-        sheet = wb[predef.PredefMetaSheet]
-        assert sheet is not None
-        self.parse_meta_sheet(sheet)
-        sheet = wb[sheet_names[0]]
-        assert sheet is not None
-        return self.parse_data_sheet(sheet)
+        if predef.PredefMetaSheet not in sheet_names:
+            print(colored('%s, no meta sheet found' % filename, 'red'))
+        else:
+            sheet = wb[predef.PredefMetaSheet]  # a sheet named 'meta'
+            self.parse_meta_sheet(sheet)        #
+            sheet = wb[sheet_names[0]]          # default parse first sheet
+            assert sheet is not None
+            return self.parse_data_sheet(sheet)
 
 
 
