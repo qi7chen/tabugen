@@ -1,29 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8de99f97-7633-47b8-8c86-b246de564565" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Conv.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Conv.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Logging.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Logging.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Portability.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Preprocessor.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Range.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Range.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/ScopeGuard.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/SparseByteSet.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/StringUtil.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/StringUtil.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/Traits.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/UncaughtException.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/WinUtil.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../bootstrap/cpp/Utility/WinUtil.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../boxprobabilitydefine.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../com/mycompany/config/AutogenConfigManager.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../com/mycompany/config/BoxProbabilityDefine.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../导出Java.bat" beforeDir="false" afterPath="$PROJECT_DIR$/../导出Java.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../taxi/gen_java_v1.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../taxi/gen_java_v1.py" afterDir="false" />
-    </list>
+    <list default="true" id="8de99f97-7633-47b8-8c86-b246de564565" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,11 +10,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/lang/String.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="280">
+            <state relative-caret-position="39831">
               <caret line="2420" column="20" selection-start-line="2420" selection-start-column="20" selection-end-line="2420" selection-end-column="20" />
               <folding>
                 <element signature="e#94598#94599#0" expanded="true" />
@@ -58,7 +36,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/io/BufferedReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
+            <state relative-caret-position="1462">
               <caret line="114" column="11" selection-start-line="114" selection-start-column="11" selection-end-line="114" selection-end-column="11" />
               <folding>
                 <element signature="e#3011#3012#0" expanded="true" />
@@ -71,8 +49,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Sample.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
-              <caret line="13" column="32" lean-forward="true" selection-start-line="13" selection-start-column="32" selection-end-line="13" selection-end-column="32" />
+            <state relative-caret-position="238">
+              <caret line="14" column="46" lean-forward="true" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -83,8 +61,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/com/mycompany/config/AutogenConfigManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="550">
-              <caret line="39" column="29" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
+            <state relative-caret-position="629">
+              <caret line="39" column="29" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
               <folding>
                 <element signature="e#1444#1445#0" expanded="true" />
                 <element signature="e#1521#1522#0" expanded="true" />
@@ -108,7 +86,7 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="337" />
+    <option name="x" value="373" />
     <option name="y" value="67" />
     <option name="width" value="1400" />
     <option name="height" value="964" />
@@ -120,6 +98,7 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -131,7 +110,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -172,19 +150,16 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="337" y="67" width="1400" height="964" extended-state="0" />
+    <frame x="373" y="67" width="1400" height="964" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info id="Image Layers" />
-      <window_info id="Designer" />
-      <window_info id="UI Designer" />
-      <window_info id="Capture Tool" />
-      <window_info id="Favorites" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20223881" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20522387" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
-      <window_info anchor="bottom" id="Messages" />
+      <window_info id="Image Layers" order="2" />
+      <window_info id="Designer" order="3" />
+      <window_info id="UI Designer" order="4" />
+      <window_info id="Capture Tool" order="5" />
+      <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32972324" />
@@ -192,14 +167,18 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="right" id="Palette" />
-      <window_info anchor="right" id="Theme Preview" />
-      <window_info anchor="right" id="Maven" />
-      <window_info anchor="right" id="Capture Analysis" />
-      <window_info anchor="right" id="Palette&#9;" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="Messages" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="right" id="Maven" order="4" />
+      <window_info anchor="right" id="Theme Preview" order="5" />
+      <window_info anchor="right" id="Capture Analysis" order="6" />
+      <window_info anchor="right" id="Palette&#9;" order="7" />
     </layout>
   </component>
   <component name="XDebuggerManager">
@@ -236,13 +215,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/io/BufferedReader.java">
+    <entry file="file://$PROJECT_DIR$/com/mycompany/config/BoxProbabilityDefine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="114" column="11" selection-start-line="114" selection-start-column="11" selection-end-line="114" selection-end-column="11" />
+        <state relative-caret-position="206">
+          <caret line="38" column="40" lean-forward="true" selection-start-line="38" selection-start-column="40" selection-end-line="38" selection-end-column="40" />
           <folding>
-            <element signature="e#3011#3012#0" expanded="true" />
-            <element signature="e#3058#3059#0" expanded="true" />
+            <element signature="e#606#630#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/lang/String.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="39831">
+          <caret line="2420" column="20" selection-start-line="2420" selection-start-column="20" selection-end-line="2420" selection-end-column="20" />
+          <folding>
+            <element signature="e#94598#94599#0" expanded="true" />
+            <element signature="e#94636#94637#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -254,31 +243,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/lang/String.java">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_181/src.zip!/java/io/BufferedReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="2420" column="20" selection-start-line="2420" selection-start-column="20" selection-end-line="2420" selection-end-column="20" />
+        <state relative-caret-position="1462">
+          <caret line="114" column="11" selection-start-line="114" selection-start-column="11" selection-end-line="114" selection-end-column="11" />
           <folding>
-            <element signature="e#94598#94599#0" expanded="true" />
-            <element signature="e#94636#94637#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/com/mycompany/config/BoxProbabilityDefine.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="38" column="40" lean-forward="true" selection-start-line="38" selection-start-column="40" selection-end-line="38" selection-end-column="40" />
-          <folding>
-            <element signature="e#606#630#0" expanded="true" />
+            <element signature="e#3011#3012#0" expanded="true" />
+            <element signature="e#3058#3059#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/com/mycompany/config/AutogenConfigManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="550">
-          <caret line="39" column="29" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
+        <state relative-caret-position="629">
+          <caret line="39" column="29" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
           <folding>
             <element signature="e#1444#1445#0" expanded="true" />
             <element signature="e#1521#1522#0" expanded="true" />
@@ -288,8 +267,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Sample.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="13" column="32" lean-forward="true" selection-start-line="13" selection-start-column="32" selection-end-line="13" selection-end-column="32" />
+        <state relative-caret-position="238">
+          <caret line="14" column="46" lean-forward="true" selection-start-line="14" selection-start-column="46" selection-end-line="14" selection-end-column="46" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

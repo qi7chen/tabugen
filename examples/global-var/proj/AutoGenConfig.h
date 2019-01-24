@@ -32,15 +32,17 @@ public:
 // 全局数值配置
 struct GlobalPropertyDefine 
 {
-    float     GoldExchangeTimeFactor1 = 0.0;     // 金币兑换时间参数1
-    float     GoldExchangeTimeFactor2 = 0.0;     // 金币兑换时间参数2
-    float     GoldExchangeTimeFactor3 = 0.0;     // 金币兑换时间参数3
-    uint32_t  GoldExchangeResource1Price = 0;    // 金币兑换资源1价格
-    uint32_t  GoldExchangeResource2Price = 0;    // 金币兑换资源2价格
-    uint32_t  GoldExchangeResource3Price = 0;    // 金币兑换资源3价格
-    uint32_t  GoldExchangeResource4Price = 0;    // 金币兑换资源4价格
-    uint32_t  FreeCompleteSeconds = 0;           // 免费立即完成时间
-    uint32_t  CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
+    float                       GoldExchangeTimeFactor1 = 0.0;     // 金币兑换时间参数1
+    float                       GoldExchangeTimeFactor2 = 0.0;     // 金币兑换时间参数2
+    float                       GoldExchangeTimeFactor3 = 0.0;     // 金币兑换时间参数3
+    uint32_t                    GoldExchangeResource1Price = 0;    // 金币兑换资源1价格
+    uint32_t                    GoldExchangeResource2Price = 0;    // 金币兑换资源2价格
+    uint32_t                    GoldExchangeResource3Price = 0;    // 金币兑换资源3价格
+    uint32_t                    GoldExchangeResource4Price = 0;    // 金币兑换资源4价格
+    uint32_t                    FreeCompleteSeconds = 0;           // 免费立即完成时间
+    uint32_t                    CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
+    std::vector<int>            SpawnLevelLimit;                   // 最大刷新个数显示
+    std::map<std::string, int>  FirstRechargeReward;               // 首充奖励
 
     static int Load(const char* filepath);
     static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, GlobalPropertyDefine* ptr);

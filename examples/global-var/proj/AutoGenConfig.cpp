@@ -98,7 +98,7 @@ int GlobalPropertyDefine::Load(const char* filepath)
 // parse data object from csv rows
 int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows, GlobalPropertyDefine* ptr)
 {
-    ASSERT(rows.size() >= 9 && rows[0].size() >= 3);
+    ASSERT(rows.size() >= 11 && rows[0].size() >= 3);
     ASSERT(ptr != nullptr);
     ptr->GoldExchangeTimeFactor1 = ParseValue<float>(rows[0][3]);
     ptr->GoldExchangeTimeFactor2 = ParseValue<float>(rows[1][3]);
@@ -109,6 +109,27 @@ int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows,
     ptr->GoldExchangeResource4Price = ParseValue<uint32_t>(rows[6][3]);
     ptr->FreeCompleteSeconds = ParseValue<uint32_t>(rows[7][3]);
     ptr->CancelBuildReturnPercent = ParseValue<uint32_t>(rows[8][3]);
+    {
+        const auto& array = Split(rows[9][3], "|", true);
+        for (size_t i = 0; i < array.size(); i++)
+        {
+            ptr->SpawnLevelLimit.push_back(ParseValue<int>(array[i]));
+        }
+    }
+    {
+        const auto& mapitems = Split(rows[10][3], "|", true);
+        for (size_t i = 0; i < mapitems.size(); i++)
+        {
+            const auto& kv = Split(mapitems[i], "=", true);
+            ASSERT(kv.size() == 2);
+            if(kv.size() == 2)
+            {
+                const auto& key = ParseValue<std::string>(kv[0]);
+                ASSERT(ptr->FirstRechargeReward.count(key) == 0);
+                ptr->FirstRechargeReward[key] = ParseValue<int>(kv[1]);
+            }
+        }
+    }
     return 0;
 }
 

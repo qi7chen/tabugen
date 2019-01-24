@@ -64,8 +64,8 @@ func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
 	return nil
 }
 
-func LoadNewbieGuideDefineList() ([]*NewbieGuideDefine, error) {
-	buf, err := DefaultLoader.LoadDataByKey(KeyNewbieGuideDefineName)
+func LoadNewbieGuideDefineList(loader DataSourceLoader) ([]*NewbieGuideDefine, error) {
+	buf, err := loader.LoadDataByKey(KeyNewbieGuideDefineName)
 	if err != nil {
 		return nil, err
 	}

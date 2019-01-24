@@ -164,29 +164,23 @@ public class SoldierPropertyDefine
 
 public class AutogenConfigManager
 {
+
     public delegate void ContentReader(string filepath, Action<string> cb);
-
-    public static ContentReader reader = ReadFileContent;
-
-    public static void LoadAllConfig(Action completeFunc) 
-    {
-        reader("soldierpropertydefine.csv", (content) => 
-        {
-            var lines = ReadTextToLines(content);
-            SoldierPropertyDefine.LoadFromLines(lines);
-
-            if (completeFunc != null) completeFunc();
-        });
-
-    }
-
-    public static void ReadFileContent(string filepath, Action<string> cb)
-    {
-        StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
-    }
     
+    public static ContentReader reader = ReadFileContent;
+    
+    public static bool ParseBool(string text)
+    {
+        if (text.Length > 0)
+        {
+            return string.Equals(text, "1") ||
+                string.Equals(text, "on", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(text, "yes", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
+        
     public static List<string> ReadTextToLines(string content)
     {
         List<string> lines = new List<string>();
@@ -200,18 +194,26 @@ public class AutogenConfigManager
         }
         return lines;
     }
-
-    public static bool ParseBool(string text)
+    
+    public static void ReadFileContent(string filepath, Action<string> cb)
     {
-        if (text.Length > 0)
+        StreamReader reader = new StreamReader(filepath);
+        var content = reader.ReadToEnd();
+        cb(content);
+    }
+    
+    public static void LoadAllConfig(Action completeFunc) 
+    {
+        reader("soldierpropertydefine.csv", (content) =>
         {
-            return string.Equals(text, "1") ||
-                string.Equals(text, "on", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(text, "yes", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
+            var lines = ReadTextToLines(content);
+            SoldierPropertyDefine.LoadFromLines(lines);
+
+            if (completeFunc != null) completeFunc();
+        });
+
     }
-    }
+}
+
 
 }

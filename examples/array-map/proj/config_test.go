@@ -7,9 +7,8 @@ import (
 func TestAutogenConfig(t *testing.T) {
 	var loader = NewFileLoader(".")
 	defer loader.Close()
-	DefaultLoader = loader
 
-	conflist, err := LoadNewbieGuideDefineList()
+	conflist, err := LoadNewbieGuideDefineList(loader)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
