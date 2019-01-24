@@ -75,7 +75,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
+        content += '%s    %s%s.push_back(ParseValue<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
@@ -102,9 +102,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const auto& key = to<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        const auto& key = ParseValue<%s>(kv[0]);\n' % (space, key_type)
         content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
-        content += '%s        %s%s[key] = to<%s>(kv[1]);\n' % (space, prefix, name, val_type)
+        content += '%s        %s%s[key] = ParseValue<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
