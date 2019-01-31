@@ -60,6 +60,7 @@ class ExcelImporter:
         if self.options.get(predef.PredefSkipFileOption, "") != "":
             skip_names = self.options[predef.PredefSkipFileOption].split(' ')
 
+        print('skipped names', skip_names)
         for filename in filenames:
             ignored = False
             for skip_name in skip_names:
@@ -261,7 +262,7 @@ class TestExcelImporter(unittest.TestCase):
     def test_enum_file(self):
         filename = '''E:\Projects\Client\Documents\新表\兵种.xlsx'''
         importer = ExcelImporter()
-        importer.initialize('filename=%s' % filename)
+        importer.initialize('file=%s' % filename)
         importer.import_all()
 
 
