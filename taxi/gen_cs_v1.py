@@ -138,7 +138,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
@@ -284,7 +284,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
             inner_typename = '%s[]' % inner_type_class
 
-        content += '// %s\n' % struct['comment']
+        content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'public class %s\n{\n' % struct['name']
 
         vec_done = False
@@ -348,7 +348,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
 
     def gen_kv_struct_load_method(self, struct):
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])

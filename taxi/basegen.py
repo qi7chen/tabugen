@@ -44,7 +44,7 @@ class CodeGeneratorBase:
 
     # 读取KV模式的字段
     def get_struct_kv_fields(self, struct):
-        rows = struct["data-rows"]
+        rows = struct["data_rows"]
         keycol = struct["options"][predef.PredefKeyColumn]
         valcol = struct["options"][predef.PredefValueColumn]
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
@@ -111,7 +111,7 @@ class CodeGeneratorBase:
                 pass
 
         # 置空不必要显示的内容
-        rows = struct["data-rows"]
+        rows = struct["data_rows"]
         if struct['options'][predef.PredefParseKVMode]:
             typecol = int(struct['options'][predef.PredefValueTypeColumn])
             commentcol = int(struct['options'][predef.PredefCommentColumn])

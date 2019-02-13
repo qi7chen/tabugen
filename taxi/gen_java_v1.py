@@ -98,7 +98,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             fields = self.get_struct_kv_fields(struct)
 
-        content += '// %s\n' % struct['comment']
+        content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'public class %s\n{\n' % struct['name']
 
         inner_class_done = False
@@ -252,7 +252,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
@@ -379,7 +379,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
 
     # KV模式的load
     def gen_kv_struct_load_method(self, struct):
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])

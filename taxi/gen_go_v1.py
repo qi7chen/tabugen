@@ -120,7 +120,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         vec_done = False
         vec_names, vec_name = self.get_vec_field_range(struct)
 
-        content += '// %s\n' % struct['comment']
+        content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct\n{\n' % struct['camel_case_name']
         for field in fields:
             field_name = field['name']
@@ -156,7 +156,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
     # KV模式的ParseFromRow方法
     def gen_kv_parse_method(self, struct):
         content = ''
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])

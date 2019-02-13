@@ -172,7 +172,7 @@ class ExcelImporter:
         data_rows = self.pad_data_rows(data_rows, struct)
         data_rows = self.validate_data_rows(data_rows, struct)
         struct["options"] = self.meta
-        struct["data-rows"] = data_rows
+        struct["data_rows"] = data_rows
 
         return struct
 
@@ -253,8 +253,9 @@ class ExcelImporter:
             self.parse_meta_sheet(sheet)        #
             sheet = wb[sheet_names[0]]          # default parse first sheet
             assert sheet is not None
-            return self.parse_data_sheet(sheet)
-
+            struct = self.parse_data_sheet(sheet)
+            struct['file'] = os.path.basename(filename)
+            return struct
 
 
 class TestExcelImporter(unittest.TestCase):

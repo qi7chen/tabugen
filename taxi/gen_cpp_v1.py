@@ -296,7 +296,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
-        rows = struct['data-rows']
+        rows = struct['data_rows']
         keycol = struct['options'][predef.PredefKeyColumn]
         valcol = struct['options'][predef.PredefValueColumn]
         typcol = int(struct['options'][predef.PredefValueTypeColumn])

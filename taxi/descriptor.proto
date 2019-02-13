@@ -40,7 +40,8 @@ message StructDescriptor {
     string comment = 3;                     // comment of this struct
     repeated FieldDescriptor fields = 4;    // field descriptors
     map<string,string> options = 5;         // struct options
-    string source = 6;                      // data source
+    string data_rows = 6;                   // data rows
+    string file = 7;                        // source file name
 }
 
 message FieldDescriptor {
