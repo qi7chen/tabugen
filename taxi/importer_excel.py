@@ -213,13 +213,16 @@ class ExcelImporter:
         assert len(sheet_names) > 0
         if predef.PredefMetaSheet not in sheet_names:
             print('%s, no meta sheet found' % filename, 'red')
+            excel_util.close_workbook(wb)
         else:
             # parse meta sheet
-            sheet_data = excel_util.read_workbook_sheet_to_csv(wb, predef.PredefMetaSheet)
+            sheet_data = excel_util.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
             self.parse_meta_sheet(sheet_data)
 
             # default parse first sheet
-            sheet_data = excel_util.read_workbook_sheet_to_csv(wb, sheet_names[0])
+            sheet_data = excel_util.read_workbook_sheet_to_rows(wb, sheet_names[0])
+            excel_util.close_workbook(wb)
+
             struct = self.parse_data_sheet(sheet_data)
             struct['file'] = os.path.basename(filename)
             return struct
@@ -228,10 +231,11 @@ class ExcelImporter:
 class TestExcelImporter(unittest.TestCase):
 
     def test_enum_file(self):
-        filename = '''新建筑.xlsx'''
+        filename = u'''新建筑.xlsx'''
         importer = ExcelImporter()
         importer.initialize('file=%s' % filename)
         all = importer.import_all()
+        print(util.current_time(), 'done')
         assert len(all) > 0
         for struct in all:
             print(struct)

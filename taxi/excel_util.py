@@ -2,18 +2,45 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import sys
 import openpyxl
 import descriptor
 
+xlapp = None
+if sys.platform == 'win32':
+    import win32com.client
+    # Visual Studio Tools for Office
+    # https://www.microsoft.com/en-us/download/details.aspx?id=56961
+    # xlapp = win32com.client.gencache.EnsureDispatch('Excel.Application')
+
+
 # read to workbook and its sheet names
 def read_workbook_and_sheet_names(filename):
-    wb = openpyxl.load_workbook(filename, data_only=True)
-    return wb, wb.sheetnames
+    global xlapp
+    if xlapp is None:
+        wb = openpyxl.load_workbook(filename, data_only=True)
+        wb.close()
+        return wb, wb.sheetnames
+    else:
+        print('load workbook', filename)
+		names = []
+        wb = xlapp.Workbooks.Open(filename)
+        for sheet in wb.Worksheets:
+            names.append(sheet.Name)
+        return wb, names
 
 # read sheet data to csv rows
-def read_workbook_sheet_to_csv(workbook, sheet_name):
+def read_workbook_sheet_to_rows(wb, sheet_name):
+    global xlapp
+    if xlapp is None:
+        return read_workbook_sheet_to_rows_openpyxl(wb, sheet_name)
+    else:
+        return read_workbook_sheet_to_rows_pycom(wb, sheet_name)
+
+#
+def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
     rows = []
-    sheet = workbook[sheet_name]
+    sheet = wb[sheet_name]
     assert sheet is not None, sheet_name
     for i, sheet_row in enumerate(sheet.rows):
         row = []
@@ -24,6 +51,19 @@ def read_workbook_sheet_to_csv(workbook, sheet_name):
             row.append(text.strip())
         rows.append(row)
     return rows
+
+#
+def read_workbook_sheet_to_rows_pycom(wb, sheet_name):
+    rows = []
+	sheet = wb.Worksheets[sheet_name]
+    return rows
+
+# TODO:
+def close_workbook(wb):
+    if xlapp is None:   # this object is from openpyxl
+        wb.close()
+    else:
+        wb.Close()  #
 
 
 # 有些数据在excel里输入为整数，但存储形式为浮点数
