@@ -77,7 +77,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
     def gen_java_inner_class(self, struct, inner_fields):
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += '    public class %s \n' % class_name
+        content += '    public static class %s \n' % class_name
         content += '    {\n'
         max_name_len = util.max_field_length(inner_fields, 'name', None)
         max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_java_type)
@@ -88,7 +88,7 @@ class JavaV1Generator(basegen.CodeGeneratorBase):
             name = lang.name_with_default_java_value(field, typename)
             name = util.pad_spaces(name, max_name_len + 8)
             content += '        public %s %s // %s\n' % (typename.strip(), name, field['comment'])
-        content += '    };\n\n'
+        content += '    }\n\n'
         return content
 
     def gen_java_class(self, struct):
