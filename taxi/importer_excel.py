@@ -3,12 +3,11 @@
 # See accompanying files LICENSE.
 
 import os
-import unittest
-import openpyxl
 import descriptor
 import predef
 import util
-from termcolor import colored
+import excel_util
+import unittest
 
 # excel导入
 class ExcelImporter:
@@ -73,10 +72,9 @@ class ExcelImporter:
 
 
     # 解析excel表中的meta sheet
-    def parse_meta_sheet(self, sheet):
-        rows = util.read_sheet_to_csv(sheet)
+    def parse_meta_sheet(self, sheet_rows):
         meta = {}
-        for row in rows:
+        for row in sheet_rows:
             if len(row) >= 2:
                 key = row[0].strip()
                 value = row[1].strip()
@@ -97,8 +95,7 @@ class ExcelImporter:
 
 
     # 解析数据列
-    def parse_data_sheet(self, sheet):
-        rows = util.read_sheet_to_csv(sheet)
+    def parse_data_sheet(self, rows):
         assert len(rows) > 0
 
         # validate meta index
@@ -119,9 +116,7 @@ class ExcelImporter:
 
         struct['comment'] = self.meta.get(predef.PredefClassComment, "")
 
-        class_name = sheet.title
-        if predef.PredefClassName in self.meta:
-            class_name = self.meta[predef.PredefClassName]
+        class_name = self.meta[predef.PredefClassName]
         assert len(class_name) > 0
         struct['name'] = class_name
         struct['camel_case_name'] = util.camel_case(class_name)
@@ -170,7 +165,7 @@ class ExcelImporter:
 
         data_rows = rows[data_start_index - 1: data_end_index]
         data_rows = self.pad_data_rows(data_rows, struct)
-        data_rows = self.validate_data_rows(data_rows, struct)
+        data_rows = excel_util.validate_data_rows(data_rows, struct)
         struct["options"] = self.meta
         struct["data_rows"] = data_rows
 
@@ -191,42 +186,12 @@ class ExcelImporter:
 
         # 删除未导出的列
         new_rows = []
-        fields = sorted(struct['fields'], key=lambda field: field['column_index'])
+        fields = sorted(struct['fields'], key=lambda fld: fld['column_index'])
         for row in rows:
             new_row = []
             for field in fields:
                 new_row.append(row[field['column_index']-1])
             new_rows.append(new_row)
-        return new_rows
-
-
-    # 将excel里配置为整数，但存储形式为浮点的进行四舍五入
-    def validate_data_rows(self, rows, struct):
-        new_rows = []
-        fields = struct['fields']
-        for row in rows:
-            assert len(row) >= len(fields), (len(fields), len(row), row)
-            for j in range(len(row)):
-                if j >= len(fields):
-                    continue
-                typename = fields[j]['type_name']
-                if descriptor.is_integer_type(typename) and len(row[j]) > 0:
-                    f = float(row[j])  # test if ok
-                    if row[j].find('.') >= 0:
-                        print('round interger', row[j], '-->', round(f))
-                        row[j] = str(round(float(row[j])))
-                else:
-                    if descriptor.is_floating_type(typename) and len(row[j]) > 0:
-                        f = float(row[j])  # test if ok
-
-            # skip all empty row
-            is_all_empty = True
-            for text in row:
-                if len(text.strip()) > 0:
-                    is_all_empty = False
-                    break
-            if not is_all_empty:
-                new_rows.append(row)
         return new_rows
 
 
@@ -243,17 +208,19 @@ class ExcelImporter:
 
     # 导入单个文件
     def import_one(self, filename):
-        wb = openpyxl.load_workbook(filename, data_only=True)
+        wb, sheet_names = excel_util.read_workbook_and_sheet_names(filename)
         sheet_names = wb.sheetnames
         assert len(sheet_names) > 0
         if predef.PredefMetaSheet not in sheet_names:
-            print(colored('%s, no meta sheet found' % filename, 'red'))
+            print('%s, no meta sheet found' % filename, 'red')
         else:
-            sheet = wb[predef.PredefMetaSheet]  # a sheet named 'meta'
-            self.parse_meta_sheet(sheet)        #
-            sheet = wb[sheet_names[0]]          # default parse first sheet
-            assert sheet is not None
-            struct = self.parse_data_sheet(sheet)
+            # parse meta sheet
+            sheet_data = excel_util.read_workbook_sheet_to_csv(wb, predef.PredefMetaSheet)
+            self.parse_meta_sheet(sheet_data)
+
+            # default parse first sheet
+            sheet_data = excel_util.read_workbook_sheet_to_csv(wb, sheet_names[0])
+            struct = self.parse_data_sheet(sheet_data)
             struct['file'] = os.path.basename(filename)
             return struct
 
@@ -261,10 +228,13 @@ class ExcelImporter:
 class TestExcelImporter(unittest.TestCase):
 
     def test_enum_file(self):
-        filename = '''E:\Projects\Client\Documents\新表\兵种.xlsx'''
+        filename = '''新建筑.xlsx'''
         importer = ExcelImporter()
         importer.initialize('file=%s' % filename)
-        importer.import_all()
+        all = importer.import_all()
+        assert len(all) > 0
+        for struct in all:
+            print(struct)
 
 
 if __name__ == '__main__':

@@ -129,18 +129,6 @@ def remove_suffix_number(text):
             break
     return text[:n]
 
-def read_sheet_to_csv(sheet):
-    rows = []
-    for i, sheet_row in enumerate(sheet.rows):
-        row = []
-        for j, cell in enumerate(sheet_row):
-            text = ''
-            if cell.value is not None:
-                text = str(cell.value)
-            row.append(text.strip())
-        rows.append(row)
-    return rows
-
 
 # 比较内容不相同时再写入文件
 def compare_and_save_content(filename, content, enc):
