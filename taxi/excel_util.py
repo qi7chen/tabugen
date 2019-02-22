@@ -23,7 +23,7 @@ def read_workbook_and_sheet_names(filename):
         return wb, wb.sheetnames
     else:
         print('load workbook', filename)
-		names = []
+        names = []
         wb = xlapp.Workbooks.Open(filename)
         for sheet in wb.Worksheets:
             names.append(sheet.Name)
@@ -55,7 +55,7 @@ def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
 #
 def read_workbook_sheet_to_rows_pycom(wb, sheet_name):
     rows = []
-	sheet = wb.Worksheets[sheet_name]
+    sheet = wb.Worksheets[sheet_name]
     return rows
 
 # TODO:
