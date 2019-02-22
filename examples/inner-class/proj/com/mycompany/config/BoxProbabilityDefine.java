@@ -3,15 +3,15 @@ package com.mycompany.config;
 import java.util.*;
 
 
-// 
+// , 随机宝箱.xlsx
 public class BoxProbabilityDefine
 {
-    public class ProbabilityGoodsDefine 
+    public static class ProbabilityGoodsDefine 
     {
         public String GoodsID = "";       // 物品1id
         public int Num = 0;            // 物品1数量
         public int Probability = 0;    // 物品1概率
-    };
+    }
 
     public String                             ID = "";             // ID
     public int                                Total = 0;           // 奖励总数
