@@ -10,11 +10,6 @@ import predef
 import lang
 import util
 
-GO_VAR_TEMPLATE = """
-// you can use your own loader by resetting default loader
-var DefaultLoader DataSourceLoader
-"""
-
 # Go code generator
 class GoV1Generator(basegen.CodeGeneratorBase):
     TAB_SPACE = '\t'
@@ -347,8 +342,6 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content += '    "strings"\n'
         content += ')\n'
         content += self.gen_const_names(descriptors)
-
-        content += GO_VAR_TEMPLATE
 
         data_only = params.get(predef.OptionDataOnly, False)
         no_data = params.get(predef.OptionNoData, False)

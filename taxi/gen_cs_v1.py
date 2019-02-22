@@ -499,7 +499,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += 'using System.Collections.Generic;\n'
 
         if 'pkg' in params:
-            content += '\nnamespace %s\n{\n\n' % params['pkg']
+            content += '\nnamespace %s\n{\n' % params['pkg']
 
         data_only = params.get(predef.OptionDataOnly, False)
         no_data = params.get(predef.OptionNoData, False)
