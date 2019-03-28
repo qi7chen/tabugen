@@ -2,16 +2,16 @@
 
 老司机，带你飞
 
-taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中的数据抽象过程。
+taxi是一个配置导出源码生成工具，旨在简化逻辑开发中的数据抽象过程。
 
 
 # 为什么要使用配置导出工具
 
-* 策划与开发功能规定excel表格格式；
 
-* 双击导出前后端(C++、C#、Java、Go)数据结及配置加载代码；
+* 可以迅速搭建系统原型；
 
-* 策划开心玩数据，开发专心写业务；
+* 支持主流静态语言(C++、C#、Java、Go)；
+
 
 
 # taxi的设计
@@ -39,8 +39,8 @@ taxi是一个配置导出源码生成工具，旨在简化游戏逻辑开发中�
 
 请查看examples目录下的示例：
 
-* [示例1](examples/C#/basic) 演示excel配置的基础用法，导出为C#(Unity);
-* [示例2](examples/C++/global-var) 演示如何配置全局参数表，导出为C++;
+* [示例1](examples/CSharp/basic) 演示excel配置的基础用法，导出为C#(Unity);
+* [示例2](examples/Cpp/global-var) 演示如何配置全局参数表，导出为C++;
 * [示例3](examples/Go/array-map) 演示如何使用array和map类型，导出为Go;
 * [示例4](examples/Java/inner-class) 演示如何在excel内部再定义嵌入类型，导出为Java;
 * [示例5](examples/Go/sql) 演示如何从MySQL数据库导出代码，导出为Go;
