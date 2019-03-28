@@ -5,7 +5,9 @@ cd ..\..\
 set rootDir=%cd%
 cd %currentDir%
 
-set taxi_alias=python %rootDir%\taxi\taxi.py
+set PYTHONPATH=%rootDir%
+
+set taxi_alias=python %rootDir%\taxi\cli.py
 set importArgs="file=%currentDir%\Ëæ»ú±¦Ïä.xlsx"
 set exportArgs="pkg=com.mycompany.config,encoding=gbk,outdata-dir=%currentDir%\proj\csv,out-src-file=%currentDir%\proj"
 
