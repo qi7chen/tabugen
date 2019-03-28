@@ -3,11 +3,12 @@
 # See accompanying files LICENSE.
 
 import os
-import descriptor
-import predef
-import util
-import excel_util
 import unittest
+import taxi.descriptor.types as types
+import taxi.descriptor.predef as predef
+import taxi.descriptor.strutil as strutil
+import taxi.importer.xlsxwrap as xlsxwrap
+
 
 # excel导入
 class ExcelImporter:
@@ -23,7 +24,7 @@ class ExcelImporter:
 
 
     def initialize(self, argtext):
-        self.options = util.parse_args(argtext)
+        self.options = strutil.parse_args(argtext)
         self.make_filenames()
 
 
@@ -36,7 +37,7 @@ class ExcelImporter:
                      files.append(dirpath + os.sep + filename)
         filenames = []
         for filename in files:
-            if not util.is_ignored_filename(filename):
+            if not xlsxwrap.is_ignored_filename(filename):
                 filename = os.path.abspath(filename)
                 filenames.append(filename)
         return filenames
@@ -119,7 +120,7 @@ class ExcelImporter:
         class_name = self.meta[predef.PredefClassName]
         assert len(class_name) > 0
         struct['name'] = class_name
-        struct['camel_case_name'] = util.camel_case(class_name)
+        struct['camel_case_name'] = strutil.camel_case(class_name)
 
         comment_index = -1
         if predef.PredefCommentRow in self.meta:
@@ -136,24 +137,24 @@ class ExcelImporter:
                 continue
             field = {}
             field["name"] = name_row[i]
-            field["camel_case_name"] = util.camel_case(name_row[i])
+            field["camel_case_name"] = strutil.camel_case(name_row[i])
             field["original_type_name"] = type_row[i]
-            field["type"] = descriptor.get_type_by_name(type_row[i])
-            field["type_name"] = descriptor.get_name_of_type(field["type"])
+            field["type"] = types.get_type_by_name(type_row[i])
+            field["type_name"] = types.get_name_of_type(field["type"])
             field["column_index"] = i + 1
 
             assert field["name"] not in fields_names, field["name"]
             fields_names[field["name"]] = True
 
             if prev_field is not None:
-                is_vector = util.is_vector_fields(prev_field, field)
+                is_vector = strutil.is_vector_fields(prev_field, field)
                 # print('is vector', is_vector, prev_field, field)
                 if is_vector:
                     prev_field["is_vector"] = True
                     field["is_vector"] = True
             prev_field = field
 
-            assert field["type"] != descriptor.Type_Unknown
+            assert field["type"] != types.Type_Unknown
             assert field["type_name"] != ""
 
             field["comment"] = " "
@@ -165,7 +166,7 @@ class ExcelImporter:
 
         data_rows = rows[data_start_index - 1: data_end_index]
         data_rows = self.pad_data_rows(data_rows, struct)
-        data_rows = excel_util.validate_data_rows(data_rows, struct)
+        data_rows = xlsxwrap.validate_data_rows(data_rows, struct)
         struct["options"] = self.meta
         struct["data_rows"] = data_rows
 
@@ -199,7 +200,7 @@ class ExcelImporter:
     def import_all(self):
         descriptors = []
         for filename in self.filenames:
-            print(util.current_time(), "start parse", filename)
+            print(strutil.current_time(), "start parse", filename)
             descriptor = self.import_one(filename)
             if descriptor is not None:
                 descriptor['source'] = filename
@@ -208,20 +209,20 @@ class ExcelImporter:
 
     # 导入单个文件
     def import_one(self, filename):
-        wb, sheet_names = excel_util.read_workbook_and_sheet_names(filename)
+        wb, sheet_names = xlsxwrap.read_workbook_and_sheet_names(filename)
         sheet_names = wb.sheetnames
         assert len(sheet_names) > 0
         if predef.PredefMetaSheet not in sheet_names:
             print('%s, no meta sheet found' % filename, 'red')
-            excel_util.close_workbook(wb)
+            xlsxwrap.close_workbook(wb)
         else:
             # parse meta sheet
-            sheet_data = excel_util.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
+            sheet_data = xlsxwrap.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
             self.parse_meta_sheet(sheet_data)
 
             # default parse first sheet
-            sheet_data = excel_util.read_workbook_sheet_to_rows(wb, sheet_names[0])
-            excel_util.close_workbook(wb)
+            sheet_data = xlsxwrap.read_workbook_sheet_to_rows(wb, sheet_names[0])
+            xlsxwrap.close_workbook(wb)
 
             struct = self.parse_data_sheet(sheet_data)
             struct['file'] = os.path.basename(filename)
@@ -235,7 +236,7 @@ class TestExcelImporter(unittest.TestCase):
         importer = ExcelImporter()
         importer.initialize('file=%s' % filename)
         all = importer.import_all()
-        print(util.current_time(), 'done')
+        print(strutil.current_time(), 'done')
         assert len(all) > 0
         for struct in all:
             print(struct)

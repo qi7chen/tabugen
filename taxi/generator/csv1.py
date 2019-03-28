@@ -4,11 +4,12 @@
 
 import os
 import codecs
-import descriptor
-import basegen
-import predef
-import lang
-import util
+import taxi.descriptor.types as types
+import taxi.descriptor.predef as predef
+import taxi.descriptor.lang as lang
+import taxi.descriptor.strutil as strutil
+import taxi.generator.genutil as genutil
+import taxi.version as version
 
 
 CSHARP_METHOD_TEMPLATE = """
@@ -53,7 +54,7 @@ CSHARP_METHOD_TEMPLATE = """
 
 
 # C# code generator
-class CSV1Generator(basegen.CodeGeneratorBase):
+class CSV1Generator:
     TAB_SPACE = '    '
 
     def __init__(self):
@@ -68,7 +69,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     # 字段比较
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = self.get_struct_keys(struct, key, lang.map_cs_type)
+        keys = genutil.get_struct_keys(struct, key, lang.map_cs_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -81,7 +82,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, util.config_manager_name, valuetext)
+            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, strutil.config_manager_name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
@@ -96,7 +97,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         content = ''
         space = self.TAB_SPACE * tabs
-        elem_type = descriptor.array_element_type(typename)
+        elem_type = types.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
         content += "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, array_delim)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
@@ -118,7 +119,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             delim2 = '\\\\'
 
         space = self.TAB_SPACE * tabs
-        k, v = descriptor.map_key_value_types(typename)
+        k, v = types.map_key_value_types(typename)
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
@@ -144,9 +145,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        validx, valfield = self.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
         array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
@@ -164,7 +165,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         prefix = 'this.'
         for row in rows:
             name = rows[idx][keyidx].strip()
-            name = util.camel_case(name)
+            name = strutil.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
             typename = lang.map_cs_type(origin_typename)
             valuetext = 'rows[%d][%d]' % (idx, validx)
@@ -196,10 +197,10 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         inner_class_done = False
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
 
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRow(string[] row)\n' % self.TAB_SPACE
@@ -247,7 +248,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        start, end, step = self.get_inner_class_range(struct)
+        start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '        %s%s = new %s[%d];\n' % (prefix, inner_var_name, inner_class_type, (end-start)/step)
         content += '        for (int i = %s, j = 0; i < %s; i += %s, j++) \n' % (start, end, step)
@@ -272,12 +273,12 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
-            fields = self.get_struct_kv_fields(struct)
+            fields = genutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_cs_inner_class(struct, inner_fields)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -288,10 +289,10 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         content += 'public class %s\n{\n' % struct['name']
 
         vec_done = False
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
 
-        max_name_len = util.max_field_length(fields, 'name', None)
-        max_type_len = util.max_field_length(fields, 'original_type_name', lang.map_cs_type)
+        max_name_len = strutil.max_field_length(fields, 'name', None)
+        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cs_type)
         if len(inner_typename) > max_type_len:
             max_type_len = len(inner_typename)
 
@@ -299,20 +300,20 @@ class CSV1Generator(basegen.CodeGeneratorBase):
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
-                    typename = util.pad_spaces(inner_typename, max_type_len)
+                    typename = strutil.pad_spaces(inner_typename, max_type_len)
                     content += '    public %s %s = null; \n' % (typename, inner_var_name)
                     inner_class_done = True
             else:
                 typename = lang.map_cs_type(field['original_type_name'])
                 assert typename != "", field['original_type_name']
-                typename = util.pad_spaces(typename, max_type_len + 1)
+                typename = strutil.pad_spaces(typename, max_type_len + 1)
                 if field['name'] not in vec_names:
                     name = lang.name_with_default_cs_value(field, typename)
-                    name = util.pad_spaces(name, max_name_len + 8)
+                    name = strutil.pad_spaces(name, max_name_len + 8)
                     content += '    public %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
                     name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
-                    name = util.pad_spaces(name, max_name_len + 8)
+                    name = strutil.pad_spaces(name, max_name_len + 8)
                     content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
                     vec_done = True
 
@@ -324,14 +325,14 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         class_name = struct["options"][predef.PredefInnerTypeClass]
         content += 'public class %s \n' % class_name
         content += '{\n'
-        max_name_len = util.max_field_length(inner_fields, 'name', None)
-        max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
+        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
+        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
         for field in inner_fields:
             typename = lang.map_cs_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
-            typename = util.pad_spaces(typename, max_type_len + 1)
+            typename = strutil.pad_spaces(typename, max_type_len + 1)
             name = lang.name_with_default_cs_value(field, typename)
-            name = util.pad_spaces(name, max_name_len + 8)
+            name = strutil.pad_spaces(name, max_name_len + 8)
             content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
         content += '};\n\n'
         return content
@@ -394,7 +395,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return ''
 
-        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
+        keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
         if len(keys) == 0:
             return ''
 
@@ -428,7 +429,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         if predef.PredefRangeMethodKeys not in struct['options']:
             return ''
 
-        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
+        keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
         assert len(keys) > 0
 
         formal_param = []
@@ -458,7 +459,7 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
     def gen_global_class(self, descriptors):
         content = ''
-        content += 'public class %s\n{\n' % util.config_manager_name
+        content += 'public class %s\n{\n' % strutil.config_manager_name
         content += CSHARP_METHOD_TEMPLATE
         content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
@@ -491,8 +492,8 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
 
     def run(self, descriptors, args):
-        params = util.parse_args(args)
-        content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
+        params = strutil.parse_args(args)
+        content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         content += 'using System;\n'
         content += 'using System.IO;\n'
         content += 'using System.Linq;\n'
@@ -505,9 +506,9 @@ class CSV1Generator(basegen.CodeGeneratorBase):
         no_data = params.get(predef.OptionNoData, False)
 
         for struct in descriptors:
-            print(util.current_time(), 'start generate', struct['source'])
-            self.setup_comment(struct)
-            self.setup_key_value_mode(struct)
+            print(strutil.current_time(), 'start generate', struct['source'])
+            genutil.setup_comment(struct)
+            genutil.setup_key_value_mode(struct)
             if not data_only:
                 content += self.generate_class(struct)
 
@@ -526,6 +527,6 @@ class CSV1Generator(basegen.CodeGeneratorBase):
 
         if not no_data or data_only:
             for struct in descriptors:
-                self.write_data_rows(struct, params)
+                genutil.write_data_rows(struct, params)
 
 

@@ -2,13 +2,13 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from importer_excel import ExcelImporter
-from importer_mysql import MySQLImporter
-from gen_cpp_v1 import CppV1Generator
-from gen_cs_v1 import CSV1Generator
-from gen_go_v1 import GoV1Generator
-from gen_go_v2 import GoV2Generator
-from gen_java_v1 import JavaV1Generator
+from taxi.importer.excel import ExcelImporter
+from taxi.importer.mysql import MySQLImporter
+from taxi.generator.cppv1 import CppV1Generator
+from taxi.generator.csv1 import CSV1Generator
+from taxi.generator.javav1 import JavaV1Generator
+from taxi.generator.gov1 import GoV1Generator
+from taxi.generator.gov2 import GoV2Generator
 
 # data importers
 importer_registry = {
@@ -28,6 +28,7 @@ generator_registry = {
 
 def get_importer(name):
     return importer_registry.get(name, None)
+
 
 def get_generator(name):
     return generator_registry.get(name, None)

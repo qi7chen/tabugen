@@ -4,14 +4,15 @@
 
 import os
 import codecs
-import basegen
-import descriptor
-import predef
-import lang
-import util
+import taxi.descriptor.types as types
+import taxi.descriptor.predef as predef
+import taxi.descriptor.lang as lang
+import taxi.generator.genutil as genutil
+import taxi.descriptor.strutil as strutil
+import taxi.version as version
 
 # Go code generator
-class GoV1Generator(basegen.CodeGeneratorBase):
+class GoV1Generator():
     TAB_SPACE = '\t'
 
     def __init__(self):
@@ -55,7 +56,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         space = self.TAB_SPACE * tabs
         content = ''
-        elem_type = descriptor.array_element_type(typename)
+        elem_type = types.array_element_type(typename)
         elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
@@ -76,7 +77,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             delim2 = '\\\\'
 
         space = self.TAB_SPACE * tabs
-        k, v = descriptor.map_key_value_types(typename)
+        k, v = types.map_key_value_types(typename)
         key_type = lang.map_go_type(k)
         val_type = lang.map_go_type(v)
 
@@ -100,12 +101,12 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content = ''
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
-            fields = self.get_struct_kv_fields(struct)
+            fields = genutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_go_inner_struct(struct, inner_fields)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -113,7 +114,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
             inner_typename = '[]%s' % inner_type_class
 
         vec_done = False
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct\n{\n' % struct['camel_case_name']
@@ -157,9 +158,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        validx, valfield = self.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
         array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
@@ -173,7 +174,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         for row in rows:
             content += '\tif rows[%d][%d] != "" {\n' % (idx, validx)
             name = rows[idx][keyidx].strip()
-            name = util.camel_case(name)
+            name = strutil.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
             typename = lang.map_go_type(origin_typename)
             valuetext = 'rows[%d][%d]' % (idx, validx)
@@ -200,10 +201,10 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
 
         vec_idx = 0
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         content = ''
         content += 'func (p *%s) ParseFromRow(row []string) error {\n' % struct['camel_case_name']
@@ -247,7 +248,7 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        start, end, step = self.get_inner_class_range(struct)
+        start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for i := %s; i < %s; i += %s {\n' % (start, end, step)
         content += '        var item %s;\n' % inner_class_type
@@ -333,8 +334,8 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
 
     def run(self, descriptors, args):
-        params = util.parse_args(args)
-        content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
+        params = strutil.parse_args(args)
+        content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         content += 'package %s\n' % params['pkg']
         content += 'import (\n'
         content += '    "encoding/csv"\n'
@@ -347,9 +348,9 @@ class GoV1Generator(basegen.CodeGeneratorBase):
         no_data = params.get(predef.OptionNoData, False)
 
         for struct in descriptors:
-            print(util.current_time(), 'start generate', struct['source'])
-            self.setup_comment(struct)
-            self.setup_key_value_mode(struct)
+            print(strutil.current_time(), 'start generate', struct['source'])
+            genutil.setup_comment(struct)
+            genutil.setup_key_value_mode(struct)
             if not data_only:
                 content += self.generate(struct)
 
@@ -369,4 +370,4 @@ class GoV1Generator(basegen.CodeGeneratorBase):
 
         if data_only or not no_data:
             for struct in descriptors:
-                self.write_data_rows(struct, params)
+                genutil.write_data_rows(struct, params)

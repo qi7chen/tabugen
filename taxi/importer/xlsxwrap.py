@@ -4,38 +4,40 @@
 
 import sys
 import openpyxl
-import descriptor
+import taxi.descriptor.types as types
 
-xlapp = None
-if sys.platform == 'win32':
-    import win32com.client
-    # Visual Studio Tools for Office
-    # https://www.microsoft.com/en-us/download/details.aspx?id=56961
-    # xlapp = win32com.client.gencache.EnsureDispatch('Excel.Application')
+# TODO: speedup excel parsing
+#
+# Visual Studio Tools for Office
+# https://www.microsoft.com/en-us/download/details.aspx?id=56961
+# xlapp = win32com.client.gencache.EnsureDispatch('Excel.Application')
+
+ignored_extension = [
+    '~$',
+    '-TNP-',
+    ' - 副本',
+]
+
+
+def is_ignored_filename(filename):
+    for text in ignored_extension:
+        if filename.find(text) >= 0:
+            return True
+    return False
 
 
 # read to workbook and its sheet names
 def read_workbook_and_sheet_names(filename):
-    global xlapp
-    if xlapp is None:
-        wb = openpyxl.load_workbook(filename, data_only=True)
-        wb.close()
-        return wb, wb.sheetnames
-    else:
-        print('load workbook', filename)
-        names = []
-        wb = xlapp.Workbooks.Open(filename)
-        for sheet in wb.Worksheets:
-            names.append(sheet.Name)
-        return wb, names
+    print('load workbook', filename)
+    wb = openpyxl.load_workbook(filename, data_only=True)
+    wb.close()
+    return wb, wb.sheetnames
+
 
 # read sheet data to csv rows
 def read_workbook_sheet_to_rows(wb, sheet_name):
-    global xlapp
-    if xlapp is None:
-        return read_workbook_sheet_to_rows_openpyxl(wb, sheet_name)
-    else:
-        return read_workbook_sheet_to_rows_pycom(wb, sheet_name)
+    return read_workbook_sheet_to_rows_openpyxl(wb, sheet_name)
+
 
 #
 def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
@@ -52,18 +54,10 @@ def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
         rows.append(row)
     return rows
 
-#
-def read_workbook_sheet_to_rows_pycom(wb, sheet_name):
-    rows = []
-    sheet = wb.Worksheets[sheet_name]
-    return rows
 
 # TODO:
 def close_workbook(wb):
-    if xlapp is None:   # this object is from openpyxl
-        wb.close()
-    else:
-        wb.Close()  #
+    wb.close()
 
 
 # 有些数据在excel里输入为整数，但存储形式为浮点数
@@ -76,13 +70,13 @@ def validate_data_rows(rows, struct):
             if j >= len(fields):
                 continue
             typename = fields[j]['type_name']
-            if descriptor.is_integer_type(typename) and len(row[j]) > 0:
+            if types.is_integer_type(typename) and len(row[j]) > 0:
                 f = float(row[j])  # test if ok
                 if row[j].find('.') >= 0:
                     print('round interger', row[j], '-->', round(f))
                     row[j] = str(round(float(row[j])))
             else:
-                if descriptor.is_floating_type(typename) and len(row[j]) > 0:
+                if types.is_floating_type(typename) and len(row[j]) > 0:
                     f = float(row[j])  # test if ok
 
         # skip all empty row

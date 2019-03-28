@@ -13,13 +13,12 @@ import datetime
 import unittest
 
 
-version_string = '1.0.1'
-
 config_manager_name = "AutogenConfigManager"
 
 
 def current_time():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
 
 # 最长串的大小
 def max_field_length(table, key, f):
@@ -41,7 +40,6 @@ def pad_spaces(text, min_len):
     return text
 
 
-
 # snake case to camel case
 def camel_case(s):
     if s == '':
@@ -57,6 +55,7 @@ def random_word(length):
    return ''.join(random.choice(letters) for i in range(length))
 
 
+# a=1,b=2 => {a:1,b:2}
 def parse_args(text):
     map = {}
     if len(text) == 0:
@@ -66,19 +65,6 @@ def parse_args(text):
         assert len(kv) == 2, kv
         map[kv[0].strip()] = kv[1].strip()
     return map
-
-
-ignoreExcelPattern = [
-    '~$',
-    '-TNP-',
-    ' - 副本',
-]
-
-def is_ignored_filename(filename):
-    for text in ignoreExcelPattern:
-        if filename.find(text) >= 0:
-            return True
-    return False
 
 
 # 最长共同前缀
@@ -117,7 +103,8 @@ def is_vector_fields(prev, cur):
         return n1 + 1 == n2
     return False
 
-#
+
+# remove suffice
 def remove_suffix_number(text):
     n = len(text)
     if n == 0:
@@ -196,6 +183,7 @@ class TestUtils(unittest.TestCase):
             out = common_prefix(item[0], item[1])
             print(out)
             self.assertEqual(out, item[2])
+
 
 if __name__ == '__main__':
     unittest.main()

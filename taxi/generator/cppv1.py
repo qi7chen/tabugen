@@ -4,11 +4,12 @@
 
 import os
 import unittest
-import descriptor
-import basegen
-import predef
-import lang
-import util
+import taxi.descriptor.types as types
+import taxi.descriptor.predef as predef
+import taxi.descriptor.lang as lang
+import taxi.descriptor.strutil as strutil
+import taxi.generator.genutil as genutil
+import taxi.version as version
 
 
 CPP_METHOD_TEMPLATE = """
@@ -42,7 +43,7 @@ inline T ParseValue(StringPiece text)
 
 
 # C++ code generator
-class CppV1Generator(basegen.CodeGeneratorBase):
+class CppV1Generator:
     TAB_SPACE = '    '
 
     def __init__(self):
@@ -56,7 +57,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         return '_instance_%s' % name.lower()
 
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = self.get_struct_keys(struct, key, lang.map_cpp_type)
+        keys = genutil.get_struct_keys(struct, key, lang.map_cpp_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -70,7 +71,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             array_delim = '\\\\'
 
         space = self.TAB_SPACE * (tabs + 1)
-        elemt_type = lang.map_cpp_type(descriptor.array_element_type(typename))
+        elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
         content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
@@ -90,7 +91,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if delim2 == '\\':
             delim2 = '\\\\'
 
-        k, v = descriptor.map_key_value_types(typename)
+        k, v = types.map_key_value_types(typename)
         key_type = lang.map_cpp_type(k)
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
@@ -115,7 +116,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        start, end, step = self.get_inner_class_range(struct)
+        start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
         content += '    {\n'
@@ -137,9 +138,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
 
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
         vec_idx = 0
         space = self.TAB_SPACE * tabs
         for field in struct['fields']:
@@ -174,12 +175,12 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'struct %s \n{\n' % struct['name']
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
-            fields = self.get_struct_kv_fields(struct)
+            fields = genutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = self.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_inner_struct_define(struct, inner_fields)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -187,10 +188,10 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             inner_typename = 'std::vector<%s>' % inner_type_class
 
         vec_done = False
-        vec_names, vec_name = self.get_vec_field_range(struct)
+        vec_names, vec_name = genutil.get_vec_field_range(struct)
 
-        max_name_len = util.max_field_length(fields, 'name', None)
-        max_type_len = util.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
+        max_name_len = strutil.max_field_length(fields, 'name', None)
+        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
         if len(inner_typename) > max_type_len:
             max_type_len = len(inner_typename)
 
@@ -198,22 +199,22 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
-                    typename = util.pad_spaces(inner_typename, max_type_len + 1)
-                    name = util.pad_spaces(inner_var_name, max_name_len + 8)
+                    typename = strutil.pad_spaces(inner_typename, max_type_len + 1)
+                    name = strutil.pad_spaces(inner_var_name, max_name_len + 8)
                     content += '    %s %s; //\n' % (typename, name)
                     inner_class_done = True
 
             else:
                 typename = lang.map_cpp_type(field['original_type_name'])
                 assert typename != "", field['original_type_name']
-                typename = util.pad_spaces(typename, max_type_len + 1)
+                typename = strutil.pad_spaces(typename, max_type_len + 1)
                 if field_name not in vec_names:
                     name = lang.name_with_default_cpp_value(field, typename)
-                    name = util.pad_spaces(name, max_name_len + 8)
+                    name = strutil.pad_spaces(name, max_name_len + 8)
                     content += '    %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
                     name = '%s[%d];' % (vec_name, len(vec_names))
-                    name = util.pad_spaces(name, max_name_len + 8)
+                    name = strutil.pad_spaces(name, max_name_len + 8)
                     content += '    %s %s // %s\n' % (typename, name, field['comment'])
                     vec_done = True
 
@@ -225,14 +226,14 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         class_name = struct["options"][predef.PredefInnerTypeClass]
         content += '    struct %s \n' % class_name
         content += '    {\n'
-        max_name_len = util.max_field_length(inner_fields, 'name', None)
-        max_type_len = util.max_field_length(inner_fields, 'original_type_name', lang.map_cpp_type)
+        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
+        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cpp_type)
         for field in inner_fields:
             typename = lang.map_cpp_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
-            typename = util.pad_spaces(typename, max_type_len + 1)
+            typename = strutil.pad_spaces(typename, max_type_len + 1)
             name = lang.name_with_default_cpp_value(field, typename)
-            name = util.pad_spaces(name, max_name_len + 8)
+            name = strutil.pad_spaces(name, max_name_len + 8)
             content += '        %s %s // %s\n' % (typename, name, field['comment'])
         content += '    };\n\n'
 
@@ -253,7 +254,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
 
         if predef.PredefGetMethodKeys in struct['options']:
-            get_keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
+            get_keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
             if len(get_keys) > 0:
                 get_args = []
                 for tpl in get_keys:
@@ -265,7 +266,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                 content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
 
         if predef.PredefRangeMethodKeys in struct['options']:
-            range_keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
+            range_keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
             range_args = []
             for tpl in range_keys:
                 typename = tpl[0]
@@ -302,9 +303,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = self.get_field_by_column_index(struct, keycol)
-        validx, valfield = self.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = self.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
         array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
@@ -354,7 +355,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '// load data from csv file\n'
         content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
-        content += '    string content = %s::reader(filepath);\n' % util.config_manager_name
+        content += '    string content = %s::reader(filepath);\n' % strutil.config_manager_name
         content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
         content += '    sp.replaceAll("\\r\\n", " \\n");\n'
         content += '    vector<vector<StringPiece>> rows;\n'
@@ -391,7 +392,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += 'int %s::Load(const char* filepath)\n' % struct['name']
         content += '{\n'
         content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
-        content += '    string content = %s::reader(filepath);\n' % util.config_manager_name
+        content += '    string content = %s::reader(filepath);\n' % strutil.config_manager_name
         content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
         content += '    sp.replaceAll("\\r\\n", " \\n");\n'
         content += '    auto lines = Split(sp, "\\n");\n'
@@ -433,7 +434,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if struct['options'][predef.PredefParseKVMode]:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
+        keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
         if len(keys) == 0:
             return content
 
@@ -470,7 +471,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         if predef.PredefRangeMethodKeys not in struct['options']:
             return content
 
-        keys = self.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
+        keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
         assert len(keys) > 0
 
         formal_param = []
@@ -503,14 +504,14 @@ class CppV1Generator(basegen.CodeGeneratorBase):
     # 生成全局Load和Clear方法
     def gen_manager_static_method(self, descriptors):
         content = ''
-        content += 'void %s::LoadAll()\n' % util.config_manager_name
+        content += 'void %s::LoadAll()\n' % strutil.config_manager_name
         content += '{\n'
         content += '    ASSERT(reader);\n'
         for struct in descriptors:
             content += '    %s::Load("%s.csv");\n' % (struct['name'], struct['name'].lower())
         content += '}\n\n'
 
-        content += 'void %s::ClearAll()\n' % util.config_manager_name
+        content += 'void %s::ClearAll()\n' % strutil.config_manager_name
         content += '{\n'
         for struct in descriptors:
             content += '    delete %s;\n' % self.get_instance_data_name(struct['name'])
@@ -518,7 +519,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
         content += '}\n\n'
 
         content += '//Load content of an asset file\n'
-        content += 'std::string %s::ReadFileContent(const char* filepath)\n' % util.config_manager_name
+        content += 'std::string %s::ReadFileContent(const char* filepath)\n' % strutil.config_manager_name
         content += '{\n'
         content += '    ASSERT(filepath != nullptr);\n'
         content += '    std::ifstream ifs(filepath);\n'
@@ -551,7 +552,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
     #
     def run(self, descriptors, args):
-        params = util.parse_args(args)
+        params = strutil.parse_args(args)
         headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
         sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
 
@@ -562,7 +563,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             '#include <functional>',
             '#include "Utility/Range.h"',
         ]
-        header_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n#pragma once\n\n' % util.version_string
+        header_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n#pragma once\n\n' % version.VER_STRING
         header_content += '\n'.join(h_include_headers) + '\n\n'
 
         cpp_include_headers = [
@@ -574,7 +575,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             '#include "Utility/Conv.h"',
             '#include "Utility/StringUtil.h"',
         ]
-        cpp_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % util.version_string
+        cpp_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         if predef.OptionPchFile in params:
             pchfile = '#include "%s"' % params[predef.OptionPchFile]
             cpp_include_headers = [pchfile] + cpp_include_headers
@@ -591,9 +592,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
             cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
 
         cpp_content += 'std::function<std::string(const char*)> %s::reader = %s::ReadFileContent;\n\n' % (
-            util.config_manager_name, util.config_manager_name)
+            strutil.config_manager_name, strutil.config_manager_name)
 
-        header_content += 'class %s\n' % util.config_manager_name
+        header_content += 'class %s\n' % strutil.config_manager_name
         header_content += '{\n'
         header_content += 'public:\n'
         header_content += CPP_METHOD_TEMPLATE
@@ -604,9 +605,9 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
         class_content = ''
         for struct in descriptors:
-            print(util.current_time(), 'start generate', struct['source'])
-            self.setup_comment(struct)
-            self.setup_key_value_mode(struct)
+            print(strutil.current_time(), 'start generate', struct['source'])
+            genutil.setup_comment(struct)
+            genutil.setup_key_value_mode(struct)
 
             if not data_only:
                 header_content += self.gen_cpp_header(struct)
@@ -623,7 +624,7 @@ class CppV1Generator(basegen.CodeGeneratorBase):
 
             encoding = params.get(predef.OptionSourceEncoding, 'utf-8')
             filename = os.path.abspath(headerfile)
-            util.compare_and_save_content(filename, header_content, encoding)
+            strutil.compare_and_save_content(filename, header_content, encoding)
             print('wrote header file to', filename)
 
             cpp_content += static_define_content
@@ -633,11 +634,11 @@ class CppV1Generator(basegen.CodeGeneratorBase):
                 cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
 
             filename = os.path.abspath(sourcefile)
-            util.compare_and_save_content(filename, cpp_content, encoding)
+            strutil.compare_and_save_content(filename, cpp_content, encoding)
             print('wrote source file to', filename)
 
         if not no_data or data_only:
             for struct in descriptors:
-                self.write_data_rows(struct, params)
+                genutil.write_data_rows(struct, params)
 
 

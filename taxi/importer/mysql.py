@@ -4,8 +4,8 @@
 
 import pymysql
 import unittest
-import descriptor
-import util
+import taxi.descriptor.types as types
+import taxi.descriptor.strutil as strutil
 
 
 class MySQLImporter:
@@ -20,7 +20,7 @@ class MySQLImporter:
         return "mysql"
 
     def initialize(self, argtext):
-        options = util.parse_args(argtext)
+        options = strutil.parse_args(argtext)
         self.make_conn(options)
         if "db" not in options:
             for name in self.get_database_names():
@@ -126,7 +126,7 @@ class MySQLImporter:
         struct = {
             "name": table["name"],
             "comment": table["comment"],
-            "camel_case_name": util.camel_case(table["name"]),
+            "camel_case_name": strutil.camel_case(table["name"]),
             "source": table["schema"],
         }
         options = {}
@@ -143,9 +143,9 @@ class MySQLImporter:
                 "original_type_name": column["original_type_name"],
             }
             type_name = convert_mysql_type(field["original_type_name"])
-            field["camel_case_name"] = util.camel_case(field["name"])
+            field["camel_case_name"] = strutil.camel_case(field["name"])
             field["type_name"] = type_name
-            field["type"] = descriptor.get_type_by_name(type_name)
+            field["type"] = types.get_type_by_name(type_name)
 
             key = column.get("key", "")
             if key == "PRI":
@@ -155,7 +155,7 @@ class MySQLImporter:
             if key == "MUL":
                 index_keys.append(column["name"])
 
-            if prev_field is not None and util.is_vector_fields(prev_field, field):
+            if prev_field is not None and strutil.is_vector_fields(prev_field, field):
                 prev_field["is_vector"] = True
                 field["is_vector"] = True
             prev_field = field
