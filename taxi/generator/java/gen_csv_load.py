@@ -60,7 +60,7 @@ public class %s {
 """
 
 # java生成器
-class JavaV1Generator():
+class JavaCsvLoadGenerator():
     TAB_SPACE = '    '
 
     def __init__(self):

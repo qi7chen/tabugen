@@ -12,7 +12,7 @@ import taxi.descriptor.strutil as strutil
 import taxi.version as version
 
 # Go code generator
-class GoV1Generator():
+class GoCsvLoadGenerator():
     TAB_SPACE = '\t'
 
     def __init__(self):

@@ -6,10 +6,10 @@ from taxi.importer.excel import ExcelImporter
 from taxi.importer.mysql import MySQLImporter
 
 from taxi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
-from taxi.generator.csv1 import CSV1Generator
-from taxi.generator.javav1 import JavaV1Generator
-from taxi.generator.gov1 import GoV1Generator
-from taxi.generator.gov2 import GoV2Generator
+from taxi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
+from taxi.generator.java.gen_csv_load import JavaCsvLoadGenerator
+from taxi.generator.go.gen_csv_load import GoCsvLoadGenerator
+from taxi.generator.go.gen_sql_orm import GoSqlOrmGenerator
 
 from taxi.datagen.csv import CsvDataGen
 from taxi.datagen.json import JsonDataGen
@@ -23,10 +23,10 @@ importer_registry = {
 # code generators
 code_generator_registry = {
     CppCsvLoadGenerator.name(): CppCsvLoadGenerator(),
-    CSV1Generator.name(): CSV1Generator(),
-    GoV1Generator.name(): GoV1Generator(),
-    GoV2Generator.name(): GoV2Generator(),
-    JavaV1Generator.name(): JavaV1Generator(),
+    CSharpCsvLoadGenerator.name(): CSharpCsvLoadGenerator(),
+    JavaCsvLoadGenerator.name(): JavaCsvLoadGenerator(),
+    GoCsvLoadGenerator.name(): GoCsvLoadGenerator(),
+    GoSqlOrmGenerator.name(): GoSqlOrmGenerator(),
 }
 
 # data generators

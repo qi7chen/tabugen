@@ -54,7 +54,7 @@ CSHARP_METHOD_TEMPLATE = """
 
 
 # C# code generator
-class CSV1Generator:
+class CSharpCsvLoadGenerator:
     TAB_SPACE = '    '
 
     def __init__(self):

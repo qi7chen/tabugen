@@ -95,10 +95,11 @@ class CppCsvLoadGenerator(CppStructGenerator):
         return content
 
     # 内部class赋值
-    def gen_inner_class_field_assgin_stmt(self, struct, prefix, inner_fields):
+    def gen_inner_class_field_assgin_stmt(self, struct, prefix):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        inner_fields = genutil.get_inner_class_struct_fields(struct)
         start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
@@ -121,7 +122,7 @@ class CppCsvLoadGenerator(CppStructGenerator):
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
 
         vec_names, vec_name = genutil.get_vec_field_range(struct)
         vec_idx = 0
@@ -131,7 +132,7 @@ class CppCsvLoadGenerator(CppStructGenerator):
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_inner_class_field_assgin_stmt(struct, prefix, inner_fields)
+                    content += self.gen_inner_class_field_assgin_stmt(struct, prefix)
             else:
                 origin_type = field['original_type_name']
                 typename = lang.map_cpp_type(origin_type)

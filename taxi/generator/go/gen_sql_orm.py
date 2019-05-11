@@ -11,7 +11,7 @@ import taxi.generator.genutil as genutil
 import taxi.version as version
 
 # Go code generator, for SQL
-class GoV2Generator():
+class GoSqlOrmGenerator():
 
     def __init__(self):
         pass
