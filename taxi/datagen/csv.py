@@ -41,7 +41,7 @@ class CsvDataGen:
 
     # 置空不必要显示的内容
     def hide_unused_rows(self, struct, rows, params):
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefValueTypeColumn in struct['options']:
             typecol = int(struct['options'][predef.PredefValueTypeColumn])
             commentcol = int(struct['options'][predef.PredefCommentColumn])
             for row in rows:

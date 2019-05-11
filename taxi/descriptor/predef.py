@@ -34,15 +34,16 @@ PredefInnerTypeRange = "inner-type-range"
 PredefInnerTypeClass = "inner-type-class"
 PredefInnerTypeName = "inner-type-name"
 
-OptionOutDataDir = "outdata-dir"        # 输出的csv文件路径
-OptionOutSourceFile = "out-src-file"    # 输出的源文件路径
-OptionAutoVector = "auto-vector"        # 自动把名称相近的字段合并为数组
-OptionArrayDelimeter = "array-delim"    # array类型的分隔符，如|，不能使用csv的逗号
-OptionMapDelimeters = "map-delim"       # map类型的分隔符，如;=，不能使用csv的逗号
-OptionHideColumns = "hide-column"       # 开启隐藏模式
-OptionPchFile = "pch"                   # C++预编译头文件
-OptionSourceEncoding = "src-encoding"   # 源文件编码
-OptionDataEncoding = "data-encoding"    # 导出数据编码
+OptionOutDataDir = "outdata-dir"            # 输出的csv文件路径
+OptionOutSourceFile = "out-src-file"        # 输出的源文件路径
+OptionAutoVector = "auto-vector"            # 自动把名称相近的字段合并为数组
+OptionArrayDelimeter = "array-delim"        # array类型的分隔符，如|，不能使用csv的逗号
+OptionMapDelimeters = "map-delim"           # map类型的分隔符，如;=，不能使用csv的逗号
+OptionHideColumns = "hide-column"           # 开启隐藏模式
+OptionPchFile = "pch"                       # C++预编译头文件
+OptionSourceEncoding = "src-encoding"       # 源文件编码
+OptionDataEncoding = "data-encoding"        # 导出数据编码
+OptionJsonSnakeCase = "json-snake-case"     # JSON格式
 
 DefaultArrayDelimiter = '|'    # 默认的array分隔符号
 DefaultMapDelimiters = '|='     # 默认的map分隔符号

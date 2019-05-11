@@ -62,7 +62,7 @@ abstract_type_names = {
 	"any":   Type_Any,
 }
 
-interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64']
+interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64', 'enum']
 floating_types = ['float', 'float32', 'float64']
 
 # get name of an integer type
@@ -114,6 +114,7 @@ def is_abstract_type(typename):
         return 'map'
     elif typename.startswith('array<'):
         return 'array'
+    return None
 
 
 # array<int> --> int
