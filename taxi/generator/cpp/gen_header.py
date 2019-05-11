@@ -104,7 +104,8 @@ class CppStructGenerator:
         content = ''
         content += self.gen_cpp_struct_define(struct)
         content += '\n'
-        content += gen_declare_fn(struct)
+        if callable(gen_declare_fn):
+            content += gen_declare_fn(struct)
         content += '};\n\n'
         return content
 
