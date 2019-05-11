@@ -5,12 +5,14 @@ import (
 )
 
 func TestAutogenConfig(t *testing.T) {
-	var loader = NewFileLoader(".")
+	var loader = NewFileLoader("../res")
 	defer loader.Close()
 
 	conflist, err := LoadNewbieGuideDefineList(loader)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	t.Logf("load %d config item", len(conflist))
+	for _, cfg := range conflist {
+		t.Logf("%v\n", cfg)
+	}
 }

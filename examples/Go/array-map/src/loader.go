@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-    
-    "github.com/sirupsen/logrus"
+
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.StandardLogger()
@@ -46,7 +46,7 @@ func (l *FileLoader) Close() {
 }
 
 func (l *FileLoader) LoadDataByKey(key string) (*bytes.Buffer, error) {
-	availableSuffix := []string{"_config.json", ".csv"}
+	availableSuffix := []string{".json", ".csv"}
 	var filename = ""
 	var err error
 	for _, suffix := range availableSuffix {
@@ -61,14 +61,14 @@ func (l *FileLoader) LoadDataByKey(key string) (*bytes.Buffer, error) {
 		return nil, err
 	}
 
-	log.Infof("start load file %v", filename)
+	log.Printf("start load file %v", filename)
 	rawbytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 	var buf bytes.Buffer
 	buf.Write(rawbytes)
-	//log.Infof("Load config `%s` OK", key)
+	//log.Printf("Load config `%s` OK", key)
 	return &buf, nil
 }
 
