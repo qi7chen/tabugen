@@ -22,11 +22,9 @@ class ExcelImporter:
     def name():
         return "excel"
 
-
     def initialize(self, args):
         self.options = args
         self.make_filenames()
-
 
     # 从路径种搜索所有excel文件
     def enum_files(self, rootdir):
@@ -41,7 +39,6 @@ class ExcelImporter:
                 filename = os.path.abspath(filename)
                 filenames.append(filename)
         return filenames
-
 
     # 跳过忽略的文件名
     def make_filenames(self):
@@ -71,7 +68,6 @@ class ExcelImporter:
             if not ignored:
                 self.filenames.append(filename)
 
-
     # 解析excel表中的meta sheet
     def parse_meta_sheet(self, sheet_rows):
         meta = {}
@@ -93,7 +89,6 @@ class ExcelImporter:
             meta[predef.PredefDataStartRow] = "4"   # 数据起始列
 
         self.meta = meta
-
 
     # 解析数据列
     def parse_data_sheet(self, rows):

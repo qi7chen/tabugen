@@ -6,6 +6,7 @@ import os
 import csv
 import codecs
 import taxi.descriptor.predef as predef
+import taxi.descriptor.strutil as strutil
 
 class CsvDataGen:
     def __init__(self):
@@ -60,7 +61,7 @@ class CsvDataGen:
     # 将数据写入csv文件
     def write_file(self, struct, datadir, rows, params):
         encoding = params.get(predef.OptionDataEncoding, 'utf-8')
-        filename = "%s/%s.csv" % (datadir, struct['name'].lower())
+        filename = "%s/%s.csv" % (datadir, strutil.camel_to_snake(struct['camel_case_name']))
         filename = os.path.abspath(filename)
         f = codecs.open(filename, "w", encoding)
         w = csv.writer(f)

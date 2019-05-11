@@ -4,7 +4,8 @@
 
 from taxi.importer.excel import ExcelImporter
 from taxi.importer.mysql import MySQLImporter
-from taxi.generator.cppv1 import CppV1Generator
+
+from taxi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 from taxi.generator.csv1 import CSV1Generator
 from taxi.generator.javav1 import JavaV1Generator
 from taxi.generator.gov1 import GoV1Generator
@@ -21,7 +22,7 @@ importer_registry = {
 
 # code generators
 code_generator_registry = {
-    CppV1Generator.name(): CppV1Generator(),
+    CppCsvLoadGenerator.name(): CppCsvLoadGenerator(),
     CSV1Generator.name(): CSV1Generator(),
     GoV1Generator.name(): GoV1Generator(),
     GoV2Generator.name(): GoV2Generator(),

@@ -3,6 +3,7 @@
 # See accompanying files LICENSE.
 
 import os
+import re
 import random
 import string
 import shutil
@@ -48,6 +49,12 @@ def camel_case(s):
     if len(components) == 1:
         return s[0].upper() + s[1:]
     return ''.join(x.title() for x in components)
+
+
+# camel case to snake case
+def camel_to_snake(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
 def random_word(length):

@@ -3,28 +3,14 @@
 # See accompanying files LICENSE.
 
 import os
-import unittest
 import taxi.descriptor.types as types
 import taxi.descriptor.predef as predef
 import taxi.descriptor.lang as lang
 import taxi.descriptor.strutil as strutil
 import taxi.generator.genutil as genutil
+from taxi.generator.cpp.gen_header import CppStructGenerator
 import taxi.version as version
 
-
-CPP_METHOD_TEMPLATE = """
-    // Load all configurations
-    static void LoadAll();
-
-    // Clear all configurations
-    static void ClearAll();
-
-    // Read content from an asset file
-    static std::string ReadFileContent(const char* filepath);
-    
-    // default loader
-    static std::function<std::string(const char*)> reader;
-"""
 
 CPP_PARSE_FUN_TEMPLATE = """
 // parse value from text
@@ -43,15 +29,12 @@ inline T ParseValue(StringPiece text)
 
 
 # C++ code generator
-class CppV1Generator:
+class CppCsvLoadGenerator(CppStructGenerator):
     TAB_SPACE = '    '
-
-    def __init__(self):
-        pass
 
     @staticmethod
     def name():
-        return "cpp-v1"
+        return "cpp-csv"
 
     def get_instance_data_name(self, name):
         return '_instance_%s' % name.lower()
@@ -154,89 +137,24 @@ class CppV1Generator:
                 typename = lang.map_cpp_type(origin_type)
 
                 if typename != 'std::string' and field['name'] in vec_names:
-                    content += '%s%s%s[%d] = %s;\n' % (space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
+                    content += '%s%s%s[%d] = %s;\n' % (
+                    space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
 
                 if origin_type.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), array_delim, tabs)
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx),
+                                                                array_delim, tabs)
                 elif origin_type.startswith('map'):
-                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx), map_delims, tabs)
+                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx),
+                                                              map_delims, tabs)
                 else:
                     if field['name'] in vec_names:
-                        content += '%s%s%s[%d] = ParseValue<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
+                        content += '%s%s%s[%d] = ParseValue<%s>(row[%d]);\n' % (
+                        self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        content += '%s%s%s = ParseValue<%s>(row[%d]);\n' % (self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
+                        content += '%s%s%s = ParseValue<%s>(row[%d]);\n' % (
+                        self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
             idx += 1
-        return content
-
-    # 生成class定义结构
-    def gen_cpp_struct_define(self, struct):
-        content = '// %s\n' % struct['comment']
-        content += 'struct %s \n{\n' % struct['name']
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
-
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_inner_struct_define(struct, inner_fields)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = 'std::vector<%s>' % inner_type_class
-
-        vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
-
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
-        if len(inner_typename) > max_type_len:
-            max_type_len = len(inner_typename)
-
-        for field in fields:
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    typename = strutil.pad_spaces(inner_typename, max_type_len + 1)
-                    name = strutil.pad_spaces(inner_var_name, max_name_len + 8)
-                    content += '    %s %s; //\n' % (typename, name)
-                    inner_class_done = True
-
-            else:
-                typename = lang.map_cpp_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-                typename = strutil.pad_spaces(typename, max_type_len + 1)
-                if field_name not in vec_names:
-                    name = lang.name_with_default_cpp_value(field, typename)
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
-                elif not vec_done:
-                    name = '%s[%d];' % (vec_name, len(vec_names))
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
-                    vec_done = True
-
-        return content
-
-    # 内部class定义
-    def gen_inner_struct_define(self, struct, inner_fields):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += '    struct %s \n' % class_name
-        content += '    {\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cpp_type)
-        for field in inner_fields:
-            typename = lang.map_cpp_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cpp_value(field, typename)
-            name = strutil.pad_spaces(name, max_name_len + 8)
-            content += '        %s %s // %s\n' % (typename, name, field['comment'])
-        content += '    };\n\n'
-
         return content
 
     # class静态函数声明
@@ -245,7 +163,8 @@ class CppV1Generator:
 
         if struct['options'][predef.PredefParseKVMode]:
             content += '    static int Load(const char* filepath);\n'
-            content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % struct['name']
+            content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % \
+                       struct['name']
             content += '    static const %s* Instance();\n' % struct['name']
             return content
 
@@ -312,7 +231,8 @@ class CppV1Generator:
 
         content = ''
         content += '// parse data object from csv rows\n'
-        content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (
+        struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
         content += '    ASSERT(ptr != nullptr);\n'
@@ -416,7 +336,6 @@ class CppV1Generator:
         content += '}\n\n'
         return content
 
-
     # class静态成员定义
     def gen_global_static_define(self, struct):
         content = ''
@@ -508,7 +427,8 @@ class CppV1Generator:
         content += '{\n'
         content += '    ASSERT(reader);\n'
         for struct in descriptors:
-            content += '    %s::Load("%s.csv");\n' % (struct['name'], struct['name'].lower())
+            filename = strutil.camel_to_snake(struct['camel_case_name'])
+            content += '    %s::Load("%s.csv");\n' % (struct['name'], filename)
         content += '}\n\n'
 
         content += 'void %s::ClearAll()\n' % strutil.config_manager_name
@@ -531,14 +451,6 @@ class CppV1Generator:
 
         return content
 
-    # 生成头文件声明
-    def gen_cpp_header(self, struct):
-        content = ''
-        content += self.gen_cpp_struct_define(struct)
-        content += '\n'
-        content += self.gen_struct_method_declare(struct)
-        content += '};\n\n'
-        return content
 
     # 生成源文件定义
     def gen_cpp_source(self, struct):
@@ -550,21 +462,7 @@ class CppV1Generator:
         content += self.gen_parse_method(struct)
         return content
 
-    #
-    def run(self, descriptors, params):
-        headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
-        sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
-
-        h_include_headers = [
-            '#include <stdint.h>',
-            '#include <string>',
-            '#include <vector>',
-            '#include <functional>',
-            '#include "Utility/Range.h"',
-        ]
-        header_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n#pragma once\n\n' % version.VER_STRING
-        header_content += '\n'.join(h_include_headers) + '\n\n'
-
+    def gen_source_content(self, descriptors, params, headerfile):
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
@@ -587,54 +485,52 @@ class CppV1Generator:
         cpp_content += CPP_PARSE_FUN_TEMPLATE
 
         if 'pkg' in params:
-            header_content += '\nnamespace %s\n{\n\n' % params['pkg']
             cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
 
         cpp_content += 'std::function<std::string(const char*)> %s::reader = %s::ReadFileContent;\n\n' % (
             strutil.config_manager_name, strutil.config_manager_name)
 
-        header_content += 'class %s\n' % strutil.config_manager_name
-        header_content += '{\n'
-        header_content += 'public:\n'
-        header_content += CPP_METHOD_TEMPLATE
-        header_content += '};\n\n'
-
-        data_only = params.get(predef.OptionDataOnly, False)
-        no_data = params.get(predef.OptionNoData, False)
+        static_var_content = 'namespace \n{\n'
+        for struct in descriptors:
+            static_var_content += self.gen_global_static_define(struct)
+        static_var_content += '}\n\n'
 
         class_content = ''
+        for struct in descriptors:
+            class_content += self.gen_cpp_source(struct)
+
+        cpp_content += static_var_content
+        cpp_content += self.gen_manager_static_method(descriptors)
+        cpp_content += class_content
+        if 'pkg' in params:
+            cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
+        return cpp_content
+
+    #
+    def run(self, descriptors, params):
+        headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
+        sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
+
         for struct in descriptors:
             print(strutil.current_time(), 'start generate', struct['source'])
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
 
-            if not data_only:
-                header_content += self.gen_cpp_header(struct)
-                class_content += self.gen_cpp_source(struct)
+        header_content = self.gen_header_content(descriptors, params, self.gen_struct_method_declare)
+        cpp_content = self.gen_source_content(descriptors, params, headerfile)
 
-        if not data_only:
-            static_define_content = 'namespace \n{\n'
-            for struct in descriptors:
-                static_define_content += self.gen_global_static_define(struct)
-            static_define_content += '}\n\n'
+        encoding = params.get(predef.OptionSourceEncoding, 'utf-8')
+        filename = os.path.abspath(headerfile)
+        strutil.compare_and_save_content(filename, header_content, encoding)
+        print('wrote header file to', filename)
 
-            if 'pkg' in params:
-                header_content += '\n} // namespace %s \n' % params['pkg']  # namespace
+        filename = os.path.abspath(sourcefile)
+        strutil.compare_and_save_content(filename, cpp_content, encoding)
+        print('wrote source file to', filename)
 
-            encoding = params.get(predef.OptionSourceEncoding, 'utf-8')
-            filename = os.path.abspath(headerfile)
-            strutil.compare_and_save_content(filename, header_content, encoding)
-            print('wrote header file to', filename)
 
-            cpp_content += static_define_content
-            cpp_content += self.gen_manager_static_method(descriptors)
-            cpp_content += class_content
-            if 'pkg' in params:
-                cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
 
-            filename = os.path.abspath(sourcefile)
-            strutil.compare_and_save_content(filename, cpp_content, encoding)
-            print('wrote source file to', filename)
+
 
 
 
