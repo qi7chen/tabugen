@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project (CppDemo2)
+project (CppDemo1)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(COMMON_SRC_DIR ${PROJECT_ROOT_DIR}/../common-src)
@@ -19,13 +19,13 @@ if (WIN32)
     )
 endif()
 
-include_directories(${PROJECT_ROOT_DIR})
+include_directories(${PROJECT_ROOT_DIR}/src)
 include_directories(${COMMON_SRC_DIR})
 
 set(ALL_SRC_FILES 
-    src/main.cpp
-    src/AutoGenConfig.h
-    src/AutoGenConfig.cpp
+    ${PROJECT_ROOT_DIR}/src/main.cpp
+    ${PROJECT_ROOT_DIR}/src/AutogenConfig.h
+    ${PROJECT_ROOT_DIR}/src/AutogenConfig.cpp
     ${COMMON_SRC_DIR}/Utility/Conv.h
     ${COMMON_SRC_DIR}/Utility/Conv.cpp
     ${COMMON_SRC_DIR}/Utility/Logging.h
@@ -45,4 +45,4 @@ set(ALL_SRC_FILES
     )
 
     
-add_executable(CppDemo2 ${ALL_SRC_FILES})
+add_executable(CppDemo1 ${ALL_SRC_FILES})
