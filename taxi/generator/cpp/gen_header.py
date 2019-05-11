@@ -41,9 +41,9 @@ class CppStructGenerator:
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_inner_struct_define(struct, inner_fields)
+        inner_field_names, mapped_inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        if len(mapped_inner_fields) > 0:
+            content += self.gen_inner_struct_define(struct)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
             inner_typename = 'std::vector<%s>' % inner_type_class
@@ -82,7 +82,8 @@ class CppStructGenerator:
         return content
 
     # 内部class定义
-    def gen_inner_struct_define(self, struct, inner_fields):
+    def gen_inner_struct_define(self, struct):
+        inner_fields = genutil.get_inner_class_struct_fields(struct)
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
         content += '    struct %s \n' % class_name

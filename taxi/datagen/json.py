@@ -8,6 +8,7 @@ import codecs
 import taxi.descriptor.predef as predef
 import taxi.descriptor.strutil as strutil
 import taxi.descriptor.types as types
+import taxi.generator.genutil as genutil
 
 class JsonDataGen:
     def __init__(self):
@@ -30,10 +31,16 @@ class JsonDataGen:
         typename = typename.strip()
         text = text.strip()
         if typename == 'bool':
+            if len(text) == 0:
+                return False
             return bool(text)
         if types.is_integer_type(typename):
+            if len(text) == 0:
+                return 0
             return int(text)
         if types.is_floating_type(typename):
+            if len(text) == 0:
+                return 0.0
             return float(text)
         return text
 
@@ -60,7 +67,9 @@ class JsonDataGen:
         return obj
 
     # 解析字符串为对象
-    def parse_value(self, typename, text, array_delim, map_delims):
+    def parse_value(self, struct, typename, text):
+        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
+        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
         abs_type = types.is_abstract_type(typename)
         if abs_type is None:
             return self.parse_primary_value(typename, text)
@@ -75,9 +84,6 @@ class JsonDataGen:
 
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
-        use_snake_case = params.get(predef.OptionJsonSnakeCase, False)
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
         kvlist = struct['options'][predef.PredefKeyValueColumn].split(',')
         assert len(kvlist) == 2, kvlist
@@ -90,34 +96,59 @@ class JsonDataGen:
             typename = row[typecol - 1].strip()
             valuetext = row[valuecol - 1].strip()
             # print(typename, valuetext)
-            value = self.parse_value(typename, valuetext, array_delim, map_delims)
-            if use_snake_case:
-                key = strutil.camel_to_snake(key)
+            value = self.parse_value(struct, typename, valuetext)
             obj[key] = value
         return obj
+
+    #
+    def parse_row_inner_obj(self, struct, row, inner_struct_fields):
+        inner_obj_list = []
+        start, end, step = genutil.get_inner_class_range(struct)
+        for n in range(start, end, step):
+            inner_item = {}
+            idx = n
+            for field in inner_struct_fields:
+                valuetext = row[idx]
+                name = field['name']
+                value = self.parse_value(struct, field['original_type_name'], valuetext)
+                inner_item[name] = value
+                idx += 1
+            inner_obj_list.append(inner_item)
+        return inner_obj_list
 
     #
     def parse_row(self, struct, params):
         rows = struct["data_rows"]
         fields = struct['fields']
         hiden_columns = self.parse_hiden_columns(struct, params)
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
-        use_snake_case = params.get(predef.OptionJsonSnakeCase, False)
-        objlist = []
+
+        # 嵌套类
+        inner_var_name = ''
+        inner_fields = []
+        inner_field_names, mapped_inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        if len(mapped_inner_fields) > 0:
+            inner_var_name = struct["options"][predef.PredefInnerTypeName]
+            inner_fields = genutil.get_inner_class_struct_fields(struct)
+
+        obj_list = []
         for row in rows:
             obj = {}
+            inner_class_done = False
             for field in fields:
                 if field['column_index'] in hiden_columns:
                     continue
-                valuetext = row[field['column_index'] - 1]
-                value = self.parse_value(field['original_type_name'], valuetext, array_delim, map_delims)
-                name = field['name']
-                if use_snake_case:
-                    name = strutil.camel_to_snake(name)
-                obj[name] = value
-            objlist.append(obj)
-        return objlist
+                if field['name'] in inner_field_names:
+                    if not inner_class_done:
+                        value = self.parse_row_inner_obj(struct, row, inner_fields)
+                        obj[inner_var_name] = value
+                        inner_class_done = True
+                else:
+                    valuetext = row[field['column_index'] - 1]
+                    value = self.parse_value(struct, field['original_type_name'], valuetext)
+                    name = field['name']
+                    obj[name] = value
+            obj_list.append(obj)
+        return obj_list
 
     # 生成
     def generate(self, struct, params):
@@ -131,7 +162,7 @@ class JsonDataGen:
         filename = "%s/%s.json" % (datadir, strutil.camel_to_snake(struct['camel_case_name']))
         filename = os.path.abspath(filename)
         content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
-        print(content)
+        # print(content)
         f = codecs.open(filename, "w", encoding)
         f.write(content)
         f.close()

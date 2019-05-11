@@ -158,10 +158,10 @@ def get_inner_class_range(struct):
     return start, end, step
 
 
-#内部嵌入的class
-def get_inner_class_fields(struct, camel_case_name=False):
+# 内部嵌入的class
+def get_inner_class_struct_fields(struct):
     if predef.PredefInnerTypeRange not in struct["options"]:
-        return [], []
+        return []
 
     inner_class_type = struct["options"][predef.PredefInnerTypeClass]
     assert len(inner_class_type) > 0
@@ -173,18 +173,38 @@ def get_inner_class_fields(struct, camel_case_name=False):
     inner_fields = []
     for n in range(start, start + step):
         field = fields[n]
-        content = json.dumps(field, allow_nan=False, ensure_ascii=False)  # use json to make a clone
-        newobj = json.loads(content)
-        newobj['name'] = strutil.remove_suffix_number(newobj['name'])
-        newobj['camel_case_name'] = strutil.remove_suffix_number(newobj['camel_case_name'])
-        inner_fields.append(newobj)
+        new_field = {
+            'type': field['type'],
+            'type_name': field['type_name'],
+            'original_type_name': field['original_type_name'],
+            'comment': field['comment'],
+        }
+        new_field['name'] = strutil.remove_suffix_number(field['name'])
+        new_field['camel_case_name'] = strutil.remove_suffix_number(field['camel_case_name'])
+        inner_fields.append(new_field)
+
+    return inner_fields
+
+
+# 所有嵌入类的字段
+def get_inner_class_mapped_fields(struct, camel_case_name=False):
+    if predef.PredefInnerTypeRange not in struct["options"]:
+        return [], []
+
+    inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+    assert len(inner_class_type) > 0
+    inner_class_name = struct["options"][predef.PredefInnerTypeName]
+    assert len(inner_class_name) > 0
 
     field_names = []
+    fields = []
+    start, end, step = get_inner_class_range(struct)
     for n in range(start, end):
-        field = fields[n]
+        field = struct['fields'][n]
+        fields.append(field)
         if camel_case_name:
             field_names.append(field["camel_case_name"])
         else:
             field_names.append(field["name"])
 
-    return field_names, inner_fields
+    return field_names, fields
