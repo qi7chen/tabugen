@@ -2,9 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
-import unittest
-import taxi.descriptor.types as types
+
 import taxi.descriptor.predef as predef
 import taxi.descriptor.lang as lang
 import taxi.descriptor.strutil as strutil

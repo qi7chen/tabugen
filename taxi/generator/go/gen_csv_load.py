@@ -3,24 +3,22 @@
 # See accompanying files LICENSE.
 
 import os
-import codecs
 import taxi.descriptor.types as types
 import taxi.descriptor.predef as predef
 import taxi.descriptor.lang as lang
 import taxi.generator.genutil as genutil
 import taxi.descriptor.strutil as strutil
 import taxi.version as version
+from taxi.generator.go.gen_struct import GoStructGenerator
 
-# Go code generator
-class GoCsvLoadGenerator():
+
+# Go csv load generator
+class GoCsvLoadGenerator(GoStructGenerator):
     TAB_SPACE = '\t'
-
-    def __init__(self):
-        pass
 
     @staticmethod
     def name():
-        return "go-v1"
+        return "go-csv"
 
 
     def get_const_key_name(self, name):
@@ -30,7 +28,8 @@ class GoCsvLoadGenerator():
     def gen_const_names(self, descriptors):
         content = 'const (\n'
         for struct in descriptors:
-            content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), struct['name'].lower())
+            name = strutil.camel_to_snake(struct['name'])
+            content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), name)
         content += ')\n\n'
         return content
 
@@ -96,59 +95,6 @@ class GoCsvLoadGenerator():
         content += '%s}\n' % space
         return content
 
-    #生成struct定义
-    def gen_go_struct(self, struct):
-        content = ''
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
-
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_go_inner_struct(struct, inner_fields)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = '[]%s' % inner_type_class
-
-        vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
-
-        content += '// %s, %s\n' % (struct['comment'], struct['file'])
-        content += 'type %s struct\n{\n' % struct['camel_case_name']
-        for field in fields:
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    content += '    %s %s; //\n' % (inner_var_name, inner_typename)
-                    inner_class_done = True
-            else:
-                typename = lang.map_go_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-
-                if field_name not in vec_names:
-                    content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-                elif not vec_done:
-                    vec_done = True
-                    content += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
-
-        return content
-
-    # 内部class生成
-    def gen_go_inner_struct(self, struct, inner_fields):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += 'type %s struct {\n' % class_name
-        for field in inner_fields:
-            typename = lang.map_go_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-        content += '};\n\n'
-
-        return content
-
     # KV模式的ParseFromRow方法
     def gen_kv_parse_method(self, struct):
         content = ''
@@ -201,7 +147,7 @@ class GoCsvLoadGenerator():
         map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
 
         vec_idx = 0
         vec_names, vec_name = genutil.get_vec_field_range(struct)
@@ -219,7 +165,7 @@ class GoCsvLoadGenerator():
             if fname in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_inner_class_parse(struct, prefix, inner_fields)
+                    content += self.gen_inner_class_parse(struct, prefix)
             else:
                 content += '\tif row[%d] != "" {\n' % idx
                 origin_type_name = field['original_type_name']
@@ -244,10 +190,11 @@ class GoCsvLoadGenerator():
         return content
 
     # 生成内部class的赋值方法
-    def gen_inner_class_parse(self, struct, prefix, inner_fields):
+    def gen_inner_class_parse(self, struct, prefix):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        inner_fields = genutil.get_inner_class_struct_fields(struct)
         start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for i := %s; i < %s; i += %s {\n' % (start, end, step)
@@ -323,18 +270,14 @@ class GoCsvLoadGenerator():
         content += '}\n\n'
         return content
 
-
-    def generate(self, struct):
+    def generate(self, struct, params):
         content = ''
-        content += self.gen_go_struct(struct)
-        content += '}\n\n'
+        content += self.gen_struct_define(struct, params)
         content += self.gen_parse_method(struct)
         content += self.gen_load_method(struct)
         return content
 
-
-    def run(self, descriptors, args):
-        params = strutil.parse_args(args)
+    def run(self, descriptors, params):
         content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         content += 'package %s\n' % params['pkg']
         content += 'import (\n'
@@ -342,32 +285,26 @@ class GoCsvLoadGenerator():
         content += '    "io"\n'
         content += '    "strings"\n'
         content += ')\n'
+        content += '\nvar (\n'
+        content += '\t_ = io.EOF\n'
+        content += '\t_ = strings.Compare\n'
+        content += ')\n\n'
         content += self.gen_const_names(descriptors)
 
-        data_only = params.get(predef.OptionDataOnly, False)
-        no_data = params.get(predef.OptionNoData, False)
-
         for struct in descriptors:
-            print(strutil.current_time(), 'start generate', struct['source'])
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
-            if not data_only:
-                content += self.generate(struct)
 
-        if not data_only:
-            filename = params.get(predef.OptionOutSourceFile, 'config.go')
-            filename = os.path.abspath(filename)
-            f = codecs.open(filename, 'w', 'utf-8')
-            f.writelines(content)
-            f.close()
-            print('wrote source to %s' % filename)
+        for struct in descriptors:
+            content += self.generate(struct, params)
 
-            gopath = os.getenv('GOPATH')
-            if gopath is not None:
-                cmd = gopath + '/bin/goimports -w ' + filename
-                print(cmd)
-                os.system(cmd)
+        filename = params.get(predef.OptionOutSourceFile, 'config.go')
+        filename = os.path.abspath(filename)
+        strutil.compare_and_save_content(filename, content, 'utf-8')
+        print('wrote source to %s' % filename)
 
-        if data_only or not no_data:
-            for struct in descriptors:
-                genutil.write_data_rows(struct, params)
+        goroot = os.getenv('GOROOT')
+        if goroot is not None:
+            cmd = goroot + '/bin/go fmt ' + filename
+            print(cmd)
+            os.system(cmd)

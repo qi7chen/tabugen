@@ -515,7 +515,6 @@ class CppCsvLoadGenerator(CppStructGenerator):
         sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
 
         for struct in descriptors:
-            print(strutil.current_time(), 'start generate', struct['source'])
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
 
