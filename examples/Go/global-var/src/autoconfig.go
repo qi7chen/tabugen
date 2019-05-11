@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-var EOF = io.EOF
+var (
+	_ = io.EOF
+	_ = strings.Compare
+)
 
 const (
 	KeyGlobalPropertyDefineName = "global_property_define"
