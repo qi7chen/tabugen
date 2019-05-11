@@ -7,7 +7,7 @@
 
 static std::string readfile(const char* filepath)
 {
-    std::string filename = stringPrintf("../%s", filepath);
+    std::string filename = stringPrintf("../res/%s", filepath);
     FILE* fp = fopen(filename.c_str(), "r");
     if (fp == NULL)
     {
