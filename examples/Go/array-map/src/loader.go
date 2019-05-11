@@ -46,7 +46,7 @@ func (l *FileLoader) Close() {
 }
 
 func (l *FileLoader) LoadDataByKey(key string) (*bytes.Buffer, error) {
-	availableSuffix := []string{".json", ".csv"}
+	availableSuffix := []string{".csv", ".json"}
 	var filename = ""
 	var err error
 	for _, suffix := range availableSuffix {

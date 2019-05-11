@@ -4,8 +4,11 @@ package config
 
 import (
 	"encoding/csv"
+	"io"
 	"strings"
 )
+
+var EOF = io.EOF
 
 const (
 	KeyGlobalPropertyDefineName = "global_property_define"
