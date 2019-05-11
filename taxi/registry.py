@@ -10,14 +10,17 @@ from taxi.generator.javav1 import JavaV1Generator
 from taxi.generator.gov1 import GoV1Generator
 from taxi.generator.gov2 import GoV2Generator
 
+from taxi.datagen.csv import CsvDataGen
+from taxi.datagen.json import JsonDataGen
+
 # data importers
 importer_registry = {
     ExcelImporter.name(): ExcelImporter(),
     MySQLImporter.name(): MySQLImporter(),
 }
 
-# source generators
-generator_registry = {
+# code generators
+code_generator_registry = {
     CppV1Generator.name(): CppV1Generator(),
     CSV1Generator.name(): CSV1Generator(),
     GoV1Generator.name(): GoV1Generator(),
@@ -25,10 +28,22 @@ generator_registry = {
     JavaV1Generator.name(): JavaV1Generator(),
 }
 
+# data generators
+data_generator_registry = {
+    CsvDataGen.name(): CsvDataGen(),
+    JsonDataGen.name(): JsonDataGen(),
+}
+
 
 def get_importer(name):
     return importer_registry.get(name, None)
 
 
-def get_generator(name):
-    return generator_registry.get(name, None)
+# get code generator by name
+def get_code_generator(name):
+    return code_generator_registry.get(name, None)
+
+
+# get data generator by name
+def get_data_generator(name):
+    return data_generator_registry.get(name, None)

@@ -100,44 +100,6 @@ def setup_comment(struct):
             struct["comment"] = comment
 
 
-# 将数据写入csv文件
-def write_data_rows(struct, params):
-    datadir = "."
-    if predef.OptionOutDataDir in params:
-        datadir = params[predef.OptionOutDataDir]
-        try:
-            # print('make dir', datadir)
-            os.makedirs(datadir)
-        except Exception as e:
-            pass
-
-    # 置空不必要显示的内容
-    rows = struct["data_rows"]
-    if struct['options'][predef.PredefParseKVMode]:
-        typecol = int(struct['options'][predef.PredefValueTypeColumn])
-        commentcol = int(struct['options'][predef.PredefCommentColumn])
-        for row in rows:
-            row[typecol-1] = ''
-            row[commentcol-1] = ''
-    else:
-        if predef.OptionHideColumns in params:
-            text = struct["options"].get(predef.PredefHideColumns, "")
-            text = text.strip()
-            if len(text) > 0:
-                columns = [int(x.strip()) for x in text.split(',')]
-                for row in rows:
-                    for idx in columns:
-                        row[idx-1] = ''
-
-    filename = "%s/%s.csv" % (datadir, struct['name'].lower())
-    filename = os.path.abspath(filename)
-    f = codecs.open(filename, "w", "utf-8")
-    w = csv.writer(f)
-    w.writerows(rows)
-    f.close()
-    print("wrote csv data to", filename)
-
-
 # 获取生成数组字段的范围
 def get_vec_field_range(struct, camel_case_name=False):
     auto_vector = struct["options"].get(predef.OptionAutoVector, "off")

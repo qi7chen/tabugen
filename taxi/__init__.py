@@ -3,3 +3,4 @@
 from . import descriptor
 from . import importer
 from . import generator
+from . import datagen

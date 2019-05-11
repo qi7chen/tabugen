@@ -23,8 +23,8 @@ class ExcelImporter:
         return "excel"
 
 
-    def initialize(self, argtext):
-        self.options = strutil.parse_args(argtext)
+    def initialize(self, args):
+        self.options = args
         self.make_filenames()
 
 

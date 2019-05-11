@@ -19,8 +19,8 @@ class MySQLImporter:
     def name():
         return "mysql"
 
-    def initialize(self, argtext):
-        options = strutil.parse_args(argtext)
+    def initialize(self, args):
+        options = args
         self.make_conn(options)
         if "db" not in options:
             for name in self.get_database_names():

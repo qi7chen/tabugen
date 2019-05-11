@@ -551,8 +551,7 @@ class CppV1Generator:
         return content
 
     #
-    def run(self, descriptors, args):
-        params = strutil.parse_args(args)
+    def run(self, descriptors, params):
         headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
         sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
 
@@ -637,8 +636,5 @@ class CppV1Generator:
             strutil.compare_and_save_content(filename, cpp_content, encoding)
             print('wrote source file to', filename)
 
-        if not no_data or data_only:
-            for struct in descriptors:
-                genutil.write_data_rows(struct, params)
 
 
