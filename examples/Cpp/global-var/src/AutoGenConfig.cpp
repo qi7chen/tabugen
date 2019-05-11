@@ -79,7 +79,8 @@ int GlobalPropertyDefine::Load(const char* filepath)
     ASSERT(!lines.empty());
     for (size_t i = 0; i < lines.size(); i++)
     {
-        if (!lines[i].empty())
+        auto line = trimWhitespace(lines[i]);
+        if (!line.empty())
         {
             const auto& row = Split(lines[i], ",");
             if (!row.empty())
