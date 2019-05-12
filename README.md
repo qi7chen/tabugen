@@ -28,7 +28,7 @@ taxi是一个配置导出源码生成工具，旨在简化逻辑开发中的数�
 
     一个符合taxi规则的excel表格如下图所示：
 
-    ![example](doc/img1.png)
+![example](doc/img1.png)
 
     一个excel配置表至少包含2个sheet，默认第一个sheet是数据本身，而另一个指定名称为**meta**的sheet则用来配置导出选项。
 
