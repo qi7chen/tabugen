@@ -7,6 +7,7 @@ from taxi.importer.mysql import MySQLImporter
 
 from taxi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 from taxi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
+from taxi.generator.csharp.gen_json_load import CSharpJsonLoadGenerator
 from taxi.generator.java.gen_csv_load import JavaCsvLoadGenerator
 from taxi.generator.go.gen_csv_load import GoCsvLoadGenerator
 from taxi.generator.go.gen_json_load import GoJsonLoadGenerator
@@ -25,6 +26,7 @@ importer_registry = {
 code_generator_registry = {
     CppCsvLoadGenerator.name(): CppCsvLoadGenerator(),
     CSharpCsvLoadGenerator.name(): CSharpCsvLoadGenerator(),
+    CSharpJsonLoadGenerator.name(): CSharpJsonLoadGenerator(),
     JavaCsvLoadGenerator.name(): JavaCsvLoadGenerator(),
     GoCsvLoadGenerator.name(): GoCsvLoadGenerator(),
     GoJsonLoadGenerator.name(): GoJsonLoadGenerator(),

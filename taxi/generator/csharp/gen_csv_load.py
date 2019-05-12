@@ -3,13 +3,13 @@
 # See accompanying files LICENSE.
 
 import os
-import codecs
 import taxi.descriptor.types as types
 import taxi.descriptor.predef as predef
 import taxi.descriptor.lang as lang
 import taxi.descriptor.strutil as strutil
 import taxi.generator.genutil as genutil
 import taxi.version as version
+from taxi.generator.csharp.gen_struct import CSharpStructGenerator
 
 
 CSHARP_METHOD_TEMPLATE = """
@@ -53,16 +53,13 @@ CSHARP_METHOD_TEMPLATE = """
 """
 
 
-# C# code generator
-class CSharpCsvLoadGenerator:
+# C# csv load generator
+class CSharpCsvLoadGenerator(CSharpStructGenerator):
     TAB_SPACE = '    '
-
-    def __init__(self):
-        pass
 
     @staticmethod
     def name():
-        return "cs-v1"
+        return "cs-csv"
 
     def get_data_member_name(self, name):
         return name + 'Data'
@@ -87,7 +84,6 @@ class CSharpCsvLoadGenerator:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
 
-
     # 生成array赋值
     def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
         assert len(array_delim) == 1
@@ -106,7 +102,6 @@ class CSharpCsvLoadGenerator:
         content += '%s    %s%s[i] = value;\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
-
 
     # 生成map赋值
     def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
@@ -135,7 +130,6 @@ class CSharpCsvLoadGenerator:
         content += '%s    %s%s[key] = value;\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
-
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
@@ -186,7 +180,6 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
-
     # 生成ParseFromRow方法
     def gen_parse_method(self, struct):
         content = ''
@@ -200,7 +193,7 @@ class CSharpCsvLoadGenerator:
         vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
 
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRow(string[] row)\n' % self.TAB_SPACE
@@ -217,7 +210,7 @@ class CSharpCsvLoadGenerator:
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_cs_inner_class_assign(struct, prefix, inner_fields)
+                    content += self.gen_cs_inner_class_assign(struct, prefix)
             else:
                 origin_type_name = field['original_type_name']
                 typename = lang.map_cs_type(origin_type_name)
@@ -244,10 +237,11 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成内部类的parse
-    def gen_cs_inner_class_assign(self, struct, prefix, inner_fields):
+    def gen_cs_inner_class_assign(self, struct, prefix):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        inner_fields = genutil.get_inner_class_struct_fields(struct)
         start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '        %s%s = new %s[%d];\n' % (prefix, inner_var_name, inner_class_type, (end-start)/step)
@@ -267,77 +261,7 @@ class CSharpCsvLoadGenerator:
         content += '        }\n'
         return content
 
-    # 生成结构体定义
-    def gen_cs_struct(self, struct):
-        content = ''
-
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
-
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_cs_inner_class(struct, inner_fields)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = '%s[]' % inner_type_class
-
-        content += '// %s, %s\n' % (struct['comment'], struct['file'])
-        content += 'public class %s\n{\n' % struct['name']
-
-        vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
-
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cs_type)
-        if len(inner_typename) > max_type_len:
-            max_type_len = len(inner_typename)
-
-        for field in fields:
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    typename = strutil.pad_spaces(inner_typename, max_type_len)
-                    content += '    public %s %s = null; \n' % (typename, inner_var_name)
-                    inner_class_done = True
-            else:
-                typename = lang.map_cs_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-                typename = strutil.pad_spaces(typename, max_type_len + 1)
-                if field['name'] not in vec_names:
-                    name = lang.name_with_default_cs_value(field, typename)
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s %s // %s\n' % (typename, name, field['comment'])
-                elif not vec_done:
-                    name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
-                    vec_done = True
-
-        return content
-
     #
-    def gen_cs_inner_class(self, struct, inner_fields):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += 'public class %s \n' % class_name
-        content += '{\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
-        for field in inner_fields:
-            typename = lang.map_cs_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cs_value(field, typename)
-            name = strutil.pad_spaces(name, max_name_len + 8)
-            content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
-        content += '};\n\n'
-        return content
-
-
     def gen_static_data(self, struct):
         content = '\n'
         if struct['options'][predef.PredefParseKVMode]:
@@ -346,7 +270,6 @@ class CSharpCsvLoadGenerator:
             content += '    public static %s[] Data { get; private set; } \n\n' % struct['name']
 
         return content
-
 
     def gen_kv_struct_load_method(self, struct):
         rows = struct['data_rows']
@@ -456,7 +379,7 @@ class CSharpCsvLoadGenerator:
         content += '    }\n\n'
         return content
 
-
+    # 生成manager类型
     def gen_global_class(self, descriptors):
         content = ''
         content += 'public class %s\n{\n' % strutil.config_manager_name
@@ -465,7 +388,8 @@ class CSharpCsvLoadGenerator:
         content += '    {\n'
         for i in range(len(descriptors)):
             struct = descriptors[i]
-            content += '        reader("%s.csv", (content) =>\n' % struct['name'].lower()
+            name = strutil.camel_to_snake(struct['name'])
+            content += '        reader("%s.csv", (content) =>\n' % name
             content += '        {\n'
             content += '            var lines = ReadTextToLines(content);\n'
             content += '            %s.LoadFromLines(lines);\n' % struct['name']
@@ -478,7 +402,6 @@ class CSharpCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-
     def generate_class(self, struct):
         content = '\n'
         content += self.gen_cs_struct(struct)
@@ -490,43 +413,30 @@ class CSharpCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-
-    def run(self, descriptors, args):
-        params = strutil.parse_args(args)
+    def run(self, descriptors, params):
         content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         content += 'using System;\n'
         content += 'using System.IO;\n'
-        content += 'using System.Linq;\n'
         content += 'using System.Collections.Generic;\n'
 
         if 'pkg' in params:
             content += '\nnamespace %s\n{\n' % params['pkg']
 
-        data_only = params.get(predef.OptionDataOnly, False)
-        no_data = params.get(predef.OptionNoData, False)
-
         for struct in descriptors:
-            print(strutil.current_time(), 'start generate', struct['source'])
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
-            if not data_only:
-                content += self.generate_class(struct)
 
-        if not data_only:
-            content += self.gen_global_class(descriptors)
+        for struct in descriptors:
+            content += self.generate_class(struct)
 
-            if 'pkg' in params:
-                content += '\n}\n'  # namespace
+        content += self.gen_global_class(descriptors)
 
-            filename = params.get(predef.OptionOutSourceFile, 'AutogenConfig.cs')
-            filename = os.path.abspath(filename)
-            f = codecs.open(filename, 'w', 'utf-8')
-            f.writelines(content)
-            f.close()
-            print('wrote to %s' % filename)
+        if 'pkg' in params:
+            content += '\n}\n'  # namespace
 
-        if not no_data or data_only:
-            for struct in descriptors:
-                genutil.write_data_rows(struct, params)
+        filename = params.get(predef.OptionOutSourceFile, 'AutogenConfig.cs')
+        filename = os.path.abspath(filename)
+        strutil.compare_and_save_content(filename, content, 'utf-8')
+        print('wrote source file to', filename)
 
 
