@@ -39,9 +39,9 @@
 * `get-keys` 配置生成Get函数包含的参数（列），以逗号分隔，Get函数返回一个最匹配参数的配置项；
 * `range-keys`  配置生成GetRange函数包含的参数（列），以逗号分隔，GetRange函数返回一组匹配参数的配置项；
 * `hide-value-column` 对于这些列，它们的值会在hide-column选项开启的时候置空
-* `inner-type-range`  解析为嵌入类型的字段范围，用例见[示例4](../inner-class)
-* `inner-type-class` 嵌入类型的class名称，用例见[示例4](../inner-class)
-* `inner-type-name` 嵌入类型的成员变量名，用例见[示例4](../inner-class)
+* `inner-type-range`  解析为嵌入类型的字段范围
+* `inner-type-class` 嵌入类型的class名称
+* `inner-type-name` 嵌入类型的成员变量名
 
 ### import-args参数
 
