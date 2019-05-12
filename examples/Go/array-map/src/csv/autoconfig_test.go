@@ -5,7 +5,7 @@ import (
 )
 
 func TestAutogenConfig(t *testing.T) {
-	var loader = NewFileLoader("../res")
+	var loader = NewFileLoader("../../res")
 	defer loader.Close()
 
 	conflist, err := LoadNewbieGuideDefineList(loader)
