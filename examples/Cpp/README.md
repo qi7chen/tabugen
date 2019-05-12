@@ -3,16 +3,16 @@
 
 ## 示例说明
 
-* [basic](example/Cpp/basic) 演示基本使用
+* [basic](basic) 演示基本使用
     在excel里默认第1栏为数据类型，第2栏为字段名称，第3栏为注释文字，数据内容从第4栏开始。
     
-* [array-map](example/Cpp/array-map) 演示如何配置数组和字典类型
+* [array-map](array-map) 演示如何配置数组和字典类型
     taxi支持在excel配置简单的数组和字典类型（不支持嵌套），并会生成对数组和字典类型的读取代码（仅csv格式)。
     
-* [global-var](example/Cpp/global-var) 演示全局变量表的使用
+* [global-var](global-var) 演示全局变量表的使用
     taxi支持全局参数表配置，这是一种全局的key-value配置，在形式上是纵向配置。
     
-* [inner-class](example/Cpp/inner-class) 演示如何合并多组列为嵌套类
+* [inner-class](inner-class) 演示如何合并多组列为嵌套类
     当一个表里有很多重复的连续字段的时候，可以把它们导出为一个嵌入类型，
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
