@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Newtonsoft.Json;
 
 #if UNITY 
 using UnityEngine;
@@ -62,16 +63,34 @@ namespace CSharpDemo
             }
         }
 
+        static void TestLoadCSV()
+        {
+            Config.AutogenConfigManager.reader = ReadFileContent;
+            Config.AutogenConfigManager.LoadAllConfig(() =>
+            {
+                Console.WriteLine("OK");
+                onLoaded();
+            });
+        }
+
+        static void TestLoadJSON()
+        {
+            string filename = "soldier_property_define.json";
+            string filepath = string.Format("../../../../res/{0}", filename);
+            StreamReader reader = new StreamReader(filepath);
+            var content = reader.ReadToEnd();
+
+            var conflist = JsonConvert.DeserializeObject<AutoConfig.SoldierPropertyDefine[]>(content);
+            var text = JsonConvert.SerializeObject(conflist);
+            Console.WriteLine(text);
+        }
+        
         static void Main(string[] args)
         {
             try
             {
-                Config.AutogenConfigManager.reader = ReadFileContent;
-                Config.AutogenConfigManager.LoadAllConfig(() =>
-                {
-                    Console.WriteLine("OK");
-                    onLoaded();
-                });
+                TestLoadCSV();
+                TestLoadJSON();
             }
             catch(Exception ex)
             {
