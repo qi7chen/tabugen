@@ -3,23 +3,24 @@
 
 ## 示例说明
 
-* [basic](example/CSharp/basic) 演示基本使用
+* [basic](example/Java/basic) 演示基本使用
     在excel里默认第1栏为数据类型，第2栏为字段名称，第3栏为注释文字，数据内容从第4栏开始。
     
-* [array-map](example/CSharp/array-map) 演示如何配置数组和字典类型
+* [array-map](example/Java/array-map) 演示如何配置数组和字典类型
     taxi支持在excel配置简单的数组和字典类型（不支持嵌套），并会生成对数组和字典类型的读取代码（仅csv格式)。
     
-* [global-var](example/CSharp/global-var) 演示全局变量表的使用
+* [global-var](example/Java/global-var) 演示全局变量表的使用
     taxi支持全局参数表配置，这是一种全局的key-value配置，在形式上是纵向配置。
     
-* [inner-class](example/CSharp/inner-class) 演示如何合并多组列为嵌套类
+* [inner-class](example/Java/inner-class) 演示如何合并多组列为嵌套类
     当一个表里有很多重复的连续字段的时候，可以把它们导出为一个嵌入类型，
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
     
-双击`导出csv.bat`，即可导出默认选项的C#代码及csv数据文件
+    
+双击`导出csv.bat`，即可导出默认选项的Java代码及csv数据文件
 
-双击`导出json.bat`，即可导出默认选项的C#代码及json数据文件
+双击`导出json.bat`，即可导出默认选项的Java代码及json数据文件
 
 
 ## 配置详解
@@ -49,7 +50,7 @@
 
 * `outdata-dir` 导出csv在哪个路径下
 * `out-src-file` 导出源文件和头文件的名称（不包含后缀名）
-* `pkg` 定义C#命名空间
+* `pkg` 定义Java包名称
 * `auto-vector` 自动把相同的列合并为数据，例如有attr1, attr2, attr3这三列，会被合并为attr[3]
 * `hide-column` 导出时置空由`hide-value-column`
 * `src-encoding` 导出源码文件的编码格式，默认为utf-8
