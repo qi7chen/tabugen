@@ -19,9 +19,9 @@
 * [sql-orm](sql) 导出MySQL表为结构体，用于ORM业务
     
     
-双击`导出csv.bat`，即可导出默认选项的C#代码及csv数据文件
+双击`导出csv.bat`，即可导出默认选项的Go代码及csv数据文件
 
-双击`导出json.bat`，即可导出默认选项的C#代码及json数据文件
+双击`导出json.bat`，即可导出默认选项的Go代码及json数据文件
 
 
 ## 配置详解
