@@ -9,6 +9,7 @@ from taxi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 from taxi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 from taxi.generator.csharp.gen_json_load import CSharpJsonLoadGenerator
 from taxi.generator.java.gen_csv_load import JavaCsvLoadGenerator
+from taxi.generator.java.gen_json_load import JavaJsonLoadGenerator
 from taxi.generator.go.gen_csv_load import GoCsvLoadGenerator
 from taxi.generator.go.gen_json_load import GoJsonLoadGenerator
 from taxi.generator.go.gen_sql_orm import GoSqlOrmGenerator
@@ -28,6 +29,7 @@ code_generator_registry = {
     CSharpCsvLoadGenerator.name(): CSharpCsvLoadGenerator(),
     CSharpJsonLoadGenerator.name(): CSharpJsonLoadGenerator(),
     JavaCsvLoadGenerator.name(): JavaCsvLoadGenerator(),
+    JavaJsonLoadGenerator.name(): JavaJsonLoadGenerator(),
     GoCsvLoadGenerator.name(): GoCsvLoadGenerator(),
     GoJsonLoadGenerator.name(): GoJsonLoadGenerator(),
     GoSqlOrmGenerator.name(): GoSqlOrmGenerator(),

@@ -3,13 +3,13 @@
 # See accompanying files LICENSE.
 
 import os
-import codecs
 import taxi.descriptor.predef as predef
-import taxi.descriptor.types as types
 import taxi.descriptor.lang as lang
+import taxi.descriptor.types as types
 import taxi.descriptor.strutil as strutil
 import taxi.generator.genutil as genutil
 import taxi.version as version
+from taxi.generator.java.gen_struct import JavaStructGenerator
 
 JAVA_CLASS_TEMPLATE = """
 
@@ -59,8 +59,9 @@ public class %s {
 
 """
 
+
 # java生成器
-class JavaCsvLoadGenerator():
+class JavaCsvLoadGenerator(JavaStructGenerator):
     TAB_SPACE = '    '
 
     def __init__(self):
@@ -68,79 +69,10 @@ class JavaCsvLoadGenerator():
 
     @staticmethod
     def name():
-        return "java-v1"
+        return "java-csv"
 
     def get_instance_data_name(self, name):
         return '_instance_%s' % name.lower()
-
-    #
-    def gen_java_inner_class(self, struct, inner_fields):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += '    public static class %s \n' % class_name
-        content += '    {\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_java_type)
-        for field in inner_fields:
-            typename = lang.map_java_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_java_value(field, typename)
-            name = strutil.pad_spaces(name, max_name_len + 8)
-            content += '        public %s %s // %s\n' % (typename.strip(), name, field['comment'])
-        content += '    }\n\n'
-        return content
-
-    def gen_java_class(self, struct):
-        content = ''
-
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
-
-        content += '// %s, %s\n' % (struct['comment'], struct['file'])
-        content += 'public class %s\n{\n' % struct['name']
-
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_java_inner_class(struct, inner_fields)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = 'ArrayList<%s>' % inner_type_class
-
-        vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
-
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_java_type)
-        if len(inner_typename) > max_type_len:
-            max_type_len = len(inner_typename)
-
-        for field in fields:
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    typename = strutil.pad_spaces(inner_typename, max_type_len)
-                    content += '    public %s %s = new %s(); \n' % (typename, inner_var_name, typename)
-                    inner_class_done = True
-            else:
-                typename = lang.map_java_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-                typename = strutil.pad_spaces(typename, max_type_len + 1)
-                if field['name'] not in vec_names:
-                    name = lang.name_with_default_java_value(field, typename)
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s %s // %s\n' % (typename, name, field['comment'])
-                elif not vec_done:
-                    name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
-                    vec_done = True
-
-        return content
 
     # 静态变量
     def gen_static_data(self, struct):
@@ -183,7 +115,7 @@ class JavaCsvLoadGenerator():
 
         content = ''
         space = self.TAB_SPACE * tabs
-        elem_type = descriptor.array_element_type(typename)
+        elem_type = types.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
         content += '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, array_delim)
         content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
@@ -208,7 +140,7 @@ class JavaCsvLoadGenerator():
             delim2 = '\\\\'
 
         space = self.TAB_SPACE * tabs
-        k, v = descriptor.map_key_value_types(typename)
+        k, v = types.map_key_value_types(typename)
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
@@ -228,10 +160,11 @@ class JavaCsvLoadGenerator():
         return content
 
     # 生成内部类的parse
-    def gen_java_inner_class_assign(self, struct, prefix, inner_fields):
+    def gen_java_inner_class_assign(self, struct, prefix):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
+        inner_fields = genutil.get_inner_class_struct_fields(struct)
         start, end, step = genutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '        for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
@@ -311,7 +244,7 @@ class JavaCsvLoadGenerator():
         vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_fields(struct)
+        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
 
         content += '%s// parse fields data from text row\n' % self.TAB_SPACE
         content += '%spublic void parseFromRow(String[] row)\n' % self.TAB_SPACE
@@ -328,7 +261,7 @@ class JavaCsvLoadGenerator():
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_java_inner_class_assign(struct, prefix, inner_fields)
+                    content += self.gen_java_inner_class_assign(struct, prefix)
             else:
                 origin_type_name = field['original_type_name']
                 typename = lang.map_java_type(origin_type_name)
@@ -509,9 +442,8 @@ class JavaCsvLoadGenerator():
         content += '}\n'
         return content
 
-    def run(self, descriptors, args):
-        params = strutil.parse_args(args)
-
+    #
+    def run(self, descriptors, params):
         mgr_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         mgr_filename = '%s.java' % strutil.config_manager_name
 
@@ -534,40 +466,32 @@ class JavaCsvLoadGenerator():
         mgr_content += JAVA_CLASS_TEMPLATE % strutil.config_manager_name
         load_func_content = '    public static void loadAllConfig() {\n'
 
-        data_only = params.get(predef.OptionDataOnly, False)
-        no_data = params.get(predef.OptionNoData, False)
-
         for struct in descriptors:
-            print(strutil.current_time(), 'start generate', struct['source'])
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
-            if not data_only:
-                content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
-                filename = '%s.java' % struct['camel_case_name']
-                # print(filename)
-                if 'pkg' in params:
-                    filename = '%s/%s' % (basedir, filename)
-                    content += 'package %s;\n\n' % params['pkg']
-                content += 'import java.util.*;\n'
-                content += '\n'
-                content += self.generate_class(struct, params)
-                class_dict[filename] = content
 
-                load_func_content += '        %s.loadFromFile("%s.csv");\n' % (struct['name'], struct['name'].lower())
+        for struct in descriptors:
+            content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
+            filename = '%s.java' % struct['camel_case_name']
+            # print(filename)
+            if 'pkg' in params:
+                filename = '%s/%s' % (basedir, filename)
+                content += 'package %s;\n\n' % params['pkg']
+            content += 'import java.util.*;\n'
+            content += '\n'
+            content += self.generate_class(struct, params)
+            class_dict[filename] = content
+
+            name = strutil.camel_to_snake(struct['name'])
+            load_func_content += '        %s.loadFromFile("%s.csv");\n' % (struct['name'], name)
 
         load_func_content += '    }\n'
         mgr_content += load_func_content
         mgr_content += '}\n'
         class_dict[mgr_filename] = mgr_content
 
-        if not data_only:
-            for filename in class_dict:
-                content = class_dict[filename]
-                f = codecs.open(filename, 'w', 'utf-8')
-                f.writelines(content)
-                f.close()
-                print('wrote source file to', filename)
-
-        if not no_data or data_only:
-            for struct in descriptors:
-                genutil.write_data_rows(struct, params)
+        for filename in class_dict:
+            content = class_dict[filename]
+            filename = os.path.abspath(filename)
+            strutil.compare_and_save_content(filename, content, 'utf-8')
+            print('wrote source file to', filename)
