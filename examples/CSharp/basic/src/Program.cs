@@ -1,15 +1,20 @@
 ﻿using System;
 using System.IO;
 
+#if UNITY 
+using UnityEngine;
+using UnityEngine.Networking;
+#endif
+
 namespace CSharpDemo
 {
     class Program
     {
-#ifdef UNITY        
+#if UNITY        
         public static void GetStreamingContent(string path, Action<string> cb)
         {
             string filePath = Path.Combine(Application.streamingAssetsPath, path);
-    #ifdef UNITY_ANDROID
+    #if UNITY_ANDROID
             StartCoroutine(LoadAsset(filePath, cb));
     #else
             using (StreamReader reader = new StreamReader(filePath))
@@ -39,23 +44,39 @@ namespace CSharpDemo
     
         static void ReadFileContent(string filepath, Action<string> cb)
         {
-#ifdef UNITY
+#if UNITY
             GetStreamingContent(filepath, cb);
 #else
-            string path = string.Format("../../{0}", filepath);
+            string path = string.Format("../../../../res/{0}", filepath);
             StreamReader reader = new StreamReader(path);
             var content = reader.ReadToEnd();
             cb(content);    
 #endif
         }
 
+        static void onLoaded()
+        {
+            foreach (var item in Config.SoldierPropertyDefine.Data)
+            {
+                Console.WriteLine(string.Format("{0} {1}", item.Name, item.Level));
+            }
+        }
+
         static void Main(string[] args)
         {
-            Config.AutogenConfigManager.reader = ReadFileContent;
-            Config.AutogenConfigManager.LoadAllConfig(() => 
+            try
             {
-                Console.WriteLine("OK");
-            });
+                Config.AutogenConfigManager.reader = ReadFileContent;
+                Config.AutogenConfigManager.LoadAllConfig(() =>
+                {
+                    Console.WriteLine("OK");
+                    onLoaded();
+                });
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
         }
     }
 }
