@@ -10,6 +10,7 @@ import taxi.descriptor.strutil as strutil
 import taxi.descriptor.types as types
 import taxi.generator.genutil as genutil
 
+
 class JsonDataGen:
     def __init__(self):
         pass

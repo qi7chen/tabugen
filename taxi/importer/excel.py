@@ -167,7 +167,6 @@ class ExcelImporter:
 
         return struct
 
-
     # 对齐数据行
     def pad_data_rows(self, rows, struct):
         # pad empty row
@@ -189,7 +188,6 @@ class ExcelImporter:
                 new_row.append(row[field['column_index']-1])
             new_rows.append(new_row)
         return new_rows
-
 
     # 导入所有
     def import_all(self):

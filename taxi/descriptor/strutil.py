@@ -58,20 +58,20 @@ def camel_to_snake(name):
 
 
 def random_word(length):
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))
 
 
 # a=1,b=2 => {a:1,b:2}
 def parse_args(text):
-    map = {}
+    table = {}
     if len(text) == 0:
-        return map
+        return table
     for item in text.split(','):
         kv = item.split('=')
         assert len(kv) == 2, kv
-        map[kv[0].strip()] = kv[1].strip()
-    return map
+        table[kv[0].strip()] = kv[1].strip()
+    return table
 
 
 # 最长共同前缀

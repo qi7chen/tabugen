@@ -2,11 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
-import csv
-import codecs
 import re
-import json
 import taxi.descriptor.predef as predef
 import taxi.descriptor.strutil as strutil
 

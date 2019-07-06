@@ -10,6 +10,7 @@ import taxi.descriptor.strutil as strutil
 import taxi.generator.genutil as genutil
 import taxi.version as version
 
+
 # Go code generator, for SQL
 class GoSqlOrmGenerator():
 

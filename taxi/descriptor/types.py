@@ -33,37 +33,38 @@ Type_Any = 22
 type_names = {
     Type_Nil:      "nil",
     Type_Bool:     "bool",
-	Type_Int8:     "int8",
-	Type_Uint8:    "uint8",
-	Type_Int16:    "int16",
-	Type_Uint16:   "uint16",
-	Type_Int:      "int",
+    Type_Int8:     "int8",
+    Type_Uint8:    "uint8",
+    Type_Int16:    "int16",
+    Type_Uint16:   "uint16",
+    Type_Int:      "int",
     Type_Uint:     "uint32",
-	Type_Int32:    "int32",
-	Type_Uint32:   "uint32",
-	Type_Int64:    "int64",
-	Type_Uint64:   "uint64",
-	Type_Float:    "float",
-	Type_Float32:  "float32",
-	Type_Float64:  "float64",
-	Type_String:   "string",
+    Type_Int32:    "int32",
+    Type_Uint32:   "uint32",
+    Type_Int64:    "int64",
+    Type_Uint64:   "uint64",
+    Type_Float:    "float",
+    Type_Float32:  "float32",
+    Type_Float64:  "float64",
+    Type_String:   "string",
     Type_Enum:     "enum",
-	Type_Bytes:    "bytes",
-	Type_DateTime: "datetime",
-	Type_Array:    "array",
-	Type_Map:      "map",
-	Type_Any:      "any",
+    Type_Bytes:    "bytes",
+    Type_DateTime: "datetime",
+    Type_Array:    "array",
+    Type_Map:      "map",
+    Type_Any:      "any",
 }
 
 # non-primitive type names
 abstract_type_names = {
-	"array": Type_Array,
-	"map":   Type_Map,
-	"any":   Type_Any,
+    "array": Type_Array,
+    "map":   Type_Map,
+    "any":   Type_Any,
 }
 
 interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64', 'enum']
 floating_types = ['float', 'float32', 'float64']
+
 
 # get name of an integer type
 def get_name_of_type(t):

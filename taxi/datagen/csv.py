@@ -8,6 +8,7 @@ import codecs
 import taxi.descriptor.predef as predef
 import taxi.descriptor.strutil as strutil
 
+
 class CsvDataGen:
     def __init__(self):
         pass

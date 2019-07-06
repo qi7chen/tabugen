@@ -9,6 +9,7 @@ import taxi.generator.genutil as genutil
 import taxi.version as version
 from taxi.generator.csharp.gen_struct import CSharpStructGenerator
 
+
 # C# csv load generator
 class CSharpJsonLoadGenerator(CSharpStructGenerator):
     TAB_SPACE = '    '

@@ -169,6 +169,7 @@ class MySQLImporter:
         struct["fields"] = fields
         return struct
 
+
 # 数据库字段类型转换为编程语言识别类型
 def convert_mysql_type(name):
     name = name.lower()
