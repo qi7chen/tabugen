@@ -1,4 +1,4 @@
-// Copyright 2018-preset ichenq@outlook.com. All Rights Reserved.
+// Copyright 2018-preset prototyped.cn. All Rights Reserved.
 // Any redistribution or reproduction of part or all of the contents in any form
 // is prohibited.
 //
