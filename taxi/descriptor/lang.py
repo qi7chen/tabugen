@@ -223,7 +223,7 @@ def map_java_type(typ):
         k, v = types.map_key_value_types(typ)
         key_type = java_box_type(type_mapping[k])
         value_type = java_box_type(type_mapping[v])
-        return 'HashMap<%s,%s>' % (key_type, value_type)
+        return 'Map<%s,%s>' % (key_type, value_type)
     assert False, typ
 
 # java默认值
@@ -238,8 +238,8 @@ def name_with_default_java_value(field, typename):
         return '%s = 0;' % field['name']
     elif types.is_floating_type(field['type_name']):
         return '%s = 0.0f;' % field['name']
-    elif typename.startswith('HashMap'):
-        return '%s = new %s();' % (field['name'], typename)
+    elif typename.startswith('Map'):
+        return '%s = new %s();' % (field['name'], 'Hash' + typename)
     else:
         return '%s = null;' % field['name']
 
