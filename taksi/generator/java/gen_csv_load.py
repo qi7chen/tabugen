@@ -3,13 +3,13 @@
 # See accompanying files LICENSE.
 
 import os
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.descriptor.types as types
-import taxi.descriptor.strutil as strutil
-import taxi.generator.genutil as genutil
-import taxi.version as version
-from taxi.generator.java.gen_struct import JavaStructGenerator
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.descriptor.types as types
+import taksi.descriptor.strutil as strutil
+import taksi.generator.genutil as genutil
+import taksi.version as version
+from taksi.generator.java.gen_struct import JavaStructGenerator
 
 JAVA_CLASS_TEMPLATE = """
 

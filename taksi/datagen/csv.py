@@ -5,8 +5,8 @@
 import os
 import csv
 import codecs
-import taxi.descriptor.predef as predef
-import taxi.descriptor.strutil as strutil
+import taksi.descriptor.predef as predef
+import taksi.descriptor.strutil as strutil
 
 
 class CsvDataGen:

@@ -3,10 +3,10 @@
 # See accompanying files LICENSE.
 
 
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.generator.genutil as genutil
-import taxi.descriptor.strutil as strutil
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.generator.genutil as genutil
+import taksi.descriptor.strutil as strutil
 
 
 # Go struct generator

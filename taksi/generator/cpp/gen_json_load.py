@@ -2,12 +2,12 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import taxi.descriptor.types as types
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.descriptor.strutil as strutil
-import taxi.generator.genutil as genutil
-from taxi.generator.cpp.gen_header import CppStructGenerator
+import taksi.descriptor.types as types
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.descriptor.strutil as strutil
+import taksi.generator.genutil as genutil
+from taksi.generator.cpp.gen_header import CppStructGenerator
 
 
 # C++ code generator

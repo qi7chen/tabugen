@@ -6,9 +6,9 @@
 
 import sys
 import argparse
-from taxi.registry import *
-from taxi.version import VER_STRING
-import taxi.descriptor.strutil as strutil
+from taksi.registry import *
+from taksi.version import VER_STRING
+import taksi.descriptor.strutil as strutil
 
 
 def run(args):

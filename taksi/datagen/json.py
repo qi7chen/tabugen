@@ -5,10 +5,10 @@
 import os
 import json
 import codecs
-import taxi.descriptor.predef as predef
-import taxi.descriptor.strutil as strutil
-import taxi.descriptor.types as types
-import taxi.generator.genutil as genutil
+import taksi.descriptor.predef as predef
+import taksi.descriptor.strutil as strutil
+import taksi.descriptor.types as types
+import taksi.generator.genutil as genutil
 
 
 class JsonDataGen:

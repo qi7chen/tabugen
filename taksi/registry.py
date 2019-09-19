@@ -2,20 +2,20 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from taxi.importer.excel import ExcelImporter
-from taxi.importer.mysql import MySQLImporter
+from taksi.importer.excel import ExcelImporter
+from taksi.importer.mysql import MySQLImporter
 
-from taxi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
-from taxi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
-from taxi.generator.csharp.gen_json_load import CSharpJsonLoadGenerator
-from taxi.generator.java.gen_csv_load import JavaCsvLoadGenerator
-from taxi.generator.java.gen_json_load import JavaJsonLoadGenerator
-from taxi.generator.go.gen_csv_load import GoCsvLoadGenerator
-from taxi.generator.go.gen_json_load import GoJsonLoadGenerator
-from taxi.generator.go.gen_sql_orm import GoSqlOrmGenerator
+from taksi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
+from taksi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
+from taksi.generator.csharp.gen_json_load import CSharpJsonLoadGenerator
+from taksi.generator.java.gen_csv_load import JavaCsvLoadGenerator
+from taksi.generator.java.gen_json_load import JavaJsonLoadGenerator
+from taksi.generator.go.gen_csv_load import GoCsvLoadGenerator
+from taksi.generator.go.gen_json_load import GoJsonLoadGenerator
+from taksi.generator.go.gen_sql_orm import GoSqlOrmGenerator
 
-from taxi.datagen.csv import CsvDataGen
-from taxi.datagen.json import JsonDataGen
+from taksi.datagen.csv import CsvDataGen
+from taksi.datagen.json import JsonDataGen
 
 # data importers
 importer_registry = {

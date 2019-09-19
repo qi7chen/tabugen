@@ -4,8 +4,8 @@
 
 import pymysql
 import unittest
-import taxi.descriptor.types as types
-import taxi.descriptor.strutil as strutil
+import taksi.descriptor.types as types
+import taksi.descriptor.strutil as strutil
 
 
 class MySQLImporter:

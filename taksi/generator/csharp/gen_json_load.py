@@ -3,11 +3,11 @@
 # See accompanying files LICENSE.
 
 import os
-import taxi.descriptor.predef as predef
-import taxi.descriptor.strutil as strutil
-import taxi.generator.genutil as genutil
-import taxi.version as version
-from taxi.generator.csharp.gen_struct import CSharpStructGenerator
+import taksi.descriptor.predef as predef
+import taksi.descriptor.strutil as strutil
+import taksi.generator.genutil as genutil
+import taksi.version as version
+from taksi.generator.csharp.gen_struct import CSharpStructGenerator
 
 
 # C# csv load generator

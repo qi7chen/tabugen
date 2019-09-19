@@ -4,10 +4,10 @@
 
 import os
 import unittest
-import taxi.descriptor.types as types
-import taxi.descriptor.predef as predef
-import taxi.descriptor.strutil as strutil
-import taxi.importer.xlsxwrap as xlsxwrap
+import taksi.descriptor.types as types
+import taksi.descriptor.predef as predef
+import taksi.descriptor.strutil as strutil
+import taksi.importer.xlsxwrap as xlsxwrap
 
 
 # excel导入

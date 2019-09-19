@@ -3,8 +3,8 @@
 # See accompanying files LICENSE.
 
 import re
-import taxi.descriptor.predef as predef
-import taxi.descriptor.strutil as strutil
+import taksi.descriptor.predef as predef
+import taksi.descriptor.strutil as strutil
 
 
 # 根据'column_index'查找一个字段

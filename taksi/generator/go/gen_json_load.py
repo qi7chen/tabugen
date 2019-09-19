@@ -4,13 +4,13 @@
 
 import os
 import codecs
-import taxi.descriptor.types as types
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.generator.genutil as genutil
-import taxi.descriptor.strutil as strutil
-import taxi.version as version
-from taxi.generator.go.gen_struct import GoStructGenerator
+import taksi.descriptor.types as types
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.generator.genutil as genutil
+import taksi.descriptor.strutil as strutil
+import taksi.version as version
+from taksi.generator.go.gen_struct import GoStructGenerator
 
 
 # Go json load generator

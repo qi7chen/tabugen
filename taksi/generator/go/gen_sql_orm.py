@@ -4,11 +4,11 @@
 
 import os
 import codecs
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.descriptor.strutil as strutil
-import taxi.generator.genutil as genutil
-import taxi.version as version
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.descriptor.strutil as strutil
+import taksi.generator.genutil as genutil
+import taksi.version as version
 
 
 # Go code generator, for SQL

@@ -3,13 +3,13 @@
 # See accompanying files LICENSE.
 
 import os
-import taxi.descriptor.types as types
-import taxi.descriptor.predef as predef
-import taxi.descriptor.lang as lang
-import taxi.descriptor.strutil as strutil
-import taxi.generator.genutil as genutil
-import taxi.version as version
-from taxi.generator.csharp.gen_struct import CSharpStructGenerator
+import taksi.descriptor.types as types
+import taksi.descriptor.predef as predef
+import taksi.descriptor.lang as lang
+import taksi.descriptor.strutil as strutil
+import taksi.generator.genutil as genutil
+import taksi.version as version
+from taksi.generator.csharp.gen_struct import CSharpStructGenerator
 
 
 CSHARP_METHOD_TEMPLATE = """
