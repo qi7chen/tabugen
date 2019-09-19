@@ -7,7 +7,7 @@ cd %currentDir%
 
 set PYTHONPATH=%rootDir%
 
-set taxi_alias=python %rootDir%\taxi\cli.py
+set taxi_alias=python %rootDir%\taksi\cli.py
 set importArgs="file=%currentDir%\Ëæ»ú±¦Ïä.xlsx"
 set exportArgs="pkg=config, outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\csv\autoconfig.go"
 

@@ -1,12 +1,12 @@
 echo off
 
 set currentDir=%cd%
-cd ..\..\
+cd ..\..\..\
 set rootDir=%cd%
 cd %currentDir%
 set PYTHONPATH=%rootDir%
 
-set taxi_alias=python %rootDir%\taxi\cli.py
+set taxi_alias=python %rootDir%\taksi\cli.py
 set importArgs="user=root,passwd=holyshit,db=test,table=player"
 set exportArgs="outdata-dir=%currentDir%,out-src-file=%currentDir%/config.go,pkg=orm"
 
