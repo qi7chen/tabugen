@@ -91,4 +91,3 @@ class GoStructGenerator():
         content += self.gen_go_struct(struct, params)
         content += '}\n\n'
         return content
-

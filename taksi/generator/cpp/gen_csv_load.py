@@ -454,7 +454,6 @@ class CppCsvLoadGenerator(CppStructGenerator):
 
         return content
 
-
     # 生成源文件定义
     def gen_cpp_source(self, struct):
         content = ''
@@ -529,10 +528,3 @@ class CppCsvLoadGenerator(CppStructGenerator):
         filename = os.path.abspath(sourcefile)
         strutil.compare_and_save_content(filename, cpp_content, encoding)
         print('wrote source file to', filename)
-
-
-
-
-
-
-

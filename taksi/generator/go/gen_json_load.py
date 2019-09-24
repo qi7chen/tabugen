@@ -21,10 +21,8 @@ class GoJsonLoadGenerator(GoStructGenerator):
     def name():
         return "go-json"
 
-
     def get_const_key_name(self, name):
         return 'Key%sName' % name
-
 
     def gen_const_names(self, descriptors):
         content = 'const (\n'

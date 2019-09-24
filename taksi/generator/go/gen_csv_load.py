@@ -20,10 +20,8 @@ class GoCsvLoadGenerator(GoStructGenerator):
     def name():
         return "go-csv"
 
-
     def get_const_key_name(self, name):
         return 'Key%sName' % name
-
 
     def gen_const_names(self, descriptors):
         content = 'const (\n'
@@ -32,7 +30,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
             content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), name)
         content += ')\n\n'
         return content
-
 
     # 生成赋值方法
     def gen_field_assgin_stmt(self, name, typename, valuetext, tabs, tips):
@@ -44,7 +41,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
             content += '%svar value = MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
-
 
     # 生成array赋值
     def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
@@ -63,7 +59,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
-
 
     # 生成map赋值
     def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
@@ -136,7 +131,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
         content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
         return content
-
 
     #生成ParseFromRow方法
     def gen_parse_method(self, struct):
@@ -212,7 +206,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
         content += '    }\n'
         return content
 
-
     # KV模式下的Load方法
     def gen_load_method_kv(self, struct):
         content = ''
@@ -235,7 +228,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
         content += '\treturn &item, nil\n'
         content += '}\n\n'
         return content
-
 
     # 生成Load方法
     def gen_load_method(self, struct):

@@ -2,9 +2,6 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-#
-# Excel导入器
-#
 
 PredefFilenameOption = "file"
 PredefSkipFileOption = "skip"

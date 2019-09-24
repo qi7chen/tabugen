@@ -312,7 +312,6 @@ class CSharpCsvLoadGenerator(CSharpStructGenerator):
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
-
     # 生成Get()方法
     def gen_get_method(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
@@ -438,5 +437,3 @@ class CSharpCsvLoadGenerator(CSharpStructGenerator):
         filename = os.path.abspath(filename)
         strutil.compare_and_save_content(filename, content, 'utf-8')
         print('wrote source file to', filename)
-
-

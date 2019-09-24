@@ -106,6 +106,7 @@ def map_go_type(typ):
         return 'map[%s]%s' % (key_type, value_type)
     assert False, typ
 
+
 # Go类型
 def map_go_raw_type(typ):
     go_type_mapping = {
@@ -127,6 +128,7 @@ def map_go_raw_type(typ):
         'datetime': 'time.Time',
     }
     return go_type_mapping[typ]
+
 
 # C#类型映射
 def map_cs_type(typ):
@@ -178,6 +180,7 @@ def name_with_default_cs_value(field, typename):
     else:
         return '%s = null;' % field['name']
 
+
 # java装箱类型
 def java_box_type(typ):
     table = {
@@ -191,6 +194,7 @@ def java_box_type(typ):
         'String': 'String',
     }
     return table[typ]
+
 
 # java类型
 def map_java_type(typ):
@@ -226,6 +230,7 @@ def map_java_type(typ):
         return 'Map<%s,%s>' % (key_type, value_type)
     assert False, typ
 
+
 # java默认值
 def name_with_default_java_value(field, typename):
     typename = typename.strip()
@@ -244,6 +249,7 @@ def name_with_default_java_value(field, typename):
         return '%s = new HashMap<>();' % field['name']
     else:
         return '%s = null;' % field['name']
+
 
 def is_java_primitive_type(typ):
     table = ['boolean', 'byte', 'short', 'int', 'long', 'float', 'double', 'decimal']

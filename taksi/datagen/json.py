@@ -82,7 +82,6 @@ class JsonDataGen:
             ktype, vtype = types.map_key_value_types(typename)
             return self.parse_to_dict(ktype, vtype, text, map_delims)
 
-
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
         typecol = int(struct['options'][predef.PredefValueTypeColumn])

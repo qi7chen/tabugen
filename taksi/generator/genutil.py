@@ -174,9 +174,9 @@ def get_inner_class_struct_fields(struct):
             'type_name': field['type_name'],
             'original_type_name': field['original_type_name'],
             'comment': field['comment'],
+            'name': strutil.remove_suffix_number(field['name']),
+            'camel_case_name': strutil.remove_suffix_number(field['camel_case_name']),
         }
-        new_field['name'] = strutil.remove_suffix_number(field['name'])
-        new_field['camel_case_name'] = strutil.remove_suffix_number(field['camel_case_name'])
         inner_fields.append(new_field)
 
     return inner_fields

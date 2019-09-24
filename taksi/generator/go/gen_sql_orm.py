@@ -21,6 +21,7 @@ class GoSqlOrmGenerator():
     def name():
         return "go-v2"
 
+    #
     def gen_getset(self, struct, params):
         is_camelcase_field = params.get(predef.OptionCamelcaseField, "") != "off"
         name = struct['camel_case_name']
@@ -240,5 +241,3 @@ class GoSqlOrmGenerator():
             cmd = gopath + '/bin/goimports -w ' + filename
             print(cmd)
             os.system(cmd)
-
-
