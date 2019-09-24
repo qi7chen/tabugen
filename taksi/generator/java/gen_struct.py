@@ -45,12 +45,12 @@ class JavaStructGenerator:
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
+        inner_type_class = ''
         inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_java_inner_class(struct)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = 'ArrayList<%s>' % inner_type_class
 
         vec_done = False
         vec_names, vec_name = genutil.get_vec_field_range(struct)
@@ -64,8 +64,8 @@ class JavaStructGenerator:
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
-                    typename = strutil.pad_spaces(inner_typename, max_type_len)
-                    content += '    public %s %s = new %s(); \n' % (typename, inner_var_name, typename)
+                    typename = "ArrayList<>();"
+                    content += '    public List<%s> %s = new %s \n' % (inner_type_class, inner_var_name, typename)
                     inner_class_done = True
             else:
                 typename = lang.map_java_type(field['original_type_name'])

@@ -238,8 +238,10 @@ def name_with_default_java_value(field, typename):
         return '%s = 0;' % field['name']
     elif types.is_floating_type(field['type_name']):
         return '%s = 0.0f;' % field['name']
+    elif typename.startswith("List"):
+        return '%s = new ArrayList<>();' % field['name']
     elif typename.startswith('Map'):
-        return '%s = new %s();' % (field['name'], 'Hash' + typename)
+        return '%s = new HashMap<>();' % field['name']
     else:
         return '%s = null;' % field['name']
 

@@ -19,6 +19,8 @@ import java.util.function.Function;
 
 public class %s {
 
+    final public static String LF = "\\n"; // line feed
+    
     // parse text to boolean value
     public static boolean parseBool(String text) {
         if (!text.isEmpty()) {
@@ -32,21 +34,20 @@ public class %s {
 
     public static String readFileContent(String filepath) {
         StringBuilder sb = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
-                sb.append('\\n'); // line break
+                sb.append(LF); // line break
             }
-            reader.close();
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
         return sb.toString();
     }
     
-    // you can use your own file reader
+    // you can set your own file content reader
     public static Function<String, String> reader;
     
     public static String[] readFileToTextLines(String filename) {
@@ -54,7 +55,7 @@ public class %s {
             reader = (filepath)-> readFileContent(filepath);
         }
         String content = reader.apply(filename);
-        return content.split("\\n", -1);
+        return content.split(LF, -1);
     }    
 
 """
@@ -81,8 +82,8 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
             content += '    private static %s instance_;\n' % struct['name']
             content += '    public static %s getInstance() { return instance_; }\n\n' % struct['name']
         else:
-            content += '    private static ArrayList<%s> data_;\n' % struct['name']
-            content += '    public static ArrayList<%s> getData() { return data_; } \n\n' % struct['name']
+            content += '    private static List<%s> data_ = new ArrayList<>();\n' % struct['name']
+            content += '    public static List<%s> getData() { return data_; } \n\n' % struct['name']
         return content
 
     # 生成赋值方法
@@ -340,13 +341,13 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         content = ''
         content = '%spublic static void loadFromFile(String filepath)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
+        content += '%s    data_.clear();\n' % self.TAB_SPACE
         content += '%s    String[] lines = %s.readFileToTextLines(filepath);\n' % (self.TAB_SPACE, strutil.config_manager_name)
-        content += '%s    data_ = new ArrayList<%s>();\n' % (self.TAB_SPACE, struct['name'])
         content += '%s    for(String line : lines)\n' % self.TAB_SPACE
         content += '%s    {\n' % self.TAB_SPACE
         content += '%s        if (line.isEmpty())\n' % self.TAB_SPACE
         content += '%s            continue;\n' % self.TAB_SPACE
-        content += '%s        String[] row = line.split("\\\\,", -1);\n' % self.TAB_SPACE
+        content += '%s        String[] row = line.split("\\\\,", -1);\n' % self.TAB_SPACE  #
         content += '%s        %s obj = new %s();\n' % (self.TAB_SPACE, struct['name'], struct['name'])
         content += "%s        obj.parseFromRow(row);\n" % self.TAB_SPACE
         content += "%s        data_.add(obj);\n" % self.TAB_SPACE
