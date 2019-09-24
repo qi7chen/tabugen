@@ -9,19 +9,20 @@ import com.alibaba.fastjson.JSON;
 
 public class Sample
 {
+    final public static String LF = "\n"; // line feed
+
     // read file to with CF lines
     public static String readFileContent(String filepath) {
         StringBuilder sb = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
-                sb.append('\n'); // line break
+                sb.append(LF); // line break
             }
-            reader.close();
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
         return sb.toString();
     }

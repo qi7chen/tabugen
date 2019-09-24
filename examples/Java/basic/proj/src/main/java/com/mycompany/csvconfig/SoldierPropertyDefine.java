@@ -33,8 +33,8 @@ public class SoldierPropertyDefine
     public float   AtkRange = 0.0f;           // 攻击距离
     public float   MovingSpeed = 0.0f;        // 移动速度
 
-    private static ArrayList<SoldierPropertyDefine> data_;
-    public static ArrayList<SoldierPropertyDefine> getData() { return data_; } 
+    private static List<SoldierPropertyDefine> data_ = new ArrayList<>();
+    public static List<SoldierPropertyDefine> getData() { return data_; } 
 
     // parse fields data from text row
     public void parseFromRow(String[] row)
@@ -118,8 +118,8 @@ public class SoldierPropertyDefine
 
     public static void loadFromFile(String filepath)
     {
+        data_.clear();
         String[] lines = AutogenConfigManager.readFileToTextLines(filepath);
-        data_ = new ArrayList<SoldierPropertyDefine>();
         for(String line : lines)
         {
             if (line.isEmpty())

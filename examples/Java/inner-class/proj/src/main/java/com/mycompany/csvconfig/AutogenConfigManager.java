@@ -8,6 +8,8 @@ import java.util.function.Function;
 
 public class AutogenConfigManager {
 
+    final public static String LF = "\n"; // line feed
+    
     // parse text to boolean value
     public static boolean parseBool(String text) {
         if (!text.isEmpty()) {
@@ -21,21 +23,20 @@ public class AutogenConfigManager {
 
     public static String readFileContent(String filepath) {
         StringBuilder sb = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
-                sb.append('\n'); // line break
+                sb.append(LF); // line break
             }
-            reader.close();
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
         return sb.toString();
     }
     
-    // you can use your own file reader
+    // you can set your own file content reader
     public static Function<String, String> reader;
     
     public static String[] readFileToTextLines(String filename) {
@@ -43,7 +44,7 @@ public class AutogenConfigManager {
             reader = (filepath)-> readFileContent(filepath);
         }
         String content = reader.apply(filename);
-        return content.split("\n", -1);
+        return content.split(LF, -1);
     }    
 
     public static void loadAllConfig() {

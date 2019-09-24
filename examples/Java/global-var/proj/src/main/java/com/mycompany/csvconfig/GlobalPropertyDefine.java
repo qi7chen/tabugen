@@ -18,7 +18,7 @@ public class GlobalPropertyDefine
     public int                  FreeCompleteSeconds = 0;           // 免费立即完成时间
     public int                  CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
     public int[]                SpawnLevelLimit = null;            // 最大刷新个数显示
-    public Map<String,Integer>  FirstRechargeReward = new HashMap<String,Integer>(); // 首充奖励
+    public Map<String,Integer>  FirstRechargeReward = new HashMap<>(); // 首充奖励
 
     private static GlobalPropertyDefine instance_;
     public static GlobalPropertyDefine getInstance() { return instance_; }

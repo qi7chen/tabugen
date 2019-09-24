@@ -12,11 +12,11 @@ public class NewbieGuideDefine
     public String               Type = "";             // 任务类型
     public String               Target = "";           // 目标
     public int[]                Accomplishment = null; // 完成步骤
-    public Map<String,Integer>  Goods = new HashMap<String,Integer>(); // 物品
+    public Map<String,Integer>  Goods = new HashMap<>(); // 物品
     public String               Description = "";      // 描述
 
-    private static ArrayList<NewbieGuideDefine> data_;
-    public static ArrayList<NewbieGuideDefine> getData() { return data_; } 
+    private static List<NewbieGuideDefine> data_ = new ArrayList<>();
+    public static List<NewbieGuideDefine> getData() { return data_; } 
 
     // parse fields data from text row
     public void parseFromRow(String[] row)
@@ -64,8 +64,8 @@ public class NewbieGuideDefine
 
     public static void loadFromFile(String filepath)
     {
+        data_.clear();
         String[] lines = AutogenConfigManager.readFileToTextLines(filepath);
-        data_ = new ArrayList<NewbieGuideDefine>();
         for(String line : lines)
         {
             if (line.isEmpty())

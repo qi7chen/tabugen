@@ -15,14 +15,14 @@ public class BoxProbabilityDefine
         public int Probability = 0;    // 物品1概率
     }
 
-    public String                             ID = "";             // ID
-    public int                                Total = 0;           // 奖励总数
-    public int                                Time = 0;            // 冷却时间
-    public boolean                            Repeat = false;      // 是否可重复
-    public ArrayList<ProbabilityGoodsDefine> ProbabilityGoods = new ArrayList<ProbabilityGoodsDefine>(); 
+    public String   ID = "";             // ID
+    public int      Total = 0;           // 奖励总数
+    public int      Time = 0;            // 冷却时间
+    public boolean  Repeat = false;      // 是否可重复
+    public List<ProbabilityGoodsDefine> ProbabilityGoods = new ArrayList<>(); 
 
-    private static ArrayList<BoxProbabilityDefine> data_;
-    public static ArrayList<BoxProbabilityDefine> getData() { return data_; } 
+    private static List<BoxProbabilityDefine> data_ = new ArrayList<>();
+    public static List<BoxProbabilityDefine> getData() { return data_; } 
 
     // parse fields data from text row
     public void parseFromRow(String[] row)
@@ -63,8 +63,8 @@ public class BoxProbabilityDefine
 
     public static void loadFromFile(String filepath)
     {
+        data_.clear();
         String[] lines = AutogenConfigManager.readFileToTextLines(filepath);
-        data_ = new ArrayList<BoxProbabilityDefine>();
         for(String line : lines)
         {
             if (line.isEmpty())

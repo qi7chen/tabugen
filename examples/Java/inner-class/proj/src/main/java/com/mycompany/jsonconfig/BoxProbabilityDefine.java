@@ -14,10 +14,10 @@ public class BoxProbabilityDefine
         public int Probability = 0;    // 物品1概率
     }
 
-    public String                             ID = "";             // ID
-    public int                                Total = 0;           // 奖励总数
-    public int                                Time = 0;            // 冷却时间
-    public boolean                            Repeat = false;      // 是否可重复
-    public ArrayList<ProbabilityGoodsDefine> ProbabilityGoods = new ArrayList<ProbabilityGoodsDefine>(); 
+    public String   ID = "";             // ID
+    public int      Total = 0;           // 奖励总数
+    public int      Time = 0;            // 冷却时间
+    public boolean  Repeat = false;      // 是否可重复
+    public List<ProbabilityGoodsDefine> ProbabilityGoods = new ArrayList<>(); 
 }
 

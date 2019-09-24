@@ -11,7 +11,7 @@ public class NewbieGuideDefine
     public String               Type = "";             // 任务类型
     public String               Target = "";           // 目标
     public int[]                Accomplishment = null; // 完成步骤
-    public Map<String,Integer>  Goods = new HashMap<String,Integer>(); // 物品
+    public Map<String,Integer>  Goods = new HashMap<>(); // 物品
     public String               Description = "";      // 描述
 }
 

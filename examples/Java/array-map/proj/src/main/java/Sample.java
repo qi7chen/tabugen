@@ -9,19 +9,20 @@ import com.alibaba.fastjson.JSON;
 
 public class Sample
 {
+    final static String LF = "\n"; // line feed
+
     // read file to with CF lines
     public static String readFileContent(String filepath) {
         StringBuilder sb = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filepath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
-                sb.append('\n'); // line break
+                sb.append(LF); // line break
             }
-            reader.close();
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
         return sb.toString();
     }
@@ -34,7 +35,7 @@ public class Sample
     private static void testCsv() {
         com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
         com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
-        ArrayList<com.mycompany.csvconfig.NewbieGuideDefine> boxdata = com.mycompany.csvconfig.NewbieGuideDefine.getData();
+        List<com.mycompany.csvconfig.NewbieGuideDefine> boxdata = com.mycompany.csvconfig.NewbieGuideDefine.getData();
         System.out.printf("load %d box\n", boxdata.size());
         boxdata.forEach((item)->{
             System.out.printf("%s %s %d\n", item.Name, item.Name, item.Goods.size());
