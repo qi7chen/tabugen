@@ -2,11 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import taksi.descriptor.types as types
-import taksi.descriptor.predef as predef
-import taksi.descriptor.lang as lang
-import taksi.descriptor.strutil as strutil
-import taksi.generator.genutil as genutil
+
 from taksi.generator.cpp.gen_header import CppStructGenerator
 
 
@@ -17,3 +13,7 @@ class CppJsonLoadGenerator(CppStructGenerator):
     @staticmethod
     def name():
         return "cpp-json"
+
+    def run(self, descriptors, params):
+        # TO-DO: with no reflection support in C++, is it valuable to write JSON code?
+        raise NotImplementedError
