@@ -29,7 +29,7 @@
 
 ### meta表里的配置
 
-在excel文件的meta表里可以定义一些配置来控制如何导入，如：
+在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
 
 * `class-name`  生成的class名称	
 * `class-comment`   生成的class注释

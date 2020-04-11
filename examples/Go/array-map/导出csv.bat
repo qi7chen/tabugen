@@ -11,6 +11,6 @@ set importArgs="file=%currentDir%\新手任务.xlsx"
 set exportArgs="pkg=config,outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\csv\autoconfig.go"
 
 %taxi_alias%  --mode=excel --import-args=%importArgs% --generator="go-csv" --output-format=csv --export-args=%exportArgs%
-
+go fmt %currentDir%\src\csv\autoconfig.go
 pause
 REM array-delim

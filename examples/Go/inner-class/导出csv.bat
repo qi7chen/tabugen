@@ -12,5 +12,5 @@ set importArgs="file=%currentDir%\Ëæ»ú±¦Ïä.xlsx"
 set exportArgs="pkg=config, outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\csv\autoconfig.go"
 
 %taxi_alias%  --mode=excel --import-args=%importArgs% --generator="go-csv" --output-format=csv --export-args=%exportArgs%
-
+go fmt %currentDir%\src\csv\autoconfig.go
 pause
