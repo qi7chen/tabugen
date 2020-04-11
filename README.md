@@ -23,7 +23,7 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 ![example](doc/img1.png)
 
-    一个excel配置表至少包含2个sheet，默认第一个sheet是数据本身，而另一个指定名称为**meta**的sheet则用来配置导出选项。
+    一个excel配置表至少包含2个sheet，默认第一个sheet是数据本身，而另一个指定名称为**@meta**的sheet则用来配置导出选项。
 
     数据定义部分将会导出为结构及相关函数代码定义，而数据本身将会转为另一个csv/json格式的数据文件。
 
