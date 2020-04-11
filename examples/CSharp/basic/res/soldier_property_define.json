@@ -28,7 +28,7 @@
   {
     "Act": 32,
     "AtkFrequency": 0.2,
-    "AtkRange": 5.029000000000001,
+    "AtkRange": 5.029,
     "BombLoad": 1,
     "BuildingLevel": 2,
     "BuildingName": "Barracks",
@@ -132,7 +132,7 @@
   {
     "Act": 44,
     "AtkFrequency": 0.2,
-    "AtkRange": 6.345000000000001,
+    "AtkRange": 6.345,
     "BombLoad": 1,
     "BuildingLevel": 6,
     "BuildingName": "Barracks",
@@ -158,7 +158,7 @@
   {
     "Act": 48,
     "AtkFrequency": 0.2,
-    "AtkRange": 6.6739999999999995,
+    "AtkRange": 6.674,
     "BombLoad": 1,
     "BuildingLevel": 7,
     "BuildingName": "Barracks",
@@ -210,7 +210,7 @@
   {
     "Act": 56,
     "AtkFrequency": 0.2,
-    "AtkRange": 7.332000000000001,
+    "AtkRange": 7.332,
     "BombLoad": 1,
     "BuildingLevel": 9,
     "BuildingName": "Barracks",
@@ -288,7 +288,7 @@
   {
     "Act": 28,
     "AtkFrequency": 0.1,
-    "AtkRange": 3.7619999999999996,
+    "AtkRange": 3.762,
     "BombLoad": 1,
     "BuildingLevel": 5,
     "BuildingName": "Barracks",
@@ -496,7 +496,7 @@
   {
     "Act": 54,
     "AtkFrequency": 0.1,
-    "AtkRange": 5.609999999999999,
+    "AtkRange": 5.61,
     "BombLoad": 1,
     "BuildingLevel": 12,
     "BuildingName": "Barracks",
@@ -574,7 +574,7 @@
   {
     "Act": 97,
     "AtkFrequency": 2.0,
-    "AtkRange": 9.216000000000001,
+    "AtkRange": 9.216,
     "BombLoad": 1,
     "BuildingLevel": 7,
     "BuildingName": "Barracks",
@@ -678,7 +678,7 @@
   {
     "Act": 142,
     "AtkFrequency": 2.0,
-    "AtkRange": 11.232000000000001,
+    "AtkRange": 11.232,
     "BombLoad": 1,
     "BuildingLevel": 11,
     "BuildingName": "Barracks",
@@ -704,7 +704,7 @@
   {
     "Act": 156,
     "AtkFrequency": 2.0,
-    "AtkRange": 11.735999999999999,
+    "AtkRange": 11.736,
     "BombLoad": 1,
     "BuildingLevel": 11,
     "BuildingName": "Barracks",
