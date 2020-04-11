@@ -19,7 +19,7 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 ## 编辑一个excel文件
 
-    一个符合taxi规则的excel表格如下图所示：
+    一个符合TAKSi规则的excel表格如下图所示：
 
 ![example](doc/img1.png)
 
@@ -32,7 +32,7 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 ## 使用TAKSi导出excel数据，并生成对应语言的代码
     
-    taxi提供了丰富的配置选项来自定义导出需求
+    TAKSi提供了丰富的配置选项来自定义导出需求
     
     
 * 导出数据
@@ -50,7 +50,7 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 # 各种语言的示例
 
-    请查看examples目录下的taxi导出示例：
+    请查看examples目录下的TAKSi导出示例：
 
 * [C++的示例](examples/Cpp) 演示如何配合C++使用;
 * [C#的示例](examples/CSharp) 演示如何配合C#(Unity)使用;
