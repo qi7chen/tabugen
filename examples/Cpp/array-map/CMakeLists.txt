@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project (CppDemo3)
+project (CppExample3)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(COMMON_SRC_DIR ${PROJECT_ROOT_DIR}/../common-src)
@@ -45,4 +45,4 @@ set(ALL_SRC_FILES
     )
 
     
-add_executable(CppDemo3 ${ALL_SRC_FILES})
+add_executable(CppExample3 ${ALL_SRC_FILES})

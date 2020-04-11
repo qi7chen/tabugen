@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <type_traits>
 #include <iostream>
+#include <fstream>
 #include "AutoGenConfig.h"
 #include "Utility/StringUtil.h"
 
