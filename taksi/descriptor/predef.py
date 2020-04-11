@@ -6,7 +6,7 @@
 PredefFilenameOption = "file"
 PredefSkipFileOption = "skip"
 
-PredefMetaSheet = "meta"                    # meta sheet名称
+PredefMetaSheet = "@meta"                    # meta sheet名称
 PredefStructTypeRow = "type-row"            # 这一行描述类型
 PredefStructNameRow = "name-row"            # 这一行描述名称
 PredefCommentRow = "comment-row"            # 这一行描述注释蚊子
