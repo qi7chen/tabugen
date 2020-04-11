@@ -36,7 +36,7 @@ class GoStructGenerator():
         vec_names, vec_name = genutil.get_vec_field_range(struct)
 
         content += '// %s, %s\n' % (struct['comment'], struct['file'])
-        content += 'type %s struct\n{\n' % struct['camel_case_name']
+        content += 'type %s struct {\n' % struct['camel_case_name']
         for field in fields:
             field_name = field['name']
             if field_name in inner_field_names:
@@ -81,7 +81,7 @@ class GoStructGenerator():
                                                               field['comment'], field['name'])
             else:
                 content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-        content += '};\n\n'
+        content += '}\n\n'
 
         return content
 
