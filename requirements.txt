@@ -2,3 +2,4 @@ et-xmlfile==1.0.1
 jdcal==1.4.1
 openpyxl==2.6.3
 PyMySQL==0.9.3
+pyinstaller==4.0

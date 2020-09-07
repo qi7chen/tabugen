@@ -5,17 +5,14 @@
 TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在简化游戏业务开发中的数据抽象过程。
 
 
-# 为什么要使用TAKSi配置导出工具
+# TAKSi特性
 
-
-* 可以迅速搭建系统原型
-
-* 支持主流静态语言(C++、C#、Java、Go)
+* 支持主流静态语言(C++、C#、Java、Go)的代码生成
 
 * 对于动态语言，TAKSi可以导出为json
 
 
-# 如何在开发流程中使用TAKSi
+# 如何使用TAKSi
 
 ## 编辑一个excel文件
 
@@ -58,6 +55,16 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 * [Java的示例](examples/Java) 演示如何配合Java使用;
 * 对于python, javascript, lua等动态语言，将excel导出为json即可
 
+
+# 如何打包TAKSi成执行档
+
+在Windows这样的没有默认安装Python的操作系统上，可以将TAKSi打包成执行档发布
+
+`
+pip install -r requirements.txt
+
+pyinstaller -F --name=taksi taksi\cli.py
+`
 
 # TO-DO
 
