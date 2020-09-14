@@ -1,69 +1,87 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2018-present prototyped.cn. All rights reserved.
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 import sys
 import argparse
-from taksi.registry import *
 from taksi.version import VER_STRING
-import taksi.descriptor.strutil as strutil
+from taksi.registry import get_struct_parser, get_code_generator, get_data_transformer
 
 
 def run(args):
-    importer = get_importer(args.mode)
-    if importer is None:
-        print('importer `%s` is not supported' % args.mode)
+    parser = get_struct_parser(args.parser)
+    if parser is None:
+        print('parser `%s` is not implemented' % args.parser)
         sys.exit(1)
 
     codegen = None
-    datagen = None
-    if len(args.generator) > 0:
+    input_tran = None
+    output_tran = None
+    if args.generator is not None:
         codegen = get_code_generator(args.generator)
         if codegen is None:
-            print('code generator `%s` is not supported' % args.generator)
+            print('code generator `%s` is not implemented' % args.generator)
             sys.exit(1)
 
-    if len(args.output_format):
-        datagen = get_data_generator(args.output_format)
-        if datagen is None:
-            print('data generator `%s` is not supported' % args.generator)
+    if args.input is not None:
+        input_tran = get_data_transformer(args.input)
+        if input_tran is None:
+            print('data transformer `%s` is not implemented' % args.generator)
             sys.exit(1)
 
-    if codegen is None and datagen is None:
-        print('no generator specified, nothing would happen')
+    if args.output is not None:
+        output_tran = get_data_transformer(args.output)
+        if output_tran is None:
+            print('data transformer `%s` is not implemented' % args.generator)
+            sys.exit(1)
+
+    if codegen is None and input_tran is None and output_tran is None:
+        print('no generator and input/output specified, nothing would happen')
         sys.exit(1)
 
-    import_args = strutil.parse_args(args.import_args)
-    importer.initialize(import_args)
-    descriptors = importer.import_all()
+    parser.init(args)
+    descriptors = parser.parse_all()
     print(len(descriptors), 'file parsed')
 
-    export_args = strutil.parse_args(args.export_args)
     if len(descriptors) > 0:
         if codegen is not None:
-            codegen.run(descriptors, export_args)
-        if datagen is not None:
-            datagen.run(descriptors, export_args)
+            codegen.run(descriptors, args)
+        if input_tran is not None:
+            input_tran.run(descriptors, args)
+        if output_tran is not None:
+            output_tran.run(descriptors, args)
     else:
         print('no descriptor to generate')
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Export game configuration to source code")
-    parser.add_argument("-m", "--mode", help="mode of importer, mysql or excel", default="excel")
-    parser.add_argument("-a", "--import-args", help="arguments of importer", default="")
-    parser.add_argument("-g", "--generator", help="code generator name", default="")
-    parser.add_argument("-o", "--output-format", help="output data format(csv, json)", default="csv")
-    parser.add_argument("-e", "--export-args", help="arguments of exporter", default="")
-    parser.add_argument("-v", "--version", action='store_true', help="show version string", default=False)
+    parser = argparse.ArgumentParser(description="A configuration import/export tool")
+    parser.add_argument("-p", "--parser", help="where data description from(excel, mysql etc)")
+    parser.add_argument("-g", "--generator", help="code generator name")
+    parser.add_argument("-i", "--input", help="input data file(csv, json, xml etc)")
+    parser.add_argument("-o", "--output", help="output data file(csv, json, xml etc)")
+    parser.add_argument("-v", "--version", action='version', version=VER_STRING)
+
+    # excel options
+    parser.add_argument("--parse-files", help="files or directory to parse struct", default='.')
+    parser.add_argument("--parse-meta-file", help="meta file to parse struct")
+    parser.add_argument("--parse-file-skip", help="files or directory to skip in parsing struct")
+
+    # mysql options
+    parser.add_argument("--db-host", help="database host address", default="localhost")
+    parser.add_argument("--db-port", help="database host port", default="3306")
+    parser.add_argument("--db-user", help="database username")
+    parser.add_argument("--db-password", help="database user password")
+    parser.add_argument("--db-schema", help="database schema")
+    parser.add_argument("--db-table", help="database table")
+
+    parser.add_argument("--source-file-encoding", help="encoding of generated source file", default='utf-8')
+    parser.add_argument("--data-file-encoding", help="encoding of output data file", default='utf-8')
+    parser.add_argument("--source-file-out", help="output directory of generated source file", default='.')
+    parser.add_argument("--data-file-out", help="output directory of output data file", default='.')
     args = parser.parse_args()
-
-    if args.version:
-        print("v" + VER_STRING)
-        return
-
     run(args)
 
 

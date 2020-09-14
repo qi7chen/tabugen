@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present prototyped.cn. All rights reserved.
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -89,6 +89,13 @@ def common_prefix(s1, s2):
             break
     return prefix
 
+# 是否全部是空字符串
+def is_row_empty(row):
+    for v in row:
+        v = v.strip()
+        if len(v) > 0:
+            return False
+    return True
 
 # 是否是相似的列（归为数组）
 def is_vector_fields(prev, cur):

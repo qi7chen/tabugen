@@ -1,17 +1,23 @@
-# Copyright (C) 2018-present prototyped.cn. All rights reserved.
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 import pymysql
 import unittest
-import taksi.descriptor.types as types
-import taksi.descriptor.strutil as strutil
+import taksi.types as types
+import taksi.strutil as strutil
 
 
-class MySQLImporter:
+class MySQLStructParser:
 
     def __init__(self):
-        self.options = []
+        self.host = ''
+        self.port = 3306
+        self.user = ''
+        self.passwd = ''
+        self.schema = ''
+        self.table_name = ''
+
         self.tables = []
         self.conn = None
 
@@ -19,25 +25,31 @@ class MySQLImporter:
     def name():
         return "mysql"
 
-    def initialize(self, args):
-        options = args
-        self.make_conn(options)
-        if "db" not in options:
+    def init(self, args):
+        self.host = args.db_host
+        self.port = args.db_port
+        self.user = args.db_user
+        self.passwd = args.db_password
+        self.schema = args.db_schema
+        self.table_name = args.db_table
+
+        self.make_conn()
+
+        # 所有DB
+        if self.schema is None:
             for name in self.get_database_names():
                 tables = self.get_all_table_status(name, '')
                 self.tables += tables
         else:
-            tablename = options.get('table', '')
-            self.tables = self.get_all_table_status(options['db'], tablename)
+            self.tables = self.get_all_table_status(self.schema, self.tablename)
 
     # 建立数据库连接
-    def make_conn(self, opt):
-        host = opt.get("host", "localhost")
-        port = int(opt.get("port", "3306"))
-        db = opt.get("db", "")
-        user = opt["user"]
-        passwd = opt["passwd"]
-        conn = pymysql.connect(host=host, user=user, port=port, password=passwd, db=db, charset="utf8")
+    def make_conn(self):
+        db = ''
+        if self.schema is not None:
+            db = self.schema
+        conn = pymysql.connect(host=self.host, user=self.user, port=self.port, password=self.passwd,
+                               db=db, charset="utf8mb4")
         self.conn = conn
 
     # 执行查询
@@ -66,7 +78,7 @@ class MySQLImporter:
 
         self.query_stmt("USE `%s`;" % schema)
 
-        if len(tablename) > 0:
+        if tablename is not None:
             names.append(tablename)
         else:
             for row in self.query_stmt("SHOW TABLES;"):
@@ -111,16 +123,16 @@ class MySQLImporter:
         return columns
 
     # 导入所有
-    def import_all(self):
+    def parse_all(self):
         descriptors = []
         for info in self.tables:
-            struct = self.import_one(info)
+            struct = self.parse_one(info)
             # print(struct)
             descriptors.append(struct)
         return descriptors
 
     # 导入一个table
-    def import_one(self, table):
+    def parse_one(self, table):
         self.query_stmt("USE `%s`;" % table["schema"])
         name = table["name"]
         struct = {
@@ -209,9 +221,9 @@ class TestMySQLImporter(unittest.TestCase):
 
     def test_parse_args(self):
         args = "user=devel,passwd=r026^p0Y1Xa,db=test"
-        importer = MySQLImporter()
-        importer.initialize(args)
-        importer.import_all()
+        parser = MySQLStructParser()
+        parser.init(args)
+        parser.parse_all()
 
 
 if __name__ == '__main__':

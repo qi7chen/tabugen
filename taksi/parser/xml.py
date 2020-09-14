@@ -2,8 +2,13 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-_major = 1
-_minor = 2
-_patch = 0
+class XMLStructParser:
 
-VER_STRING = '%d.%d.%d' % (_major, _minor, _patch)
+    def __init__(self):
+        pass
+
+    def init(self, args):
+        pass
+
+    def parse_all(self):
+        pass

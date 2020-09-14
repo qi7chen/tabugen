@@ -1,10 +1,10 @@
-# Copyright (C) 2018-present prototyped.cn. All rights reserved.
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 import re
-import taksi.descriptor.predef as predef
-import taksi.descriptor.strutil as strutil
+import taksi.predef as predef
+import taksi.strutil as strutil
 
 
 # 根据'column_index'查找一个字段

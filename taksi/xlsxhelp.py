@@ -1,10 +1,10 @@
-# Copyright (C) 2018-present prototyped.cn. All rights reserved.
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 import sys
 import openpyxl
-import taksi.descriptor.types as types
+import taksi.types as types
 
 # TODO: speedup excel parsing
 #
@@ -34,6 +34,13 @@ def read_workbook_and_sheet_names(filename):
     return wb, wb.sheetnames
 
 
+def read_workbook_by_sheet_name(filename, sheet_name):
+    print('load workbook', filename)
+    wb = openpyxl.load_workbook(filename, data_only=True)
+    wb.close()
+    return wb.get_sheet_by_name(sheet_name)
+
+
 # read sheet data to csv rows
 def read_workbook_sheet_to_rows(wb, sheet_name):
     return read_workbook_sheet_to_rows_openpyxl(wb, sheet_name)
@@ -42,7 +49,7 @@ def read_workbook_sheet_to_rows(wb, sheet_name):
 #
 def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
     rows = []
-    sheet = wb[sheet_name]
+    sheet = wb.get_sheet_by_name(sheet_name)
     assert sheet is not None, sheet_name
     for i, sheet_row in enumerate(sheet.rows):
         row = []
@@ -73,7 +80,7 @@ def validate_data_rows(rows, struct):
             if types.is_integer_type(typename) and len(row[j]) > 0:
                 f = float(row[j])  # test if ok
                 if row[j].find('.') >= 0:
-                    print('round interger', row[j], '-->', round(f))
+                    print('round integer', row[j], '-->', round(f))
                     row[j] = str(round(float(row[j])))
             else:
                 if types.is_floating_type(typename) and len(row[j]) > 0:
