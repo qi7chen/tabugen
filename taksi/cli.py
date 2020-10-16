@@ -108,12 +108,12 @@ def main():
     parser.add_argument("--go_fmt", action="store_true", help="run go fmt on generated source file")
 
     # output options
-    parser.add_argument("--source_file_encoding", help="encoding of generated source file", default='utf-8')
-    parser.add_argument("--data_file_encoding", help="encoding of output data file", default='utf-8')
-    parser.add_argument("--out_csv_delim", default=";", help="output csv file field delimiter")
-    parser.add_argument("--out_data_format", help="output data file format(csv, json, xml etc")
-    parser.add_argument("--out_data_path", default=".", help="output file path of output data")
-    parser.add_argument("--json_indent", action="store_true", help="enable json indent for output data")
+    parser.add_argument("--source_file_encoding", default="utf-8", help="encoding of generated source file")
+    parser.add_argument("--data_file_encoding", help="encoding of output data file")
+    parser.add_argument("--out_csv_delim", default=";", help="output CSV file field delimiter")
+    parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
+    parser.add_argument("--out_data_path", default=".", help="output file path")
+    parser.add_argument("--json_indent", action="store_true", help="enable JSON indent for output data")
 
     args = parser.parse_args()
     verify_args(args)

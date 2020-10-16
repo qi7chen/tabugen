@@ -163,13 +163,13 @@ class CppStructGenerator:
             filename = outname + '.h'
             cpp_content = self.load_gen.gen_source_method(descriptors, args, filename)
 
-        header_filepath = outname + '.h'
+        header_filepath = filepath + '.h'
         filename = os.path.abspath(header_filepath)
         strutil.save_content_if_not_same(filename, header_content, args.source_file_encoding)
         print('wrote C++ header file to', filename)
 
         if len(cpp_content) > 0:
-            source_filepath = outname + '.cpp'
+            source_filepath = filepath + '.cpp'
             filename = os.path.abspath(source_filepath)
             modified = strutil.save_content_if_not_same(filename, cpp_content, args.source_file_encoding)
             if modified:

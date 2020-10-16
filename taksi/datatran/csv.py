@@ -49,9 +49,8 @@ class CsvDataWriter:
         filename = "%s/%s.csv" % (filepath, name)
         filename = os.path.abspath(filename)
         f = codecs.open(filename, "w", encoding)
-        w = csv.writer(f, delimiter=delim, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-        for row in rows:
-            w.writerow(row)
+        w = csv.writer(f, delimiter=delim, lineterminator='\n', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        w.writerows(rows)
         f.close()
         print("wrote csv rows to", filename)
 
