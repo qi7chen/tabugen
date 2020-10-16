@@ -17,6 +17,7 @@ class ExcelStructParser:
         self.filedir = ''
         self.skip_names = ''
         self.metafile = ''
+        self.with_data = True
         self.filenames = []
         self.meta_index = {}
 
@@ -26,6 +27,8 @@ class ExcelStructParser:
 
     def init(self, args):
         self.filedir = args.parse_files
+        if args.without_data:
+            self.with_data = False
         if args.parse_file_skip is not None:
             self.skip_names = args.parse_file_skip.split(' ')
         self.metafile = args.parse_meta_file
@@ -97,7 +100,8 @@ class ExcelStructParser:
                 self.meta_index[target_filename] = meta
 
     # 解析excel表中的meta sheet
-    def parse_meta_rows(self, sheet_rows):
+    @staticmethod
+    def parse_meta_rows(sheet_rows):
         meta = {}
         for row in sheet_rows:
             if len(row) >= 2:
@@ -197,6 +201,12 @@ class ExcelStructParser:
             struct['fields'].append(field)
 
         struct["options"] = meta
+
+        if self.with_data:
+            data_rows = rows[data_start_index - 1: data_end_index]
+            data_rows = strutil.pad_data_rows(data_rows, struct)
+            data_rows = xlsxhelp.validate_data_rows(data_rows, struct)
+            struct["data_rows"] = data_rows
         return struct
 
     # 解析所有文件
@@ -208,7 +218,9 @@ class ExcelStructParser:
         for filename in self.filenames:
             print(strutil.current_time(), "start parse", filename)
             descriptor = self.parse_one_file(filename)
-            if descriptor is not None:
+            if descriptor is None:
+                print('parse file %s failed' % filename)
+            else:
                 descriptor['source'] = filename
                 descriptors.append(descriptor)
         return descriptors
@@ -216,14 +228,16 @@ class ExcelStructParser:
     # 解析单个文件
     def parse_one_file(self, filename):
         wb, sheet_names = xlsxhelp.read_workbook_and_sheet_names(filename)
-        assert len(sheet_names) > 0
+        if len(sheet_names) == 0:
+            print('%s has no sheet' % filename)
+            return
 
         meta = self.get_file_meta(filename, wb, sheet_names)
         xlsxhelp.close_workbook(wb)
         if meta is None:
             raise RuntimeError("not meta found for file %s" % filename)
         else:
-            sheet_name = meta.get(predef.PredefTargetFileSheet, sheet_names[0])
+            sheet_name = meta.get(predef.PredefTargetFileSheet, sheet_names[0]) #没有指定就使用第一个sheet
             sheet_data = xlsxhelp.read_workbook_sheet_to_rows(wb, sheet_name)
             struct = self.parse_data_sheet(meta, sheet_data)
             struct['file'] = os.path.basename(filename)

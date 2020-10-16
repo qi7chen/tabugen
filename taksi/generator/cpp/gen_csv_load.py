@@ -8,37 +8,24 @@ import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
-from taksi.generator.cpp.gen_header import CppStructGenerator
+import taksi.generator.cpp.template as cpp_template
 import taksi.version as version
 
 
-CPP_PARSE_FUN_TEMPLATE = """
-// parse value from text
-template <typename T>
-inline T ParseValue(StringPiece text)
-{
-    text = trimWhitespace(text);
-    if (text.empty())
-    {
-        return T();
-    }
-    return to<T>(text);
-}
-
-"""
-
-
-# C++ code generator
-class CppCsvLoadGenerator(CppStructGenerator):
+# 生成C++加载CSV文件数据代码
+class CppCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    @staticmethod
-    def name():
-        return "cpp-csv"
+    # 初始化array, map分隔符
+    def init_delim(self, array_delim, map_delims):
+        self.array_delim = array_delim
+        self.map_delims = map_delims
 
+    #
     def get_instance_data_name(self, name):
         return '_instance_%s' % name.lower()
 
+    # 生成赋值表达式
     def gen_equal_stmt(self, prefix, struct, key):
         keys = genutil.get_struct_keys(struct, key, lang.map_cpp_type)
         args = []
@@ -47,16 +34,12 @@ class CppCsvLoadGenerator(CppStructGenerator):
         return ' && '.join(args)
 
     # array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
-        assert len(array_delim) == 1
-        array_delim = array_delim.strip()
-        if array_delim == '\\':
-            array_delim = '\\\\'
-
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert isinstance(self.array_delim, str) and len(self.array_delim) == 1
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, array_delim)
+        content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, self.array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(ParseValue<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -65,14 +48,10 @@ class CppCsvLoadGenerator(CppStructGenerator):
         return content
 
     # map赋值
-    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
-        assert len(map_delims) == 2, map_delims
-        delim1 = map_delims[0].strip()
-        if delim1 == '\\':
-            delim1 = '\\\\'
-        delim2 = map_delims[1].strip()
-        if delim2 == '\\':
-            delim2 = '\\\\'
+    def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.map_delims) == 2
+        delim1 = self.map_delims[0]
+        delim2 = self.map_delims[1]
 
         k, v = types.map_key_value_types(typename)
         key_type = lang.map_cpp_type(k)
@@ -118,8 +97,6 @@ class CppCsvLoadGenerator(CppStructGenerator):
     def gen_all_field_assign_stmt(self, struct, prefix, tabs):
         content = ''
         idx = 0
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
         inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
@@ -142,11 +119,11 @@ class CppCsvLoadGenerator(CppStructGenerator):
                     space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
 
                 if origin_type.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, ('row[%d]' % idx),
-                                                                array_delim, tabs)
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name,
+                                                                ('row[%d]' % idx), tabs)
                 elif origin_type.startswith('map'):
-                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, ('row[%d]' % idx),
-                                                              map_delims, tabs)
+                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name,
+                                                              ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
                         content += '%s%s%s[%d] = ParseValue<%s>(row[%d]);\n' % (
@@ -227,9 +204,6 @@ class CppCsvLoadGenerator(CppStructGenerator):
         validx, valfield = genutil.get_field_by_column_index(struct, valcol)
         typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
-
         content = ''
         content += '// parse data object from csv rows\n'
         content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (
@@ -244,9 +218,9 @@ class CppCsvLoadGenerator(CppStructGenerator):
             typename = lang.map_cpp_type(origin_typename)
             row_name = 'rows[%d][%d]' % (idx, validx)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, array_delim, 1)
+                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, 1)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, map_delims, 1)
+                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
             else:
                 content += '%sptr->%s = ParseValue<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
@@ -464,7 +438,16 @@ class CppCsvLoadGenerator(CppStructGenerator):
         content += self.gen_parse_method(struct)
         return content
 
-    def gen_source_content(self, descriptors, params, headerfile):
+    def gen_global_class(self):
+        content = ''
+        content += 'class %s\n' % strutil.config_manager_name
+        content += '{\n'
+        content += 'public:\n'
+        content += cpp_template.CPP_MANAGER_METHOD_TEMPLATE
+        content += '};\n\n'
+        return content
+
+    def gen_source_method(self, descriptors, args, headerfile):
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
@@ -475,8 +458,8 @@ class CppCsvLoadGenerator(CppStructGenerator):
             '#include "Utility/StringUtil.h"',
         ]
         cpp_content = '// This file is auto-generated by TAKSi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
-        if predef.OptionPchFile in params:
-            pchfile = '#include "%s"' % params[predef.OptionPchFile]
+        if args.cpp_pch is not None:
+            pchfile = '#include "%s"' % args.cpp_pch
             cpp_include_headers = [pchfile] + cpp_include_headers
 
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
@@ -484,10 +467,10 @@ class CppCsvLoadGenerator(CppStructGenerator):
         cpp_content += '#ifndef ASSERT\n'
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'
-        cpp_content += CPP_PARSE_FUN_TEMPLATE
+        cpp_content += cpp_template.CPP_PARSE_FUN_TEMPLATE
 
-        if 'pkg' in params:
-            cpp_content += '\nnamespace %s\n{\n\n' % params['pkg']
+        if args.package is not None:
+            cpp_content += '\nnamespace %s\n{\n\n' % args.package
 
         cpp_content += 'std::function<std::string(const char*)> %s::reader = %s::ReadFileContent;\n\n' % (
             strutil.config_manager_name, strutil.config_manager_name)
@@ -504,27 +487,7 @@ class CppCsvLoadGenerator(CppStructGenerator):
         cpp_content += static_var_content
         cpp_content += self.gen_manager_static_method(descriptors)
         cpp_content += class_content
-        if 'pkg' in params:
-            cpp_content += '\n} // namespace %s \n' % params['pkg']  # namespace
+        if args.package is not None:
+            cpp_content += '\n} // namespace %s \n' % args.package  # namespace
         return cpp_content
 
-    #
-    def run(self, descriptors, params):
-        headerfile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.h'
-        sourcefile = params.get(predef.OptionOutSourceFile, 'AutogenConfig') + '.cpp'
-
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
-
-        header_content = self.gen_header_content(descriptors, params, self.gen_struct_method_declare)
-        cpp_content = self.gen_source_content(descriptors, params, headerfile)
-
-        encoding = params.get(predef.OptionSourceEncoding, 'utf-8')
-        filename = os.path.abspath(headerfile)
-        strutil.compare_and_save_content(filename, header_content, encoding)
-        print('wrote header file to', filename)
-
-        filename = os.path.abspath(sourcefile)
-        strutil.compare_and_save_content(filename, cpp_content, encoding)
-        print('wrote source file to', filename)

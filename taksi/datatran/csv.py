@@ -9,7 +9,7 @@ import taksi.predef as predef
 import taksi.strutil as strutil
 
 
-class CsvDataGen:
+class CsvDataWriter:
     def __init__(self):
         pass
 
@@ -17,23 +17,8 @@ class CsvDataGen:
     def name():
         return "csv"
 
-    def run(self, descriptors, args):
-        datadir = args.get(predef.OptionOutDataDir, '.')
-        if datadir != '.':
-            try:
-                print('make dir', datadir)
-                os.makedirs(datadir)
-            except Exception as e:
-                pass
-
-        for struct in descriptors:
-            rows = struct["data_rows"]
-            rows = self.validate_unique_column(struct, rows, args)
-            rows = self.hide_unused_rows(struct, rows, args)
-            self.write_file(struct, datadir, rows, args)
-
     # 检查唯一主键
-    def validate_unique_column(self, struct, rows, params):
+    def validate_unique_column(self, struct, rows):
         if struct['options'][predef.PredefParseKVMode]:
             return rows
 
@@ -60,12 +45,29 @@ class CsvDataGen:
         return rows
 
     # 将数据写入csv文件
-    def write_file(self, struct, datadir, rows, params):
-        encoding = params.get(predef.OptionDataEncoding, 'utf-8')
-        filename = "%s/%s.csv" % (datadir, strutil.camel_to_snake(struct['camel_case_name']))
+    def write_file(self, name, rows, delim, filepath, encoding):
+        filename = "%s/%s.csv" % (filepath, name)
         filename = os.path.abspath(filename)
         f = codecs.open(filename, "w", encoding)
-        w = csv.writer(f)
-        w.writerows(rows)
+        w = csv.writer(f, delimiter=delim, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        for row in rows:
+            w.writerow(row)
         f.close()
-        print("wrote csv data to", filename)
+        print("wrote csv rows to", filename)
+
+    def process(self, descriptors, args):
+        filepath = args.out_data_path
+        encoding = args.data_file_encoding
+        if filepath != '.':
+            try:
+                print('make dir', filepath)
+                os.makedirs(filepath)
+            except Exception as e:
+                pass
+
+        for struct in descriptors:
+            rows = struct["data_rows"]
+            rows = self.validate_unique_column(struct, rows)
+            # rows = self.hide_unused_rows(struct, rows)
+            name = strutil.camel_to_snake(struct['camel_case_name'])
+            self.write_file(name, rows, args.out_csv_delim, filepath, encoding)

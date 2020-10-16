@@ -57,5 +57,5 @@ class JavaJsonLoadGenerator(JavaStructGenerator):
         for filename in class_dict:
             content = class_dict[filename]
             filename = os.path.abspath(filename)
-            strutil.compare_and_save_content(filename, content, 'utf-8')
+            strutil.save_content_if_not_same(filename, content, 'utf-8')
             print('wrote source file to', filename)

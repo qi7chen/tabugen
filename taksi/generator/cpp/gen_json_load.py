@@ -3,11 +3,9 @@
 # See accompanying files LICENSE.
 
 
-from taksi.generator.cpp.gen_header import CppStructGenerator
 
-
-# C++ code generator
-class CppJsonLoadGenerator(CppStructGenerator):
+# 生成C++加载JSON文件数据代码
+class CppJsonLoadGenerator:
     TAB_SPACE = '    '
 
     @staticmethod

@@ -292,7 +292,7 @@ class GoCsvLoadGenerator(GoStructGenerator):
 
         filename = params.get(predef.OptionOutSourceFile, 'config.go')
         filename = os.path.abspath(filename)
-        strutil.compare_and_save_content(filename, content, 'utf-8')
+        strutil.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote source to %s' % filename)
 
         goroot = os.getenv('GOROOT')

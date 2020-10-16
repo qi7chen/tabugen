@@ -11,9 +11,10 @@ import taksi.types as types
 import taksi.generator.genutil as genutil
 
 
-class JsonDataGen:
+class JsonDataWriter:
     def __init__(self):
-        pass
+        self.array_delim = '|'
+        self.map_delims = ['|', '=']
 
     @staticmethod
     def name():
@@ -69,18 +70,16 @@ class JsonDataGen:
 
     # 解析字符串为对象
     def parse_value(self, struct, typename, text):
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
         abs_type = types.is_abstract_type(typename)
         if abs_type is None:
             return self.parse_primary_value(typename, text)
 
         if abs_type == 'array':
             elem_type = types.array_element_type(typename)
-            return self.parse_to_array(elem_type, text, array_delim)
+            return self.parse_to_array(elem_type, text, self.array_delim)
         elif abs_type == 'map':
             ktype, vtype = types.map_key_value_types(typename)
-            return self.parse_to_dict(ktype, vtype, text, map_delims)
+            return self.parse_to_dict(ktype, vtype, text, self.map_delims)
 
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
@@ -168,15 +167,22 @@ class JsonDataGen:
         f.close()
         print("wrote json data to", filename)
 
-    def run(self, descriptors, args):
-        datadir = args.get(predef.OptionOutDataDir, '.')
-        if datadir != '.':
+    def process(self, descriptors, args):
+        filepath = args.out_data_path
+        encoding = args.data_file_encoding
+        if args.array_delim is not None:
+            self.array_delim = args.array_delim.strip()
+        if args.map_delims is not None:
+            delims = [args.map_delims[0], args.map_delims[1]]
+            self.map_delims = delims
+
+        if filepath != '.':
             try:
-                print('make dir', datadir)
-                os.makedirs(datadir)
+                print('make dir', filepath)
+                os.makedirs(filepath)
             except Exception as e:
                 pass
 
         for struct in descriptors:
             obj = self.generate(struct, args)
-            self.write_file(struct, datadir, args, obj)
+            self.write_file(struct, filepath, args, obj)

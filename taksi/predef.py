@@ -23,31 +23,22 @@ PredefValueTypeColumn = "value_type_column"     # KV模式中的value类型所�
 PredefCommentColumn = "comment_column"          # KV模式中的注释所在列
 
 
-PredefGetMethodKeys = "get-keys"        # 生成的Get()函数的参数列表
-PredefRangeMethodKeys = "range-keys"    # 生成的GetRange()函数的参数列表
+PredefGetMethodKeys = "get_keys"        # 生成的Get()函数的参数列表
+PredefRangeMethodKeys = "range_keys"    # 生成的GetRange()函数的参数列表
 
-PredefInnerTypeRange = "inner-type-range"
-PredefInnerTypeClass = "inner-type-class"
-PredefInnerTypeName = "inner-type-name"
+PredefInnerTypeRange = "inner_type_range"
+PredefInnerTypeClass = "inner_type_class"
+PredefInnerTypeName = "inner_type_name"
 
-OptionOutDataDir = "outdata-dir"            # 输出的csv文件路径
-OptionOutSourceFile = "out-src-file"        # 输出的源文件路径
-OptionAutoVector = "auto-vector"            # 自动把名称相近的字段合并为数组
-OptionArrayDelimeter = "array-delim"        # array类型的分隔符，如|，不能使用csv的逗号
-OptionMapDelimeters = "map-delim"           # map类型的分隔符，如;=，不能使用csv的逗号
+OptionAutoVector = "auto_vector"            # 自动把名称相近的字段合并为数组
+
 OptionHideColumns = "hide-column"           # 开启隐藏模式
-OptionPchFile = "pch"                       # C++预编译头文件
-OptionSourceEncoding = "src-encoding"       # 源文件编码
-OptionDataEncoding = "data-encoding"        # 导出数据编码
 OptionJsonDecorate = "json-decorate"       #
-
-DefaultArrayDelimiter = '|'    # 默认的array分隔符号
-DefaultMapDelimiters = '|='     # 默认的map分隔符号
 
 
 #
 # SQL导入器
 #
-OptionCamelcaseField = "camelcase-field"
-OptionFieldGetterSetter = "field-getset"
+OptionCamelcaseField = "camelcase_field"
+OptionFieldGetterSetter = "field_getset"
 OptionNamePrefix = "prefix"

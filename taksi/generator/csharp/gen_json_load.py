@@ -7,11 +7,11 @@ import taksi.predef as predef
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
 import taksi.version as version
-from taksi.generator.csharp.gen_struct import CSharpStructGenerator
 
 
-# C# csv load generator
-class CSharpJsonLoadGenerator(CSharpStructGenerator):
+
+# 生成C#加载JSON文件数据代码
+class CSharpJsonLoadGenerator:
     TAB_SPACE = '    '
 
     @staticmethod
@@ -39,5 +39,5 @@ class CSharpJsonLoadGenerator(CSharpStructGenerator):
 
         filename = params.get(predef.OptionOutSourceFile, 'AutogenConfig.cs')
         filename = os.path.abspath(filename)
-        strutil.compare_and_save_content(filename, content, 'utf-8')
+        strutil.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote source file to', filename)

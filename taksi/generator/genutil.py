@@ -118,7 +118,7 @@ def get_vec_field_range(struct, camel_case_name=False):
     if len(names) < 2:
         return [], ""
 
-    name = strutil.common_prefix(names[0], names[1])
+    name = strutil.find_common_prefix(names[0], names[1])
     assert len(name) > 0, struct["name"]
     name = re.sub("[0-9]", "", name)    # remove number char
     return names, name
