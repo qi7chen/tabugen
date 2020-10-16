@@ -156,11 +156,13 @@ class JsonDataWriter:
         return self.parse_row(struct, params)
 
     #
-    def write_file(self, struct, datadir, params, obj):
-        encoding = params.get(predef.OptionDataEncoding, 'utf-8')
-        filename = "%s/%s.json" % (datadir, strutil.camel_to_snake(struct['camel_case_name']))
+    def write_file(self, struct, filepath, encoding, json_indent, obj):
+        filename = "%s/%s.json" % (filepath, strutil.camel_to_snake(struct['camel_case_name']))
         filename = os.path.abspath(filename)
-        content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
+        if json_indent:
+            content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
+        else:
+            content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True)
         # print(content)
         f = codecs.open(filename, "w", encoding)
         f.write(content)
@@ -170,19 +172,15 @@ class JsonDataWriter:
     def process(self, descriptors, args):
         filepath = args.out_data_path
         encoding = args.data_file_encoding
-        if args.array_delim is not None:
-            self.array_delim = args.array_delim.strip()
-        if args.map_delims is not None:
-            delims = [args.map_delims[0], args.map_delims[1]]
-            self.map_delims = delims
+        (self.array_delim, self.map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
 
         if filepath != '.':
             try:
-                print('make dir', filepath)
+                # print('make dir', filepath)
                 os.makedirs(filepath)
             except OSError as e:
                 pass
 
         for struct in descriptors:
             obj = self.generate(struct, args)
-            self.write_file(struct, filepath, args, obj)
+            self.write_file(struct, filepath, encoding, args.json_indent, obj)

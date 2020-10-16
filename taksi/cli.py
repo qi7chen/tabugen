@@ -33,8 +33,8 @@ def run(args):
                 sys.exit(1)
             code_generators.append((codegen, filepath))
 
-    if len(code_generators) == 0:
-        print('no code nothing would happen')
+    if len(code_generators) == 0 and args.out_data_format is None:
+        print('no code generation and data output, nothing would happen')
         sys.exit(1)
 
     parser.init(args)
@@ -113,6 +113,7 @@ def main():
     parser.add_argument("--out_csv_delim", default=";", help="output csv file field delimiter")
     parser.add_argument("--out_data_format", help="output data file format(csv, json, xml etc")
     parser.add_argument("--out_data_path", default=".", help="output file path of output data")
+    parser.add_argument("--json_indent", action="store_true", help="enable json indent for output data")
 
     args = parser.parse_args()
     verify_args(args)
