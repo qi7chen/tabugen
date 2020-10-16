@@ -7,12 +7,11 @@ import codecs
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
 import taksi.version as version
 
 
-# Go code generator, for SQL
-class GoSqlOrmGenerator():
+# Go代码生成器(SQL)
+class GoSqlOrmGenerator:
 
     def __init__(self):
         pass

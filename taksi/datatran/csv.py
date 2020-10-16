@@ -62,7 +62,7 @@ class CsvDataWriter:
             try:
                 print('make dir', filepath)
                 os.makedirs(filepath)
-            except Exception as e:
+            except OSError as e:
                 pass
 
         for struct in descriptors:

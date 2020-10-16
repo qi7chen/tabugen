@@ -7,6 +7,8 @@ from taksi.parser.mysql import MySQLStructParser
 
 from taksi.generator.cpp.gen_struct import CppStructGenerator
 from taksi.generator.csharp.gen_struct import CSharpStructGenerator
+from taksi.generator.go.gen_struct import GoStructGenerator
+from taksi.generator.java.gen_struct import JavaStructGenerator
 
 from taksi.datatran.csv import CsvDataWriter
 from taksi.datatran.json import JsonDataWriter
@@ -20,7 +22,9 @@ struct_parser_registry = {
 # 源代码生成
 code_generator_registry = {
     CppStructGenerator.name(): CppStructGenerator(),
-    CSharpStructGenerator.name(): CSharpStructGenerator,
+    CSharpStructGenerator.name(): CSharpStructGenerator(),
+    GoStructGenerator.name(): GoStructGenerator(),
+    JavaStructGenerator.name(): JavaStructGenerator(),
 }
 
 # 数据文件写入

@@ -8,69 +8,20 @@ import taksi.lang as lang
 import taksi.types as types
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
-import taksi.version as version
-from taksi.generator.java.gen_struct import JavaStructGenerator
-
-JAVA_CLASS_TEMPLATE = """
-
-import java.io.*;
-import java.util.*;
-import java.util.function.Function;
-
-public class %s {
-
-    final public static String LF = "\\n"; // line feed
-    
-    // parse text to boolean value
-    public static boolean parseBool(String text) {
-        if (!text.isEmpty()) {
-            return text.equals("1") ||
-                    text.equalsIgnoreCase("on") ||
-                    text.equalsIgnoreCase("yes")  ||
-                    text.equalsIgnoreCase("true");
-        }
-        return false;
-    }
-
-    public static String readFileContent(String filepath) {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-                sb.append(LF); // line break
-            }
-        } catch(IOException ex) {
-            System.err.println(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return sb.toString();
-    }
-    
-    // you can set your own file content reader
-    public static Function<String, String> reader;
-    
-    public static String[] readFileToTextLines(String filename) {
-        if (reader == null) {
-            reader = (filepath)-> readFileContent(filepath);
-        }
-        String content = reader.apply(filename);
-        return content.split(LF, -1);
-    }    
-
-"""
 
 
-# java生成器
-class JavaCsvLoadGenerator(JavaStructGenerator):
+# java加载CSV代码生成器
+class JavaCsvLoadGenerator:
     TAB_SPACE = '    '
 
     def __init__(self):
-        pass
+        self.array_delim = ','
+        self.map_delims = [',', '=']
 
-    @staticmethod
-    def name():
-        return "java-csv"
+    # 初始化array, map分隔符
+    def setup(self, array_delim, map_delims):
+        self.array_delim = array_delim
+        self.map_delims = map_delims
 
     def get_instance_data_name(self, name):
         return '_instance_%s' % name.lower()
@@ -108,17 +59,14 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         return content
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
-        assert len(array_delim) == 1
-        array_delim = array_delim.strip()
-        if array_delim == '\\':
-            array_delim = '\\\\'
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.array_delim) == 1
 
         content = ''
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, array_delim)
+        content += '%sString[] tokens = %s.split("\\\\%s");\n' % (space, row_name, self.array_delim)
         content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
         content += '%s    if (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
@@ -131,14 +79,10 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         return content
 
         # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
-        assert len(map_delims) == 2, map_delims
-        delim1 = map_delims[0].strip()
-        if delim1 == '\\':
-            delim1 = '\\\\'
-        delim2 = map_delims[1].strip()
-        if delim2 == '\\':
-            delim2 = '\\\\'
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.map_delims) == 2
+        delim1 = self.map_delims[0]
+        delim2 = self.map_delims[1]
 
         space = self.TAB_SPACE * tabs
         k, v = types.map_key_value_types(typename)
@@ -196,9 +140,6 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         validx, valfield = genutil.get_field_by_column_index(struct, valcol)
         typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
-
         content = ''
         content += '%s// parse fields data from text rows\n' % self.TAB_SPACE
         content += '%spublic void parseFromRows(String[][] rows)\n' % self.TAB_SPACE
@@ -218,11 +159,11 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
                 content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_array_assign_stmt('this.', origin_typename, name, valuetext, array_delim, 3)
+                content += self.gen_field_array_assign_stmt('this.', origin_typename, name, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             elif origin_typename.startswith('map'):
                 content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_map_assign_stmt('this.', origin_typename, name, valuetext, map_delims, 3)
+                content += self.gen_field_map_assign_stmt('this.', origin_typename, name, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
                 content += '%sif (!rows[%d][%d].isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
@@ -237,9 +178,6 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         content = ''
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
-
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
         vec_names, vec_name = genutil.get_vec_field_range(struct)
@@ -269,11 +207,11 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
                     content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
                     content += '%s}\n' % (self.TAB_SPACE * 2)
                 elif origin_type_name.startswith('map'):
                     content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, map_delims, 3)
+                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
                     content += '%s}\n' % (self.TAB_SPACE * 2)
                 else:
                     content += '%sif (!row[%d].isEmpty()) {\n' % (self.TAB_SPACE * 2, idx)
@@ -431,68 +369,6 @@ class JavaCsvLoadGenerator(JavaStructGenerator):
         content += '    }\n\n'
         return content
 
-    # 生成对象及方法
-    def generate_class(self, struct, params):
-        content = '\n'
-        content += self.gen_java_class(struct)
-        content += self.gen_static_data(struct)
-        content += self.gen_parse_method(struct)
-        content += self.gen_load_method(struct)
-        content += self.gen_get_method(struct)
-        content += self.gen_range_method(struct)
-        content += '}\n'
-        return content
 
-    #
-    def run(self, descriptors, params):
-        mgr_content = '// This file is auto-generated by taxi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
-        mgr_filename = '%s.java' % strutil.config_manager_name
 
-        basedir = params.get(predef.OptionOutSourceFile, '.')
-        print(basedir)
-        if 'pkg' in params:
-            package = params['pkg']
-            names = [basedir] + package.split('.')
-            basedir = '/'.join(names)
-            mgr_content += 'package %s;' % package
-            mgr_filename = '%s/%s' % (basedir, mgr_filename)
-            try:
-                print('make dir', basedir)
-                os.makedirs(basedir)
-            except Exception as e:
-                # print(e)
-                pass
 
-        class_dict = {}
-        mgr_content += JAVA_CLASS_TEMPLATE % strutil.config_manager_name
-        load_func_content = '    public static void loadAllConfig() {\n'
-
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
-
-        for struct in descriptors:
-            content = '// This file is auto-generated by TAKSi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
-            filename = '%s.java' % struct['camel_case_name']
-            # print(filename)
-            if 'pkg' in params:
-                filename = '%s/%s' % (basedir, filename)
-                content += 'package %s;\n\n' % params['pkg']
-            content += 'import java.util.*;\n'
-            content += '\n'
-            content += self.generate_class(struct, params)
-            class_dict[filename] = content
-
-            name = strutil.camel_to_snake(struct['name'])
-            load_func_content += '        %s.loadFromFile("%s.csv");\n' % (struct['name'], name)
-
-        load_func_content += '    }\n'
-        mgr_content += load_func_content
-        mgr_content += '}\n'
-        class_dict[mgr_filename] = mgr_content
-
-        for filename in class_dict:
-            content = class_dict[filename]
-            filename = os.path.abspath(filename)
-            strutil.save_content_if_not_same(filename, content, 'utf-8')
-            print('wrote source file to', filename)

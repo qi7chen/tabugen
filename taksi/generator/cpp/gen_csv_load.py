@@ -16,8 +16,12 @@ import taksi.version as version
 class CppCsvLoadGenerator:
     TAB_SPACE = '    '
 
+    def __init__(self):
+        self.array_delim = ','
+        self.map_delims = [',', '=']
+
     # 初始化array, map分隔符
-    def init_delim(self, array_delim, map_delims):
+    def setup(self, array_delim, map_delims):
         self.array_delim = array_delim
         self.map_delims = map_delims
 

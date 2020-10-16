@@ -2,59 +2,26 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
 import taksi.types as types
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
-
-
-
-CSHARP_METHOD_TEMPLATE = """
-    public delegate void ContentReader(string filepath, Action<string> cb);
-    
-    public static ContentReader reader = ReadFileContent;
-    
-    public static bool ParseBool(string text)
-    {
-        if (text.Length > 0)
-        {
-            return string.Equals(text, "1") || 
-                string.Equals(text, "y", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(text, "on", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(text, "true", StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
-    }
-        
-    public static List<string> ReadTextToLines(string content)
-    {
-        List<string> lines = new List<string>();
-        using (StringReader reader = new StringReader(content))
-        {
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                lines.Add(line);
-            }
-        }
-        return lines;
-    }
-    
-    public static void ReadFileContent(string filepath, Action<string> cb)
-    {
-        StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
-    }
-    
-"""
+import taksi.generator.csharp.template as csharp_template
 
 
 # 生成C#加载CSV文件数据代码
 class CSharpCsvLoadGenerator:
     TAB_SPACE = '    '
+
+    def __init__(self):
+        self.array_delim = ','
+        self.map_delims = [',', '=']
+
+    # 初始化array, map分隔符
+    def setup(self, array_delim, map_delims):
+        self.array_delim = array_delim
+        self.map_delims = map_delims
 
     def get_data_member_name(self, name):
         return name + 'Data'
@@ -80,17 +47,14 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
-        assert len(array_delim) == 1
-        array_delim = array_delim.strip()
-        if array_delim == '\\':
-            array_delim = '\\\\'
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.array_delim) == 1
 
         content = ''
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, array_delim)
+        content += "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, self.array_delim)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) {\n" % space
         content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
@@ -99,14 +63,10 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
-        assert len(map_delims) == 2, map_delims
-        delim1 = map_delims[0].strip()
-        if delim1 == '\\':
-            delim1 = '\\\\'
-        delim2 = map_delims[1].strip()
-        if delim2 == '\\':
-            delim2 = '\\\\'
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.map_delims) == 2
+        delim1 = self.map_delims[0]
+        delim2 = self.map_delims[1]
 
         space = self.TAB_SPACE * tabs
         k, v = types.map_key_value_types(typename)
@@ -138,9 +98,6 @@ class CSharpCsvLoadGenerator:
         validx, valfield = genutil.get_field_by_column_index(struct, valcol)
         typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
-
         content = ''
         content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRows(string[][] rows)\n' % self.TAB_SPACE
@@ -161,11 +118,11 @@ class CSharpCsvLoadGenerator:
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
                 content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, array_delim, 3)
+                content += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             elif origin_typename.startswith('map'):
                 content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, map_delims, 3)
+                content += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
                 content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
@@ -180,9 +137,6 @@ class CSharpCsvLoadGenerator:
         content = ''
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
-
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         vec_idx = 0
         vec_names, vec_name = genutil.get_vec_field_range(struct)
@@ -212,11 +166,11 @@ class CSharpCsvLoadGenerator:
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
                     content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, array_delim, 3)
+                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
                     content += '%s}\n' % (self.TAB_SPACE * 2)
                 elif origin_type_name.startswith('map'):
                     content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, map_delims, 3)
+                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
                     content += '%s}\n' % (self.TAB_SPACE * 2)
                 else:
                     content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
@@ -377,7 +331,7 @@ class CSharpCsvLoadGenerator:
     def gen_global_class(self, descriptors):
         content = ''
         content += 'public class %s\n{\n' % strutil.config_manager_name
-        content += CSHARP_METHOD_TEMPLATE
+        content += csharp_template.CSHARP_METHOD_TEMPLATE
         content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
         for i in range(len(descriptors)):

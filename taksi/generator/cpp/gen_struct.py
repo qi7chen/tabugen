@@ -3,6 +3,7 @@
 # See accompanying files LICENSE.
 
 import os
+import sys
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
@@ -14,23 +15,26 @@ from taksi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 # C++代码生成器
 class CppStructGenerator:
 
+    @staticmethod
+    def name():
+        return "cpp"
+
     def __init__(self):
         self.load_gen = None
 
-    def init(self, loader_name):
+    def setup(self, name):
         """
-            :param loader_name: loader需要满足2个接口
+            :param name: loader需要满足2个接口
                 gen_struct_method_declare()
                 gen_global_class()
                 gen_source_method()
         """
-        if loader_name is not None:
-            if loader_name.strip() == 'csv':
+        if name is not None:
+            if name == 'csv':
                 self.load_gen = CppCsvLoadGenerator()
-
-    @staticmethod
-    def name():
-        return "cpp"
+            else:
+                print('content loader of name %s not implemented' % name)
+                sys.exit(1)
 
     # 生成class定义结构，不包含结尾的'}'符号
     def gen_cpp_struct_define(self, struct):
@@ -145,15 +149,8 @@ class CppStructGenerator:
             header_content += '} // namespace %s\n' % args.package
         return header_content
 
-    def run(self, descriptors, args):
-        header_filepath = ''
-        source_filepath = ''
-        out_name = args.out_source_path
-        if out_name is None:
-            out_name = 'AutogenConfig'
-        header_filepath = out_name + '.h'
-        source_filepath = out_name + '.cpp'
-
+    def run(self, descriptors, filepath, args):
+        outname = os.path.split(filepath)[-1]
         for struct in descriptors:
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
@@ -162,18 +159,29 @@ class CppStructGenerator:
         header_content = self.gen_header_content(descriptors, args)
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.init_delim(array_delim, map_delims)
-            filename = os.path.split(out_name)[-1] + '.h'
+            self.load_gen.setup(array_delim, map_delims)
+            filename = outname + '.h'
             cpp_content = self.load_gen.gen_source_method(descriptors, args, filename)
 
+        header_filepath = outname + '.h'
         filename = os.path.abspath(header_filepath)
         strutil.save_content_if_not_same(filename, header_content, args.source_file_encoding)
         print('wrote C++ header file to', filename)
 
         if len(cpp_content) > 0:
+            source_filepath = outname + '.cpp'
             filename = os.path.abspath(source_filepath)
             modified = strutil.save_content_if_not_same(filename, cpp_content, args.source_file_encoding)
             if modified:
                 print('wrote C++ source file to', filename)
             else:
                 print('file content not modified', filename)
+
+
+def unit_test():
+    codegen = CppStructGenerator()
+    codegen.setup('csv')
+
+
+if __name__ == '__main__':
+    unit_test()

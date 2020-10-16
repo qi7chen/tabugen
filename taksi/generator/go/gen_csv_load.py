@@ -2,23 +2,25 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
 import taksi.types as types
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
-import taksi.version as version
 import taksi.generator.genutil as genutil
-from taksi.generator.go.gen_struct import GoStructGenerator
 
 
-# Go csv load generator
-class GoCsvLoadGenerator(GoStructGenerator):
+# 生成Go加载CSV文件数据代码
+class GoCsvLoadGenerator:
     TAB_SPACE = '\t'
 
-    @staticmethod
-    def name():
-        return "go-csv"
+    def __init__(self):
+        self.array_delim = ','
+        self.map_delims = [',', '=']
+
+    # 初始化array, map分隔符
+    def setup(self, array_delim, map_delims):
+        self.array_delim = array_delim
+        self.map_delims = map_delims
 
     def get_const_key_name(self, name):
         return 'Key%sName' % name
@@ -43,32 +45,25 @@ class GoCsvLoadGenerator(GoStructGenerator):
         return content
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, array_delim, tabs):
-        assert len(array_delim) == 1
-        array_delim = array_delim.strip()
-        if array_delim == '\\':
-            array_delim = '\\\\'
+    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.array_delim) == 1
 
         space = self.TAB_SPACE * tabs
         content = ''
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_go_type(elem_type)
 
-        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, array_delim)
+        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, self.array_delim)
         content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, map_delims, tabs):
-        assert len(map_delims) == 2, map_delims
-        delim1 = map_delims[0].strip()
-        if delim1 == '\\':
-            delim1 = '\\\\'
-        delim2 = map_delims[1].strip()
-        if delim2 == '\\':
-            delim2 = '\\\\'
+    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
+        assert len(self.map_delims) == 2
+        delim1 = self.map_delims[0]
+        delim2 = self.map_delims[1]
 
         space = self.TAB_SPACE * tabs
         k, v = types.map_key_value_types(typename)
@@ -103,9 +98,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
         validx, valfield = genutil.get_field_by_column_index(struct, valcol)
         typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
 
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
-
         content += 'func (p *%s) ParseFromRows(rows [][]string) error {\n' % struct['camel_case_name']
         content += '\tif len(rows) < %d {\n' % len(rows)
         content += '\t\tlog.Panicf("%s:row length out of index, %%d < %d", len(rows))\n' % (struct['name'], len(rows))
@@ -121,9 +113,9 @@ class GoCsvLoadGenerator(GoStructGenerator):
             valuetext = 'rows[%d][%d]' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, array_delim, 2)
+                content += self.gen_field_array_assign_stmt('p.', origin_typename, name, valuetext, 2)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, map_delims, 2)
+                content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, 2)
             else:
                 content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, idx)
             content += '%s}\n' % self.TAB_SPACE
@@ -136,9 +128,6 @@ class GoCsvLoadGenerator(GoStructGenerator):
     def gen_parse_method(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
-
-        array_delim = struct['options'].get(predef.OptionArrayDelimeter, predef.DefaultArrayDelimiter)
-        map_delims = struct['options'].get(predef.OptionMapDelimeters, predef.DefaultMapDelimiters)
 
         inner_class_done = False
         inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
@@ -167,9 +156,9 @@ class GoCsvLoadGenerator(GoStructGenerator):
                 field_name = field['camel_case_name']
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, field['original_type_name'], fname, valuetext, array_delim, 2)
+                    content += self.gen_field_array_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
                 elif origin_type_name.startswith('map'):
-                    content += self.gen_field_map_assign_stmt(prefix, field['original_type_name'], fname, valuetext, map_delims, 2)
+                    content += self.gen_field_map_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
                 else:
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
@@ -232,7 +221,7 @@ class GoCsvLoadGenerator(GoStructGenerator):
     # 生成Load方法
     def gen_load_method(self, struct):
         content = ''
-        if struct['options']['parse-kv-mode']:
+        if struct['options'][predef.PredefParseKVMode]:
             return self.gen_load_method_kv(struct)
 
         content += 'func Load%sList(loader DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
@@ -261,42 +250,3 @@ class GoCsvLoadGenerator(GoStructGenerator):
         content += '\treturn list, nil\n'
         content += '}\n\n'
         return content
-
-    def generate(self, struct, params):
-        content = ''
-        content += self.gen_struct_define(struct, params)
-        content += self.gen_parse_method(struct)
-        content += self.gen_load_method(struct)
-        return content
-
-    def run(self, descriptors, params):
-        content = '// This file is auto-generated by TAKSi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
-        content += 'package %s\n' % params['pkg']
-        content += 'import (\n'
-        content += '    "encoding/csv"\n'
-        content += '    "io"\n'
-        content += '    "strings"\n'
-        content += ')\n'
-        content += '\nvar (\n'
-        content += '\t_ = io.EOF\n'
-        content += '\t_ = strings.Compare\n'
-        content += ')\n\n'
-        content += self.gen_const_names(descriptors)
-
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
-
-        for struct in descriptors:
-            content += self.generate(struct, params)
-
-        filename = params.get(predef.OptionOutSourceFile, 'config.go')
-        filename = os.path.abspath(filename)
-        strutil.save_content_if_not_same(filename, content, 'utf-8')
-        print('wrote source to %s' % filename)
-
-        goroot = os.getenv('GOROOT')
-        if goroot is not None:
-            cmd = goroot + '/bin/go fmt ' + filename
-            print(cmd)
-            os.system(cmd)
