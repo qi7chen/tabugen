@@ -2,7 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from . import types
+import taksi.typedef as types
 
 
 # C++类型映射

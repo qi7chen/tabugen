@@ -5,7 +5,7 @@
 import os
 import unittest
 import taksi.predef as predef
-import taksi.types as types
+import taksi.typedef as types
 import taksi.strutil as strutil
 import taksi.xlsxhelp as xlsxhelp
 

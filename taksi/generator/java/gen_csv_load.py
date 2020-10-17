@@ -5,7 +5,7 @@
 import os
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.types as types
+import taksi.typedef as types
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
 

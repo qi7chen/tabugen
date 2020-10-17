@@ -4,7 +4,7 @@
 
 import pymysql
 import unittest
-import taksi.types as types
+import taksi.typedef as types
 import taksi.strutil as strutil
 
 

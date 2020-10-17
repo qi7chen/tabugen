@@ -7,7 +7,7 @@ import json
 import codecs
 import taksi.predef as predef
 import taksi.strutil as strutil
-import taksi.types as types
+import taksi.typedef as types
 import taksi.generator.genutil as genutil
 
 

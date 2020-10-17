@@ -2,8 +2,6 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import unittest
-
 # type enum
 Type_Unknown = 0
 Type_Nil = 1
@@ -144,19 +142,17 @@ def map_key_value_types(typename):
     return keytype, valtype
 
 
-class TestTypeNames(unittest.TestCase):
-
-    def test_is_primitive_type(self):
-        test_data = [
-            ('int', True),
-            ('map', False),
-            ('', False),
-        ]
-        for pair in test_data:
-            out = is_primitive_type(pair[0])
-            print(out)
-            self.assertEqual(pair[1], out)
+def test_is_primitive_type(self):
+    test_data = [
+        ('int', True),
+        ('map', False),
+        ('', False),
+    ]
+    for pair in test_data:
+        out = is_primitive_type(pair[0])
+        print(out)
+        self.assertEqual(pair[1], out)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test_is_primitive_type()

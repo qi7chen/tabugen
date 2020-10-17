@@ -4,7 +4,7 @@
 
 import sys
 import openpyxl
-import taksi.types as types
+import taksi.typedef as types
 
 # TODO: speedup excel parsing
 #

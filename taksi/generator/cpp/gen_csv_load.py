@@ -3,7 +3,7 @@
 # See accompanying files LICENSE.
 
 import os
-import taksi.types as types
+import taksi.typedef as types
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
