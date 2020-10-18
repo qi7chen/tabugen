@@ -46,7 +46,7 @@ class CppCsvLoadGenerator:
         content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, self.array_delim)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    %s%s.push_back(ParseValue<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
+        content += '%s    %s%s.push_back(ParseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
@@ -69,9 +69,9 @@ class CppCsvLoadGenerator:
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const auto& key = ParseValue<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        const auto& key = ParseTextAs<%s>(kv[0]);\n' % (space, key_type)
         content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
-        content += '%s        %s%s[key] = ParseValue<%s>(kv[1]);\n' % (space, prefix, name, val_type)
+        content += '%s        %s%s[key] = ParseTextAs<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
@@ -92,7 +92,7 @@ class CppCsvLoadGenerator:
             field = inner_fields[n]
             origin_type = field['original_type_name']
             typename = lang.map_cpp_type(origin_type)
-            content += '        item.%s = ParseValue<%s>(row[i + %d]);\n' % (field['name'], typename, n)
+            content += '        item.%s = ParseTextAs<%s>(row[i + %d]);\n' % (field['name'], typename, n)
         content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
         content += '    }\n'
         return content
@@ -130,11 +130,11 @@ class CppCsvLoadGenerator:
                                                               ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
-                        content += '%s%s%s[%d] = ParseValue<%s>(row[%d]);\n' % (
+                        content += '%s%s%s[%d] = ParseTextAs<%s>(row[%d]);\n' % (
                         self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        content += '%s%s%s = ParseValue<%s>(row[%d]);\n' % (
+                        content += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
                         self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
             idx += 1
         return content
@@ -226,7 +226,7 @@ class CppCsvLoadGenerator:
             elif origin_typename.startswith('map'):
                 content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
             else:
-                content += '%sptr->%s = ParseValue<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
+                content += '%sptr->%s = ParseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
         content += '    return 0;\n'
         content += '}\n\n'
@@ -288,33 +288,10 @@ class CppCsvLoadGenerator:
             return self.gen_kv_struct_load_method(struct)
 
         varname = self.get_instance_data_name(struct['name'])
-        content += '// load data from csv file\n'
-        content += 'int %s::Load(const char* filepath)\n' % struct['name']
-        content += '{\n'
-        content += '    vector<%s>* dataptr = new vector<%s>;\n' % (struct['name'], struct['name'])
-        content += '    string content = %s::reader(filepath);\n' % strutil.config_manager_name
-        content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
-        content += '    sp.replaceAll("\\r\\n", " \\n");\n'
-        content += '    auto lines = Split(sp, "\\n");\n'
-        content += '    ASSERT(!lines.empty());\n'
-        content += '    for (size_t i = 0; i < lines.size(); i++)\n'
-        content += '    {\n'
-        content += '        auto line = trimWhitespace(lines[i]);\n'
-        content += '        if (!line.empty())\n'
-        content += '        {\n'
-        content += '            const auto& row = Split(lines[i], ",");\n'
-        content += '            if (!row.empty())\n'
-        content += '            {\n'
-        content += '                %s item;\n' % struct['name']
-        content += '                %s::ParseFromRow(row, &item);\n' % struct['name']
-        content += '                dataptr->push_back(item);\n'
-        content += '            }\n'
-        content += '        }\n'
-        content += '    }\n'
-        content += '    delete %s;\n' % varname
-        content += '    %s = dataptr;\n' % varname
-        content += '    return 0;\n'
-        content += '}\n\n'
+        cpp_template.CPP_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'], struct['name'],
+                                               strutil.config_manager_name, struct['name'], struct['name'],
+                                               varname, varname)
+        content += '\n'
         return content
 
     # class静态成员定义
@@ -419,16 +396,8 @@ class CppCsvLoadGenerator:
             content += '    %s = nullptr;\n' % self.get_instance_data_name(struct['name'])
         content += '}\n\n'
 
-        content += '//Load content of an asset file\n'
-        content += 'std::string %s::ReadFileContent(const char* filepath)\n' % strutil.config_manager_name
-        content += '{\n'
-        content += '    ASSERT(filepath != nullptr);\n'
-        content += '    std::ifstream ifs(filepath);\n'
-        content += '    ASSERT(!ifs.fail());\n'
-        content += '    std::string content;\n'
-        content += '    content.assign(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());\n'
-        content += '    return std::move(content);\n'
-        content += '}\n\n\n'
+        content += cpp_template.CPP_READ_FUNC_TEMPLATE % strutil.config_manager_name
+        content += '\n\n'
 
         return content
 
@@ -460,6 +429,7 @@ class CppCsvLoadGenerator:
             '#include <fstream>',
             '#include "Utility/Conv.h"',
             '#include "Utility/StringUtil.h"',
+            '#include "Utility/CSVReader.h"',
         ]
         cpp_content = '// This file is auto-generated by TAKSi v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         if args.cpp_pch is not None:
@@ -471,7 +441,7 @@ class CppCsvLoadGenerator:
         cpp_content += '#ifndef ASSERT\n'
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'
-        cpp_content += cpp_template.CPP_PARSE_FUN_TEMPLATE
+        cpp_content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (args.out_csv_delim, '"')
 
         if args.package is not None:
             cpp_content += '\nnamespace %s\n{\n\n' % args.package

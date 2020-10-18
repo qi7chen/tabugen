@@ -86,7 +86,7 @@ def main():
     parser.add_argument("--parse_meta_file", help="meta file for struct parsing")
     parser.add_argument("--parse_file_skip", help="files or directory to skip in struct parsing")
     parser.add_argument("--array_delim", default=",", help="array item delimiter")
-    parser.add_argument("--map_delims", default=",=", help="map item delimiter")
+    parser.add_argument("--map_delims", default=";=", help="map item delimiter")
 
     # mysql options
     parser.add_argument("--db_host", help="database host address", default="localhost")
@@ -110,7 +110,7 @@ def main():
     # output options
     parser.add_argument("--source_file_encoding", default="utf-8", help="encoding of generated source file")
     parser.add_argument("--data_file_encoding", help="encoding of output data file")
-    parser.add_argument("--out_csv_delim", default=";", help="output CSV file field delimiter")
+    parser.add_argument("--out_csv_delim", default=",", help="output CSV file field delimiter")
     parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
     parser.add_argument("--out_data_path", default=".", help="output file path")
     parser.add_argument("--json_indent", action="store_true", help="enable JSON indent for output data")
