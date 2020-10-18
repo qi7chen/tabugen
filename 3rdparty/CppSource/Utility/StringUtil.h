@@ -451,3 +451,15 @@ void RandBytes(void* output, size_t outlen);
 std::string Base62Encode(uint64_t value);
 
 std::string Base62Encode(const void* buf, size_t len);
+
+// parse value from text
+template <typename T>
+inline T ParseTextAs(StringPiece text)
+{
+    text = trimWhitespace(text);
+    if (text.empty())
+    {
+        return T();
+    }
+    return to<T>(text);
+}
