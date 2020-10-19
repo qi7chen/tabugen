@@ -32,6 +32,7 @@ class CppCsvLoadGenerator:
     # 生成赋值表达式
     def gen_equal_stmt(self, prefix, struct, key):
         keys = genutil.get_struct_keys(struct, key, lang.map_cpp_type)
+        assert len(keys) > 0
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -306,7 +307,7 @@ class CppCsvLoadGenerator:
         content += '    ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
         content += '    for (size_t i = 0; i < dataptr->size(); i++)\n'
         content += '    {\n'
-        content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, 'get-keys')
+        content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, predef.PredefGetMethodKeys)
         content += '        {\n'
         content += '            return &dataptr->at(i);\n'
         content += '        }\n'
@@ -345,7 +346,7 @@ class CppCsvLoadGenerator:
         content += '    ASSERT(dataptr != nullptr && dataptr->size() > 0);\n'
         content += '    for (size_t i = 0; i < dataptr->size(); i++)\n'
         content += '    {\n'
-        content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, 'range-keys')
+        content += '        if (%s)\n' % self.gen_equal_stmt('dataptr->at(i).', struct, predef.PredefRangeMethodKeys)
         content += '        {\n'
         content += '            range.push_back(&dataptr->at(i));\n'
         content += '        }\n'
