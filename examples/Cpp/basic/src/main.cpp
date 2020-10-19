@@ -7,6 +7,7 @@
 
 using namespace std;
 
+
 static std::string readfile(const char* filepath)
 {
     std::string filename = stringPrintf("../res/%s", filepath);
@@ -20,7 +21,7 @@ static std::string readfile(const char* filepath)
 
 int main(int argc, char* argv[])
 {
-    using namespace autogen;
+    using namespace config;
     AutogenConfigManager::reader = readfile;
     AutogenConfigManager::LoadAll();
     const std::vector<SoldierPropertyDefine>* all = SoldierPropertyDefine::GetData();

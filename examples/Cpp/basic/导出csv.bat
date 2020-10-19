@@ -8,9 +8,7 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\±øÖÖ.xlsx"
-set exportArgs="pkg=autogen,src-encoding=gbk,data-encoding=gbk,outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\AutogenConfig"
+set filepath="%currentDir%\±øÖÖ.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="cpp-csv" --output-format=csv  --export-args=%exportArgs%
-
+%taxi_alias%  --parser=excel --parse_files=%filepath% --cpp_out=%currentDir%\src\AutogenConfig --load_code_generator=csv  --source_file_encoding=gbk --out_data_format=csv --out_data_path=%currentDir%\res 
 pause
