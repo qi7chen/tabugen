@@ -43,7 +43,7 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& array = Split(%s, "%s", true);\n' % (space, row_name, self.array_delim)
+        content += '%sconst auto& array = Split(%s, TAKSI_ARRAY_DELIM, true);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(ParseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -54,18 +54,16 @@ class CppCsvLoadGenerator:
     # map赋值
     def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, tabs):
         assert len(self.map_delims) == 2
-        delim1 = self.map_delims[0]
-        delim2 = self.map_delims[1]
 
         k, v = types.map_key_value_types(typename)
         key_type = lang.map_cpp_type(k)
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& mapitems = Split(%s, "%s", true);\n' % (space, row_name, delim1)
-        content += '%sfor (size_t i = 0; i < mapitems.size(); i++)\n' % space
+        content += '%sconst auto& dict = Split(%s, TAKSI_MAP_DELIM1, true);\n' % (space, row_name)
+        content += '%sfor (size_t i = 0; i < dict.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const auto& kv = Split(mapitems[i], "%s", true);\n' % (space, delim2)
+        content += '%s    const auto& kv = Split(dict[i], TAKSI_MAP_DELIM2, true);\n' % space
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
@@ -250,35 +248,13 @@ class CppCsvLoadGenerator:
 
     # KV模式的Load()方法
     def gen_kv_struct_load_method(self, struct):
-        content = ''
-        content += '// load data from csv file\n'
-        content += 'int %s::Load(const char* filepath)\n' % struct['name']
-        content += '{\n'
-        content += '    string content = %s::reader(filepath);\n' % strutil.config_manager_name
-        content += '    MutableStringPiece sp((char*)content.data(), content.size());\n'
-        content += '    sp.replaceAll("\\r\\n", " \\n");\n'
-        content += '    vector<vector<StringPiece>> rows;\n'
-        content += '    auto lines = Split(sp, "\\n");\n'
-        content += '    ASSERT(!lines.empty());\n'
-        content += '    for (size_t i = 0; i < lines.size(); i++)\n'
-        content += '    {\n'
-        content += '        auto line = trimWhitespace(lines[i]);\n'
-        content += '        if (!line.empty())\n'
-        content += '        {\n'
-        content += '            const auto& row = Split(lines[i], ",");\n'
-        content += '            if (!row.empty())\n'
-        content += '            {\n'
-        content += '                rows.push_back(row);\n'
-        content += '            }\n'
-        content += '        }\n'
-        content += '    }\n'
-        content += '    %s* dataptr = new %s();\n' % (struct['name'], struct['name'])
-        content += '    %s::ParseFromRows(rows, dataptr);\n' % struct['name']
         varname = self.get_instance_data_name(struct['name'])
-        content += '    delete %s;\n' % varname
-        content += '    %s = dataptr;\n' % varname
-        content += '    return 0;\n'
-        content += '}\n\n'
+        content = ''
+        content += cpp_template.CPP_KV_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'],
+                                                             strutil.config_manager_name,
+                                                             struct['name'], struct['name'], struct['name'],
+                                                             varname, varname)
+        content += '\n'
         return content
 
     # 生成Load()方法
@@ -288,7 +264,7 @@ class CppCsvLoadGenerator:
             return self.gen_kv_struct_load_method(struct)
 
         varname = self.get_instance_data_name(struct['name'])
-        cpp_template.CPP_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'], struct['name'],
+        content += cpp_template.CPP_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'], struct['name'],
                                                strutil.config_manager_name, struct['name'], struct['name'],
                                                varname, varname)
         content += '\n'
@@ -441,7 +417,8 @@ class CppCsvLoadGenerator:
         cpp_content += '#ifndef ASSERT\n'
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'
-        cpp_content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (args.out_csv_delim, '"')
+        cpp_content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (args.out_csv_delim, '"', self.array_delim[0],
+                                                              self.map_delims[0], self.map_delims[1])
 
         if args.package is not None:
             cpp_content += '\nnamespace %s\n{\n\n' % args.package

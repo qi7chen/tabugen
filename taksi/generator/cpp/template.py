@@ -16,6 +16,15 @@ CPP_MANAGER_METHOD_TEMPLATE = """
     static std::function<std::string(const char*)> reader;
 """
 
+CPP_CSV_TOKEN_TEMPLATE = """
+static const char TAKSI_CSV_SEP = '%s';
+static const char TAKSI_CSV_QUOTE = '%s';
+static const char* TAKSI_ARRAY_DELIM = "%s";
+static const char* TAKSI_MAP_DELIM1 = "%s";
+static const char* TAKSI_MAP_DELIM2 = "%s";
+"""
+
+
 CPP_READ_FUNC_TEMPLATE = """
 //Load content of an asset file'
 std::string %s::ReadFileContent(const char* filepath)
@@ -44,8 +53,8 @@ CPP_LOAD_FUNC_TEMPLATE = """
 int %s::Load(const char* filepath)
 {
     vector<%s>* dataptr = new vector<%s>;
-    std::string content = AutogenConfigManager::reader(filepath);
-    CSVReader reader(CSV_SEP, CSV_QUOTE);
+    std::string content = %s::reader(filepath);
+    CSVReader reader(TAKSI_CSV_SEP, TAKSI_CSV_QUOTE);
     reader.Parse(content);
     auto rows = reader.GetRows();
     ASSERT(!rows.empty());
@@ -54,12 +63,9 @@ int %s::Load(const char* filepath)
         auto row = rows[i];
         if (!row.empty())
         {
-            if (!row.empty())
-            {
-                %s item;
-                %s::ParseFromRow(row, &item);
-                dataptr->push_back(item);
-            }
+            %s item;
+            %s::ParseFromRow(row, &item);
+            dataptr->push_back(item);
         }
     }
     delete %s;
@@ -68,12 +74,28 @@ int %s::Load(const char* filepath)
 }
 """
 
-CPP_CSV_TOKEN_TEMPLATE = """
-#ifndef CSV_SEP
-#define CSV_SEP     ('%s')
-#endif 
-
-#ifndef CSV_QUOTE
-#define CSV_QUOTE   ('%s')
-#endif CSV_QUOTE
+CPP_KV_LOAD_FUNC_TEMPLATE = """
+// load %s data from csv file
+int %s::Load(const char* filepath)
+{
+    std::string content = %s::reader(filepath);
+    CSVReader reader(TAKSI_CSV_SEP, TAKSI_CSV_QUOTE);
+    reader.Parse(content);
+    auto rows = reader.GetRows();
+    ASSERT(!rows.empty());
+    for (auto& row : rows)
+    {
+        if (!row.empty())
+        {
+            rows.push_back(row);
+        }
+    }
+    %s* dataptr = new %s();
+    %s::ParseFromRows(rows, dataptr);
+    delete %s;
+    %s = dataptr;
+    return 0;
+}
 """
+
+
