@@ -26,7 +26,7 @@ class CsvDataWriter:
         return rows
 
     # 置空不必要显示的内容
-    def hide_unused_rows(self, struct, rows, params):
+    def hide_skipped_row_fields(self, struct, rows, args):
         if predef.PredefValueTypeColumn in struct['options']:
             typecol = int(struct['options'][predef.PredefValueTypeColumn])
             commentcol = int(struct['options'][predef.PredefCommentColumn])
@@ -34,14 +34,12 @@ class CsvDataWriter:
                 row[typecol - 1] = ''
                 row[commentcol - 1] = ''
         else:
-            if predef.OptionHideColumns in params:
-                text = struct["options"].get(predef.PredefHideColumns, "")
-                text = text.strip()
-                if len(text) > 0:
-                    columns = [int(x.strip()) for x in text.split(',')]
-                    for row in rows:
-                        for idx in columns:
-                            row[idx - 1] = ''
+            if args.enable_column_skip:
+                for row in rows:
+                    for field in struct["fields"]:
+                        if not field["enable"]:
+                            idx = field["column_index"] - 1
+                            row[idx] = ''
         return rows
 
     # 将数据写入csv文件
@@ -67,6 +65,6 @@ class CsvDataWriter:
         for struct in descriptors:
             rows = struct["data_rows"]
             rows = self.validate_unique_column(struct, rows)
-            # rows = self.hide_unused_rows(struct, rows)
+            rows = self.hide_skipped_row_fields(struct, rows, args)
             name = strutil.camel_to_snake(struct['camel_case_name'])
             self.write_file(name, rows, args.out_csv_delim, filepath, encoding)

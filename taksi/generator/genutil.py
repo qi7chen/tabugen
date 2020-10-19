@@ -69,6 +69,7 @@ def get_struct_kv_fields(struct):
             'type_name': typename,
             'original_type_name': typename,
             'comment': comment,
+            'enable': True,
         }
         fields.append(field)
 

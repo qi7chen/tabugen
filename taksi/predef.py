@@ -32,8 +32,7 @@ PredefInnerTypeName = "inner_type_name"
 
 OptionAutoVector = "auto_vector"            # 自动把名称相近的字段合并为数组
 
-OptionHideColumns = "hide-column"           # 开启隐藏模式
-OptionJsonDecorate = "json-decorate"       #
+OptionSkippedColumns = "skipped_fields"   # 跳过某些列
 
 
 #

@@ -63,6 +63,8 @@ class CppStructGenerator:
             max_type_len = len(inner_typename)
 
         for field in fields:
+            if not field['enable']:
+                continue
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:

@@ -85,6 +85,7 @@ def main():
     parser.add_argument("--parse_files", help="files or directory for struct parsing")
     parser.add_argument("--parse_meta_file", help="meta file for struct parsing")
     parser.add_argument("--parse_file_skip", help="files or directory to skip in struct parsing")
+    parser.add_argument("--enable_column_skip", action='store_true', help="enable skipping column when do parsing")
     parser.add_argument("--array_delim", default=",", help="array item delimiter")
     parser.add_argument("--map_delims", default=";=", help="map item delimiter")
 

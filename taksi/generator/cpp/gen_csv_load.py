@@ -99,7 +99,6 @@ class CppCsvLoadGenerator:
     # 生成字段赋值
     def gen_all_field_assign_stmt(self, struct, prefix, tabs):
         content = ''
-        idx = 0
 
         inner_class_done = False
         inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
@@ -108,7 +107,11 @@ class CppCsvLoadGenerator:
         vec_idx = 0
         space = self.TAB_SPACE * tabs
         for field in struct['fields']:
+            if not field['enable']:
+                continue
             field_name = field['name']
+            idx = field['column_index'] - 1
+            assert idx >= 0
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
@@ -135,7 +138,6 @@ class CppCsvLoadGenerator:
                     else:
                         content += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
                         self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
-            idx += 1
         return content
 
     # class静态函数声明

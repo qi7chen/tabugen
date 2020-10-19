@@ -20,6 +20,7 @@ class ExcelStructParser:
         self.with_data = True
         self.filenames = []
         self.meta_index = {}
+        self.enable_field_skipping = False
 
     @staticmethod
     def name():
@@ -29,6 +30,8 @@ class ExcelStructParser:
         self.filedir = args.parse_files
         if args.without_data:
             self.with_data = False
+        if args.enable_column_skip:
+            self.enable_field_skipping = True
         if args.parse_file_skip is not None:
             self.skip_names = args.parse_file_skip.split(' ')
         self.metafile = args.parse_meta_file
@@ -109,6 +112,11 @@ class ExcelStructParser:
                 value = row[1].strip()
                 if key != "" and value != "":
                     meta[key] = value
+
+        if predef.OptionSkippedColumns in meta:
+            field_names = meta[predef.OptionSkippedColumns].split(',')
+            field_names = [v.strip() for v in field_names]
+            meta[predef.OptionSkippedColumns] = field_names
         # default values
         if predef.PredefStructTypeRow not in meta:
             meta[predef.PredefStructTypeRow] = "1"  # 类型列
@@ -196,6 +204,11 @@ class ExcelStructParser:
             field["comment"] = " "
             if comment_index > 0:
                 field["comment"] = rows[comment_index][i]
+
+            field["enable"] = True
+            if self.enable_field_skipping and len(meta[predef.OptionSkippedColumns]) > 0:
+                if field["name"] in meta[predef.OptionSkippedColumns]:
+                    field["enable"] = False
 
             # print(field)
             struct['fields'].append(field)
