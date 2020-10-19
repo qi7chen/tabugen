@@ -959,7 +959,7 @@ typename std::enable_if<
     Tgt>::type
 to(StringPiece src)
 {
-    Tgt result = to<double>(&src);
+    Tgt result = static_cast<Tgt>(to<double>(&src));
     detail::enforceWhitespace(src.data(), src.data() + src.size());
     return result;
 }
