@@ -49,10 +49,7 @@ struct SoldierPropertyDefine
     int          ConsumeTime = 0;           // 生产消耗的时间（秒/个）
     int          Act = 0;                   // 攻击
     int          Hp = 0;                    // 血量
-    int          BombLoad = 0;              // 载弹量
     uint32_t     Hurt = 0;                  // buff伤害
-    float        Duration = 0.0;            // 持续时间
-    float        TriggerInterval = 0.0;     // 触发间隔
     float        SearchScope = 0.0;         // 搜索范围
     float        AtkFrequency = 0.0;        // 攻击间隔
     float        AtkRange = 0.0;            // 攻击距离

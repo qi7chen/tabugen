@@ -148,10 +148,7 @@ int SoldierPropertyDefine::ParseFromRow(const vector<StringPiece>& row, SoldierP
     ptr->ConsumeTime = ParseTextAs<int>(row[13]);
     ptr->Act = ParseTextAs<int>(row[14]);
     ptr->Hp = ParseTextAs<int>(row[15]);
-    ptr->BombLoad = ParseTextAs<int>(row[16]);
     ptr->Hurt = ParseTextAs<uint32_t>(row[17]);
-    ptr->Duration = ParseTextAs<float>(row[18]);
-    ptr->TriggerInterval = ParseTextAs<float>(row[19]);
     ptr->SearchScope = ParseTextAs<float>(row[20]);
     ptr->AtkFrequency = ParseTextAs<float>(row[21]);
     ptr->AtkRange = ParseTextAs<float>(row[22]);
