@@ -111,17 +111,17 @@ int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows,
     ptr->FreeCompleteSeconds = ParseTextAs<uint32_t>(rows[7][3]);
     ptr->CancelBuildReturnPercent = ParseTextAs<uint32_t>(rows[8][3]);
     {
-        const auto& _array = Split(rows[9][3], TAKSI_ARRAY_DELIM, true);
-        for (size_t i = 0; i < _array.size(); i++)
+        const auto& array = Split(rows[9][3], TAKSI_ARRAY_DELIM, true);
+        for (size_t i = 0; i < array.size(); i++)
         {
-            ptr->SpawnLevelLimit.push_back(ParseTextAs<int>(_array[i]));
+            ptr->SpawnLevelLimit.push_back(ParseTextAs<int>(array[i]));
         }
     }
     {
-        const auto& _dict = Split(rows[10][3], TAKSI_MAP_DELIM1, true);
-        for (size_t i = 0; i < _dict.size(); i++)
+        const auto& dict = Split(rows[10][3], TAKSI_MAP_DELIM1, true);
+        for (size_t i = 0; i < dict.size(); i++)
         {
-            const auto& kv = Split(_dict[i], TAKSI_MAP_DELIM2, true);
+            const auto& kv = Split(dict[i], TAKSI_MAP_DELIM2, true);
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {

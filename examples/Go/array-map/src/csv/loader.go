@@ -7,11 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/sirupsen/logrus"
+	"log"
 )
-
-var log = logrus.StandardLogger()
 
 type DataSourceLoader interface {
 	Init(string) error

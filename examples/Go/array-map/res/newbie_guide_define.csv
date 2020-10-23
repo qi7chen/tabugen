@@ -1,8 +1,8 @@
-Guide_01,eAT_CreateBuilding,BigSupplyDepot,1+2+3,Food=10&Gas=100,å»ºé€ 1ä¸ªå¼•æ“æ§åˆ¶å®¤
-Guide_02,eAT_CreateBuilding,CrystalRefinery,4+5+6,Food=10&Gas=100,å»ºé€ 1ä¸ªå¤ªç©ºæ¸©å®¤
-Guide_03,eAT_ReachLevel,SoldierLandingship,1+2+4,Food=10&Gas=101,å°†å¤§åŠ›ç¥ç™»é™†è‰‡å‡è‡³2çº§
-Guide_04,eAT_DefeatNpc,NPC,4+5+7,Food=10&Gas=102,è§£æ”¾1ä¸ªå¤ªç©ºæ®–æ°‘åœ°
-Guide_05,eAT_CreateBuilding,Vault,1+2+5,Food=10&Gas=103,å»ºé€ 1ä¸ªä¿é™©åº“
-Guide_06,eAT_CreateBuilding,GhostTower,1+2+5,Food=10&Gas=104,å»ºé€ 1ä¸ªå¹½çµå“¨å¡”
-Guide_07,eAT_UpgradeHero,ColonelZhang,4+5+8,Food=10&Gas=105,å°†ç« åŒ—æµ·ç­‰çº§æå‡è‡³2çº§
-Guide_08,eAT_UpgradeSoldier,Marine,1+2+6,Food=10&Gas=106,å°†é™†æˆ˜é˜Ÿç­‰çº§æå‡è‡³2çº§
+"Guide_01","eAT_CreateBuilding","BigSupplyDepot","1,2,3","Food=10;Gas=100","½¨Ôì1¸öÒıÇæ¿ØÖÆÊÒ"
+"Guide_02","eAT_CreateBuilding","CrystalRefinery","1,2,4","Food=10;Gas=100","½¨Ôì1¸öÌ«¿ÕÎÂÊÒ"
+"Guide_03","eAT_ReachLevel","SoldierLandingship","1,2,5","Food=10;Gas=100","½«´óÁ¦ÉñµÇÂ½Í§ÉıÖÁ2¼¶"
+"Guide_04","eAT_DefeatNpc","NPC","1,2,6","Food=10;Gas=100","½â·Å1¸öÌ«¿ÕÖ³ÃñµØ"
+"Guide_05","eAT_CreateBuilding","Vault","1,2,7","Food=10;Gas=100","½¨Ôì1¸ö±£ÏÕ¿â"
+"Guide_06","eAT_CreateBuilding","GhostTower","1,2,8","Food=10;Gas=100","½¨Ôì1¸öÓÄÁéÉÚËş"
+"Guide_07","eAT_UpgradeHero","ColonelZhang","1,2,9","Food=10;Gas=100","½«ÕÂ±±º£µÈ¼¶ÌáÉıÖÁ2¼¶"
+"Guide_08","eAT_UpgradeSoldier","Marine","1,2,10","Food=10;Gas=100","½«Â½Õ½¶ÓµÈ¼¶ÌáÉıÖÁ2¼¶"
