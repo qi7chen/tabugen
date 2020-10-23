@@ -109,35 +109,37 @@ class CppCsvLoadGenerator:
         for field in struct['fields']:
             if not field['enable']:
                 continue
+            text = ''
             field_name = field['name']
             idx = field['column_index'] - 1
             assert idx >= 0
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_inner_class_field_assgin_stmt(struct, prefix)
+                    text += self.gen_inner_class_field_assgin_stmt(struct, prefix)
             else:
                 origin_type = field['original_type_name']
                 typename = lang.map_cpp_type(origin_type)
 
                 if typename != 'std::string' and field['name'] in vec_names:
-                    content += '%s%s%s[%d] = %s;\n' % (
+                    text += '%s%s%s[%d] = %s;\n' % (
                     space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
 
                 if origin_type.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type, field_name,
+                    text += self.gen_field_array_assign_stmt(prefix, origin_type, field_name,
                                                                 ('row[%d]' % idx), tabs)
                 elif origin_type.startswith('map'):
-                    content += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name,
+                    text += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name,
                                                               ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
-                        content += '%s%s%s[%d] = ParseTextAs<%s>(row[%d]);\n' % (
+                        text += '%s%s%s[%d] = ParseTextAs<%s>(row[%d]);\n' % (
                         self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        content += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
+                        text += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
                         self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
+            content += text
         return content
 
     # class静态函数声明
@@ -184,17 +186,9 @@ class CppCsvLoadGenerator:
         content = ''
         varname = self.get_instance_data_name(struct['name'])
         if struct['options'][predef.PredefParseKVMode]:
-            content += 'const %s* %s::Instance()\n' % (struct['name'], struct['name'])
-            content += '{\n'
-            content += '    ASSERT(%s != nullptr);\n' % varname
-            content += '    return %s;\n' % varname
-            content += '}\n\n'
+            content += cpp_template.CPP_INSTANCE_METHOD_TEMPLATE % (struct['name'], struct['name'], varname, varname)
         else:
-            content += 'const std::vector<%s>* %s::GetData()\n' % (struct['name'], struct['name'])
-            content += '{\n'
-            content += '    ASSERT(%s != nullptr);\n' % varname
-            content += '    return %s;\n' % varname
-            content += '}\n\n'
+            content += cpp_template.CPP_GET_METHOD_TEMPLATE % (struct['name'], struct['name'], varname, varname)
         return content
 
     # 生成KV模式的Parse方法
@@ -222,13 +216,15 @@ class CppCsvLoadGenerator:
             origin_typename = rows[idx][typeidx].strip()
             typename = lang.map_cpp_type(origin_typename)
             row_name = 'rows[%d][%d]' % (idx, validx)
+            text = ''
             if origin_typename.startswith('array'):
-                content += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, 1)
+                text += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, 1)
             elif origin_typename.startswith('map'):
-                content += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
+                text += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
             else:
-                content += '%sptr->%s = ParseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
+                text += '%sptr->%s = ParseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
+            content += text
         content += '    return 0;\n'
         content += '}\n\n'
         return content
@@ -376,8 +372,6 @@ class CppCsvLoadGenerator:
         content += '}\n\n'
 
         content += cpp_template.CPP_READ_FUNC_TEMPLATE % strutil.config_manager_name
-        content += '\n\n'
-
         return content
 
     # 生成源文件定义

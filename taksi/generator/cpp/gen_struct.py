@@ -65,12 +65,13 @@ class CppStructGenerator:
         for field in fields:
             if not field['enable']:
                 continue
+            text = ''
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
                     typename = strutil.pad_spaces(inner_typename, max_type_len + 1)
                     name = strutil.pad_spaces(inner_var_name, max_name_len + 8)
-                    content += '    %s %s; //\n' % (typename, name)
+                    text += '    %s %s; //\n' % (typename, name)
                     inner_class_done = True
 
             else:
@@ -80,12 +81,13 @@ class CppStructGenerator:
                 if field_name not in vec_names:
                     name = lang.name_with_default_cpp_value(field, typename)
                     name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                    text += '    %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
                     name = '%s[%d];' % (vec_name, len(vec_names))
                     name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    %s %s // %s\n' % (typename, name, field['comment'])
+                    text += '    %s %s // %s\n' % (typename, name, field['comment'])
                     vec_done = True
+            content += text
 
         return content
 

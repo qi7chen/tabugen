@@ -131,30 +131,34 @@ class GoCsvLoadGenerator:
 
         idx = 0
         for field in struct['fields']:
+            if not field['enable']:
+                continue
+            text = ''
             fname = field['name']
             prefix = 'p.'
             if fname in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_inner_class_parse(struct, prefix)
+                    text += self.gen_inner_class_parse(struct, prefix)
             else:
-                content += '\tif row[%d] != "" {\n' % idx
+                text += '\tif row[%d] != "" {\n' % idx
                 origin_type_name = field['original_type_name']
                 typename = lang.map_go_type(origin_type_name)
                 field_name = field['camel_case_name']
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
-                    content += self.gen_field_array_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
+                    text += self.gen_field_array_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
                 elif origin_type_name.startswith('map'):
-                    content += self.gen_field_map_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
+                    text += self.gen_field_map_assign_stmt(prefix, field['original_type_name'], fname, valuetext, 2)
                 else:
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
-                        content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 2, 'row')
+                        text += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 2, 'row')
                         vec_idx += 1
                     else:
-                        content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 2, 'row')
-                content += '%s}\n' % self.TAB_SPACE
+                        text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 2, 'row')
+                text += '%s}\n' % self.TAB_SPACE
+            content += text
             idx += 1
         content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'

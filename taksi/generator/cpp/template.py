@@ -48,6 +48,24 @@ std::string %s::ReadFileContent(const char* filepath)
 }
 """
 
+CPP_INSTANCE_METHOD_TEMPLATE = """
+const %s* %s::Instance()
+{
+    ASSERT(%s != nullptr);
+    return %s;
+}
+"""
+
+
+CPP_GET_METHOD_TEMPLATE = """
+const std::vector<%s>* %s::GetData()
+{
+    ASSERT(%s != nullptr);
+    return %s;
+}
+
+"""
+
 CPP_LOAD_FUNC_TEMPLATE = """
 // load %s data from csv file
 int %s::Load(const char* filepath)

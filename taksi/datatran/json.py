@@ -104,6 +104,8 @@ class JsonDataWriter:
                 valuetext = row[idx]
                 name = field['name']
                 value = self.parse_value(struct, field['original_type_name'], valuetext)
+                if self.use_snake_case:
+                    name = strutil.camel_to_snake(name)
                 inner_item[name] = value
                 idx += 1
             inner_obj_list.append(inner_item)

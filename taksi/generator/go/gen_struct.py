@@ -68,16 +68,19 @@ class GoStructGenerator:
         content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct {\n' % struct['camel_case_name']
         for field in fields:
+            if not field['enable']:
+                continue
+            text = ''
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
                     if params.go_json_tag:
                         if self.json_snake_case:
                             inner_var_name = strutil.camel_to_snake(inner_var_name)
-                        content += '    %s %s `json:"%s"` //\n' % (strutil.camel_case(inner_var_name),
+                        text += '    %s %s `json:"%s"` //\n' % (strutil.camel_case(inner_var_name),
                                                                    inner_typename, inner_var_name)
                     else:
-                        content += '    %s %s //\n' % (strutil.camel_case(inner_var_name), inner_typename)
+                        text += '    %s %s //\n' % (strutil.camel_case(inner_var_name), inner_typename)
                     inner_class_done = True
             else:
                 typename = lang.map_go_type(field['original_type_name'])
@@ -88,19 +91,20 @@ class GoStructGenerator:
                         name = field['name']
                         if self.json_snake_case:
                             name = strutil.camel_to_snake(name)
-                        content += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
+                        text += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
                                                                       name, field['comment'])
                     else:
-                        content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
+                        text += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
                 elif not vec_done:
                     vec_done = True
                     if params.go_json_tag:
                         if self.json_snake_case:
                             vec_name = strutil.camel_to_snake(vec_name)
-                        content += '    %s [%d]%s `json:"%s"` // %s\n' % (strutil.camel_case(vec_name), len(vec_names),
+                        text += '    %s [%d]%s `json:"%s"` // %s\n' % (strutil.camel_case(vec_name), len(vec_names),
                                                                           typename, vec_name, field['comment'])
                     else:
-                        content += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
+                        text += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
+            content += text
 
         return content
 
@@ -114,8 +118,11 @@ class GoStructGenerator:
             typename = lang.map_go_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             if go_json_tag:
+                name = field['name']
+                if self.json_snake_case:
+                    name = strutil.camel_to_snake(name)
                 content += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
-                                                              field['comment'], field['name'])
+                                                              name, field['comment'])
             else:
                 content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
         content += '}\n\n'
