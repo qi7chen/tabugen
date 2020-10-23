@@ -23,6 +23,7 @@ class GoStructGenerator:
 
     def __init__(self):
         self.load_gen = None
+        self.json_snake_case = False
 
     def setup(self, name):
         if name is not None:
@@ -32,6 +33,17 @@ class GoStructGenerator:
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
+
+    def get_const_key_name(self, name):
+        return 'Key%sName' % name
+
+    def gen_const_names(self, descriptors):
+        content = 'const (\n'
+        for struct in descriptors:
+            name = strutil.camel_to_snake(struct['name'])
+            content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), name)
+        content += ')\n\n'
+        return content
 
     # 生成struct定义
     def gen_go_struct(self, struct, params):
@@ -60,6 +72,8 @@ class GoStructGenerator:
             if field_name in inner_field_names:
                 if not inner_class_done:
                     if params.go_json_tag:
+                        if self.json_snake_case:
+                            inner_var_name = strutil.camel_to_snake(inner_var_name)
                         content += '    %s %s `json:"%s"` //\n' % (strutil.camel_case(inner_var_name),
                                                                    inner_typename, inner_var_name)
                     else:
@@ -71,15 +85,20 @@ class GoStructGenerator:
 
                 if field_name not in vec_names:
                     if params.go_json_tag:
+                        name = field['name']
+                        if self.json_snake_case:
+                            name = strutil.camel_to_snake(name)
                         content += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
-                                                                      field['comment'], field['name'])
+                                                                      name, field['comment'])
                     else:
                         content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
                 elif not vec_done:
                     vec_done = True
                     if params.go_json_tag:
+                        if self.json_snake_case:
+                            vec_name = strutil.camel_to_snake(vec_name)
                         content += '    %s [%d]%s `json:"%s"` // %s\n' % (strutil.camel_case(vec_name), len(vec_names),
-                                                                          typename, field['comment'], vec_name)
+                                                                          typename, vec_name, field['comment'])
                     else:
                         content += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
 
@@ -122,12 +141,16 @@ class GoStructGenerator:
         content = ''
         content += go_template.GO_HEAD_TEMPLATE % (version.VER_STRING, args.package)
 
+        if args.json_snake_case:
+            self.json_snake_case = True
+
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
             self.load_gen.setup(array_delim, map_delims)
-            content += self.load_gen.gen_const_names(descriptors)
             content += go_template.GO_HEAD_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
                                                              map_delims[0], map_delims[1])
+
+        content += self.gen_const_names(descriptors)
 
         for struct in descriptors:
             genutil.setup_comment(struct)

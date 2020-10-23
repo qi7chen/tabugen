@@ -115,6 +115,7 @@ def main():
     parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
     parser.add_argument("--out_data_path", default=".", help="output file path")
     parser.add_argument("--json_indent", action="store_true", help="enable JSON indent for output data")
+    parser.add_argument("--json_snake_case", action="store_true", help="enable JSON field to be snake case")
 
     args = parser.parse_args()
     verify_args(args)

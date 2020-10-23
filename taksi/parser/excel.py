@@ -3,6 +3,7 @@
 # See accompanying files LICENSE.
 
 import os
+import sys
 import unittest
 import taksi.predef as predef
 import taksi.typedef as types
@@ -54,7 +55,9 @@ class ExcelStructParser:
     # 跳过忽略的文件名
     def make_filenames(self, filedir):
         filenames = []
-        assert os.path.exists(filedir), '%s not exist' % filedir
+        if not os.path.exists(filedir):
+            print('file path [%s] not exist' % filedir)
+            sys.exit(1)
         if os.path.isdir(filedir):  # filename is a directory
             filedir = os.path.abspath(filedir)
             print('parse files in directory:', filedir)
@@ -117,6 +120,12 @@ class ExcelStructParser:
             field_names = meta[predef.OptionSkippedColumns].split(',')
             field_names = [v.strip() for v in field_names]
             meta[predef.OptionSkippedColumns] = field_names
+
+        if predef.OptionUniqueColumns in meta:
+            field_names = meta[predef.OptionUniqueColumns].split(',')
+            field_names = [v.strip() for v in field_names]
+            meta[predef.OptionUniqueColumns] = field_names
+
         # default values
         if predef.PredefStructTypeRow not in meta:
             meta[predef.PredefStructTypeRow] = "1"  # 类型列

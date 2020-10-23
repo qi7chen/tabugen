@@ -9,7 +9,7 @@ import taksi.predef as predef
 import taksi.strutil as strutil
 import taksi.typedef as types
 import taksi.generator.genutil as genutil
-
+import taksi.datatran.rowutil as rowutil
 
 class JsonDataWriter:
     def __init__(self):
@@ -19,15 +19,6 @@ class JsonDataWriter:
     @staticmethod
     def name():
         return "json"
-
-    def parse_hiden_columns(self, struct, params):
-        columns = []
-        if predef.OptionHideColumns in params:
-            text = struct["options"].get(predef.PredefHideColumns, "")
-            text = text.strip()
-            if len(text) > 0:
-                columns = [int(x.strip()) for x in text.split(',')]
-        return columns
 
     def parse_primary_value(self, typename, text):
         typename = typename.strip()
@@ -115,11 +106,14 @@ class JsonDataWriter:
             inner_obj_list.append(inner_item)
         return inner_obj_list
 
-    #
-    def parse_row(self, struct, params):
+    #解析数据行
+    def parse_row(self, struct, args):
         rows = struct["data_rows"]
+        rows = rowutil.validate_unique_column(struct, rows)
+        rows = rowutil.hide_skipped_row_fields(args.enable_column_skip, struct, rows)
+
         fields = struct['fields']
-        hiden_columns = self.parse_hiden_columns(struct, params)
+        use_snake_case = args.json_snake_case
 
         # 嵌套类
         inner_var_name = ''
@@ -134,28 +128,33 @@ class JsonDataWriter:
             obj = {}
             inner_class_done = False
             for field in fields:
-                if field['column_index'] in hiden_columns:
+                if not field['enable']:
                     continue
                 if field['name'] in inner_field_names:
                     if not inner_class_done:
                         value = self.parse_row_inner_obj(struct, row, inner_fields)
+                        if use_snake_case:
+                            inner_var_name = strutil.camel_to_snake(inner_var_name)
                         obj[inner_var_name] = value
                         inner_class_done = True
                 else:
                     valuetext = row[field['column_index'] - 1]
                     value = self.parse_value(struct, field['original_type_name'], valuetext)
-                    name = field['name']
+                    if use_snake_case:
+                        name = strutil.camel_to_snake(field['camel_case_name'])
+                    else:
+                        name = field['name']
                     obj[name] = value
             obj_list.append(obj)
         return obj_list
 
     # 生成
-    def generate(self, struct, params):
+    def generate(self, struct, args):
         if predef.PredefValueTypeColumn in struct['options']:
-            return self.parse_kv_rows(struct, params)
-        return self.parse_row(struct, params)
+            return self.parse_kv_rows(struct, args)
+        return self.parse_row(struct, args)
 
-    #
+    # 写入JSON文件
     def write_file(self, struct, filepath, encoding, json_indent, obj):
         filename = "%s/%s.json" % (filepath, strutil.camel_to_snake(struct['camel_case_name']))
         filename = os.path.abspath(filename)

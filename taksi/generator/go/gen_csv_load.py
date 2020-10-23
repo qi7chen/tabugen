@@ -23,17 +23,6 @@ class GoCsvLoadGenerator:
         self.array_delim = array_delim
         self.map_delims = map_delims
 
-    def get_const_key_name(self, name):
-        return 'Key%sName' % name
-
-    def gen_const_names(self, descriptors):
-        content = 'const (\n'
-        for struct in descriptors:
-            name = strutil.camel_to_snake(struct['name'])
-            content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), name)
-        content += ')\n\n'
-        return content
-
     # 生成赋值方法
     def gen_field_assgin_stmt(self, name, typename, valuetext, tabs, tips):
         content = ''

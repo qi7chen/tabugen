@@ -55,19 +55,3 @@ message FieldDescriptor {
     bool is_vector = 8;                 //
     map<string,string> options = 10;    // field options
 }
-
-message ImportResult {
-    string version = 1;
-    string comment = 2;
-    string timestamp = 3;
-    map<string, string> options = 4;  
-    repeated StructDescriptor descriptors = 5;
-}
-
-message ExportRequest {
-    string version = 1;
-    string format = 3;
-    string filepath = 4;
-    string datafile = 5;
-    string args = 6;
-}

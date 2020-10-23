@@ -3,11 +3,12 @@
 # See accompanying files LICENSE.
 
 import os
+import sys
 import csv
 import codecs
 import taksi.predef as predef
 import taksi.strutil as strutil
-
+import taksi.datatran.rowutil as rowutil
 
 class CsvDataWriter:
     def __init__(self):
@@ -16,31 +17,6 @@ class CsvDataWriter:
     @staticmethod
     def name():
         return "csv"
-
-    # 检查唯一主键
-    def validate_unique_column(self, struct, rows):
-        if struct['options'][predef.PredefParseKVMode]:
-            return rows
-
-        # TO-DO
-        return rows
-
-    # 置空不必要显示的内容
-    def hide_skipped_row_fields(self, struct, rows, args):
-        if predef.PredefValueTypeColumn in struct['options']:
-            typecol = int(struct['options'][predef.PredefValueTypeColumn])
-            commentcol = int(struct['options'][predef.PredefCommentColumn])
-            for row in rows:
-                row[typecol - 1] = ''
-                row[commentcol - 1] = ''
-        else:
-            if args.enable_column_skip:
-                for row in rows:
-                    for field in struct["fields"]:
-                        if not field["enable"]:
-                            idx = field["column_index"] - 1
-                            row[idx] = ''
-        return rows
 
     # 将数据写入csv文件
     def write_file(self, name, rows, delim, filepath, encoding):
@@ -64,7 +40,7 @@ class CsvDataWriter:
 
         for struct in descriptors:
             rows = struct["data_rows"]
-            rows = self.validate_unique_column(struct, rows)
-            rows = self.hide_skipped_row_fields(struct, rows, args)
+            rows = rowutil.validate_unique_column(struct, rows)
+            rows = rowutil.hide_skipped_row_fields(args.enable_column_skip, struct, rows)
             name = strutil.camel_to_snake(struct['camel_case_name'])
             self.write_file(name, rows, args.out_csv_delim, filepath, encoding)
