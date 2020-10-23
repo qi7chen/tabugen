@@ -41,10 +41,7 @@ type SoldierPropertyDefine struct {
 	ConsumeTime        int     `json:"consume_time"`         // 生产消耗的时间（秒/个）
 	Act                int     `json:"act"`                  // 攻击
 	Hp                 int     `json:"hp"`                   // 血量
-	BombLoad           int     `json:"bomb_load"`            // 载弹量
 	Hurt               uint32  `json:"hurt"`                 // buff伤害
-	Duration           float32 `json:"duration"`             // 持续时间
-	TriggerInterval    float32 `json:"trigger_interval"`     // 触发间隔
 	SearchScope        float32 `json:"search_scope"`         // 搜索范围
 	AtkFrequency       float32 `json:"atk_frequency"`        // 攻击间隔
 	AtkRange           float32 `json:"atk_range"`            // 攻击距离
