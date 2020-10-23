@@ -8,9 +8,7 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\±øÖÖ.xlsx"
-set exportArgs="pkg=Config,encoding=utf-8,outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\AutoConfig.cs"
+set filepath="%currentDir%\..\..\datasheet\±øÖÖ.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="cs-csv" --output-format=csv --export-args=%exportArgs%
-
+%taxi_alias%  --parser=excel --parse_files=%filepath% --enable_column_skip --csharp_out=%currentDir%\src\AutoConfig.cs --package=Config --load_code_generator=csv  --out_data_format=csv --out_data_path=%currentDir%\res 
 pause

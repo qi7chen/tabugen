@@ -8,9 +8,7 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\±øÖÖ.xlsx"
-set exportArgs="pkg=AutoConfig,encoding=utf-8,outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\AutoJsonConfig.cs"
+set filepath="%currentDir%\..\..\datasheet\±øÖÖ.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="cs-json" --output-format=json --export-args=%exportArgs%
-
+%taxi_alias%  --parser=excel --parse_files=%filepath% --enable_column_skip --csharp_out=%currentDir%\src\AutoJsonConfig.cs --package=Config2 --out_data_format=json --json_indent  --out_data_path=%currentDir%\res 
 pause
