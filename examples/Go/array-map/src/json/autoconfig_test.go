@@ -15,9 +15,9 @@ func TestAutogenConfig(t *testing.T) {
 	}
 	var cfgList []NewbieGuideDefine
 	if err = json.Unmarshal(data, &cfgList); err != nil {
-		t.Fatalf("%v", err)
+		t.Fatalf("JSON: %v", err)
 	}
 	for _, cfg := range cfgList {
-		t.Logf("%v\n", cfg)
+		fmt.Printf("%v\n", cfg)
 	}
 }

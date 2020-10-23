@@ -8,9 +8,8 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\全局变量表.xlsx"
-set exportArgs="pkg=config, outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\json\autoconfig.go"
+set filepath="%currentDir%\..\..\datasheet\全局变量表.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="go-json" --output-format=json --export-args=%exportArgs%
-go fmt %currentDir%\src\json\autoconfig.go
+%taxi_alias%  --parser=excel --parse_files=%filepath% --enable_column_skip --go_out=%currentDir%\src\json\autoconfig.go --go_json_tag  --go_fmt --package=config --out_data_format=json --json_indent --json_snake_case  --out_data_path=%currentDir%\res 
+
 pause

@@ -1,19 +1,19 @@
 {
-  "CancelBuildReturnPercent": 50,
-  "FirstRechargeReward": {
+  "cancel_build_return_percent": 50,
+  "first_recharge_reward": {
     "Diamond": 10,
     "Food": 100,
     "Power": 200
   },
-  "FreeCompleteSeconds": 300,
-  "GoldExchangeResource1Price": 200,
-  "GoldExchangeResource2Price": 180,
-  "GoldExchangeResource3Price": 150,
-  "GoldExchangeResource4Price": 20,
-  "GoldExchangeTimeFactor1": 1.0,
-  "GoldExchangeTimeFactor2": 0.25,
-  "GoldExchangeTimeFactor3": 0.1,
-  "SpawnLevelLimit": [
+  "free_complete_seconds": 300,
+  "gold_exchange_resource1_price": 200,
+  "gold_exchange_resource2_price": 180,
+  "gold_exchange_resource3_price": 150,
+  "gold_exchange_resource4_price": 20,
+  "gold_exchange_time_factor1": 1.0,
+  "gold_exchange_time_factor2": 0.25,
+  "gold_exchange_time_factor3": 0.1,
+  "spawn_level_limit": [
     1,
     2,
     3,
