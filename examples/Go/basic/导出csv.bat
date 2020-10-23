@@ -7,10 +7,8 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\±øÖÖ.xlsx"
-set exportArgs="pkg=config,outdata-dir=%currentDir%\res,out-src-file=%currentDir%\src\csv\autoconfig.go"
+set filepath="%currentDir%\..\..\datasheet\±øÖÖ.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="go-csv" --output-format=csv --export-args=%exportArgs%
-go fmt %currentDir%\src\csv\autoconfig.go
+%taxi_alias%  --parser=excel --parse_files=%filepath% --enable_column_skip --go_out=%currentDir%\src\csv\autoconfig.go --load_code_generator=csv --go_fmt --package=config --out_data_format=csv --out_data_path=%currentDir%\res 
 pause
 REM array-delim

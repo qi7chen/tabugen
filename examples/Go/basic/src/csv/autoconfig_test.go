@@ -2,13 +2,18 @@ package config
 
 import (
 	"testing"
+	"fmt"
+	"io/ioutil"
 )
 
 func TestAutogenConfig(t *testing.T) {
-	var loader = NewFileLoader("../../res")
-	defer loader.Close()
+    filename := fmt.Sprintf("../../res/%s.csv", KeySoldierPropertyDefineName)
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 
-	conflist, err := LoadSoldierPropertyDefineList(loader)
+	conflist, err := LoadSoldierPropertyDefineList(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
