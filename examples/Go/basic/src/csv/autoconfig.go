@@ -49,10 +49,7 @@ type SoldierPropertyDefine struct {
 	ConsumeTime        int     // 生产消耗的时间（秒/个）
 	Act                int     // 攻击
 	Hp                 int     // 血量
-	BombLoad           int     // 载弹量
 	Hurt               uint32  // buff伤害
-	Duration           float32 // 持续时间
-	TriggerInterval    float32 // 触发间隔
 	SearchScope        float32 // 搜索范围
 	AtkFrequency       float32 // 攻击间隔
 	AtkRange           float32 // 攻击距离
@@ -122,35 +119,23 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 		p.Hp = value.(int)
 	}
 	if row[16] != "" {
-		var value = MustParseTextValue("int", row[16], row)
-		p.BombLoad = value.(int)
+		var value = MustParseTextValue("uint32", row[16], row)
+		p.Hurt = value.(uint32)
 	}
 	if row[17] != "" {
-		var value = MustParseTextValue("uint32", row[17], row)
-		p.Hurt = value.(uint32)
+		var value = MustParseTextValue("float32", row[17], row)
+		p.SearchScope = value.(float32)
 	}
 	if row[18] != "" {
 		var value = MustParseTextValue("float32", row[18], row)
-		p.Duration = value.(float32)
+		p.AtkFrequency = value.(float32)
 	}
 	if row[19] != "" {
 		var value = MustParseTextValue("float32", row[19], row)
-		p.TriggerInterval = value.(float32)
+		p.AtkRange = value.(float32)
 	}
 	if row[20] != "" {
 		var value = MustParseTextValue("float32", row[20], row)
-		p.SearchScope = value.(float32)
-	}
-	if row[21] != "" {
-		var value = MustParseTextValue("float32", row[21], row)
-		p.AtkFrequency = value.(float32)
-	}
-	if row[22] != "" {
-		var value = MustParseTextValue("float32", row[22], row)
-		p.AtkRange = value.(float32)
-	}
-	if row[23] != "" {
-		var value = MustParseTextValue("float32", row[23], row)
 		p.MovingSpeed = value.(float32)
 	}
 	return nil

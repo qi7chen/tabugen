@@ -1,71 +1,71 @@
 [
   {
-    "ID": "Box01",
-    "ProbabilityGoods": [
+    "id": "Box01",
+    "probability_goods": [
       {
-        "GoodsID": "Food",
-        "Num": 1000,
-        "Probability": 5000
+        "goods_id": "Food",
+        "num": 1000,
+        "probability": 5000
       },
       {
-        "GoodsID": "Hero1",
-        "Num": 5,
-        "Probability": 1000
+        "goods_id": "Hero1",
+        "num": 5,
+        "probability": 1000
       },
       {
-        "GoodsID": "Soldier1",
-        "Num": 10,
-        "Probability": 100
+        "goods_id": "Soldier1",
+        "num": 10,
+        "probability": 100
       }
     ],
-    "Repeat": true,
-    "Time": 1400,
-    "Total": 1
+    "repeat": true,
+    "time": 1400,
+    "total": 1
   },
   {
-    "ID": "Box02",
-    "ProbabilityGoods": [
+    "id": "Box02",
+    "probability_goods": [
       {
-        "GoodsID": "Gold",
-        "Num": 2000,
-        "Probability": 5000
+        "goods_id": "Gold",
+        "num": 2000,
+        "probability": 5000
       },
       {
-        "GoodsID": "Hero2",
-        "Num": 5,
-        "Probability": 1000
+        "goods_id": "Hero2",
+        "num": 5,
+        "probability": 1000
       },
       {
-        "GoodsID": "Soldier2",
-        "Num": 10,
-        "Probability": 100
+        "goods_id": "Soldier2",
+        "num": 10,
+        "probability": 100
       }
     ],
-    "Repeat": true,
-    "Time": 1800,
-    "Total": 2
+    "repeat": true,
+    "time": 1800,
+    "total": 2
   },
   {
-    "ID": "Box03",
-    "ProbabilityGoods": [
+    "id": "Box03",
+    "probability_goods": [
       {
-        "GoodsID": "Power",
-        "Num": 3000,
-        "Probability": 5000
+        "goods_id": "Power",
+        "num": 3000,
+        "probability": 5000
       },
       {
-        "GoodsID": "Hero3",
-        "Num": 5,
-        "Probability": 1000
+        "goods_id": "Hero3",
+        "num": 5,
+        "probability": 1000
       },
       {
-        "GoodsID": "Soldier3",
-        "Num": 10,
-        "Probability": 100
+        "goods_id": "Soldier3",
+        "num": 10,
+        "probability": 100
       }
     ],
-    "Repeat": true,
-    "Time": 2400,
-    "Total": 3
+    "repeat": true,
+    "time": 2400,
+    "total": 3
   }
 ]

@@ -1,18 +1,23 @@
 package config
 
 import (
+	"fmt"
+	"io/ioutil"
 	"testing"
 )
 
 func TestAutogenConfig(t *testing.T) {
-	var loader = NewFileLoader("../../res")
-	defer loader.Close()
+	filename := fmt.Sprintf("../../res/%s.csv", KeyBoxProbabilityDefineName)
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 
-	conflist, err := LoadBoxProbabilityDefineList(loader)
+	conflist, err := LoadBoxProbabilityDefineList(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 	for _, cfg := range conflist {
-		t.Logf("%v\n", cfg)
+		fmt.Printf("%v\n", cfg)
 	}
 }
