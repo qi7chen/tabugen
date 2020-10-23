@@ -125,7 +125,6 @@ class CppStructGenerator:
             '#include <string>',
             '#include <vector>',
             '#include <map>',
-
         ]
         if self.load_gen is not None:
             other_headers = [
