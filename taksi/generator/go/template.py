@@ -7,39 +7,40 @@ GO_HEAD_TEMPLATE = """
 package %s
 
 import (
-    "encoding/csv"
-    "io"
-    "log"
-    "strings"
+	"bytes"
+	"encoding/csv"
+	"io"
+	"log"
+	"strconv"
+	"strings"
 )
 
 var (
-    _ = io.EOF
-    _ = strings.Split
-    _ = log.Panicf
+	_ = io.EOF
+	_ = strings.Split
+	_ = log.Panicf
+	_ = strconv.Atoi
+	_ = bytes.NewReader
+	_ = csv.NewReader
 )
 
 """
 
 GO_HEAD_CONST_TEMPLATE = """
 const (
-    TAKSI_CSV_SEP = "%s"
-    TAKSI_CSV_QUOTE = "%s"
-    TAKSI_ARRAY_DELIM = "%s"
-    TAKSI_MAP_DELIM1 = "%s"
-    TAKSI_MAP_DELIM2 = "%s"
+    TAKSI_CSV_SEP = `%s`
+    TAKSI_CSV_QUOTE = `%s`
+    TAKSI_ARRAY_DELIM = `%s`
+    TAKSI_MAP_DELIM1 = `%s`
+    TAKSI_MAP_DELIM2 = `%s`
 )
 
 """
 
 GO_LOAD_METHOD_TEMPLATE = """
-func Load%sList(loader DataSourceLoader) ([]*%s, error) {
-    buf, err := loader.LoadDataByKey(%s)
-    if err != nil {
-        return nil, err
-    }
+func Load%sList(data []byte) ([]*%s, error) {
     var list []*%s
-    var r = csv.NewReader(buf)
+    var r = csv.NewReader(bytes.NewReader(data))
     for i := 0; ; i++ {
         row, err := r.Read()
         if err == io.EOF {
@@ -62,12 +63,8 @@ func Load%sList(loader DataSourceLoader) ([]*%s, error) {
 """
 
 GO_KV_LOAD_METHOD_TEMPLATE = """
-func Load%s(loader DataSourceLoader) (*%s, error) {
-    buf, err := loader.LoadDataByKey(%s)
-    if err != nil {
-    return nil, err
-    }
-    r := csv.NewReader(buf)
+func Load%s(data []byte) (*%s, error) {
+    r := csv.NewReader(bytes.NewReader(data))
     rows, err := r.ReadAll()
     if err != nil {
         log.Printf("%s: csv read all, %%v", err)
@@ -79,6 +76,88 @@ func Load%s(loader DataSourceLoader) (*%s, error) {
         return nil, err
     }
     return &item, nil
+}
+
+"""
+
+GO_HELP_FUNC_TEMPLATE = """
+
+// parse bool value from text
+func parseBool(text string) bool {
+	switch len(text) {
+	case 0:
+		return false
+	case 1:
+		return text[0] == '1' || text[0] == 'Y' || text[0] == 'y'
+	case 2:
+		var value = strings.ToLower(text)
+		return value == "on"
+	case 3:
+		var value = strings.ToLower(text)
+		return value == "yes"
+	case 4:
+		var value = strings.ToLower(text)
+		return value == "true"
+	default:
+		b, err := strconv.ParseBool(text)
+		if err != nil {
+			log.Panicf("%v, %v", text, err)
+		}
+		return b
+	}
+}
+
+// MustParseTextValue parse text to value of type
+func MustParseTextValue(typename, valueText string, msgtips interface{}) interface{} {
+	switch typename {
+	case "bool":
+		return parseBool(valueText)
+
+	case "float32", "float64":
+		f, err := strconv.ParseFloat(valueText, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "float32" {
+			return float32(f)
+		}
+		return f // float64
+
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		n, err := strconv.ParseUint(valueText, 10, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "uint" {
+			return uint(n)
+		} else if typename == "uint8" {
+			return uint8(n)
+		} else if typename == "uint16" {
+			return uint16(n)
+		} else if typename == "uint32" {
+			return uint32(n)
+		}
+		return n // uint64
+
+	case "int", "int8", "int16", "int32", "int64":
+		n, err := strconv.ParseInt(valueText, 10, 64)
+		if err != nil {
+			log.Panicf("%s %s, %v, %v", typename, valueText, err, msgtips)
+		}
+		if typename == "int" {
+			return int(n)
+		} else if typename == "int8" {
+			return int8(n)
+		} else if typename == "int16" {
+			return int16(n)
+		} else if typename == "int32" {
+			return int32(n)
+		}
+		return n // int64
+
+	default:
+		return valueText
+	}
 }
 
 """

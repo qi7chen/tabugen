@@ -7,6 +7,7 @@ import taksi.predef as predef
 import taksi.lang as lang
 import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
+import taksi.generator.go.template as go_template
 
 
 # 生成Go加载CSV文件数据代码
@@ -53,7 +54,7 @@ class GoCsvLoadGenerator:
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_go_type(elem_type)
 
-        content += '%sfor _, item := range strings.Split(%s, "%s") {\n' % (space, row_name, self.array_delim)
+        content += '%sfor _, item := range strings.Split(%s, TAKSI_ARRAY_DELIM) {\n' % (space, row_name)
         content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
@@ -62,8 +63,6 @@ class GoCsvLoadGenerator:
     # 生成map赋值
     def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
         assert len(self.map_delims) == 2
-        delim1 = self.map_delims[0]
-        delim2 = self.map_delims[1]
 
         space = self.TAB_SPACE * tabs
         k, v = types.map_key_value_types(typename)
@@ -72,11 +71,11 @@ class GoCsvLoadGenerator:
 
         content = ''
         content += '%s%s%s = map[%s]%s{}\n' % (space, prefix, name, key_type, val_type)
-        content += '%sfor _, text := range strings.Split(%s, "%s") {\n' % (space, row_name, delim1)
+        content += '%sfor _, text := range strings.Split(%s, TAKSI_MAP_DELIM1) {\n' % (space, row_name)
         content += '%s    if text == "" {\n' % space
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
-        content += '%s    var items = strings.Split(text, "%s")\n' % (space, delim2)
+        content += '%s    var items = strings.Split(text, TAKSI_MAP_DELIM2)\n' % space
         content += '%s    var value = MustParseTextValue("%s", items[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
         content += '%s    value = MustParseTextValue("%s", items[1], %s)\n' % (space, val_type, row_name)
@@ -138,7 +137,7 @@ class GoCsvLoadGenerator:
         content = ''
         content += 'func (p *%s) ParseFromRow(row []string) error {\n' % struct['camel_case_name']
         content += '\tif len(row) < %d {\n' % len(struct['fields'])
-        content += '\t\tlog.Panicf("%s: row length out of index %%d", len(row))\n' % struct['name']
+        content += '\t\tlog.Panicf("%s: row length too short %%d", len(row))\n' % struct['name']
         content += '\t}\n'
 
         idx = 0
@@ -198,55 +197,19 @@ class GoCsvLoadGenerator:
     # KV模式下的Load方法
     def gen_load_method_kv(self, struct):
         content = ''
-        content += 'func Load%s(loader DataSourceLoader) (*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
-        content += '\tif err != nil {\n'
-        content += '\treturn nil, err\n'
-        content += '\t}\n'
-        content += '\tr := csv.NewReader(buf)\n'
-        content += '\trows, err := r.ReadAll()\n'
-        content += '\tif err != nil {\n'
-        content += '\t    log.Errorf("%s: csv read all, %%v", err)\n' % struct['name']
-        content += '\t    return nil, err\n'
-        content += '\t}\n'
-        content += '\tvar item %s\n' % struct['name']
-        content += '\tif err := item.ParseFromRows(rows); err != nil {\n'
-        content += '\t    log.Errorf("%s: parse row %%d, %%v", len(rows), err)\n' % struct['name']
-        content += '\t    return nil, err\n'
-        content += '\t}\n'
-        content += '\treturn &item, nil\n'
-        content += '}\n\n'
+        content += go_template.GO_KV_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
+                                                             struct['name'], struct['name'],
+                                                              struct['name'], struct['name']
+                                                             )
         return content
 
     # 生成Load方法
     def gen_load_method(self, struct):
-        content = ''
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_load_method_kv(struct)
 
-        content += 'func Load%sList(loader DataSourceLoader) ([]*%s, error) {\n' % (struct['name'], struct['name'])
-        content += '\tbuf, err := loader.LoadDataByKey(%s)\n' % self.get_const_key_name(struct['name'])
-        content += '\tif err != nil {\n'
-        content += '\t    return nil, err\n'
-        content += '\t}\n'
-        content += '\tvar list []*%s\n' % struct['name']
-        content += '\tvar r = csv.NewReader(buf)\n'
-        content += '\tfor i := 0; ; i++ {\n'
-        content += '\t    row, err := r.Read()\n'
-        content += '\t    if err == io.EOF {\n'
-        content += '\t        break\n'
-        content += '\t    }\n'
-        content += '\t    if err != nil {\n'
-        content += '\t        log.Errorf("%s: read csv %%v", err)\n' % struct['name']
-        content += '\t        return nil, err\n'
-        content += '\t    }\n'
-        content += '\t    var item %s\n' % struct['name']
-        content += '\t    if err := item.ParseFromRow(row); err != nil {\n'
-        content += '\t        log.Errorf("%s: parse row %%d, %%s, %%v", i+1, row, err)\n' % struct['name']
-        content += '\t        return nil, err\n'
-        content += '\t    }\n'
-        content += '\t    list = append(list, &item)\n'
-        content += '\t}\n'
-        content += '\treturn list, nil\n'
-        content += '}\n\n'
+        content = ''
+        content += go_template.GO_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
+                                                          struct['name'], struct['name'],
+                                                          struct['name'], struct['name'])
         return content
