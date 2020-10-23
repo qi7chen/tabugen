@@ -98,6 +98,7 @@ def main():
     parser.add_argument("--db_table", help="database table")
 
     # source code options
+    parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of generated config manager class")
     parser.add_argument("--load_code_generator", help="name of generated source language package")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")

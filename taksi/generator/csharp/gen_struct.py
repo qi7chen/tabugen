@@ -10,7 +10,6 @@ import taksi.strutil as strutil
 import taksi.generator.genutil as genutil
 import taksi.version as version
 from taksi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
-from taksi.generator.csharp.gen_json_load import CSharpJsonLoadGenerator
 
 
 # C#代码生成器
@@ -28,8 +27,6 @@ class CSharpStructGenerator:
         if name is not None:
             if name == "csv":
                 self.load_gen = CSharpCsvLoadGenerator()
-            elif name == "json":
-                self.load_gen = CSharpJsonLoadGenerator()
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
@@ -64,11 +61,14 @@ class CSharpStructGenerator:
             max_type_len = len(inner_typename)
 
         for field in fields:
+            if not field['enable']:
+                continue
+            text = ''
             field_name = field['name']
             if field_name in inner_field_names:
                 if not inner_class_done:
                     typename = strutil.pad_spaces(inner_typename, max_type_len)
-                    content += '    public %s %s = null; \n' % (typename, inner_var_name)
+                    text += '    public %s %s = null; \n' % (typename, inner_var_name)
                     inner_class_done = True
             else:
                 typename = lang.map_cs_type(field['original_type_name'])
@@ -77,13 +77,13 @@ class CSharpStructGenerator:
                 if field['name'] not in vec_names:
                     name = lang.name_with_default_cs_value(field, typename)
                     name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s %s // %s\n' % (typename, name, field['comment'])
+                    text += '    public %s %s // %s\n' % (typename, name, field['comment'])
                 elif not vec_done:
                     name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
                     name = strutil.pad_spaces(name, max_name_len + 8)
-                    content += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
+                    text += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
                     vec_done = True
-
+            content += text
         return content
 
     #
@@ -105,11 +105,11 @@ class CSharpStructGenerator:
         content += '};\n\n'
         return content
 
-    def generate_class(self, struct):
+    def generate_class(self, struct, args):
         content = '\n'
         content += self.gen_cs_struct(struct)
         if self.load_gen is not None:
-            content += self.load_gen.gen_source_method(struct)
+            content += self.load_gen.gen_source_method(struct, args)
         content += '}\n\n'
         return content
 
@@ -122,17 +122,19 @@ class CSharpStructGenerator:
         if args.package is not None:
             content += '\nnamespace %s\n{\n' % args.package
 
+        if self.load_gen is not None:
+            (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
+            self.load_gen.setup(array_delim, map_delims)
+
         for struct in descriptors:
             genutil.setup_comment(struct)
             genutil.setup_key_value_mode(struct)
 
         for struct in descriptors:
-            content += self.generate_class(struct)
+            content += self.generate_class(struct, args)
 
         if self.load_gen is not None:
-            (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims)
-            content += self.load_gen.gen_global_class(descriptors)
+            content += self.load_gen.gen_global_class(descriptors, args)
 
         if args.package is not None:
             content += '\n}\n'  # namespace

@@ -17,6 +17,7 @@ class CSharpCsvLoadGenerator:
     def __init__(self):
         self.array_delim = ','
         self.map_delims = [',', '=']
+        self.config_manager_name = ''
 
     # 初始化array, map分隔符
     def setup(self, array_delim, map_delims):
@@ -41,7 +42,7 @@ class CSharpCsvLoadGenerator:
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, strutil.config_manager_name, valuetext)
+            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, self.config_manager_name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
@@ -54,9 +55,11 @@ class CSharpCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, self.array_delim)
+        content += "%svar items = %s.Split(%s.TAKSI_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, row_name, self.config_manager_name)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
-        content += "%sfor(int i = 0; i < items.Length; i++) {\n" % space
+        content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
+        content += "%s{\n" % space
         content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
         content += '%s    %s%s[i] = value;\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -65,24 +68,28 @@ class CSharpCsvLoadGenerator:
     # 生成map赋值
     def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
         assert len(self.map_delims) == 2
-        delim1 = self.map_delims[0]
-        delim2 = self.map_delims[1]
 
         space = self.TAB_SPACE * tabs
         k, v = types.map_key_value_types(typename)
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = "%svar items = %s.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, row_name, delim1)
+        content = "%svar items = %s.Split(%s.TAKSI_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, row_name, self.config_manager_name)
         content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
-        content += "%sforeach(string text in items) {\n" % space
+        content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
+        content += '%s{\n' % space
+        content += '%s    string text = items[i];\n' % space
         content += '%s    if (text.Length == 0) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split(new char[]{'%s'}, StringSplitOptions.RemoveEmptyEntries);\n" % (space, delim2)
+        content += "%s    var item = text.Split(%s.TAKSI_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, self.config_manager_name)
+        content += '%s    if (items.Length == 2) {\n' % space
         content += self.gen_field_assgin_stmt('var key', key_type, 'item[0]', tabs+1)
         content += self.gen_field_assgin_stmt('var value', val_type, 'item[1]', tabs + 1)
-        content += '%s    %s%s[key] = value;\n' % (space, prefix, name)
+        content += '%s    %s%s[key] = value;\n' % (self.TAB_SPACE * (tabs + 1), prefix, name)
+        content += '%s    }\n' % space
         content += '%s}\n' % space
         return content
 
@@ -100,10 +107,10 @@ class CSharpCsvLoadGenerator:
 
         content = ''
         content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
-        content += '%spublic void ParseFromRows(string[][] rows)\n' % self.TAB_SPACE
+        content += '%spublic void ParseFromRows(List<List<string>> rows)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (rows.Length < %d) {\n' % (self.TAB_SPACE*2, len(rows))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Length));\n' % (
+        content += '%sif (rows.Count < %d) {\n' % (self.TAB_SPACE*2, len(rows))
+        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Count));\n' % (
             self.TAB_SPACE*3, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE*2)
 
@@ -115,19 +122,21 @@ class CSharpCsvLoadGenerator:
             origin_typename = rows[idx][typeidx].strip()
             typename = lang.map_cs_type(origin_typename)
             valuetext = 'rows[%d][%d]' % (idx, validx)
+            text = ''
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
-                content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, 3)
-                content += '%s}\n' % (self.TAB_SPACE * 2)
+                text += '%s{\n' % (self.TAB_SPACE * 2)
+                text += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, 3)
+                text += '%s}\n' % (self.TAB_SPACE * 2)
             elif origin_typename.startswith('map'):
-                content += '%s{\n' % (self.TAB_SPACE * 2)
-                content += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, 3)
-                content += '%s}\n' % (self.TAB_SPACE * 2)
+                text += '%s{\n' % (self.TAB_SPACE * 2)
+                text += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, 3)
+                text += '%s}\n' % (self.TAB_SPACE * 2)
             else:
-                content += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
-                content += self.gen_field_assgin_stmt(prefix + name, typename, valuetext, 3)
-                content += '%s}\n' % (self.TAB_SPACE*2)
+                text += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
+                text += self.gen_field_assgin_stmt(prefix + name, typename, valuetext, 3)
+                text += '%s}\n' % (self.TAB_SPACE*2)
+            content += text
             idx += 1
         content += '%s}\n\n' % self.TAB_SPACE
         return content
@@ -145,43 +154,46 @@ class CSharpCsvLoadGenerator:
         inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
 
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
-        content += '%spublic void ParseFromRow(string[] row)\n' % self.TAB_SPACE
+        content += '%spublic void ParseFromRow(List<string> row)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (row.Length < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index {0}", row.Length));\n' % (
+        content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
+        content += '%sthrow new ArgumentException(string.Format("%s: row length too short {0}", row.Count));\n' % (
             self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE*2)
 
-        idx = 0
         prefix = 'this.'
         for field in struct['fields']:
+            if not field['enable']:
+                continue
+            text = ''
             field_name = field['name']
+            idx = field['column_index'] - 1
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
-                    content += self.gen_cs_inner_class_assign(struct, prefix)
+                    text += self.gen_cs_inner_class_assign(struct, prefix)
             else:
                 origin_type_name = field['original_type_name']
                 typename = lang.map_cs_type(origin_type_name)
                 valuetext = 'row[%d]' % idx
                 if origin_type_name.startswith('array'):
-                    content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
-                    content += '%s}\n' % (self.TAB_SPACE * 2)
+                    text += '%s{\n' % (self.TAB_SPACE * 2)
+                    text += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
+                    text += '%s}\n' % (self.TAB_SPACE * 2)
                 elif origin_type_name.startswith('map'):
-                    content += '%s{\n' % (self.TAB_SPACE * 2)
-                    content += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
-                    content += '%s}\n' % (self.TAB_SPACE * 2)
+                    text += '%s{\n' % (self.TAB_SPACE * 2)
+                    text += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
+                    text += '%s}\n' % (self.TAB_SPACE * 2)
                 else:
-                    content += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
+                    text += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
-                        content += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
+                        text += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
                         vec_idx += 1
                     else:
-                        content += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
-                    content += '%s}\n' % (self.TAB_SPACE*2)
-            idx += 1
+                        text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
+                    text += '%s}\n' % (self.TAB_SPACE*2)
+            content += text
         content += '%s}\n\n' % self.TAB_SPACE
         return content
 
@@ -229,11 +241,11 @@ class CSharpCsvLoadGenerator:
 
         content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%svar rows = new string[lines.Count][];\n' % (self.TAB_SPACE * 2)
+        content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
         content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE*2)
         content += '%s{\n' % (self.TAB_SPACE*2)
-        content += '%sstring line = lines[i];\n' % (self.TAB_SPACE * 3)
-        content += "%srows[i] = line.Split(',');\n" % (self.TAB_SPACE*3)
+        content += '%svar row = %s.ReadRecordFromLine(lines[i]);\n' % (self.TAB_SPACE * 3, self.config_manager_name)
+        content += "%srows.Add(row);\n" % (self.TAB_SPACE*3)
         content += '%s}\n' % (self.TAB_SPACE*2)
         content += '%sInstance = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
         content += '%sInstance.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
@@ -251,8 +263,7 @@ class CSharpCsvLoadGenerator:
         content += '%svar list = new %s[lines.Count];\n' % (self.TAB_SPACE * 2, struct['name'])
         content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE * 2)
         content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += '%sstring line = lines[i];\n' % (self.TAB_SPACE * 3)
-        content += "%svar row = line.Split(',');\n" % (self.TAB_SPACE * 3)
+        content += "%svar row = %s.ReadRecordFromLine(lines[i]);\n" % (self.TAB_SPACE * 3, self.config_manager_name)
         content += '%svar obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'])
         content += "%sobj.ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
         content += "%slist[i] = obj;\n" % (self.TAB_SPACE * 3)
@@ -283,7 +294,7 @@ class CSharpCsvLoadGenerator:
         content += '    {\n'
         content += '        foreach (%s item in Data)\n' % struct['name']
         content += '        {\n'
-        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'get-keys')
+        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, predef.PredefGetMethodKeys)
         content += '            {\n'
         content += '                return item;\n'
         content += '            }\n'
@@ -318,7 +329,7 @@ class CSharpCsvLoadGenerator:
         content += '        var range = new List<%s>();\n' % struct['name']
         content += '        foreach (%s item in Data)\n' % struct['name']
         content += '        {\n'
-        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, 'range-keys')
+        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, predef.PredefRangeMethodKeys)
         content += '            {\n'
         content += '                range.Add(item);\n'
         content += '            }\n'
@@ -328,10 +339,10 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成manager类型
-    def gen_global_class(self, descriptors):
+    def gen_global_class(self, descriptors, args):
         content = ''
-        content += 'public class %s\n{\n' % strutil.config_manager_name
-        content += csharp_template.CSHARP_METHOD_TEMPLATE
+        content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
+                                                              self.array_delim, self.map_delims[0], self.map_delims[1])
         content += '    public static void LoadAllConfig(Action completeFunc) \n'
         content += '    {\n'
         for i in range(len(descriptors)):
@@ -351,8 +362,9 @@ class CSharpCsvLoadGenerator:
         return content
 
     #
-    def gen_source_method(self, struct):
+    def gen_source_method(self, struct, args):
         content = ''
+        self.config_manager_name = args.config_manager_class
         content += self.gen_static_data(struct)
         content += self.gen_parse_method(struct)
         content += self.gen_load_method(struct)

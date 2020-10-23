@@ -129,12 +129,12 @@ class GoCsvLoadGenerator:
         content += '\t\tlog.Panicf("%s: row length too short %%d", len(row))\n' % struct['name']
         content += '\t}\n'
 
-        idx = 0
         for field in struct['fields']:
             if not field['enable']:
                 continue
             text = ''
             fname = field['name']
+            idx = field['column_index'] - 1
             prefix = 'p.'
             if fname in inner_field_names:
                 if not inner_class_done:
@@ -159,7 +159,7 @@ class GoCsvLoadGenerator:
                         text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 2, 'row')
                 text += '%s}\n' % self.TAB_SPACE
             content += text
-            idx += 1
+
         content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
         return content
