@@ -8,17 +8,16 @@ import (
 )
 
 func TestAutogenConfig(t *testing.T) {
-	var pathPrefix = "../../res"
-	var filename = fmt.Sprintf("%s/%s.json", pathPrefix, KeyNewbieGuideDefineName)
-	rawbytes, err := ioutil.ReadFile(filename)
+	filename := fmt.Sprintf("../../res/%s.json", KeyNewbieGuideDefineName)
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	var conflist []NewbieGuideDefine
-	if err = json.Unmarshal(rawbytes, &conflist); err != nil {
+	var cfgList []NewbieGuideDefine
+	if err = json.Unmarshal(data, &cfgList); err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, cfg := range conflist {
+	for _, cfg := range cfgList {
 		t.Logf("%v\n", cfg)
 	}
 }

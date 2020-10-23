@@ -5,7 +5,7 @@
       2,
       3
     ],
-    "Description": "å»ºé€ 1ä¸ªå¼•æ“æ§åˆ¶å®¤",
+    "Description": "½¨Ôì1¸öÒıÇæ¿ØÖÆÊÒ",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -16,11 +16,11 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      6
+      1,
+      2,
+      4
     ],
-    "Description": "å»ºé€ 1ä¸ªå¤ªç©ºæ¸©å®¤",
+    "Description": "½¨Ôì1¸öÌ«¿ÕÎÂÊÒ",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -33,12 +33,12 @@
     "Accomplishment": [
       1,
       2,
-      4
+      5
     ],
-    "Description": "å°†å¤§åŠ›ç¥ç™»é™†è‰‡å‡è‡³2çº§",
+    "Description": "½«´óÁ¦ÉñµÇÂ½Í§ÉıÖÁ2¼¶",
     "Goods": {
       "Food": 10,
-      "Gas": 101
+      "Gas": 100
     },
     "Name": "Guide_03",
     "Target": "SoldierLandingship",
@@ -46,14 +46,14 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      7
+      1,
+      2,
+      6
     ],
-    "Description": "è§£æ”¾1ä¸ªå¤ªç©ºæ®–æ°‘åœ°",
+    "Description": "½â·Å1¸öÌ«¿ÕÖ³ÃñµØ",
     "Goods": {
       "Food": 10,
-      "Gas": 102
+      "Gas": 100
     },
     "Name": "Guide_04",
     "Target": "NPC",
@@ -63,12 +63,12 @@
     "Accomplishment": [
       1,
       2,
-      5
+      7
     ],
-    "Description": "å»ºé€ 1ä¸ªä¿é™©åº“",
+    "Description": "½¨Ôì1¸ö±£ÏÕ¿â",
     "Goods": {
       "Food": 10,
-      "Gas": 103
+      "Gas": 100
     },
     "Name": "Guide_05",
     "Target": "Vault",
@@ -78,12 +78,12 @@
     "Accomplishment": [
       1,
       2,
-      5
+      8
     ],
-    "Description": "å»ºé€ 1ä¸ªå¹½çµå“¨å¡”",
+    "Description": "½¨Ôì1¸öÓÄÁéÉÚËş",
     "Goods": {
       "Food": 10,
-      "Gas": 104
+      "Gas": 100
     },
     "Name": "Guide_06",
     "Target": "GhostTower",
@@ -91,14 +91,14 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      8
+      1,
+      2,
+      9
     ],
-    "Description": "å°†ç« åŒ—æµ·ç­‰çº§æå‡è‡³2çº§",
+    "Description": "½«ÕÂ±±º£µÈ¼¶ÌáÉıÖÁ2¼¶",
     "Goods": {
       "Food": 10,
-      "Gas": 105
+      "Gas": 100
     },
     "Name": "Guide_07",
     "Target": "ColonelZhang",
@@ -108,12 +108,12 @@
     "Accomplishment": [
       1,
       2,
-      6
+      10
     ],
-    "Description": "å°†é™†æˆ˜é˜Ÿç­‰çº§æå‡è‡³2çº§",
+    "Description": "½«Â½Õ½¶ÓµÈ¼¶ÌáÉıÖÁ2¼¶",
     "Goods": {
       "Food": 10,
-      "Gas": 106
+      "Gas": 100
     },
     "Name": "Guide_08",
     "Target": "Marine",
