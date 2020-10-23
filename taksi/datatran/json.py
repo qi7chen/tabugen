@@ -15,6 +15,7 @@ class JsonDataWriter:
     def __init__(self):
         self.array_delim = '|'
         self.map_delims = ['|', '=']
+        self.use_snake_case = False
 
     @staticmethod
     def name():
@@ -87,6 +88,8 @@ class JsonDataWriter:
             valuetext = row[valuecol - 1].strip()
             # print(typename, valuetext)
             value = self.parse_value(struct, typename, valuetext)
+            if self.use_snake_case:
+                key = strutil.camel_to_snake(key)
             obj[key] = value
         return obj
 
@@ -107,13 +110,12 @@ class JsonDataWriter:
         return inner_obj_list
 
     #解析数据行
-    def parse_row(self, struct, args):
+    def parse_row(self, struct, enable_column_skip):
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)
-        rows = rowutil.hide_skipped_row_fields(args.enable_column_skip, struct, rows)
+        rows = rowutil.hide_skipped_row_fields(enable_column_skip, struct, rows)
 
         fields = struct['fields']
-        use_snake_case = args.json_snake_case
 
         # 嵌套类
         inner_var_name = ''
@@ -133,14 +135,14 @@ class JsonDataWriter:
                 if field['name'] in inner_field_names:
                     if not inner_class_done:
                         value = self.parse_row_inner_obj(struct, row, inner_fields)
-                        if use_snake_case:
+                        if self.use_snake_case:
                             inner_var_name = strutil.camel_to_snake(inner_var_name)
                         obj[inner_var_name] = value
                         inner_class_done = True
                 else:
                     valuetext = row[field['column_index'] - 1]
                     value = self.parse_value(struct, field['original_type_name'], valuetext)
-                    if use_snake_case:
+                    if self.use_snake_case:
                         name = strutil.camel_to_snake(field['camel_case_name'])
                     else:
                         name = field['name']
@@ -152,7 +154,7 @@ class JsonDataWriter:
     def generate(self, struct, args):
         if predef.PredefValueTypeColumn in struct['options']:
             return self.parse_kv_rows(struct, args)
-        return self.parse_row(struct, args)
+        return self.parse_row(struct, args.enable_column_skip)
 
     # 写入JSON文件
     def write_file(self, struct, filepath, encoding, json_indent, obj):
@@ -180,6 +182,8 @@ class JsonDataWriter:
             except OSError as e:
                 pass
 
+        if args.json_snake_case:
+            self.use_snake_case = True
         for struct in descriptors:
             obj = self.generate(struct, args)
             self.write_file(struct, filepath, encoding, args.json_indent, obj)

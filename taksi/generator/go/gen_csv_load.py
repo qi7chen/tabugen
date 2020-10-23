@@ -188,7 +188,7 @@ class GoCsvLoadGenerator:
         content = ''
         content += go_template.GO_KV_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
                                                              struct['name'], struct['name'],
-                                                              struct['name'], struct['name']
+                                                             struct['name']
                                                              )
         return content
 

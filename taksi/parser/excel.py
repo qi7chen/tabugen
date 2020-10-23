@@ -215,7 +215,7 @@ class ExcelStructParser:
                 field["comment"] = rows[comment_index][i]
 
             field["enable"] = True
-            if self.enable_field_skipping and len(meta[predef.OptionSkippedColumns]) > 0:
+            if self.enable_field_skipping and predef.OptionSkippedColumns in meta and len(meta[predef.OptionSkippedColumns]) > 0:
                 if field["name"] in meta[predef.OptionSkippedColumns]:
                     field["enable"] = False
 
