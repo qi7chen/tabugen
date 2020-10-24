@@ -8,9 +8,8 @@ cd %currentDir%
 set PYTHONPATH=%rootDir%
 
 set taxi_alias=python %rootDir%\taksi\cli.py
-set importArgs="file=%currentDir%\Ëæ»ú±¦Ïä.xlsx"
-set exportArgs="pkg=com.mycompany.jsonconfig,outdata-dir=%currentDir%\proj\src\main\resources,out-src-file=%currentDir%\proj\src\main\java"
+set filepath="%currentDir%\..\..\datasheet\Ëæ»ú±¦Ïä.xlsx"
 
-%taxi_alias%  --mode=excel --import-args=%importArgs% --generator="java-json" --output-format=json --export-args=%exportArgs%
+%taxi_alias%  --parser=excel --parse_files=%filepath% --java_out=%currentDir%\proj\src\main\java --package=com.mycompany.jsonconfig --out_data_format=json --json_indent  --out_data_path=%currentDir%\proj\src\main\resources
 
 pause

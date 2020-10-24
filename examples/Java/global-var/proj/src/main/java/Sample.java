@@ -32,7 +32,7 @@ public class Sample
         return readFileContent(filepath);
     }
 
-    private static void testCsv() {
+    private static void testCsv() throws IOException {
         com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
         com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
         com.mycompany.csvconfig.GlobalPropertyDefine instance = com.mycompany.csvconfig.GlobalPropertyDefine.getInstance();

@@ -9,7 +9,6 @@ import com.alibaba.fastjson.JSON;
 
 public class Sample
 {
-    final static String LF = "\n"; // line feed
 
     // read file to with CF lines
     public static String readFileContent(String filepath) {
@@ -18,7 +17,7 @@ public class Sample
             String line = null;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);
-                sb.append(LF); // line break
+                sb.append("\n"); // line break
             }
         } catch(IOException ex) {
             System.err.println(ex.getMessage());
@@ -32,7 +31,7 @@ public class Sample
         return readFileContent(filepath);
     }
 
-    private static void testCsv() {
+    private static void testCsv() throws IOException {
         com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
         com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
         List<com.mycompany.csvconfig.NewbieGuideDefine> boxdata = com.mycompany.csvconfig.NewbieGuideDefine.getData();

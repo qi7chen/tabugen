@@ -16,9 +16,9 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      6
+      1,
+      2,
+      4
     ],
     "Description": "建造1个太空温室",
     "Goods": {
@@ -33,12 +33,12 @@
     "Accomplishment": [
       1,
       2,
-      4
+      5
     ],
     "Description": "将大力神登陆艇升至2级",
     "Goods": {
       "Food": 10,
-      "Gas": 101
+      "Gas": 100
     },
     "Name": "Guide_03",
     "Target": "SoldierLandingship",
@@ -46,14 +46,14 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      7
+      1,
+      2,
+      6
     ],
     "Description": "解放1个太空殖民地",
     "Goods": {
       "Food": 10,
-      "Gas": 102
+      "Gas": 100
     },
     "Name": "Guide_04",
     "Target": "NPC",
@@ -63,12 +63,12 @@
     "Accomplishment": [
       1,
       2,
-      5
+      7
     ],
     "Description": "建造1个保险库",
     "Goods": {
       "Food": 10,
-      "Gas": 103
+      "Gas": 100
     },
     "Name": "Guide_05",
     "Target": "Vault",
@@ -78,12 +78,12 @@
     "Accomplishment": [
       1,
       2,
-      5
+      8
     ],
     "Description": "建造1个幽灵哨塔",
     "Goods": {
       "Food": 10,
-      "Gas": 104
+      "Gas": 100
     },
     "Name": "Guide_06",
     "Target": "GhostTower",
@@ -91,14 +91,14 @@
   },
   {
     "Accomplishment": [
-      4,
-      5,
-      8
+      1,
+      2,
+      9
     ],
     "Description": "将章北海等级提升至2级",
     "Goods": {
       "Food": 10,
-      "Gas": 105
+      "Gas": 100
     },
     "Name": "Guide_07",
     "Target": "ColonelZhang",
@@ -108,12 +108,12 @@
     "Accomplishment": [
       1,
       2,
-      6
+      10
     ],
     "Description": "将陆战队等级提升至2级",
     "Goods": {
       "Food": 10,
-      "Gas": 106
+      "Gas": 100
     },
     "Name": "Guide_08",
     "Target": "Marine",

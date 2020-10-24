@@ -1,5 +1,6 @@
 {
   "CancelBuildReturnPercent": 50,
+  "EnableSearch": true,
   "FirstRechargeReward": {
     "Diamond": 10,
     "Food": 100,
