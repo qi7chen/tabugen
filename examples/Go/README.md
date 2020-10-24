@@ -56,6 +56,6 @@
 * `package` 指定Go包名
 * `source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
 * `config_manager_class` 指定管理配置的class名称，默认为AutogenConfigManager
-* `with_csv_load_code` 是否包含CSV加载代码，
+* `with_csv_codegen` 是否包含CSV加载代码，
 * `go_json_tag` 生成Go字段的json tag
 * `go_fmt` 生成代码文件后，对文件执行go fmt格式化
