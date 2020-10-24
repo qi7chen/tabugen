@@ -25,15 +25,16 @@ const (
 
 // 全局数值配置, 全局变量表.xlsx
 type GlobalPropertyDefine struct {
-	GoldExchangeTimeFactor1    float32        `json:"gold_exchange_time_factor1"`    // 金币兑换时间参数1
-	GoldExchangeTimeFactor2    float32        `json:"gold_exchange_time_factor2"`    // 金币兑换时间参数2
-	GoldExchangeTimeFactor3    float32        `json:"gold_exchange_time_factor3"`    // 金币兑换时间参数3
-	GoldExchangeResource1Price uint32         `json:"gold_exchange_resource1_price"` // 金币兑换资源1价格
-	GoldExchangeResource2Price uint32         `json:"gold_exchange_resource2_price"` // 金币兑换资源2价格
-	GoldExchangeResource3Price uint32         `json:"gold_exchange_resource3_price"` // 金币兑换资源3价格
-	GoldExchangeResource4Price uint32         `json:"gold_exchange_resource4_price"` // 金币兑换资源4价格
-	FreeCompleteSeconds        uint32         `json:"free_complete_seconds"`         // 免费立即完成时间
-	CancelBuildReturnPercent   uint32         `json:"cancel_build_return_percent"`   // 取消建造后返还资源比例
+	GoldExchangeTimeFactor1    float64        `json:"gold_exchange_time_factor1"`    // 金币兑换时间参数1
+	GoldExchangeTimeFactor2    float64        `json:"gold_exchange_time_factor2"`    // 金币兑换时间参数2
+	GoldExchangeTimeFactor3    float64        `json:"gold_exchange_time_factor3"`    // 金币兑换时间参数3
+	GoldExchangeResource1Price uint16         `json:"gold_exchange_resource1_price"` // 金币兑换资源1价格
+	GoldExchangeResource2Price uint16         `json:"gold_exchange_resource2_price"` // 金币兑换资源2价格
+	GoldExchangeResource3Price uint16         `json:"gold_exchange_resource3_price"` // 金币兑换资源3价格
+	GoldExchangeResource4Price uint16         `json:"gold_exchange_resource4_price"` // 金币兑换资源4价格
+	FreeCompleteSeconds        uint16         `json:"free_complete_seconds"`         // 免费立即完成时间
+	CancelBuildReturnPercent   uint16         `json:"cancel_build_return_percent"`   // 取消建造后返还资源比例
+	EnableSearch               bool           `json:"enable_search"`                 // 开启搜索
 	SpawnLevelLimit            []int          `json:"spawn_level_limit"`             // 最大刷新个数显示
 	FirstRechargeReward        map[string]int `json:"first_recharge_reward"`         // 首充奖励
 }

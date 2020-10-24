@@ -7,5 +7,6 @@
 "GoldExchangeResource4Price","","","20"
 "FreeCompleteSeconds","","","300"
 "CancelBuildReturnPercent","","","50"
+"EnableSearch","","","yes"
 "SpawnLevelLimit","","","1,2,3,4,5"
 "FirstRechargeReward","","","Food=100;Power=200;Diamond=10"

@@ -36,7 +36,7 @@ type NewbieGuideDefine struct {
 	Name           string            // ID
 	Type           string            // 任务类型
 	Target         string            // 目标
-	Accomplishment []int             // 完成步骤
+	Accomplishment []int16           // 完成步骤
 	Goods          map[string]uint32 // 物品
 	Description    string            // 描述
 }
@@ -56,8 +56,8 @@ func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
 	}
 	if row[3] != "" {
 		for _, item := range strings.Split(row[3], TAKSI_ARRAY_DELIM) {
-			var value = MustParseTextValue("int", item, row[3])
-			p.Accomplishment = append(p.Accomplishment, value.(int))
+			var value = MustParseTextValue("int16", item, row[3])
+			p.Accomplishment = append(p.Accomplishment, value.(int16))
 		}
 	}
 	if row[4] != "" {

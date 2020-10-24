@@ -35,15 +35,16 @@ type SoldierPropertyDefine struct {
 	Volume             uint32  `json:"volume"`               // 体积
 	UpgradeTime        uint32  `json:"upgrade_time"`         // 升级消耗的时间(秒）
 	UpgradeMaterialID  string  `json:"upgrade_material_id"`  // 升级消耗的材料
-	UpgradeMaterialNum int     `json:"upgrade_material_num"` // 升级消耗的数量
+	UpgradeMaterialNum int64   `json:"upgrade_material_num"` // 升级消耗的数量
 	ConsumeMaterial    string  `json:"consume_material"`     // 生产消耗的材料
 	ConsumeMaterialNum int     `json:"consume_material_num"` // 生产消耗的数量
 	ConsumeTime        int     `json:"consume_time"`         // 生产消耗的时间（秒/个）
 	Act                int     `json:"act"`                  // 攻击
 	Hp                 int     `json:"hp"`                   // 血量
 	Hurt               uint32  `json:"hurt"`                 // buff伤害
-	SearchScope        float32 `json:"search_scope"`         // 搜索范围
+	SearchScope        int16   `json:"search_scope"`         // 搜索范围
 	AtkFrequency       float32 `json:"atk_frequency"`        // 攻击间隔
-	AtkRange           float32 `json:"atk_range"`            // 攻击距离
-	MovingSpeed        float32 `json:"moving_speed"`         // 移动速度
+	AtkRange           float64 `json:"atk_range"`            // 攻击距离
+	MovingSpeed        float64 `json:"moving_speed"`         // 移动速度
+	EnableBurn         bool    `json:"enable_burn"`          // 燃烧特效
 }

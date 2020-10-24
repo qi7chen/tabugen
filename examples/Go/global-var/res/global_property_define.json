@@ -1,5 +1,6 @@
 {
   "cancel_build_return_percent": 50,
+  "enable_search": true,
   "first_recharge_reward": {
     "Diamond": 10,
     "Food": 100,

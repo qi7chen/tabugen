@@ -43,21 +43,22 @@ type SoldierPropertyDefine struct {
 	Volume             uint32  // 体积
 	UpgradeTime        uint32  // 升级消耗的时间(秒）
 	UpgradeMaterialID  string  // 升级消耗的材料
-	UpgradeMaterialNum int     // 升级消耗的数量
+	UpgradeMaterialNum int64   // 升级消耗的数量
 	ConsumeMaterial    string  // 生产消耗的材料
 	ConsumeMaterialNum int     // 生产消耗的数量
 	ConsumeTime        int     // 生产消耗的时间（秒/个）
 	Act                int     // 攻击
 	Hp                 int     // 血量
 	Hurt               uint32  // buff伤害
-	SearchScope        float32 // 搜索范围
+	SearchScope        int16   // 搜索范围
 	AtkFrequency       float32 // 攻击间隔
-	AtkRange           float32 // 攻击距离
-	MovingSpeed        float32 // 移动速度
+	AtkRange           float64 // 攻击距离
+	MovingSpeed        float64 // 移动速度
+	EnableBurn         bool    // 燃烧特效
 }
 
 func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
-	if len(row) < 24 {
+	if len(row) < 25 {
 		log.Panicf("SoldierPropertyDefine: row length too short %d", len(row))
 	}
 	if row[0] != "" {
@@ -96,8 +97,8 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 		p.UpgradeMaterialID = row[9]
 	}
 	if row[10] != "" {
-		var value = MustParseTextValue("int", row[10], row)
-		p.UpgradeMaterialNum = value.(int)
+		var value = MustParseTextValue("int64", row[10], row)
+		p.UpgradeMaterialNum = value.(int64)
 	}
 	if row[11] != "" {
 		p.ConsumeMaterial = row[11]
@@ -123,20 +124,24 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 		p.Hurt = value.(uint32)
 	}
 	if row[20] != "" {
-		var value = MustParseTextValue("float32", row[20], row)
-		p.SearchScope = value.(float32)
+		var value = MustParseTextValue("int16", row[20], row)
+		p.SearchScope = value.(int16)
 	}
 	if row[21] != "" {
 		var value = MustParseTextValue("float32", row[21], row)
 		p.AtkFrequency = value.(float32)
 	}
 	if row[22] != "" {
-		var value = MustParseTextValue("float32", row[22], row)
-		p.AtkRange = value.(float32)
+		var value = MustParseTextValue("float64", row[22], row)
+		p.AtkRange = value.(float64)
 	}
 	if row[23] != "" {
-		var value = MustParseTextValue("float32", row[23], row)
-		p.MovingSpeed = value.(float32)
+		var value = MustParseTextValue("float64", row[23], row)
+		p.MovingSpeed = value.(float64)
+	}
+	if row[24] != "" {
+		var value = MustParseTextValue("bool", row[24], row)
+		p.EnableBurn = value.(bool)
 	}
 	return nil
 }

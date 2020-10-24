@@ -33,75 +33,80 @@ const (
 
 // 全局数值配置, 全局变量表.xlsx
 type GlobalPropertyDefine struct {
-	GoldExchangeTimeFactor1    float32        // 金币兑换时间参数1
-	GoldExchangeTimeFactor2    float32        // 金币兑换时间参数2
-	GoldExchangeTimeFactor3    float32        // 金币兑换时间参数3
-	GoldExchangeResource1Price uint32         // 金币兑换资源1价格
-	GoldExchangeResource2Price uint32         // 金币兑换资源2价格
-	GoldExchangeResource3Price uint32         // 金币兑换资源3价格
-	GoldExchangeResource4Price uint32         // 金币兑换资源4价格
-	FreeCompleteSeconds        uint32         // 免费立即完成时间
-	CancelBuildReturnPercent   uint32         // 取消建造后返还资源比例
+	GoldExchangeTimeFactor1    float64        // 金币兑换时间参数1
+	GoldExchangeTimeFactor2    float64        // 金币兑换时间参数2
+	GoldExchangeTimeFactor3    float64        // 金币兑换时间参数3
+	GoldExchangeResource1Price uint16         // 金币兑换资源1价格
+	GoldExchangeResource2Price uint16         // 金币兑换资源2价格
+	GoldExchangeResource3Price uint16         // 金币兑换资源3价格
+	GoldExchangeResource4Price uint16         // 金币兑换资源4价格
+	FreeCompleteSeconds        uint16         // 免费立即完成时间
+	CancelBuildReturnPercent   uint16         // 取消建造后返还资源比例
+	EnableSearch               bool           // 开启搜索
 	SpawnLevelLimit            []int          // 最大刷新个数显示
 	FirstRechargeReward        map[string]int // 首充奖励
 }
 
 func (p *GlobalPropertyDefine) ParseFromRows(rows [][]string) error {
-	if len(rows) < 11 {
-		log.Panicf("GlobalPropertyDefine:row length out of index, %d < 11", len(rows))
+	if len(rows) < 12 {
+		log.Panicf("GlobalPropertyDefine:row length out of index, %d < 12", len(rows))
 	}
 	if rows[0][3] != "" {
-		var value = MustParseTextValue("float32", rows[0][3], 0)
-		p.GoldExchangeTimeFactor1 = value.(float32)
+		var value = MustParseTextValue("float64", rows[0][3], 0)
+		p.GoldExchangeTimeFactor1 = value.(float64)
 	}
 	if rows[1][3] != "" {
-		var value = MustParseTextValue("float32", rows[1][3], 1)
-		p.GoldExchangeTimeFactor2 = value.(float32)
+		var value = MustParseTextValue("float64", rows[1][3], 1)
+		p.GoldExchangeTimeFactor2 = value.(float64)
 	}
 	if rows[2][3] != "" {
-		var value = MustParseTextValue("float32", rows[2][3], 2)
-		p.GoldExchangeTimeFactor3 = value.(float32)
+		var value = MustParseTextValue("float64", rows[2][3], 2)
+		p.GoldExchangeTimeFactor3 = value.(float64)
 	}
 	if rows[3][3] != "" {
-		var value = MustParseTextValue("uint32", rows[3][3], 3)
-		p.GoldExchangeResource1Price = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[3][3], 3)
+		p.GoldExchangeResource1Price = value.(uint16)
 	}
 	if rows[4][3] != "" {
-		var value = MustParseTextValue("uint32", rows[4][3], 4)
-		p.GoldExchangeResource2Price = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[4][3], 4)
+		p.GoldExchangeResource2Price = value.(uint16)
 	}
 	if rows[5][3] != "" {
-		var value = MustParseTextValue("uint32", rows[5][3], 5)
-		p.GoldExchangeResource3Price = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[5][3], 5)
+		p.GoldExchangeResource3Price = value.(uint16)
 	}
 	if rows[6][3] != "" {
-		var value = MustParseTextValue("uint32", rows[6][3], 6)
-		p.GoldExchangeResource4Price = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[6][3], 6)
+		p.GoldExchangeResource4Price = value.(uint16)
 	}
 	if rows[7][3] != "" {
-		var value = MustParseTextValue("uint32", rows[7][3], 7)
-		p.FreeCompleteSeconds = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[7][3], 7)
+		p.FreeCompleteSeconds = value.(uint16)
 	}
 	if rows[8][3] != "" {
-		var value = MustParseTextValue("uint32", rows[8][3], 8)
-		p.CancelBuildReturnPercent = value.(uint32)
+		var value = MustParseTextValue("uint16", rows[8][3], 8)
+		p.CancelBuildReturnPercent = value.(uint16)
 	}
 	if rows[9][3] != "" {
-		for _, item := range strings.Split(rows[9][3], TAKSI_ARRAY_DELIM) {
-			var value = MustParseTextValue("int", item, rows[9][3])
+		var value = MustParseTextValue("bool", rows[9][3], 9)
+		p.EnableSearch = value.(bool)
+	}
+	if rows[10][3] != "" {
+		for _, item := range strings.Split(rows[10][3], TAKSI_ARRAY_DELIM) {
+			var value = MustParseTextValue("int", item, rows[10][3])
 			p.SpawnLevelLimit = append(p.SpawnLevelLimit, value.(int))
 		}
 	}
-	if rows[10][3] != "" {
+	if rows[11][3] != "" {
 		p.FirstRechargeReward = map[string]int{}
-		for _, text := range strings.Split(rows[10][3], TAKSI_MAP_DELIM1) {
+		for _, text := range strings.Split(rows[11][3], TAKSI_MAP_DELIM1) {
 			if text == "" {
 				continue
 			}
 			var items = strings.Split(text, TAKSI_MAP_DELIM2)
-			var value = MustParseTextValue("string", items[0], rows[10][3])
+			var value = MustParseTextValue("string", items[0], rows[11][3])
 			var key = value.(string)
-			value = MustParseTextValue("int", items[1], rows[10][3])
+			value = MustParseTextValue("int", items[1], rows[11][3])
 			var val = value.(int)
 			p.FirstRechargeReward[key] = val
 		}
