@@ -82,9 +82,9 @@ class GoCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
+        keyidx = keycol - 1
+        validx = valcol - 1
+        typeidx = typcol - 1
 
         content += 'func (p *%s) ParseFromRows(rows [][]string) error {\n' % struct['camel_case_name']
         content += '\tif len(rows) < %d {\n' % len(rows)

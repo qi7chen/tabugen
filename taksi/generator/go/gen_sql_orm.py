@@ -18,7 +18,7 @@ class GoSqlOrmGenerator:
 
     @staticmethod
     def name():
-        return "go-v2"
+        return "go-orm"
 
     #
     def gen_getset(self, struct, params):
