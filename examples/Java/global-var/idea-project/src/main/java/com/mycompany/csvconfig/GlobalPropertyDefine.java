@@ -87,7 +87,6 @@ public class GlobalPropertyDefine
         }
     }
 
-
     public static void loadFrom(String content) throws IOException
     {
         List<CSVRecord> records = new ArrayList<>();

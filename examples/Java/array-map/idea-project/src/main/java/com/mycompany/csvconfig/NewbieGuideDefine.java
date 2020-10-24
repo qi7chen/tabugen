@@ -35,20 +35,20 @@ public class NewbieGuideDefine
             this.Target = record.get(2).trim();
         }
         {
-            String[] tokens = record.get(3).split(AutogenConfigManager.TAKSI_ARRAY_DELIM);
-            short[] list = new short[tokens.length];
-            for (int i = 0; i < tokens.length; i++) {
-                if (!tokens[i].isEmpty()) {
-                    short value = Short.parseShort(tokens[i]);
+            String[] kvList = record.get(3).split(AutogenConfigManager.TAKSI_ARRAY_DELIM);
+            short[] list = new short[kvList.length];
+            for (int i = 0; i < kvList.length; i++) {
+                if (!kvList[i].isEmpty()) {
+                    short value = Short.parseShort(kvList[i]);
                     list[i] = value;
                 }
             }
             this.Accomplishment = list;
         }
         {
-            String[] tokens = record.get(4).split(AutogenConfigManager.TAKSI_MAP_DELIM1);
-            for(int i = 0; i < tokens.length; i++) {
-                String text = tokens[i];
+            String[] kvList = record.get(4).split(AutogenConfigManager.TAKSI_MAP_DELIM1);
+            for(int i = 0; i < kvList.length; i++) {
+                String text = kvList[i];
                 if (text.isEmpty()) {
                     continue;
                 }
@@ -62,7 +62,6 @@ public class NewbieGuideDefine
             this.Description = record.get(5).trim();
         }
     }
-
 
     public static void loadFrom(String content) throws IOException
     {
@@ -78,5 +77,4 @@ public class NewbieGuideDefine
         }
         data_ = data;
     }
-
 }

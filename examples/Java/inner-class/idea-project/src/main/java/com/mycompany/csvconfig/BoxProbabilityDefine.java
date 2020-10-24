@@ -62,7 +62,6 @@ public class BoxProbabilityDefine
         }
     }
 
-
     public static void loadFrom(String content) throws IOException
     {
         List<BoxProbabilityDefine> data = new ArrayList<>();

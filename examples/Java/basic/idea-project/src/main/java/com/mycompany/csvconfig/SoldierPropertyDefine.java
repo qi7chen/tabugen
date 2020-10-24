@@ -121,7 +121,6 @@ public class SoldierPropertyDefine
         }
     }
 
-
     public static void loadFrom(String content) throws IOException
     {
         List<SoldierPropertyDefine> data = new ArrayList<>();
@@ -137,7 +136,6 @@ public class SoldierPropertyDefine
         data_ = data;
     }
 
-
     // get an item by key
     public static SoldierPropertyDefine getItem(String Name, int Level)
     {
@@ -150,7 +148,6 @@ public class SoldierPropertyDefine
         }
         return null;
     }
-
 
     // get a range of items by key
     public static ArrayList<SoldierPropertyDefine> getRange(String Name)
@@ -165,5 +162,4 @@ public class SoldierPropertyDefine
         }
        return range;
     }
-
 }
