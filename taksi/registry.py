@@ -12,6 +12,7 @@ from taksi.generator.java.gen_struct import JavaStructGenerator
 
 from taksi.datatran.csv import CsvDataWriter
 from taksi.datatran.json import JsonDataWriter
+from taksi.datatran.sql import SQLDataWriter
 
 # 结构体描述解析
 struct_parser_registry = {
@@ -31,6 +32,7 @@ code_generator_registry = {
 data_writer_registry = {
     CsvDataWriter.name(): CsvDataWriter(),
     JsonDataWriter.name(): JsonDataWriter(),
+    SQLDataWriter.name(): SQLDataWriter(),
 }
 
 

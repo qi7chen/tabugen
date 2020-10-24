@@ -5,8 +5,8 @@
 import taksi.typedef as types
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
 import taksi.generator.go.template as go_template
 
 
@@ -82,9 +82,9 @@ class GoCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
 
         content += 'func (p *%s) ParseFromRows(rows [][]string) error {\n' % struct['camel_case_name']
         content += '\tif len(rows) < %d {\n' % len(rows)
@@ -118,10 +118,10 @@ class GoCsvLoadGenerator:
             return self.gen_kv_parse_method(struct)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
 
         vec_idx = 0
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
 
         content = ''
         content += 'func (p *%s) ParseFromRow(row []string) error {\n' % struct['camel_case_name']
@@ -169,8 +169,8 @@ class GoCsvLoadGenerator:
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
-        start, end, step = genutil.get_inner_class_range(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
+        start, end, step = structutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for i := %s; i < %s; i += %s {\n' % (start, end, step)
         content += '        var item %s;\n' % inner_class_type

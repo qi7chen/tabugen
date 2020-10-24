@@ -5,8 +5,8 @@
 import taksi.typedef as types
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
 import taksi.generator.csharp.template as csharp_template
 
 
@@ -29,7 +29,7 @@ class CSharpCsvLoadGenerator:
 
     # 字段比较
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = genutil.get_struct_keys(struct, key, lang.map_cs_type)
+        keys = structutil.get_struct_keys(struct, key, lang.map_cs_type)
         args = []
         for tpl in keys:
             args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
@@ -101,9 +101,9 @@ class CSharpCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
 
         content = ''
         content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
@@ -148,10 +148,10 @@ class CSharpCsvLoadGenerator:
             return self.gen_kv_parse_method(struct)
 
         vec_idx = 0
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
 
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRow(List<string> row)\n' % self.TAB_SPACE
@@ -202,8 +202,8 @@ class CSharpCsvLoadGenerator:
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
-        start, end, step = genutil.get_inner_class_range(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
+        start, end, step = structutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '        %s%s = new %s[%d];\n' % (prefix, inner_var_name, inner_class_type, (end-start)/step)
         content += '        for (int i = %s, j = 0; i < %s; i += %s, j++) \n' % (start, end, step)
@@ -277,7 +277,7 @@ class CSharpCsvLoadGenerator:
         if struct['options'][predef.PredefParseKVMode]:
             return ''
 
-        keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
+        keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
         if len(keys) == 0:
             return ''
 
@@ -311,7 +311,7 @@ class CSharpCsvLoadGenerator:
         if predef.PredefRangeMethodKeys not in struct['options']:
             return ''
 
-        keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
+        keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
         assert len(keys) > 0
 
         formal_param = []

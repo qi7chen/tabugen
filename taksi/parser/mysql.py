@@ -5,7 +5,7 @@
 import pymysql
 import unittest
 import taksi.typedef as types
-import taksi.strutil as strutil
+import taksi.util.strutil as strutil
 
 
 class MySQLStructParser:

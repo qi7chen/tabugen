@@ -54,6 +54,16 @@ def camel_to_snake(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
+def escape_delimiter(ch):
+    assert len(ch) == 1
+    if ch == '\\':
+        return '\\\\'
+    elif ch == '\'':
+        return '\\\''
+    elif ch == '"':
+        return '\\"'
+    return ch
+
 # 随机字符
 def random_word(length):
     letters = string.ascii_lowercase
@@ -146,6 +156,22 @@ def save_content_if_not_same(filename, content, enc):
     else:
         shutil.move(tmp_filename, filename)
         return True
+
+
+# 从路径种搜索所有excel文件
+def enum_files(self, rootdir, ignore_check):
+    files = []
+    for dirpath, dirnames, filenames in os.walk(rootdir):
+        for filename in filenames:
+            if filename.endswith(".xlsx"):
+                files.append(dirpath + os.sep + filename)
+    filenames = []
+    for filename in files:
+        if ignore_check is not None:
+            if not ignore_check(filename):
+                filename = os.path.abspath(filename)
+                filenames.append(filename)
+    return filenames
 
 
 # 对齐数据行

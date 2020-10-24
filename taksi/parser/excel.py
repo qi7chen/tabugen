@@ -4,11 +4,12 @@
 
 import os
 import sys
-import unittest
 import taksi.predef as predef
 import taksi.typedef as types
-import taksi.strutil as strutil
-import taksi.xlsxhelp as xlsxhelp
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
+import taksi.util.fieldutil as fieldutil
+import taksi.parser.xlsxhelp as xlsxhelp
 
 
 # 使用excel解析结构描述
@@ -38,20 +39,6 @@ class ExcelStructParser:
         self.metafile = args.parse_meta_file
         self.make_filenames(self.filedir)
 
-    # 从路径种搜索所有excel文件
-    def enum_files(self, rootdir):
-        files = []
-        for dirpath, dirnames, filenames in os.walk(rootdir):
-            for filename in filenames:
-                if filename.endswith(".xlsx"):
-                    files.append(dirpath + os.sep + filename)
-        filenames = []
-        for filename in files:
-            if not xlsxhelp.is_ignored_filename(filename):
-                filename = os.path.abspath(filename)
-                filenames.append(filename)
-        return filenames
-
     # 跳过忽略的文件名
     def make_filenames(self, filedir):
         filenames = []
@@ -61,13 +48,14 @@ class ExcelStructParser:
         if os.path.isdir(filedir):  # filename is a directory
             filedir = os.path.abspath(filedir)
             print('parse files in directory:', filedir)
-            filenames = self.enum_files(filedir)
+            filenames = strutil.enum_files(filedir, xlsxhelp.is_ignored_filename)
         else:
             assert os.path.isfile(filedir)
             filename = os.path.abspath(filedir)
             filenames.append(filename)
 
-        print('skipped names', self.skip_names)
+        if len(self.skip_names) > 0:
+            print('skipped file names:', self.skip_names)
         for filename in filenames:
             ignored = False
             for skip_name in self.skip_names:
@@ -92,7 +80,7 @@ class ExcelStructParser:
             if i > last_row and strutil.is_row_empty(row):
                 rows = sheet_rows[last_row:i]
                 last_row = i + 1
-                meta = self.parse_meta_rows(rows)
+                meta = fieldutil.parse_meta_rows(rows)
                 assert predef.PredefTargetFileName in meta
                 target_filename = meta[predef.PredefTargetFileName]
                 pair = target_filename.split('@')
@@ -105,44 +93,12 @@ class ExcelStructParser:
                 assert target_filename not in self.meta_index
                 self.meta_index[target_filename] = meta
 
-    # 解析excel表中的meta sheet
-    @staticmethod
-    def parse_meta_rows(sheet_rows):
-        meta = {}
-        for row in sheet_rows:
-            if len(row) >= 2:
-                key = row[0].strip()
-                value = row[1].strip()
-                if key != "" and value != "":
-                    meta[key] = value
-
-        if predef.OptionSkippedColumns in meta:
-            field_names = meta[predef.OptionSkippedColumns].split(',')
-            field_names = [v.strip() for v in field_names]
-            meta[predef.OptionSkippedColumns] = field_names
-
-        if predef.OptionUniqueColumns in meta:
-            field_names = meta[predef.OptionUniqueColumns].split(',')
-            field_names = [v.strip() for v in field_names]
-            meta[predef.OptionUniqueColumns] = field_names
-
-        # default values
-        if predef.PredefStructTypeRow not in meta:
-            meta[predef.PredefStructTypeRow] = "1"  # 类型列
-        if predef.PredefStructNameRow not in meta:
-            meta[predef.PredefStructNameRow] = "2"  # 名称列
-        if predef.PredefCommentRow not in meta:
-            meta[predef.PredefCommentRow] = "3"  # 注释列
-        if predef.PredefDataStartRow not in meta:
-            meta[predef.PredefDataStartRow] = "4"  # 数据起始列
-        return meta
-
     # 获取一个sheet的meta信息
     def get_file_meta(self, filename, wb, sheet_names):
         # 优先本文件
         if predef.PredefMetaSheet in sheet_names:
             sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
-            return self.parse_meta_rows(sheet_rows)
+            return fieldutil.parse_meta_rows(sheet_rows)
         else:
             meta = self.meta_index.get(filename)
             if meta is not None:
@@ -186,6 +142,8 @@ class ExcelStructParser:
         fields_names = {}
         prev_field = None
         for i in range(len(type_row)):
+            if meta[predef.PredefParseKVMode]:  # 全局KV模式
+                continue
             if type_row[i] == "" or name_row[i] == "":  # skip empty column
                 continue
             field = {}
@@ -215,7 +173,8 @@ class ExcelStructParser:
                 field["comment"] = rows[comment_index][i]
 
             field["enable"] = True
-            if self.enable_field_skipping and predef.OptionSkippedColumns in meta and len(meta[predef.OptionSkippedColumns]) > 0:
+            if self.enable_field_skipping and predef.OptionSkippedColumns in meta and len(
+                    meta[predef.OptionSkippedColumns]) > 0:
                 if field["name"] in meta[predef.OptionSkippedColumns]:
                     field["enable"] = False
 
@@ -223,7 +182,6 @@ class ExcelStructParser:
             struct['fields'].append(field)
 
         struct["options"] = meta
-
         if self.with_data:
             data_rows = rows[data_start_index - 1: data_end_index]
             data_rows = strutil.pad_data_rows(data_rows, struct)
@@ -239,12 +197,13 @@ class ExcelStructParser:
 
         for filename in self.filenames:
             print(strutil.current_time(), "start parse", filename)
-            descriptor = self.parse_one_file(filename)
-            if descriptor is None:
+            struct = self.parse_one_file(filename)
+            if struct is None:
                 print('parse file %s failed' % filename)
             else:
-                descriptor['source'] = filename
-                descriptors.append(descriptor)
+                structutil.setup_struct(struct)
+                struct['source'] = filename
+                descriptors.append(struct)
         return descriptors
 
     # 解析单个文件
@@ -255,29 +214,28 @@ class ExcelStructParser:
             return
 
         meta = self.get_file_meta(filename, wb, sheet_names)
+        fieldutil.setup_meta_kv_mode(meta)
         xlsxhelp.close_workbook(wb)
         if meta is None:
             raise RuntimeError("not meta found for file %s" % filename)
         else:
-            sheet_name = meta.get(predef.PredefTargetFileSheet, sheet_names[0]) #没有指定就使用第一个sheet
+            sheet_name = meta.get(predef.PredefTargetFileSheet, sheet_names[0])  # 没有指定就使用第一个sheet
             sheet_data = xlsxhelp.read_workbook_sheet_to_rows(wb, sheet_name)
             struct = self.parse_data_sheet(meta, sheet_data)
             struct['file'] = os.path.basename(filename)
             return struct
 
 
-class TestExcelImporter(unittest.TestCase):
-
-    def test_enum_file(self):
-        filename = u'''新建筑.xlsx'''
-        parser = ExcelStructParser()
-        parser.init('file=%s' % filename)
-        all = parser.parser_all()
-        print(strutil.current_time(), 'done')
-        assert len(all) > 0
-        for struct in all:
-            print(struct)
+def unit_test(self):
+    filename = u'''新建筑.xlsx'''
+    parser = ExcelStructParser()
+    parser.init('file=%s' % filename)
+    all = parser.parser_all()
+    print(strutil.current_time(), 'done')
+    assert len(all) > 0
+    for struct in all:
+        print(struct)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unit_test

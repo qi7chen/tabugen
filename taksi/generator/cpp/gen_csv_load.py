@@ -6,10 +6,10 @@ import os
 import taksi.typedef as types
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
-import taksi.generator.cpp.template as cpp_template
 import taksi.version as version
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
+import taksi.generator.cpp.template as cpp_template
 
 
 # 生成C++加载CSV文件数据代码
@@ -32,7 +32,7 @@ class CppCsvLoadGenerator:
 
     # 生成赋值表达式
     def gen_equal_stmt(self, prefix, struct, key):
-        keys = genutil.get_struct_keys(struct, key, lang.map_cpp_type)
+        keys = structutil.get_struct_keys(struct, key, lang.map_cpp_type)
         assert len(keys) > 0
         args = []
         for tpl in keys:
@@ -82,8 +82,8 @@ class CppCsvLoadGenerator:
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
-        start, end, step = genutil.get_inner_class_range(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
+        start, end, step = structutil.get_inner_class_range(struct)
         assert start > 0 and end > 0 and step > 1
         content += '    for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
         content += '    {\n'
@@ -102,9 +102,9 @@ class CppCsvLoadGenerator:
         content = ''
 
         inner_class_done = False
-        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
 
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
         vec_idx = 0
         space = self.TAB_SPACE * tabs
         for field in struct['fields']:
@@ -159,7 +159,7 @@ class CppCsvLoadGenerator:
         content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
 
         if predef.PredefGetMethodKeys in struct['options']:
-            get_keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
+            get_keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
             if len(get_keys) > 0:
                 get_args = []
                 for tpl in get_keys:
@@ -171,7 +171,7 @@ class CppCsvLoadGenerator:
                 content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
 
         if predef.PredefRangeMethodKeys in struct['options']:
-            range_keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
+            range_keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
             range_args = []
             for tpl in range_keys:
                 typename = tpl[0]
@@ -200,9 +200,9 @@ class CppCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = genutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = genutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = genutil.get_field_by_column_index(struct, typcol)
+        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
+        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
+        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
 
         content = ''
         content += '// parse data object from csv rows\n'
@@ -287,7 +287,7 @@ class CppCsvLoadGenerator:
         if struct['options'][predef.PredefParseKVMode]:
             return content
 
-        keys = genutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
+        keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
         if len(keys) == 0:
             return content
 
@@ -324,7 +324,7 @@ class CppCsvLoadGenerator:
         if predef.PredefRangeMethodKeys not in struct['options']:
             return content
 
-        keys = genutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
+        keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
         assert len(keys) > 0
 
         formal_param = []

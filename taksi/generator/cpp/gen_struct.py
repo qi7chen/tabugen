@@ -6,9 +6,9 @@ import os
 import sys
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
 import taksi.version as version
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
 from taksi.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
 
@@ -40,14 +40,11 @@ class CppStructGenerator:
     def gen_cpp_struct_define(self, struct):
         content = '// %s\n' % struct['comment']
         content += 'struct %s \n{\n' % struct['name']
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, mapped_inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, mapped_inner_fields = structutil.get_inner_class_mapped_fields(struct)
         if len(mapped_inner_fields) > 0:
             content += self.gen_inner_struct_define(struct)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -55,8 +52,9 @@ class CppStructGenerator:
             inner_typename = 'std::vector<%s>' % inner_type_class
 
         vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
 
+        fields = struct['fields']
         max_name_len = strutil.max_field_length(fields, 'name', None)
         max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
         if len(inner_typename) > max_type_len:
@@ -88,12 +86,11 @@ class CppStructGenerator:
                     text += '    %s %s // %s\n' % (typename, name, field['comment'])
                     vec_done = True
             content += text
-
         return content
 
     # 内部class定义
     def gen_inner_struct_define(self, struct):
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
         content += '    struct %s \n' % class_name
@@ -154,9 +151,6 @@ class CppStructGenerator:
 
     def run(self, descriptors, filepath, args):
         outname = os.path.split(filepath)[-1]
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
 
         cpp_content = ''
         header_content = self.gen_header_content(descriptors, args)

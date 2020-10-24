@@ -61,17 +61,17 @@ def run(args):
 def verify_args(args):
     if args.go_out is not None:
         if args.package is None:
-            print('you must set package name for Go')
+            print('Go package name must be set')
             sys.exit(1)
 
     if args.array_delim is not None:
         if len(args.array_delim) != 1:
-            print('array delimiter must 1 char')
+            print('array delimiter must contains 1 char!')
             sys.exit(1)
 
     if args.map_delims is not None:
         if len(args.map_delims) != 2:
-            print('map delimiter must 2 char(s)')
+            print('map delimiter must contains 2 char(s)!')
             sys.exit(1)
 
 
@@ -98,7 +98,7 @@ def main():
     parser.add_argument("--db_table", help="database table")
 
     # source code options
-    parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of generated config manager class")
+    parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of auto-generated config manager class")
     parser.add_argument("--load_code_generator", help="name of generated source language package")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
@@ -110,8 +110,8 @@ def main():
     parser.add_argument("--go_fmt", action="store_true", help="run go fmt on generated source file")
 
     # output options
-    parser.add_argument("--source_file_encoding", default="utf-8", help="encoding of generated source file")
-    parser.add_argument("--data_file_encoding", help="encoding of output data file")
+    parser.add_argument("--source_file_encoding", default="utf8", help="encoding of generated source file")
+    parser.add_argument("--data_file_encoding", default="utf8", help="encoding of output data file")
     parser.add_argument("--out_csv_delim", default=",", help="output CSV file field delimiter")
     parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
     parser.add_argument("--out_data_path", default=".", help="output file path")

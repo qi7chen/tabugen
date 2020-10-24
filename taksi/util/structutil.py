@@ -4,7 +4,19 @@
 
 import re
 import taksi.predef as predef
-import taksi.strutil as strutil
+import taksi.util.strutil as strutil
+
+
+# 初始化struct
+def setup_struct(struct):
+    if struct['options'][predef.PredefParseKVMode]:
+        fields = get_struct_kv_fields(struct)
+        struct['fields'] = fields
+    comment = struct.get("comment", "")
+    if comment == "":
+        comment = struct["options"].get(predef.PredefClassComment, "")
+        if comment != "":
+            struct["comment"] = comment
 
 
 # 根据'column_index'查找一个字段
@@ -43,26 +55,21 @@ def get_struct_kv_fields(struct):
     valcol = struct["options"][predef.PredefValueColumn]
     typecol = int(struct['options'][predef.PredefValueTypeColumn])
     assert keycol > 0 and valcol > 0 and typecol > 0
-    comment_idx = -1
+    commentcol = -1
     if predef.PredefCommentColumn in struct["options"]:
         commentcol = int(struct["options"][predef.PredefCommentColumn])
         assert commentcol > 0
         comment_field = {}
-        comment_idx, comment_field = get_field_by_column_index(struct, commentcol)
-
-    key_idx, key_field = get_field_by_column_index(struct, keycol)
-    value_idx, value_field = get_field_by_column_index(struct, valcol)
-    type_idx, type_field = get_field_by_column_index(struct, typecol)
 
     fields = []
     for i in range(len(rows)):
         # print(rows[i])
-        name = rows[i][key_idx].strip()
-        typename = rows[i][type_idx].strip()
-        assert len(name) > 0, (rows[i], key_idx)
+        name = rows[i][keycol-1].strip()
+        typename = rows[i][typecol-1].strip()
+        assert len(name) > 0, (rows[i], keycol-1)
         comment = ''
-        if comment_idx >= 0:
-            comment = rows[i][comment_idx].strip()
+        if commentcol >= 0:
+            comment = rows[i][commentcol-1].strip()
         field = {
             'name': name,
             'camel_case_name': strutil.camel_case(name),
@@ -74,27 +81,6 @@ def get_struct_kv_fields(struct):
         fields.append(field)
 
     return fields
-
-
-# KV模式读取
-def setup_key_value_mode(struct):
-    struct["options"][predef.PredefParseKVMode] = False
-    kvcolumns = struct["options"].get(predef.PredefKeyValueColumn, "")
-    if kvcolumns != "":
-        kv = kvcolumns.split(",")
-        assert len(kv) == 2
-        struct["options"][predef.PredefParseKVMode] = True
-        struct["options"][predef.PredefKeyColumn] = int(kv[0])
-        struct["options"][predef.PredefValueColumn] = int(kv[1])
-
-
-# 注释
-def setup_comment(struct):
-    comment = struct.get("comment", "")
-    if comment == "":
-        comment = struct["options"].get(predef.PredefClassComment, "")
-        if comment != "":
-            struct["comment"] = comment
 
 
 # 获取生成数组字段的范围

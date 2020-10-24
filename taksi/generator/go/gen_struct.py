@@ -4,11 +4,11 @@
 
 import os
 import sys
-import taksi.strutil as strutil
 import taksi.predef as predef
 import taksi.lang as lang
 import taksi.version as version
-import taksi.generator.genutil as genutil
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
 import taksi.generator.go.template as go_template
 from taksi.generator.go.gen_csv_load import GoCsvLoadGenerator
 
@@ -48,14 +48,11 @@ class GoStructGenerator:
     # 生成struct定义
     def gen_go_struct(self, struct, params):
         content = ''
-        fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_go_inner_struct(struct, params.go_json_tag)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -63,7 +60,8 @@ class GoStructGenerator:
             inner_typename = '[]%s' % inner_type_class
 
         vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
+        fields = struct['fields']
 
         content += '// %s, %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct {\n' % struct['camel_case_name']
@@ -112,7 +110,7 @@ class GoStructGenerator:
     def gen_go_inner_struct(self, struct, go_json_tag):
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
         content += 'type %s struct {\n' % class_name
         for field in inner_fields:
             typename = lang.map_go_type(field['original_type_name'])
@@ -158,10 +156,6 @@ class GoStructGenerator:
                                                              map_delims[0], map_delims[1])
 
         content += self.gen_const_names(descriptors)
-
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
 
         for struct in descriptors:
             content += self.generate(struct, args)

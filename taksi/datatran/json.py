@@ -6,10 +6,10 @@ import os
 import json
 import codecs
 import taksi.predef as predef
-import taksi.strutil as strutil
 import taksi.typedef as types
-import taksi.generator.genutil as genutil
-import taksi.datatran.rowutil as rowutil
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
+import taksi.util.rowutil as rowutil
 
 class JsonDataWriter:
     def __init__(self):
@@ -96,7 +96,7 @@ class JsonDataWriter:
     #
     def parse_row_inner_obj(self, struct, row, inner_struct_fields):
         inner_obj_list = []
-        start, end, step = genutil.get_inner_class_range(struct)
+        start, end, step = structutil.get_inner_class_range(struct)
         for n in range(start, end, step):
             inner_item = {}
             idx = n
@@ -122,10 +122,10 @@ class JsonDataWriter:
         # 嵌套类
         inner_var_name = ''
         inner_fields = []
-        inner_field_names, mapped_inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, mapped_inner_fields = structutil.get_inner_class_mapped_fields(struct)
         if len(mapped_inner_fields) > 0:
             inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_fields = genutil.get_inner_class_struct_fields(struct)
+            inner_fields = structutil.get_inner_class_struct_fields(struct)
 
         obj_list = []
         for row in rows:

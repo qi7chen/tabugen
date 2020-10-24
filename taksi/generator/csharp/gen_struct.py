@@ -6,9 +6,9 @@ import os
 import sys
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
-import taksi.generator.genutil as genutil
 import taksi.version as version
+import taksi.util.strutil as strutil
+import taksi.util.structutil as structutil
 from taksi.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
 
@@ -37,12 +37,12 @@ class CSharpStructGenerator:
 
         fields = struct['fields']
         if struct['options'][predef.PredefParseKVMode]:
-            fields = genutil.get_struct_kv_fields(struct)
+            fields = structutil.get_struct_kv_fields(struct)
 
         inner_class_done = False
         inner_typename = ''
         inner_var_name = ''
-        inner_field_names, inner_fields = genutil.get_inner_class_mapped_fields(struct)
+        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
         if len(inner_fields) > 0:
             content += self.gen_cs_inner_class(struct)
             inner_type_class = struct["options"][predef.PredefInnerTypeClass]
@@ -53,7 +53,7 @@ class CSharpStructGenerator:
         content += 'public class %s\n{\n' % struct['name']
 
         vec_done = False
-        vec_names, vec_name = genutil.get_vec_field_range(struct)
+        vec_names, vec_name = structutil.get_vec_field_range(struct)
 
         max_name_len = strutil.max_field_length(fields, 'name', None)
         max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cs_type)
@@ -86,11 +86,11 @@ class CSharpStructGenerator:
             content += text
         return content
 
-    #
+    # 生成嵌套内部类定义
     def gen_cs_inner_class(self, struct):
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
-        inner_fields = genutil.get_inner_class_struct_fields(struct)
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
         content += 'public class %s \n' % class_name
         content += '{\n'
         max_name_len = strutil.max_field_length(inner_fields, 'name', None)
@@ -125,10 +125,6 @@ class CSharpStructGenerator:
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
             self.load_gen.setup(array_delim, map_delims)
-
-        for struct in descriptors:
-            genutil.setup_comment(struct)
-            genutil.setup_key_value_mode(struct)
 
         for struct in descriptors:
             content += self.generate_class(struct, args)

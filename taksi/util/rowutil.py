@@ -7,7 +7,7 @@ import sys
 import csv
 import codecs
 import taksi.predef as predef
-import taksi.strutil as strutil
+import taksi.util.strutil as strutil
 
 
 def is_all_row_field_value_unique(rows, index):

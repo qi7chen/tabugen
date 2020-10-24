@@ -6,8 +6,8 @@ import os
 import codecs
 import taksi.predef as predef
 import taksi.lang as lang
-import taksi.strutil as strutil
 import taksi.version as version
+import taksi.util.strutil as strutil
 
 
 # Go代码生成器(SQL)

@@ -3,12 +3,10 @@
 # See accompanying files LICENSE.
 
 import os
-import sys
 import csv
 import codecs
-import taksi.predef as predef
-import taksi.strutil as strutil
-import taksi.datatran.rowutil as rowutil
+import taksi.util.strutil as strutil
+import taksi.util.rowutil as rowutil
 
 class CsvDataWriter:
     def __init__(self):
