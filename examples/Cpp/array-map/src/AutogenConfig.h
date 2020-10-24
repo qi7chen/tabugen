@@ -36,7 +36,7 @@ struct NewbieGuideDefine
     std::string                      Name;                  // ID
     std::string                      Type;                  // 任务类型
     std::string                      Target;                // 目标
-    std::vector<int>                 Accomplishment;        // 完成步骤
+    std::vector<int16_t>             Accomplishment;        // 完成步骤
     std::map<std::string, uint32_t>  Goods;                 // 物品
     std::string                      Description;           // 描述
 

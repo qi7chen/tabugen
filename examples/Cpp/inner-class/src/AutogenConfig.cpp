@@ -66,12 +66,12 @@ std::string AutogenConfigManager::ReadFileContent(const char* filepath)
     return std::move(content);
 }
 
-
 const std::vector<BoxProbabilityDefine>* BoxProbabilityDefine::GetData()
 {
     ASSERT(_instance_boxprobabilitydefine != nullptr);
     return _instance_boxprobabilitydefine;
 }
+
 
 const BoxProbabilityDefine* BoxProbabilityDefine::Get(const std::string& ID)
 {
@@ -86,7 +86,6 @@ const BoxProbabilityDefine* BoxProbabilityDefine::Get(const std::string& ID)
     }
     return nullptr;
 }
-
 
 // load BoxProbabilityDefine data from csv file
 int BoxProbabilityDefine::Load(const char* filepath)

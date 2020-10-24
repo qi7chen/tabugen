@@ -66,12 +66,12 @@ std::string AutogenConfigManager::ReadFileContent(const char* filepath)
     return std::move(content);
 }
 
-
 const std::vector<SoldierPropertyDefine>* SoldierPropertyDefine::GetData()
 {
     ASSERT(_instance_soldierpropertydefine != nullptr);
     return _instance_soldierpropertydefine;
 }
+
 
 const SoldierPropertyDefine* SoldierPropertyDefine::Get(const std::string& Name, int Level)
 {
@@ -102,7 +102,6 @@ std::vector<const SoldierPropertyDefine*> SoldierPropertyDefine::GetRange(const 
     return range;
 }
 
-
 // load SoldierPropertyDefine data from csv file
 int SoldierPropertyDefine::Load(const char* filepath)
 {
@@ -130,7 +129,7 @@ int SoldierPropertyDefine::Load(const char* filepath)
 // parse data object from an csv row
 int SoldierPropertyDefine::ParseFromRow(const vector<StringPiece>& row, SoldierPropertyDefine* ptr)
 {
-    ASSERT(row.size() >= 24);
+    ASSERT(row.size() >= 25);
     ASSERT(ptr != nullptr);
     ptr->Name = ParseTextAs<std::string>(row[0]);
     ptr->Level = ParseTextAs<int>(row[1]);
@@ -142,17 +141,18 @@ int SoldierPropertyDefine::ParseFromRow(const vector<StringPiece>& row, SoldierP
     ptr->Volume = ParseTextAs<uint32_t>(row[7]);
     ptr->UpgradeTime = ParseTextAs<uint32_t>(row[8]);
     ptr->UpgradeMaterialID = ParseTextAs<std::string>(row[9]);
-    ptr->UpgradeMaterialNum = ParseTextAs<int>(row[10]);
+    ptr->UpgradeMaterialNum = ParseTextAs<int64_t>(row[10]);
     ptr->ConsumeMaterial = ParseTextAs<std::string>(row[11]);
     ptr->ConsumeMaterialNum = ParseTextAs<int>(row[12]);
     ptr->ConsumeTime = ParseTextAs<int>(row[13]);
     ptr->Act = ParseTextAs<int>(row[14]);
     ptr->Hp = ParseTextAs<int>(row[15]);
     ptr->Hurt = ParseTextAs<uint32_t>(row[17]);
-    ptr->SearchScope = ParseTextAs<float>(row[20]);
+    ptr->SearchScope = ParseTextAs<int16_t>(row[20]);
     ptr->AtkFrequency = ParseTextAs<float>(row[21]);
-    ptr->AtkRange = ParseTextAs<float>(row[22]);
-    ptr->MovingSpeed = ParseTextAs<float>(row[23]);
+    ptr->AtkRange = ParseTextAs<double>(row[22]);
+    ptr->MovingSpeed = ParseTextAs<double>(row[23]);
+    ptr->EnableBurn = ParseTextAs<bool>(row[24]);
     return 0;
 }
 

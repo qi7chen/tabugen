@@ -66,7 +66,6 @@ std::string AutogenConfigManager::ReadFileContent(const char* filepath)
     return std::move(content);
 }
 
-
 const std::vector<NewbieGuideDefine>* NewbieGuideDefine::GetData()
 {
     ASSERT(_instance_newbieguidedefine != nullptr);
@@ -110,7 +109,7 @@ int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideD
         const auto& array = Split(row[3], TAKSI_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
-            ptr->Accomplishment.push_back(ParseTextAs<int>(array[i]));
+            ptr->Accomplishment.push_back(ParseTextAs<int16_t>(array[i]));
         }
     }
     {

@@ -66,13 +66,11 @@ std::string AutogenConfigManager::ReadFileContent(const char* filepath)
     return std::move(content);
 }
 
-
 const GlobalPropertyDefine* GlobalPropertyDefine::Instance()
 {
     ASSERT(_instance_globalpropertydefine != nullptr);
     return _instance_globalpropertydefine;
 }
-
 
 // load GlobalPropertyDefine data from csv file
 int GlobalPropertyDefine::Load(const char* filepath)
@@ -99,26 +97,27 @@ int GlobalPropertyDefine::Load(const char* filepath)
 // parse data object from csv rows
 int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows, GlobalPropertyDefine* ptr)
 {
-    ASSERT(rows.size() >= 11 && rows[0].size() >= 3);
+    ASSERT(rows.size() >= 12 && rows[0].size() >= 3);
     ASSERT(ptr != nullptr);
-    ptr->GoldExchangeTimeFactor1 = ParseTextAs<float>(rows[0][3]);
-    ptr->GoldExchangeTimeFactor2 = ParseTextAs<float>(rows[1][3]);
-    ptr->GoldExchangeTimeFactor3 = ParseTextAs<float>(rows[2][3]);
-    ptr->GoldExchangeResource1Price = ParseTextAs<uint32_t>(rows[3][3]);
-    ptr->GoldExchangeResource2Price = ParseTextAs<uint32_t>(rows[4][3]);
-    ptr->GoldExchangeResource3Price = ParseTextAs<uint32_t>(rows[5][3]);
-    ptr->GoldExchangeResource4Price = ParseTextAs<uint32_t>(rows[6][3]);
-    ptr->FreeCompleteSeconds = ParseTextAs<uint32_t>(rows[7][3]);
-    ptr->CancelBuildReturnPercent = ParseTextAs<uint32_t>(rows[8][3]);
+    ptr->GoldExchangeTimeFactor1 = ParseTextAs<double>(rows[0][3]);
+    ptr->GoldExchangeTimeFactor2 = ParseTextAs<double>(rows[1][3]);
+    ptr->GoldExchangeTimeFactor3 = ParseTextAs<double>(rows[2][3]);
+    ptr->GoldExchangeResource1Price = ParseTextAs<uint16_t>(rows[3][3]);
+    ptr->GoldExchangeResource2Price = ParseTextAs<uint16_t>(rows[4][3]);
+    ptr->GoldExchangeResource3Price = ParseTextAs<uint16_t>(rows[5][3]);
+    ptr->GoldExchangeResource4Price = ParseTextAs<uint16_t>(rows[6][3]);
+    ptr->FreeCompleteSeconds = ParseTextAs<uint16_t>(rows[7][3]);
+    ptr->CancelBuildReturnPercent = ParseTextAs<uint16_t>(rows[8][3]);
+    ptr->EnableSearch = ParseTextAs<bool>(rows[9][3]);
     {
-        const auto& array = Split(rows[9][3], TAKSI_ARRAY_DELIM, true);
+        const auto& array = Split(rows[10][3], TAKSI_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
             ptr->SpawnLevelLimit.push_back(ParseTextAs<int>(array[i]));
         }
     }
     {
-        const auto& dict = Split(rows[10][3], TAKSI_MAP_DELIM1, true);
+        const auto& dict = Split(rows[11][3], TAKSI_MAP_DELIM1, true);
         for (size_t i = 0; i < dict.size(); i++)
         {
             const auto& kv = Split(dict[i], TAKSI_MAP_DELIM2, true);

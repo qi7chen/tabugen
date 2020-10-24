@@ -43,17 +43,18 @@ struct SoldierPropertyDefine
     uint32_t     Volume = 0;                // 体积
     uint32_t     UpgradeTime = 0;           // 升级消耗的时间(秒）
     std::string  UpgradeMaterialID;         // 升级消耗的材料
-    int          UpgradeMaterialNum = 0;    // 升级消耗的数量
+    int64_t      UpgradeMaterialNum = 0;    // 升级消耗的数量
     std::string  ConsumeMaterial;           // 生产消耗的材料
     int          ConsumeMaterialNum = 0;    // 生产消耗的数量
     int          ConsumeTime = 0;           // 生产消耗的时间（秒/个）
     int          Act = 0;                   // 攻击
     int          Hp = 0;                    // 血量
     uint32_t     Hurt = 0;                  // buff伤害
-    float        SearchScope = 0.0;         // 搜索范围
+    int16_t      SearchScope = 0;           // 搜索范围
     float        AtkFrequency = 0.0;        // 攻击间隔
-    float        AtkRange = 0.0;            // 攻击距离
-    float        MovingSpeed = 0.0;         // 移动速度
+    double       AtkRange = 0.0;            // 攻击距离
+    double       MovingSpeed = 0.0;         // 移动速度
+    bool         EnableBurn = false;        // 燃烧特效
 
     static int Load(const char* filepath);
     static int ParseFromRow(const std::vector<StringPiece>& row, SoldierPropertyDefine* ptr);
