@@ -45,8 +45,8 @@ def run(args):
         for pair in code_generators:
             codegen = pair[0]
             filepath = pair[1]
-            if args.load_code_generator is not None:
-                codegen.setup(args.load_code_generator)
+            if args.with_csv_codegen:
+                codegen.setup('csv')
             codegen.run(descriptors, filepath, args)
 
     if not args.without_data and args.out_data_format is not None:
@@ -99,7 +99,7 @@ def main():
 
     # source code options
     parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of auto-generated config manager class")
-    parser.add_argument("--load_code_generator", help="name of generated source language package")
+    parser.add_argument("--with_csv_codegen", action='store_true', help="also generator csv load code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
     parser.add_argument("--csharp_out", help="file path of generate C# class source code")
