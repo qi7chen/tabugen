@@ -2,7 +2,7 @@
 
 老司机，带你飞
 
-TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在简化游戏业务开发中的数据抽象过程。
+TAKSi导入Excel表格生成编程语言的结构体定义，导出CSV数据文件，并生成对应的CSV文件加载代码，旨在简化业务开发中的数据抽象过程。
 
 
 # TAKSi特性
@@ -18,15 +18,19 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 ## 编辑一个excel文件
 
-    一个符合TAKSi规则的excel表格如下图所示：
+    将excel表格的数据sheet按第1行为字段名称、第2行为数据类型、第3行为注释，从第4行开始为数据内容的格式编辑，如下表：
+    
 
-![example](doc/img1.png)
+Name                |  DamagePerSec         |  Level      |  Cost
+--------------------|-----------------------|-------------|--------------------------------------------
+string              |  int                  |  int16      |  map<string, int>
+名称                |  每秒伤害             |  等级       |  升级消耗
+Marine              |  100                  |  1          | Food=100;Steel=200
+Marine              |  150                  |  2          | Food=500;Steel=1000
+Marine              |  200                  |  3          | Food=1000;Steel=2000
+Marine              |  300                  |  4          | Food=2000;Steel=5000
+Marine              |  500                  |  5          | Food=5000;Steel=10000
 
-    一个excel配置表至少包含2个sheet，默认第一个sheet是数据本身，而另一个指定名称为**@meta**的sheet则用来配置导出选项。
-
-    数据定义部分将会导出为结构及相关函数代码定义，而数据本身将会转为另一个csv/json格式的数据文件。
-
-    上图前3行代表这一列的数据类型定义，第1行为字段名称，第2行为数据类型，第3行为注释，从第4行开始为数据内容。
 
 
 # 各种语言的示例
@@ -44,11 +48,10 @@ TAKSi是一个从配置(excel表格）生成对应语言源码的工具，旨在
 
 Windows上没有默认安装Python环境，可以使用PyInstaller将TAKSi打包成执行档发布
 
-`
+```
 pip install -r requirements.txt
-
 pyinstaller -F --name=taksi taksi\cli.py
-`
+```
 
 # TO-DO
 
