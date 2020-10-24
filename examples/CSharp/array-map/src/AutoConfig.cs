@@ -13,7 +13,7 @@ public class NewbieGuideDefine
     public string                    Name = "";             // ID
     public string                    Type = "";             // 任务类型
     public string                    Target = "";           // 目标
-    public int[]                     Accomplishment = null; // 完成步骤
+    public short[]                   Accomplishment = null; // 完成步骤
     public Dictionary<string, uint>  Goods = null;          // 物品
     public string                    Description = "";      // 描述
 
@@ -36,10 +36,10 @@ public class NewbieGuideDefine
         }
         {
             var items = row[3].Split(AutogenConfigManager.TAKSI_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
-            this.Accomplishment = new int[items.Length];
+            this.Accomplishment = new short[items.Length];
             for(int i = 0; i < items.Length; i++) 
             {
-                var value = int.Parse(items[i]);
+                var value = short.Parse(items[i]);
                 this.Accomplishment[i] = value;
             }
         }
@@ -77,7 +77,6 @@ public class NewbieGuideDefine
         }
         Data = list;
     }
-
 }
 
 

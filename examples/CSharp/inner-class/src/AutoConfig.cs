@@ -88,7 +88,6 @@ public class BoxProbabilityDefine
         }
         return null;
     }
-
 }
 
 

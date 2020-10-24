@@ -5,7 +5,7 @@
       2,
       3
     ],
-    "Description": "½¨Ôì1¸öÒýÇæ¿ØÖÆÊÒ",
+    "Description": "å»ºé€ 1ä¸ªå¼•æ“ŽæŽ§åˆ¶å®¤",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -20,7 +20,7 @@
       2,
       4
     ],
-    "Description": "½¨Ôì1¸öÌ«¿ÕÎÂÊÒ",
+    "Description": "å»ºé€ 1ä¸ªå¤ªç©ºæ¸©å®¤",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -35,7 +35,7 @@
       2,
       5
     ],
-    "Description": "½«´óÁ¦ÉñµÇÂ½Í§ÉýÖÁ2¼¶",
+    "Description": "å°†å¤§åŠ›ç¥žç™»é™†è‰‡å‡è‡³2çº§",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -50,7 +50,7 @@
       2,
       6
     ],
-    "Description": "½â·Å1¸öÌ«¿ÕÖ³ÃñµØ",
+    "Description": "è§£æ”¾1ä¸ªå¤ªç©ºæ®–æ°‘åœ°",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -65,7 +65,7 @@
       2,
       7
     ],
-    "Description": "½¨Ôì1¸ö±£ÏÕ¿â",
+    "Description": "å»ºé€ 1ä¸ªä¿é™©åº“",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -80,7 +80,7 @@
       2,
       8
     ],
-    "Description": "½¨Ôì1¸öÓÄÁéÉÚËþ",
+    "Description": "å»ºé€ 1ä¸ªå¹½çµå“¨å¡”",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -95,7 +95,7 @@
       2,
       9
     ],
-    "Description": "½«ÕÂ±±º£µÈ¼¶ÌáÉýÖÁ2¼¶",
+    "Description": "å°†ç« åŒ—æµ·ç­‰çº§æå‡è‡³2çº§",
     "Goods": {
       "Food": 10,
       "Gas": 100
@@ -110,7 +110,7 @@
       2,
       10
     ],
-    "Description": "½«Â½Õ½¶ÓµÈ¼¶ÌáÉýÖÁ2¼¶",
+    "Description": "å°†é™†æˆ˜é˜Ÿç­‰çº§æå‡è‡³2çº§",
     "Goods": {
       "Food": 10,
       "Gas": 100

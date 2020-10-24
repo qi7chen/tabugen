@@ -20,24 +20,25 @@ public class SoldierPropertyDefine
     public uint    Volume = 0;                // 体积
     public uint    UpgradeTime = 0;           // 升级消耗的时间(秒）
     public string  UpgradeMaterialID = "";    // 升级消耗的材料
-    public int     UpgradeMaterialNum = 0;    // 升级消耗的数量
+    public long    UpgradeMaterialNum = 0;    // 升级消耗的数量
     public string  ConsumeMaterial = "";      // 生产消耗的材料
     public int     ConsumeMaterialNum = 0;    // 生产消耗的数量
     public int     ConsumeTime = 0;           // 生产消耗的时间（秒/个）
     public int     Act = 0;                   // 攻击
     public int     Hp = 0;                    // 血量
     public uint    Hurt = 0;                  // buff伤害
-    public float   SearchScope = 0.0f;        // 搜索范围
+    public short   SearchScope = 0;           // 搜索范围
     public float   AtkFrequency = 0.0f;       // 攻击间隔
-    public float   AtkRange = 0.0f;           // 攻击距离
-    public float   MovingSpeed = 0.0f;        // 移动速度
+    public double  AtkRange = 0.0f;           // 攻击距离
+    public double  MovingSpeed = 0.0f;        // 移动速度
+    public bool    EnableBurn = false;        // 燃烧特效
 
     public static SoldierPropertyDefine[] Data { get; private set; } 
 
     // parse object fields from a text row
     public void ParseFromRow(List<string> row)
     {
-        if (row.Count < 24) {
+        if (row.Count < 25) {
             throw new ArgumentException(string.Format("SoldierPropertyDefine: row length too short {0}", row.Count));
         }
         if (row[0].Length > 0) {
@@ -71,7 +72,7 @@ public class SoldierPropertyDefine
             this.UpgradeMaterialID = row[9].Trim();
         }
         if (row[10].Length > 0) {
-            this.UpgradeMaterialNum = int.Parse(row[10]);
+            this.UpgradeMaterialNum = long.Parse(row[10]);
         }
         if (row[11].Length > 0) {
             this.ConsumeMaterial = row[11].Trim();
@@ -92,16 +93,19 @@ public class SoldierPropertyDefine
             this.Hurt = uint.Parse(row[17]);
         }
         if (row[20].Length > 0) {
-            this.SearchScope = float.Parse(row[20]);
+            this.SearchScope = short.Parse(row[20]);
         }
         if (row[21].Length > 0) {
             this.AtkFrequency = float.Parse(row[21]);
         }
         if (row[22].Length > 0) {
-            this.AtkRange = float.Parse(row[22]);
+            this.AtkRange = double.Parse(row[22]);
         }
         if (row[23].Length > 0) {
-            this.MovingSpeed = float.Parse(row[23]);
+            this.MovingSpeed = double.Parse(row[23]);
+        }
+        if (row[24].Length > 0) {
+            this.EnableBurn = AutogenConfigManager.ParseBool(row[24]);
         }
     }
 
@@ -144,7 +148,6 @@ public class SoldierPropertyDefine
         }
         return range;
     }
-
 }
 
 

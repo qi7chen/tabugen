@@ -10,15 +10,16 @@ namespace Config
 // 全局数值配置, 全局变量表.xlsx
 public class GlobalPropertyDefine
 {
-    public float                    GoldExchangeTimeFactor1 = 0.0f;    // 金币兑换时间参数1
-    public float                    GoldExchangeTimeFactor2 = 0.0f;    // 金币兑换时间参数2
-    public float                    GoldExchangeTimeFactor3 = 0.0f;    // 金币兑换时间参数3
-    public uint                     GoldExchangeResource1Price = 0;    // 金币兑换资源1价格
-    public uint                     GoldExchangeResource2Price = 0;    // 金币兑换资源2价格
-    public uint                     GoldExchangeResource3Price = 0;    // 金币兑换资源3价格
-    public uint                     GoldExchangeResource4Price = 0;    // 金币兑换资源4价格
-    public uint                     FreeCompleteSeconds = 0;           // 免费立即完成时间
-    public uint                     CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
+    public double                   GoldExchangeTimeFactor1 = 0.0f;    // 金币兑换时间参数1
+    public double                   GoldExchangeTimeFactor2 = 0.0f;    // 金币兑换时间参数2
+    public double                   GoldExchangeTimeFactor3 = 0.0f;    // 金币兑换时间参数3
+    public ushort                   GoldExchangeResource1Price = 0;    // 金币兑换资源1价格
+    public ushort                   GoldExchangeResource2Price = 0;    // 金币兑换资源2价格
+    public ushort                   GoldExchangeResource3Price = 0;    // 金币兑换资源3价格
+    public ushort                   GoldExchangeResource4Price = 0;    // 金币兑换资源4价格
+    public ushort                   FreeCompleteSeconds = 0;           // 免费立即完成时间
+    public ushort                   CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
+    public bool                     EnableSearch = false;              // 开启搜索
     public int[]                    SpawnLevelLimit = null;            // 最大刷新个数显示
     public Dictionary<string, int>  FirstRechargeReward = null;        // 首充奖励
 
@@ -27,38 +28,41 @@ public class GlobalPropertyDefine
     // parse object fields from text rows
     public void ParseFromRows(List<List<string>> rows)
     {
-        if (rows.Count < 11) {
-            throw new ArgumentException(string.Format("GlobalPropertyDefine: row length out of index, {0} < 11", rows.Count));
+        if (rows.Count < 12) {
+            throw new ArgumentException(string.Format("GlobalPropertyDefine: row length out of index, {0} < 12", rows.Count));
         }
         if (rows[0][3].Length > 0) {
-            this.GoldExchangeTimeFactor1 = float.Parse(rows[0][3]);
+            this.GoldExchangeTimeFactor1 = double.Parse(rows[0][3]);
         }
         if (rows[1][3].Length > 0) {
-            this.GoldExchangeTimeFactor2 = float.Parse(rows[1][3]);
+            this.GoldExchangeTimeFactor2 = double.Parse(rows[1][3]);
         }
         if (rows[2][3].Length > 0) {
-            this.GoldExchangeTimeFactor3 = float.Parse(rows[2][3]);
+            this.GoldExchangeTimeFactor3 = double.Parse(rows[2][3]);
         }
         if (rows[3][3].Length > 0) {
-            this.GoldExchangeResource1Price = uint.Parse(rows[3][3]);
+            this.GoldExchangeResource1Price = ushort.Parse(rows[3][3]);
         }
         if (rows[4][3].Length > 0) {
-            this.GoldExchangeResource2Price = uint.Parse(rows[4][3]);
+            this.GoldExchangeResource2Price = ushort.Parse(rows[4][3]);
         }
         if (rows[5][3].Length > 0) {
-            this.GoldExchangeResource3Price = uint.Parse(rows[5][3]);
+            this.GoldExchangeResource3Price = ushort.Parse(rows[5][3]);
         }
         if (rows[6][3].Length > 0) {
-            this.GoldExchangeResource4Price = uint.Parse(rows[6][3]);
+            this.GoldExchangeResource4Price = ushort.Parse(rows[6][3]);
         }
         if (rows[7][3].Length > 0) {
-            this.FreeCompleteSeconds = uint.Parse(rows[7][3]);
+            this.FreeCompleteSeconds = ushort.Parse(rows[7][3]);
         }
         if (rows[8][3].Length > 0) {
-            this.CancelBuildReturnPercent = uint.Parse(rows[8][3]);
+            this.CancelBuildReturnPercent = ushort.Parse(rows[8][3]);
+        }
+        if (rows[9][3].Length > 0) {
+            this.EnableSearch = AutogenConfigManager.ParseBool(rows[9][3]);
         }
         {
-            var items = rows[9][3].Split(AutogenConfigManager.TAKSI_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[10][3].Split(AutogenConfigManager.TAKSI_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
             this.SpawnLevelLimit = new int[items.Length];
             for(int i = 0; i < items.Length; i++) 
             {
@@ -67,7 +71,7 @@ public class GlobalPropertyDefine
             }
         }
         {
-            var items = rows[10][3].Split(AutogenConfigManager.TAKSI_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[11][3].Split(AutogenConfigManager.TAKSI_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
             this.FirstRechargeReward = new Dictionary<string,int>();
             for(int i = 0; i < items.Length; i++) 
             {
@@ -85,18 +89,17 @@ public class GlobalPropertyDefine
         }
     }
 
-    public static void LoadFromLines(List<string> lines)
+public static void LoadFromLines(List<string> lines)
+{
+    var rows = new List<List<string>>();
+    for(int i = 0; i < lines.Count; i++)
     {
-        var rows = new List<List<string>>();
-        for(int i = 0; i < lines.Count; i++)
-        {
-            var row = AutogenConfigManager.ReadRecordFromLine(lines[i]);
-            rows.Add(row);
-        }
-        Instance = new GlobalPropertyDefine();
-        Instance.ParseFromRows(rows);
+        var row = AutogenConfigManager.ReadRecordFromLine(lines[i]);
+        rows.Add(row);
     }
-
+    Instance = new GlobalPropertyDefine();
+    Instance.ParseFromRows(rows);
+}
 }
 
 
