@@ -105,3 +105,63 @@ public class %s
     }
 
 """
+
+CSHARP_RANGE_METHOD_TEMPLATE = """
+    // get a range of items by key
+    public static List<%s> GetRange(%s)
+    {
+        var range = new List<%s>();
+        foreach (%s item in Data)
+        {
+            if (%s)
+            {
+                range.Add(item);
+            }
+        }
+        return range;
+    }
+"""
+
+CSHARP_GET_METHOD_TEMPLATE = """
+    // get an item by key
+    public static %s Get(%s)
+    {
+        foreach (%s item in Data)
+        {
+            if (%s)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+"""
+
+CSHARP_LOAD_METHOD_TEMPLATE = """
+    public static void LoadFromLines(List<string> lines)
+    {
+        var list = new %s[lines.Count];
+        for(int i = 0; i < lines.Count; i++)
+        {
+            var row = %s.ReadRecordFromLine(lines[i]);
+            var obj = new %s();
+            obj.ParseFromRow(row);
+            list[i] = obj;
+        }
+        Data = list;
+    }
+"""
+
+CSHARP_LOAD_FROM_METHOD_TEMPLATE = """
+public static void LoadFromLines(List<string> lines)
+{
+    var rows = new List<List<string>>();
+    for(int i = 0; i < lines.Count; i++)
+    {
+        var row = %s.ReadRecordFromLine(lines[i]);
+        rows.Add(row);
+    }
+    Instance = new %s();
+    Instance.ParseFromRows(rows);
+}
+"""

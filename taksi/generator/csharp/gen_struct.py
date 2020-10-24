@@ -109,7 +109,7 @@ class CSharpStructGenerator:
         content = '\n'
         content += self.gen_cs_struct(struct)
         if self.load_gen is not None:
-            content += self.load_gen.gen_source_method(struct, args)
+            content += self.load_gen.gen_source_method(struct)
         content += '}\n\n'
         return content
 
@@ -124,7 +124,7 @@ class CSharpStructGenerator:
 
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims)
+            self.load_gen.setup(array_delim, map_delims, args.config_manager_class)
 
         for struct in descriptors:
             content += self.generate_class(struct, args)

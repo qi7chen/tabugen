@@ -20,9 +20,10 @@ class CSharpCsvLoadGenerator:
         self.config_manager_name = ''
 
     # 初始化array, map分隔符
-    def setup(self, array_delim, map_delims):
+    def setup(self, array_delim, map_delims, name):
         self.array_delim = array_delim
         self.map_delims = map_delims
+        self.config_manager_name = name
 
     def get_data_member_name(self, name):
         return name + 'Data'
@@ -101,9 +102,9 @@ class CSharpCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
+        keyidx = keycol - 1
+        validx = valcol - 1
+        typeidx = typcol - 1
 
         content = ''
         content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
@@ -138,7 +139,7 @@ class CSharpCsvLoadGenerator:
                 text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
             idx += 1
-        content += '%s}\n\n' % self.TAB_SPACE
+        content += '%s}\n' % self.TAB_SPACE
         return content
 
     # 生成ParseFromRow方法
@@ -194,7 +195,7 @@ class CSharpCsvLoadGenerator:
                         text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
-        content += '%s}\n\n' % self.TAB_SPACE
+        content += '%s}\n' % self.TAB_SPACE
         return content
 
     # 生成内部类的parse
@@ -239,17 +240,18 @@ class CSharpCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
-        content += '%s{\n' % self.TAB_SPACE
-        content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
-        content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE*2)
-        content += '%s{\n' % (self.TAB_SPACE*2)
-        content += '%svar row = %s.ReadRecordFromLine(lines[i]);\n' % (self.TAB_SPACE * 3, self.config_manager_name)
-        content += "%srows.Add(row);\n" % (self.TAB_SPACE*3)
-        content += '%s}\n' % (self.TAB_SPACE*2)
-        content += '%sInstance = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sInstance.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
-        content += '%s}\n\n' % self.TAB_SPACE
+        content = csharp_template.CSHARP_LOAD_FROM_METHOD_TEMPLATE % (self.config_manager_name, struct['name'])
+        # content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
+        # content += '%s{\n' % self.TAB_SPACE
+        # content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
+        # content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE*2)
+        # content += '%s{\n' % (self.TAB_SPACE*2)
+        # content += '%svar row = %s.ReadRecordFromLine(lines[i]);\n' % (self.TAB_SPACE * 3, self.config_manager_name)
+        # content += "%srows.Add(row);\n" % (self.TAB_SPACE*3)
+        # content += '%s}\n' % (self.TAB_SPACE*2)
+        # content += '%sInstance = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
+        # content += '%sInstance.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
+        # content += '%s}\n\n' % self.TAB_SPACE
         return content
 
     # 生成Load方法
@@ -257,19 +259,19 @@ class CSharpCsvLoadGenerator:
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_struct_load_method(struct)
 
-        content = ''
-        content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
-        content += '%s{\n' % self.TAB_SPACE
-        content += '%svar list = new %s[lines.Count];\n' % (self.TAB_SPACE * 2, struct['name'])
-        content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE * 2)
-        content += '%s{\n' % (self.TAB_SPACE * 2)
-        content += "%svar row = %s.ReadRecordFromLine(lines[i]);\n" % (self.TAB_SPACE * 3, self.config_manager_name)
-        content += '%svar obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'])
-        content += "%sobj.ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        content += "%slist[i] = obj;\n" % (self.TAB_SPACE * 3)
-        content += '%s}\n' % (self.TAB_SPACE * 2)
-        content += '%sData = list;\n' % (self.TAB_SPACE * 2)
-        content += '%s}\n\n' % self.TAB_SPACE
+        content = csharp_template.CSHARP_LOAD_METHOD_TEMPLATE % (struct['name'], self.config_manager_name, struct['name'])
+        # content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
+        # content += '%s{\n' % self.TAB_SPACE
+        # content += '%svar list = new %s[lines.Count];\n' % (self.TAB_SPACE * 2, struct['name'])
+        # content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE * 2)
+        # content += '%s{\n' % (self.TAB_SPACE * 2)
+        # content += "%svar row = %s.ReadRecordFromLine(lines[i]);\n" % (self.TAB_SPACE * 3, self.config_manager_name)
+        # content += '%svar obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'])
+        # content += "%sobj.ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
+        # content += "%slist[i] = obj;\n" % (self.TAB_SPACE * 3)
+        # content += '%s}\n' % (self.TAB_SPACE * 2)
+        # content += '%sData = list;\n' % (self.TAB_SPACE * 2)
+        # content += '%s}\n\n' % self.TAB_SPACE
         return content
 
     # 生成Get()方法
@@ -288,19 +290,9 @@ class CSharpCsvLoadGenerator:
             formal_param.append('%s %s' % (typename, tpl[1]))
             arg_names.append(tpl[1])
 
-        content = ''
-        content += '    // get an item by key\n'
-        content += '    public static %s Get(%s)\n' % (struct['name'], ', '.join(formal_param))
-        content += '    {\n'
-        content += '        foreach (%s item in Data)\n' % struct['name']
-        content += '        {\n'
-        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, predef.PredefGetMethodKeys)
-        content += '            {\n'
-        content += '                return item;\n'
-        content += '            }\n'
-        content += '        }\n'
-        content += '        return null;\n'
-        content += '    }\n\n'
+        condtext = self.gen_equal_stmt('item.', struct, predef.PredefGetMethodKeys)
+        content = csharp_template.CSHARP_GET_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param),
+                                                                struct['name'], condtext)
         return content
 
     # 生成GetRange()方法
@@ -322,20 +314,9 @@ class CSharpCsvLoadGenerator:
             formal_param.append('%s %s' % (typename, tpl[1]))
             arg_names.append(tpl[1])
 
-        content = ''
-        content += '    // get a range of items by key\n'
-        content += '    public static List<%s> GetRange(%s)\n' % (struct['name'], ', '.join(formal_param))
-        content += '    {\n'
-        content += '        var range = new List<%s>();\n' % struct['name']
-        content += '        foreach (%s item in Data)\n' % struct['name']
-        content += '        {\n'
-        content += '            if (%s)\n' % self.gen_equal_stmt('item.', struct, predef.PredefRangeMethodKeys)
-        content += '            {\n'
-        content += '                range.Add(item);\n'
-        content += '            }\n'
-        content += '        }\n'
-        content += '        return range;\n'
-        content += '    }\n\n'
+        condtext = self.gen_equal_stmt('item.', struct, predef.PredefRangeMethodKeys)
+        content = csharp_template.CSHARP_RANGE_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param),
+                                                                  struct['name'], struct['name'], condtext)
         return content
 
     # 生成manager类型
@@ -362,9 +343,8 @@ class CSharpCsvLoadGenerator:
         return content
 
     #
-    def gen_source_method(self, struct, args):
+    def gen_source_method(self, struct):
         content = ''
-        self.config_manager_name = args.config_manager_class
         content += self.gen_static_data(struct)
         content += self.gen_parse_method(struct)
         content += self.gen_load_method(struct)
