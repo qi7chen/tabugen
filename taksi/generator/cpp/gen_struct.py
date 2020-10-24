@@ -153,12 +153,13 @@ class CppStructGenerator:
         outname = os.path.split(filepath)[-1]
 
         cpp_content = ''
-        header_content = self.gen_header_content(descriptors, args)
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims)
+            self.load_gen.setup(array_delim, map_delims, args.config_manager_class)
             filename = outname + '.h'
             cpp_content = self.load_gen.gen_source_method(descriptors, args, filename)
+
+        header_content = self.gen_header_content(descriptors, args)
 
         header_filepath = filepath + '.h'
         filename = os.path.abspath(header_filepath)

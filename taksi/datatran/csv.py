@@ -5,6 +5,9 @@
 import os
 import csv
 import codecs
+import tempfile
+import filecmp
+import shutil
 import taksi.util.strutil as strutil
 import taksi.util.rowutil as rowutil
 
@@ -18,13 +21,21 @@ class CsvDataWriter:
 
     # 将数据写入csv文件
     def write_file(self, name, rows, delim, filepath, encoding):
-        filename = "%s/%s.csv" % (filepath, name)
-        filename = os.path.abspath(filename)
+        tmp_filename = '%s/taksi_%s' % (tempfile.gettempdir(), strutil.random_word(10))
+        filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)
         w = csv.writer(f, delimiter=delim, lineterminator='\n', quotechar='"', quoting=csv.QUOTE_ALL)
         w.writerows(rows)
         f.close()
-        print("wrote csv rows to", filename)
+
+        target_filename = "%s/%s.csv" % (filepath, name)
+
+        # move to destination path if content not equal
+        if os.path.isfile(target_filename) and filecmp.cmp(tmp_filename, target_filename):
+            os.remove(tmp_filename)
+        else:
+            shutil.move(tmp_filename, target_filename)
+            print("wrote csv rows to", target_filename)
 
     def process(self, descriptors, args):
         filepath = args.out_data_path

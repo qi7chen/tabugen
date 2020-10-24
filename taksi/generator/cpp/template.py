@@ -57,7 +57,7 @@ const %s* %s::Instance()
 """
 
 
-CPP_GET_METHOD_TEMPLATE = """
+CPP_GETDATA_METHOD_TEMPLATE = """
 const std::vector<%s>* %s::GetData()
 {
     ASSERT(%s != nullptr);
@@ -116,4 +116,35 @@ int %s::Load(const char* filepath)
 }
 """
 
+CPP_GET_METHOD_TEMPLATE = """
+const %s* %s::Get(%s)
+{
+    const vector<%s>* dataptr = GetData();
+    ASSERT(dataptr != nullptr && dataptr->size() > 0);
+    for (size_t i = 0; i < dataptr->size(); i++)
+    {
+        if (%s)
+        {
+            return &dataptr->at(i);
+        }
+    }
+    return nullptr;
+}
+"""
 
+CPP_GET_RANGE_METHOD_TEMPLATE = """
+std::vector<const %s*> %s::GetRange(%s)
+{
+    const vector<%s>* dataptr = GetData();
+    std::vector<const %s*> range;
+    ASSERT(dataptr != nullptr && dataptr->size() > 0);
+    for (size_t i = 0; i < dataptr->size(); i++)
+    {
+        if (%s)
+        {
+            range.push_back(&dataptr->at(i));
+        }
+    }
+    return range;
+}
+"""

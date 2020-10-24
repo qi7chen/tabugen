@@ -166,11 +166,9 @@ class JsonDataWriter:
             content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
         else:
             content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True)
-        # print(content)
-        f = codecs.open(filename, "w", encoding)
-        f.write(content)
-        f.close()
-        print("wrote json data to", filename)
+
+        if strutil.save_content_if_not_same(filename, content, encoding):
+            print("wrote JSON data to", filename)
 
     def process(self, descriptors, args):
         filepath = args.out_data_path

@@ -71,12 +71,12 @@ class JavaCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += '%sString[] tokens = %s.split(%s.TAKSI_ARRAY_DELIM);\n' % (space, row_name, self.config_manager_name)
-        content += '%s%s[] list = new %s[tokens.length];\n' % (space, elem_type, elem_type)
-        content += '%sfor (int i = 0; i < tokens.length; i++) {\n' % space
-        content += '%s    if (!tokens[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
+        content += '%sString[] kvList = %s.split(%s.TAKSI_ARRAY_DELIM);\n' % (space, row_name, self.config_manager_name)
+        content += '%s%s[] list = new %s[kvList.length];\n' % (space, elem_type, elem_type)
+        content += '%sfor (int i = 0; i < kvList.length; i++) {\n' % space
+        content += '%s    if (!kvList[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
         varname = '%s value' % elem_type
-        content += self.gen_field_assgin_stmt(varname, elem_type, 'tokens[i]', tabs + 2)
+        content += self.gen_field_assgin_stmt(varname, elem_type, 'kvList[i]', tabs + 2)
         content += '%s        list[i] = value;\n' % (self.TAB_SPACE * tabs)
         content += '%s    }\n' % (self.TAB_SPACE * tabs)
         content += '%s}\n' % space
@@ -92,9 +92,9 @@ class JavaCsvLoadGenerator:
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
-        content = '%sString[] tokens = %s.split(%s.TAKSI_MAP_DELIM1);\n' % (space, row_name, self.config_manager_name)
-        content += '%sfor(int i = 0; i < tokens.length; i++) {\n' % space
-        content += '%s    String text = tokens[i];\n' % space
+        content = '%sString[] kvList = %s.split(%s.TAKSI_MAP_DELIM1);\n' % (space, row_name, self.config_manager_name)
+        content += '%sfor(int i = 0; i < kvList.length; i++) {\n' % space
+        content += '%s    String text = kvList[i];\n' % space
         content += '%s    if (text.isEmpty()) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
@@ -122,8 +122,8 @@ class JavaCsvLoadGenerator:
             field = inner_fields[n]
             origin_type = field['original_type_name']
             typename = lang.map_java_type(origin_type)
-            valuetext = 'row[i + %d]' % n
-            content += '            if (!row[i + %d].isEmpty()) \n' % n
+            valuetext = 'record.get(i + %d)' % n
+            content += '            if (!record.get(i + %d).isEmpty()) \n' % n
             content += '            {\n'
             content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
             content += '            }\n'
@@ -139,16 +139,16 @@ class JavaCsvLoadGenerator:
         typcol = int(struct['options'][predef.PredefValueTypeColumn])
         assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx, keyfield = structutil.get_field_by_column_index(struct, keycol)
-        validx, valfield = structutil.get_field_by_column_index(struct, valcol)
-        typeidx, typefield = structutil.get_field_by_column_index(struct, typcol)
+        keyidx = keycol - 1
+        validx = valcol - 1
+        typeidx = typcol - 1
 
         content = ''
         content += '%s// parse fields data from text records\n' % self.TAB_SPACE
         content += '%spublic void parseFrom(List<CSVRecord> records)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%s    if (records.length < %d) {\n' % (self.TAB_SPACE, len(rows))
-        content += '%s        throw new RuntimeException(String.format("%s: records length too short, %%d < %d", records.length));\n' % (
+        content += '%s    if (records.size() < %d) {\n' % (self.TAB_SPACE, len(rows))
+        content += '%s        throw new RuntimeException(String.format("%s: records length too short, %%d < %d", records.size()));\n' % (
             self.TAB_SPACE, struct['name'], len(rows))
         content += '%s}\n' % (self.TAB_SPACE * 2)
 
@@ -158,7 +158,7 @@ class JavaCsvLoadGenerator:
             name = strutil.camel_case(name)
             origin_typename = rows[idx][typeidx].strip()
             typename = lang.map_java_type(origin_typename)
-            valuetext = 'records[%d].get(%d)' % (idx, validx)
+            valuetext = 'records.get(%d).get(%d)' % (idx, validx)
             # print('kv', name, origin_typename, valuetext)
             if origin_typename.startswith('array'):
                 content += '%s{\n' % (self.TAB_SPACE * 2)
@@ -169,11 +169,11 @@ class JavaCsvLoadGenerator:
                 content += self.gen_field_map_assign_stmt('this.', origin_typename, name, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
-                content += '%sif (!records[%d].get(%d).isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
+                content += '%sif (!records.get(%d).get(%d).isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
                 content += self.gen_field_assgin_stmt('this.' + name, typename, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             idx += 1
-        content += '%s}\n\n' % self.TAB_SPACE
+        content += '%s}\n' % self.TAB_SPACE
         return content
 
     # 生成ParseFromRow方法
@@ -229,7 +229,7 @@ class JavaCsvLoadGenerator:
                         text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
-        content += '%s}\n\n' % self.TAB_SPACE
+        content += '%s}\n' % self.TAB_SPACE
         return content
 
     # 生成内部类的parse
@@ -273,8 +273,6 @@ class JavaCsvLoadGenerator:
 
         content = ''
         content += java_template.JAVA_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'])
-        content += '\n'
-
         return content
 
     # 字段比较

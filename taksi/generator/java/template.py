@@ -60,10 +60,10 @@ JAVA_KV_LOAD_FUNC_TEMPLATE = """
         CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
         for (CSVRecord record : parser)
         {
-            records.Add(record);
+            records.add(record);
         }
         %s instance = new %s();
-        instance.ParseFrom(records);
+        instance.parseFrom(records);
         instance_ = instance;
     }
 """
@@ -98,7 +98,6 @@ JAVA_GET_METHOD_TEMPLATE = """
         }
         return null;
     }
-
 """
 
 JAVA_RANGE_METHOD_TEMPLATE = """
@@ -115,5 +114,4 @@ JAVA_RANGE_METHOD_TEMPLATE = """
         }
        return range;
     }
-
 """
