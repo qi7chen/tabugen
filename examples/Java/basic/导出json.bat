@@ -10,5 +10,5 @@ set PYTHONPATH=%rootDir%
 set taxi_alias=python %rootDir%\taksi\cli.py
 set filepath="%currentDir%\..\..\datasheet\±øÖÖ.xlsx"
 
-%taxi_alias%  --parser=excel --parse_files=%filepath% --java_out=%currentDir%\proj\src\main\java --package=com.mycompany.jsonconfig --out_data_format=json --json_indent  --out_data_path=%currentDir%\proj\src\main\resources
+%taxi_alias%  --parser=excel --parse_files=%filepath% --java_out=%currentDir%\idea-project\src\main\java --package=com.mycompany.jsonconfig --out_data_format=json --json_indent  --out_data_path=%currentDir%\idea-project\src\main\resources
 pause
