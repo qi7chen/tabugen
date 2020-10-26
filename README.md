@@ -31,6 +31,12 @@ Marine              |  200                  |  3          | Food=1000;Steel=2000
 Marine              |  300                  |  4          | Food=2000;Steel=5000
 Marine              |  500                  |  5          | Food=5000;Steel=10000
 
+## 导出数据和生成代码
+
+运行taksi脚本，生成C#代码和导出CSV数据文件
+```
+python taksi/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --package=Config --with_csv_codegen --out_data_format=csv
+```
 
 
 # 各种语言的示例
