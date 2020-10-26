@@ -1,5 +1,7 @@
 # TAKSi
 
+![TAKSi](doc/taksi.png)
+
 老司机，带你飞
 
 TAKSi导入Excel表格生成编程语言的结构体定义，导出CSV数据文件，并生成对应的CSV文件加载代码，旨在简化业务开发中的数据抽象过程。
