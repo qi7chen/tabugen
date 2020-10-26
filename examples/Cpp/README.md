@@ -51,11 +51,11 @@
 
 在命令行可以指定一些控制导出内容的参数，如：
 
-* `cpp_out` 输入为C++代码文件
-* `package` 指定C++命名空间
-* `source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
-* `config_manager_class` 指定管理配置的class名称，默认为AutogenConfigManager
-* `with_csv_codegen` 是否包含CSV加载代码，
-* `cpp_pch` 指定包含的C++预编译头文件
+* `--cpp_out` 输入为C++代码文件
+* `--package` 指定C++命名空间
+* `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
+* `--config_manager_class` 指定管理配置的class名称，默认为AutogenConfigManager
+* `--with_csv_codegen` 是否包含CSV加载代码，
+* `--cpp_pch` 指定包含的C++预编译头文件
 
 

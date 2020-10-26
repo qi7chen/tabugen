@@ -14,18 +14,18 @@
 
 #### 命令行参数
 
-* `parser` 一般为excel，代表从excel表格中读取结构体定义以及对应的数据表
-* `parse_files` 指定导入的excel文件，或者包含很多excel文件的路径名称
-* `parse_file_skip` 需要跳过的excel文件名
-* `enable_column_skip` 如果开启这个选项，则excel里配置hide_value_columns包含的列不会被导入
-* `out_data_format` 导出的数据文件格式，可以是csv，json
-* `out_data_path` 导出的数据文件路径
-* `data_file_encoding` 导出数据文件的编码格式，默认UTF-8
-* `out_csv_delim` 导出的CSV数据文件的分隔符，默认为逗号
-* `json_indent` 控制导出的JSON是否换行
-* `json_snake_case` 控制导出的JSON使用字段名称是小写还是大写驼峰风格
-* `array_delim`指定表格数据里的array类型的分隔符，默认是逗号，即数据配置格式为 "1,2,3"
-* `map_delims` 指定表格数据里的map类型的分隔符，默认是分号和等号，即数据配置格式为 "a=1;b=2;c=3"
+* `--parser` 一般为excel，代表从excel表格中读取结构体定义以及对应的数据表
+* `--parse_files` 指定导入的excel文件，或者包含很多excel文件的路径名称
+* `--parse_file_skip` 需要跳过的excel文件名
+* `--enable_column_skip` 如果开启这个选项，则excel里配置hide_value_columns包含的列不会被导入
+* `--out_data_format` 导出的数据文件格式，可以是csv，json
+* `--out_data_path` 导出的数据文件路径
+* `--data_file_encoding` 导出数据文件的编码格式，默认UTF-8
+* `--out_csv_delim` 导出的CSV数据文件的分隔符，默认为逗号
+* `--json_indent` 控制导出的JSON是否换行
+* `--json_snake_case` 控制导出的JSON使用字段名称是小写还是大写驼峰风格
+* `--array_delim`指定表格数据里的array类型的分隔符，默认是逗号，即数据配置格式为 "1,2,3"
+* `--map_delims` 指定表格数据里的map类型的分隔符，默认是分号和等号，即数据配置格式为 "a=1;b=2;c=3"
 
 #### meta表的配置参数
 
