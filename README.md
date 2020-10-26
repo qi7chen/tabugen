@@ -1,6 +1,6 @@
 # TAKSi
 
-![TAKSi](doc/taksi.png)
+![TAKSi](doc/taksi.jpg)
 
 老司机，带你飞
 
