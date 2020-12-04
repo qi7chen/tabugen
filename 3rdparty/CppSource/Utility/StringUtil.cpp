@@ -1103,8 +1103,8 @@ void RandBytes(void* output, size_t output_length)
     int fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
     if (fd > 0)
     {
-        SCOPE_EXIT{ close(fd); };
         int r = read(fd, output, output_length);
+        close(fd);
         DCHECK(r >= 0) << "read /dev/urandom " << errno;
     }
     else
