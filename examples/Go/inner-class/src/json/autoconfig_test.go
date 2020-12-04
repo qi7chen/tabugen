@@ -8,7 +8,7 @@ import (
 )
 
 func TestAutogenConfig(t *testing.T) {
-	filename := fmt.Sprintf("../../res/%s.json", KeyBoxProbabilityDefineName)
+	filename := "../../res/box_probability_define.json"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
