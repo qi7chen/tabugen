@@ -27,6 +27,9 @@ def parse_meta_rows(sheet_rows):
             if len(key) > 0 and len(value) > 0:
                 meta[key] = value
 
+
+# 处理meta字段
+def validated_meta(meta):
     if predef.OptionSkippedColumns in meta:
         field_names = meta[predef.OptionSkippedColumns].split(',')
         field_names = [v.strip() for v in field_names]

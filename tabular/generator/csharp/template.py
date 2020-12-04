@@ -6,11 +6,11 @@
 CSHARP_MANAGER_TEMPLATE = """
 public class %s 
 {    
-    public const char CSV_SEP = '%s';           // CSV field delimiter
-    public const char CSV_QUOTE = '"';          // CSV field quote
-    public const char TAB_ARRAY_DELIM = '%s'; 
-    public const char TAB_MAP_DELIM1 = '%s';
-    public const char TAB_MAP_DELIM2 = '%s';
+    public const char TAB_CSV_SEP = '%s';           // CSV field delimiter
+    public const char TAB_CSV_QUOTE = '"';          // CSV field quote
+    public const char TAB_ARRAY_DELIM = '%s';       // array item delimiter
+    public const char TAB_MAP_DELIM1 = '%s';        // map item delimiter
+    public const char TAB_MAP_DELIM2 = '%s';        // map key-value delimiter
     
     public delegate void ContentReader(string filepath, Action<string> callback);
     public static ContentReader reader = ReadFileContent;
@@ -73,7 +73,7 @@ public class %s
     public static int ParseNextColumn(string line, int start, out string field)
     {
         bool in_quote = false;
-        if (line[start] == CSV_QUOTE)
+        if (line[start] == TAB_CSV_QUOTE)
         {
             in_quote = true;
             start++;
@@ -81,9 +81,9 @@ public class %s
         int pos = start;
         for (; pos < line.Length; pos++)
         {
-            if (in_quote && line[pos] == CSV_QUOTE)
+            if (in_quote && line[pos] == TAB_CSV_QUOTE)
             {
-                if (pos + 1 < line.Length && line[pos + 1] == CSV_SEP)
+                if (pos + 1 < line.Length && line[pos + 1] == TAB_CSV_SEP)
                 {
                     field = line.Substring(start, pos - start);
                     return pos + 2;
@@ -94,7 +94,7 @@ public class %s
                     return pos + 1;
                 }
             }
-            if (!in_quote && line[pos] == CSV_SEP)
+            if (!in_quote && line[pos] == TAB_CSV_SEP)
             {
                 field = line.Substring(start, pos - start);
                 return pos + 1;

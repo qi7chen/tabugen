@@ -93,16 +93,20 @@ class ExcelStructParser:
                 assert target_filename not in self.meta_index
                 self.meta_index[target_filename] = meta
 
+
     # 获取一个sheet的meta信息
     def get_file_meta(self, filename, wb, sheet_names):
         # 优先本文件
         if predef.PredefMetaSheet in sheet_names:
             sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
-            return fieldutil.parse_meta_rows(sheet_rows)
+            meta = fieldutil.parse_meta_rows(sheet_rows)
+            return fieldutil.validated_meta(meta)
         else:
             meta = self.meta_index.get(filename)
-            if meta is not None:
-                return meta
+            if meta is None:
+                meta = {}
+                meta[predef.PredefClassName] = sheet_names[0]   # 没有定义`@meta`
+            return fieldutil.validated_meta(meta)
 
     # 解析数据列
     def parse_data_sheet(self, meta, rows):

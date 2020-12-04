@@ -2,6 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import os
 import tabular.typedef as types
 import tabular.predef as predef
 import tabular.lang as lang
@@ -30,7 +31,7 @@ class GoCsvLoadGenerator:
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = MustParseTextValue("%s", %s, %s)\n' % (space, typename, valuetext, tips)
+            content += '%svar value = MustParseStringAs("%s", %s, %s)\n' % (space, typename, valuetext, tips)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
@@ -44,7 +45,7 @@ class GoCsvLoadGenerator:
         elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, TAB_ARRAY_DELIM) {\n' % (space, row_name)
-        content += '%s    var value = MustParseTextValue("%s", item, %s)\n' % (space, elem_type, row_name)
+        content += '%s    var value = MustParseStringAs("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
@@ -65,9 +66,9 @@ class GoCsvLoadGenerator:
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var items = strings.Split(text, TAB_MAP_DELIM2)\n' % space
-        content += '%s    var value = MustParseTextValue("%s", items[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var value = MustParseStringAs("%s", items[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = MustParseTextValue("%s", items[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    value = MustParseStringAs("%s", items[1], %s)\n' % (space, val_type, row_name)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -206,3 +207,11 @@ class GoCsvLoadGenerator:
                                                           struct['name'], struct['name'],
                                                           struct['name'], struct['name'])
         return content
+
+    # 生成helper.go文件
+    def gen_helper_file(self, main_filepath, ver, pkgname):
+        filepath = os.path.abspath(os.path.dirname(main_filepath))
+        filename = filepath + os.path.sep + 'helper.go'
+        content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, pkgname)
+        content += go_template.GO_HELP_FILE_TEMPLATE
+        strutil.save_content_if_not_same(filename, content, 'utf-8')

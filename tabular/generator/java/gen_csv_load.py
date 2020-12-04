@@ -49,7 +49,8 @@ class JavaCsvLoadGenerator:
         if typename.lower() == 'string':
             content += '%s%s = %s.trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = Boolean.parseBoolean(%s);\n' % (space, name, valuetext)
+            # content += '%s%s = Boolean.parseBoolean(%s);\n' % (space, name, valuetext)
+            content += '%s%s = %s.parseBool(%s);\n' % (space, name, self.config_manager_name, valuetext)
         else:
             table = {
                 'byte': 'Byte.parseByte(%s)',

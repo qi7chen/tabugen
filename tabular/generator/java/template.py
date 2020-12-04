@@ -10,23 +10,23 @@ import java.util.function.Function;
 import org.apache.commons.io.FileUtils;
 
 public class %s {
-    final public static String CSV_SEP = "%s";      // CSV field seperator
-    final public static String CSV_QUOTE = "%s";  // CSV field quote
+    final public static String CSV_SEP = "%s";     // CSV field separator
+    final public static String CSV_QUOTE = "%s";   // CSV field quote
     
-    final public static String TAB_ARRAY_DELIM = "%s";
-    final public static String TAB_MAP_DELIM1 = "%s";
-    final public static String TAB_MAP_DELIM2 = "%s";
+    final public static String TAB_ARRAY_DELIM = "%s";      // array item delimiter
+    final public static String TAB_MAP_DELIM1 = "%s";       // map item delimiter
+    final public static String TAB_MAP_DELIM2 = "%s";       // map key-value delimiter
     
-    // parse text to boolean value
+    // `Boolean.parseBoolean()` only detects "true"
     public static boolean parseBool(String text) {
-        if (!text.isEmpty()) {
-            return text.equals("1") ||
-                    text.equalsIgnoreCase("y") ||
-                    text.equalsIgnoreCase("on") ||
-                    text.equalsIgnoreCase("yes")  ||
-                    text.equalsIgnoreCase("true");
-        }
-        return false;
+        if (text.isEmpty()) {
+            return false;
+        }        
+        return text.equals("1") ||
+                text.equalsIgnoreCase("y") ||
+                text.equalsIgnoreCase("on") ||
+                text.equalsIgnoreCase("yes")  ||
+                text.equalsIgnoreCase("true");
     }
 
     public static String readFileContent(String filepath) throws IOException {
@@ -34,7 +34,7 @@ public class %s {
         return FileUtils.readFileToString(file, "%s");
     }
 
-    // You can set your own file reader here
+    // set your own content reader here
     public static Function<String, String> reader;
 """
 
