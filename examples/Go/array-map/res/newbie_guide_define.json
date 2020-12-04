@@ -1,122 +1,122 @@
 [
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       3
     ],
-    "Description": "½¨Ôì1¸öÒıÇæ¿ØÖÆÊÒ",
-    "Goods": {
+    "description": "å»ºé€ 1ä¸ªå¼•æ“æ§åˆ¶å®¤",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_01",
-    "Target": "BigSupplyDepot",
-    "Type": "eAT_CreateBuilding"
+    "name": "Guide_01",
+    "target": "BigSupplyDepot",
+    "type": "eAT_CreateBuilding"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       4
     ],
-    "Description": "½¨Ôì1¸öÌ«¿ÕÎÂÊÒ",
-    "Goods": {
+    "description": "å»ºé€ 1ä¸ªå¤ªç©ºæ¸©å®¤",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_02",
-    "Target": "CrystalRefinery",
-    "Type": "eAT_CreateBuilding"
+    "name": "Guide_02",
+    "target": "CrystalRefinery",
+    "type": "eAT_CreateBuilding"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       5
     ],
-    "Description": "½«´óÁ¦ÉñµÇÂ½Í§ÉıÖÁ2¼¶",
-    "Goods": {
+    "description": "å°†å¤§åŠ›ç¥ç™»é™†è‰‡å‡è‡³2çº§",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_03",
-    "Target": "SoldierLandingship",
-    "Type": "eAT_ReachLevel"
+    "name": "Guide_03",
+    "target": "SoldierLandingship",
+    "type": "eAT_ReachLevel"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       6
     ],
-    "Description": "½â·Å1¸öÌ«¿ÕÖ³ÃñµØ",
-    "Goods": {
+    "description": "è§£æ”¾1ä¸ªå¤ªç©ºæ®–æ°‘åœ°",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_04",
-    "Target": "NPC",
-    "Type": "eAT_DefeatNpc"
+    "name": "Guide_04",
+    "target": "NPC",
+    "type": "eAT_DefeatNpc"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       7
     ],
-    "Description": "½¨Ôì1¸ö±£ÏÕ¿â",
-    "Goods": {
+    "description": "å»ºé€ 1ä¸ªä¿é™©åº“",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_05",
-    "Target": "Vault",
-    "Type": "eAT_CreateBuilding"
+    "name": "Guide_05",
+    "target": "Vault",
+    "type": "eAT_CreateBuilding"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       8
     ],
-    "Description": "½¨Ôì1¸öÓÄÁéÉÚËş",
-    "Goods": {
+    "description": "å»ºé€ 1ä¸ªå¹½çµå“¨å¡”",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_06",
-    "Target": "GhostTower",
-    "Type": "eAT_CreateBuilding"
+    "name": "Guide_06",
+    "target": "GhostTower",
+    "type": "eAT_CreateBuilding"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       9
     ],
-    "Description": "½«ÕÂ±±º£µÈ¼¶ÌáÉıÖÁ2¼¶",
-    "Goods": {
+    "description": "å°†ç« åŒ—æµ·ç­‰çº§æå‡è‡³2çº§",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_07",
-    "Target": "ColonelZhang",
-    "Type": "eAT_UpgradeHero"
+    "name": "Guide_07",
+    "target": "ColonelZhang",
+    "type": "eAT_UpgradeHero"
   },
   {
-    "Accomplishment": [
+    "accomplishment": [
       1,
       2,
       10
     ],
-    "Description": "½«Â½Õ½¶ÓµÈ¼¶ÌáÉıÖÁ2¼¶",
-    "Goods": {
+    "description": "å°†é™†æˆ˜é˜Ÿç­‰çº§æå‡è‡³2çº§",
+    "goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_08",
-    "Target": "Marine",
-    "Type": "eAT_UpgradeSoldier"
+    "name": "Guide_08",
+    "target": "Marine",
+    "type": "eAT_UpgradeSoldier"
   }
 ]
