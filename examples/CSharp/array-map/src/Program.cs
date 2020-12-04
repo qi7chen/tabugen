@@ -80,7 +80,7 @@ namespace CSharpDemo
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
-            var conflist = JsonConvert.DeserializeObject<AutoConfig.NewbieGuideDefine[]>(content);
+            var conflist = JsonConvert.DeserializeObject<Config.NewbieGuideDefine[]>(content);
             var text = JsonConvert.SerializeObject(conflist);
             Console.WriteLine(text);
         }
