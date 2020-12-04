@@ -240,10 +240,10 @@ static void JoinStringsIterator(const OutputIter& start, const OutputIter& end, 
 {
     CHECK(result != NULL);
     result->clear();
-    int delim_length = strlen(delim);
+    size_t delim_length = strlen(delim);
 
     // Precompute resulting length so we can reserve() memory in one shot.
-    int length = 0;
+    size_t length = 0;
     for (OutputIter iter = start; iter != end; ++iter)
     {
         if (iter != start) 

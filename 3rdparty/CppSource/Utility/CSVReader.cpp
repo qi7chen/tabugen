@@ -86,7 +86,7 @@ int CSVReader::ParseNextColumn(StringPiece& line, StringPiece& field)
         in_quote = true;
         start++;
     }
-    size_t pos = (size_t)start;
+    size_t pos = start;
     for (; pos < line.size(); pos++) {
         if (in_quote && line[pos] == quote_) {
             if (pos + 1 < line.size() && line[pos + 1] == delimiter_) {
@@ -97,12 +97,12 @@ int CSVReader::ParseNextColumn(StringPiece& line, StringPiece& field)
                 field = line.subpiece(start, pos - start);
                 line.advance(pos + 1);
             }
-            return pos;
+            return (int)pos;
         }
         if (!in_quote && line[pos] == delimiter_) {
             field = line.subpiece(start, pos - start);
             line.advance(pos + 1);
-            return pos;
+            return (int)pos;
         }
     }
     field = line.subpiece(start, pos);
