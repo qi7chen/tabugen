@@ -8,13 +8,12 @@
 
 ## 其它动态语言
  
-    TAKSi支持将excel导出为json，对于python, javascript, lua等动态语言，可直接加载json文件拿到结构定义。
+    Tabular支持将excel导出为json，对于python, javascript, lua等动态语言，可直接加载json文件拿到结构定义。
     
 ## 基本使用
 
 #### 命令行参数
 
-* `--parser` 一般为excel，代表从excel表格中读取结构体定义以及对应的数据表
 * `--parse_files` 指定导入的excel文件，或者包含很多excel文件的路径名称
 * `--parse_file_skip` 需要跳过的excel文件名
 * `--enable_column_skip` 如果开启这个选项，则excel里配置hide_value_columns包含的列不会被导入
