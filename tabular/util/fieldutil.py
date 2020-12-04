@@ -26,6 +26,7 @@ def parse_meta_rows(sheet_rows):
             value = row[1].strip()
             if len(key) > 0 and len(value) > 0:
                 meta[key] = value
+    return meta
 
 
 # 处理meta字段
