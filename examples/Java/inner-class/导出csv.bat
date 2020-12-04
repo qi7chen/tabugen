@@ -7,9 +7,9 @@ cd %currentDir%
 
 set PYTHONPATH=%rootDir%
 
-set taxi_alias=python %rootDir%\taksi\cli.py
+set taxi_alias=python %rootDir%\tabular\cli.py
 set filepath="%currentDir%\..\..\datasheet\Ëæ»ú±¦Ïä.xlsx"
 
-%taxi_alias%  --parser=excel --parse_files=%filepath% --java_out=%currentDir%\idea-project\src\main\java --package=com.mycompany.csvconfig --with_csv_codegen   --out_data_format=csv --out_data_path=%currentDir%\idea-project\src\main\resources 
+%taxi_alias%  --parse_files=%filepath% --java_out=%currentDir%\idea-project\src\main\java --package=com.mycompany.csvconfig --with_csv_codegen   --out_data_format=csv --out_data_path=%currentDir%\idea-project\src\main\resources 
 
 pause
