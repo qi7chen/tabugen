@@ -13,6 +13,13 @@
 namespace config
 {
 
+
+static const char TAB_CSV_SEP = ',';       // CSV field separator
+static const char TAB_CSV_QUOTE = '"';     // CSV field quote
+static const char* TAB_ARRAY_DELIM = ",";  // array item delimiter
+static const char* TAB_MAP_DELIM1 = ";";   // map item delimiter
+static const char* TAB_MAP_DELIM2 = "=";   // map key-value delimiter
+
 class AutogenConfigManager
 {
 public:
@@ -30,34 +37,34 @@ public:
     static std::function<std::string(const char*)> reader;
 };
 
-// ±øÖÖÊôĞÔÅäÖÃ
+// å…µç§å±æ€§é…ç½®
 struct SoldierPropertyDefine 
 {
-    std::string  Name;                      // Ê¿±øID
-    int          Level = 0;                 // Ê¿±øµÈ¼¶
-    std::string  NameID;                    // Ãû×Ö
-    std::string  Description;               // ÃèÊö
-    std::string  BuildingName;              // ËùÊô½¨Öş
-    uint32_t     BuildingLevel = 0;         // ½¨ÖşµÈ¼¶
-    uint32_t     RequireSpace = 0;          // µÇÂ½Í§Õ¼ÓÃ¿Õ¼ä
-    uint32_t     Volume = 0;                // Ìå»ı
-    uint32_t     UpgradeTime = 0;           // Éı¼¶ÏûºÄµÄÊ±¼ä(Ãë£©
-    std::string  UpgradeMaterialID;         // Éı¼¶ÏûºÄµÄ²ÄÁÏ
-    int64_t      UpgradeMaterialNum = 0;    // Éı¼¶ÏûºÄµÄÊıÁ¿
-    std::string  ConsumeMaterial;           // Éú²úÏûºÄµÄ²ÄÁÏ
-    int          ConsumeMaterialNum = 0;    // Éú²úÏûºÄµÄÊıÁ¿
-    int          ConsumeTime = 0;           // Éú²úÏûºÄµÄÊ±¼ä£¨Ãë/¸ö£©
-    int          Act = 0;                   // ¹¥»÷
-    int          Hp = 0;                    // ÑªÁ¿
-    uint32_t     Hurt = 0;                  // buffÉËº¦
-    int16_t      SearchScope = 0;           // ËÑË÷·¶Î§
-    float        AtkFrequency = 0.0;        // ¹¥»÷¼ä¸ô
-    double       AtkRange = 0.0;            // ¹¥»÷¾àÀë
-    double       MovingSpeed = 0.0;         // ÒÆ¶¯ËÙ¶È
-    bool         EnableBurn = false;        // È¼ÉÕÌØĞ§
+    std::string  Name;                      // å£«å…µID
+    int          Level = 0;                 // å£«å…µç­‰çº§
+    std::string  NameID;                    // åå­—
+    std::string  Description;               // æè¿°
+    std::string  BuildingName;              // æ‰€å±å»ºç­‘
+    uint32_t     BuildingLevel = 0;         // å»ºç­‘ç­‰çº§
+    uint32_t     RequireSpace = 0;          // ç™»é™†è‰‡å ç”¨ç©ºé—´
+    uint32_t     Volume = 0;                // ä½“ç§¯
+    uint32_t     UpgradeTime = 0;           // å‡çº§æ¶ˆè€—çš„æ—¶é—´(ç§’ï¼‰
+    std::string  UpgradeMaterialID;         // å‡çº§æ¶ˆè€—çš„ææ–™
+    int64_t      UpgradeMaterialNum = 0;    // å‡çº§æ¶ˆè€—çš„æ•°é‡
+    std::string  ConsumeMaterial;           // ç”Ÿäº§æ¶ˆè€—çš„ææ–™
+    int          ConsumeMaterialNum = 0;    // ç”Ÿäº§æ¶ˆè€—çš„æ•°é‡
+    int          ConsumeTime = 0;           // ç”Ÿäº§æ¶ˆè€—çš„æ—¶é—´ï¼ˆç§’/ä¸ªï¼‰
+    int          Act = 0;                   // æ”»å‡»
+    int          Hp = 0;                    // è¡€é‡
+    uint32_t     Hurt = 0;                  // buffä¼¤å®³
+    int16_t      SearchScope = 0;           // æœç´¢èŒƒå›´
+    float        AtkFrequency = 0.0;        // æ”»å‡»é—´éš”
+    double       AtkRange = 0.0;            // æ”»å‡»è·ç¦»
+    double       MovingSpeed = 0.0;         // ç§»åŠ¨é€Ÿåº¦
+    bool         EnableBurn = false;        // ç‡ƒçƒ§ç‰¹æ•ˆ
 
-    static int Load(const char* filepath);
     static int ParseFromRow(const std::vector<StringPiece>& row, SoldierPropertyDefine* ptr);
+    static int Load(const char* filepath);
     static const std::vector<SoldierPropertyDefine>* GetData(); 
     static const SoldierPropertyDefine* Get(const std::string& Name, int Level);
     static std::vector<const SoldierPropertyDefine*> GetRange(const std::string& Name);

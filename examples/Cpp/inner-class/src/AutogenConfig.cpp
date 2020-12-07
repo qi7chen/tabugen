@@ -16,14 +16,9 @@ using namespace std;
 #endif
 
 
-static const char TAB_CSV_SEP = ',';
-static const char TAB_CSV_QUOTE = '"';
-static const char* TAB_ARRAY_DELIM = ",";
-static const char* TAB_MAP_DELIM1 = ";";
-static const char* TAB_MAP_DELIM2 = "=";
-
 namespace config
 {
+
 
 std::function<std::string(const char*)> AutogenConfigManager::reader = AutogenConfigManager::ReadFileContent;
 
@@ -65,6 +60,7 @@ std::string AutogenConfigManager::ReadFileContent(const char* filepath)
     fclose(fp);
     return std::move(content);
 }
+
 
 const std::vector<BoxProbabilityDefine>* BoxProbabilityDefine::GetData()
 {

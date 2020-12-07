@@ -13,6 +13,13 @@
 namespace config
 {
 
+
+static const char TAB_CSV_SEP = ',';       // CSV field separator
+static const char TAB_CSV_QUOTE = '"';     // CSV field quote
+static const char* TAB_ARRAY_DELIM = ",";  // array item delimiter
+static const char* TAB_MAP_DELIM1 = ";";   // map item delimiter
+static const char* TAB_MAP_DELIM2 = "=";   // map key-value delimiter
+
 class AutogenConfigManager
 {
 public:
@@ -30,18 +37,18 @@ public:
     static std::function<std::string(const char*)> reader;
 };
 
-// 新手引导配置
+// 鏂版墜寮曞閰嶇疆
 struct NewbieGuideDefine 
 {
     std::string                      Name;                  // ID
-    std::string                      Type;                  // 任务类型
-    std::string                      Target;                // 目标
-    std::vector<int16_t>             Accomplishment;        // 完成步骤
-    std::map<std::string, uint32_t>  Goods;                 // 物品
-    std::string                      Description;           // 描述
+    std::string                      Type;                  // 浠诲姟绫诲瀷
+    std::string                      Target;                // 鐩爣
+    std::vector<int16_t>             Accomplishment;        // 瀹屾垚姝ラ
+    std::map<std::string, uint32_t>  Goods;                 // 鐗╁搧
+    std::string                      Description;           // 鎻忚堪
 
-    static int Load(const char* filepath);
     static int ParseFromRow(const std::vector<StringPiece>& row, NewbieGuideDefine* ptr);
+    static int Load(const char* filepath);
     static const std::vector<NewbieGuideDefine>* GetData(); 
 };
 

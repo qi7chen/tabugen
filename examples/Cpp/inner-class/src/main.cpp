@@ -4,8 +4,15 @@
 #include <fstream>
 #include "AutogenConfig.h"
 #include "Utility/StringUtil.h"
+#include "Utility/CSVReader.h"
+
+#ifndef ASSERT
+#define ASSERT assert
+#endif
+
 
 using namespace std;
+using namespace config;
 
 static std::string readfile(const char* filepath)
 {
@@ -18,14 +25,31 @@ static std::string readfile(const char* filepath)
     return std::move(content);
 }
 
+static void LoadConfig(vector<config::BoxProbabilityDefine>& data) 
+{
+    string content = readfile("box_probability_define.csv");
+    CSVReader reader(config::TAB_CSV_SEP, config::TAB_CSV_QUOTE);
+    reader.Parse(content);
+    auto rows = reader.GetRows();
+    ASSERT(!rows.empty());
+    for (size_t i = 0; i < rows.size(); i++)
+    {
+        auto row = rows[i];
+        if (!row.empty())
+        {
+            config::BoxProbabilityDefine item;
+            config::BoxProbabilityDefine::ParseFromRow(row, &item);
+            data.push_back(item);
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
-    using namespace config;
-    AutogenConfigManager::reader = readfile;
-    AutogenConfigManager::LoadAll();
-	const std::vector<BoxProbabilityDefine>* all = BoxProbabilityDefine::GetData();
-    cout << stringPrintf("%d soldier config loaded", (int)all->size());
-    for (const BoxProbabilityDefine& item : *all)
+    vector<config::BoxProbabilityDefine> data;
+    LoadConfig(data);
+    cout << stringPrintf("%d box config loaded", (int)data.size());
+    for (const BoxProbabilityDefine& item : data)
     {
         cout << stringPrintf("%s, %d", item.ID.c_str(), item.Total) << endl;
 		for (size_t i = 0; i < item.ProbabilityGoods.size(); i++)
