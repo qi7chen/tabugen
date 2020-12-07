@@ -2,17 +2,13 @@
 
 package com.mycompany.csvconfig;
 
-import java.io.*;
-import java.util.function.Function;
-import org.apache.commons.io.FileUtils;
-
 public class AutogenConfigManager {
-    final public static String CSV_SEP = ",";     // CSV field separator
-    final public static String CSV_QUOTE = "\"";   // CSV field quote
+    final public static String TAB_CSV_SEP = ",";     // CSV field separator
+    final public static String TAB_CSV_QUOTE = "\"";   // CSV field quote
     
-    final public static String TAB_ARRAY_DELIM = ",";
-    final public static String TAB_MAP_DELIM1 = ";";
-    final public static String TAB_MAP_DELIM2 = "=";
+    final public static String TAB_ARRAY_DELIM = ",";      // array item delimiter
+    final public static String TAB_MAP_DELIM1 = ";";       // map item delimiter
+    final public static String TAB_MAP_DELIM2 = "=";       // map key-value delimiter
     
     // `Boolean.parseBoolean()` only detects "true"
     public static boolean parseBool(String text) {
@@ -24,27 +20,5 @@ public class AutogenConfigManager {
                 text.equalsIgnoreCase("on") ||
                 text.equalsIgnoreCase("yes")  ||
                 text.equalsIgnoreCase("true");
-    }
-
-    public static String readFileContent(String filepath) throws IOException {
-        File file = new File(filepath);
-        return FileUtils.readFileToString(file, "utf8");
-    }
-
-    // set your own content reader here
-    public static Function<String, String> reader;
-
-    public static void loadAllConfig() throws IOException {
-        if (reader == null) {
-            reader = reader = (filepath) -> {
-                try {
-                    return readFileContent(filepath);
-                } catch(IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            };
-        }
-        GlobalPropertyDefine.loadFrom(reader.apply("global_property_define.csv"));
-
     }
 }

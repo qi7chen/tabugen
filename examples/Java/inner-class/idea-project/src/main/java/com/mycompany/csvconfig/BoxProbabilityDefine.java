@@ -22,9 +22,6 @@ public class BoxProbabilityDefine
     public boolean  Repeat = false;      // 是否可重复
     public List<ProbabilityGoodsDefine> ProbabilityGoods = new ArrayList<>(); 
 
-    private static List<BoxProbabilityDefine> data_;
-    public static List<BoxProbabilityDefine> getData() { return data_; } 
-
     // parse fields data from record
     public void parseFrom(CSVRecord record)
     {
@@ -60,33 +57,5 @@ public class BoxProbabilityDefine
             }
             this.ProbabilityGoods.add(item);
         }
-    }
-
-    public static void loadFrom(String content) throws IOException
-    {
-        List<BoxProbabilityDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            BoxProbabilityDefine item = new BoxProbabilityDefine();
-            item.parseFrom(record);
-            data.add(item);
-        }
-        data_ = data;
-    }
-
-    // get an item by key
-    public static BoxProbabilityDefine getItem(String ID)
-    {
-        for (BoxProbabilityDefine item : data_)
-        {
-            if (item.ID.equals(ID))
-            {
-                return item;
-            }
-        }
-        return null;
     }
 }

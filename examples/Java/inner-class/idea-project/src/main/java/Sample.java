@@ -6,6 +6,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
+import com.mycompany.csvconfig.BoxProbabilityDefine;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 public class Sample
 {
@@ -33,11 +37,19 @@ public class Sample
     }
 
     private static void testCsv() throws IOException {
-        com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
-        com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
-        List<com.mycompany.csvconfig.BoxProbabilityDefine> boxdata = com.mycompany.csvconfig.BoxProbabilityDefine.getData();
-        System.out.printf("load %d box\n", boxdata.size());
-        boxdata.forEach((item)->{
+        String content = readCsvFile("box_probability_define.csv");
+        List<BoxProbabilityDefine> data = new ArrayList<>();
+        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
+        for (CSVRecord record : parser)
+        {
+            if (record.size() == 0)
+                continue;
+            BoxProbabilityDefine item = new BoxProbabilityDefine();
+            item.parseFrom(record);
+            data.add(item);
+        }
+        System.out.printf("load %d box\n", data.size());
+        data.forEach((item)->{
             System.out.printf("%s %d %d\n", item.ID, item.Total, item.ProbabilityGoods.size());
         });
     }

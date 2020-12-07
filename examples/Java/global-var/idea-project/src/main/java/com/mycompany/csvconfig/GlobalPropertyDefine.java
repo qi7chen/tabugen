@@ -22,9 +22,6 @@ public class GlobalPropertyDefine
     public int[]                SpawnLevelLimit = null;            // 最大刷新个数显示
     public Map<String,Integer>  FirstRechargeReward = new HashMap<>(); // 首充奖励
 
-    private static GlobalPropertyDefine instance_;
-    public static GlobalPropertyDefine getInstance() { return instance_; }
-
     // parse fields data from text records
     public void parseFrom(List<CSVRecord> records)
     {
@@ -85,18 +82,5 @@ public class GlobalPropertyDefine
                 this.FirstRechargeReward.put(key, value);
             }
         }
-    }
-
-    public static void loadFrom(String content) throws IOException
-    {
-        List<CSVRecord> records = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            records.add(record);
-        }
-        GlobalPropertyDefine instance = new GlobalPropertyDefine();
-        instance.parseFrom(records);
-        instance_ = instance;
     }
 }

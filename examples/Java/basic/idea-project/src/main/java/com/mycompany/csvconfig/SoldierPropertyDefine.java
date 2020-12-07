@@ -35,9 +35,6 @@ public class SoldierPropertyDefine
     public double   MovingSpeed = 0.0f;        // 移动速度
     public boolean  EnableBurn = false;        // 燃烧特效
 
-    private static List<SoldierPropertyDefine> data_;
-    public static List<SoldierPropertyDefine> getData() { return data_; } 
-
     // parse fields data from record
     public void parseFrom(CSVRecord record)
     {
@@ -119,47 +116,5 @@ public class SoldierPropertyDefine
         if (!record.get(24).isEmpty()) {
             this.EnableBurn = AutogenConfigManager.parseBool(record.get(24));
         }
-    }
-
-    public static void loadFrom(String content) throws IOException
-    {
-        List<SoldierPropertyDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            SoldierPropertyDefine item = new SoldierPropertyDefine();
-            item.parseFrom(record);
-            data.add(item);
-        }
-        data_ = data;
-    }
-
-    // get an item by key
-    public static SoldierPropertyDefine getItem(String Name, int Level)
-    {
-        for (SoldierPropertyDefine item : data_)
-        {
-            if (item.Name.equals(Name) && item.Level == Level)
-            {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    // get a range of items by key
-    public static ArrayList<SoldierPropertyDefine> getRange(String Name)
-    {
-        ArrayList<SoldierPropertyDefine> range = new ArrayList<>();
-        for (SoldierPropertyDefine item : data_)
-        {
-            if (item.Name.equals(Name))
-            {
-                range.add(item);
-            }
-        }
-       return range;
     }
 }

@@ -16,9 +16,6 @@ public class NewbieGuideDefine
     public Map<String,Integer>  Goods = new HashMap<>(); // 物品
     public String               Description = "";      // 描述
 
-    private static List<NewbieGuideDefine> data_;
-    public static List<NewbieGuideDefine> getData() { return data_; } 
-
     // parse fields data from record
     public void parseFrom(CSVRecord record)
     {
@@ -61,20 +58,5 @@ public class NewbieGuideDefine
         if (!record.get(5).isEmpty()) {
             this.Description = record.get(5).trim();
         }
-    }
-
-    public static void loadFrom(String content) throws IOException
-    {
-        List<NewbieGuideDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            NewbieGuideDefine item = new NewbieGuideDefine();
-            item.parseFrom(record);
-            data.add(item);
-        }
-        data_ = data;
     }
 }

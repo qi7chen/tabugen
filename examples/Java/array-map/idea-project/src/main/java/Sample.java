@@ -6,6 +6,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.csv.*;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVFormat;
 
 public class Sample
 {
@@ -32,11 +35,20 @@ public class Sample
     }
 
     private static void testCsv() throws IOException {
-        com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
-        com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
-        List<com.mycompany.csvconfig.NewbieGuideDefine> boxdata = com.mycompany.csvconfig.NewbieGuideDefine.getData();
-        System.out.printf("load %d box\n", boxdata.size());
-        boxdata.forEach((item)->{
+        String content = readCsvFile("newbie_guide_define.csv");
+        List<com.mycompany.csvconfig.NewbieGuideDefine> data = new ArrayList<>();
+        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
+        for (CSVRecord record : parser)
+        {
+            if (record.size() == 0)
+                continue;
+            com.mycompany.csvconfig.NewbieGuideDefine item = new com.mycompany.csvconfig.NewbieGuideDefine();
+            item.parseFrom(record);
+            data.add(item);
+        }
+
+        System.out.printf("load %d box\n", data.size());
+        data.forEach((item)->{
             System.out.printf("%s %s %d\n", item.Name, item.Name, item.Goods.size());
         });
     }

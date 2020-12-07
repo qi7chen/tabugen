@@ -6,6 +6,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
+import com.mycompany.csvconfig.GlobalPropertyDefine;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 public class Sample
 {
@@ -33,10 +37,18 @@ public class Sample
     }
 
     private static void testCsv() throws IOException {
-        com.mycompany.csvconfig.AutogenConfigManager.reader = (filepath) -> readCsvFile(filepath);
-        com.mycompany.csvconfig.AutogenConfigManager.loadAllConfig();
-        com.mycompany.csvconfig.GlobalPropertyDefine instance = com.mycompany.csvconfig.GlobalPropertyDefine.getInstance();
-        System.out.printf("%f %d %d\n", instance.GoldExchangeTimeFactor1, instance.GoldExchangeResource2Price, instance.FirstRechargeReward.size());
+        String content = readCsvFile("global_property_define.csv");
+        List<CSVRecord> records = new ArrayList<>();
+        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
+        for (CSVRecord record : parser)
+        {
+            records.add(record);
+        }
+        GlobalPropertyDefine instance = new GlobalPropertyDefine();
+        instance.parseFrom(records);
+
+        System.out.printf("%f %d %d\n", instance.GoldExchangeTimeFactor1, instance.GoldExchangeResource2Price,
+                instance.FirstRechargeReward.size());
     }
 
     private static void testJson() {
