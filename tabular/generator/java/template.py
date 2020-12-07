@@ -5,13 +5,9 @@
 
 JAVA_MGR_CLASS_TEMPLATE = """
 
-import java.io.*;
-import java.util.function.Function;
-import org.apache.commons.io.FileUtils;
-
 public class %s {
-    final public static String CSV_SEP = "%s";     // CSV field separator
-    final public static String CSV_QUOTE = "%s";   // CSV field quote
+    final public static String TAB_CSV_SEP = "%s";     // CSV field separator
+    final public static String TAB_CSV_QUOTE = "%s";   // CSV field quote
     
     final public static String TAB_ARRAY_DELIM = "%s";      // array item delimiter
     final public static String TAB_MAP_DELIM1 = "%s";       // map item delimiter
@@ -28,20 +24,12 @@ public class %s {
                 text.equalsIgnoreCase("yes")  ||
                 text.equalsIgnoreCase("true");
     }
-
-    public static String readFileContent(String filepath) throws IOException {
-        File file = new File(filepath);
-        return FileUtils.readFileToString(file, "%s");
-    }
-
-    // set your own content reader here
-    public static Function<String, String> reader;
 """
 
 JAVA_LOAD_ALL_METHOD_TEMPLATE = """
     public static void loadAllConfig() throws IOException {
         if (reader == null) {
-            reader = reader = (filepath) -> {
+            reader = (filepath) -> {
                 try {
                     return readFileContent(filepath);
                 } catch(IOException e) {

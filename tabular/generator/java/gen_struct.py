@@ -24,10 +24,10 @@ class JavaStructGenerator:
     def __init__(self):
         self.load_gen = None
 
-    def setup(self, name):
+    def setup(self, name, gen_csv_dataload):
         if name is not None:
             if name == 'csv':
-                self.load_gen = JavaCsvLoadGenerator()
+                self.load_gen = JavaCsvLoadGenerator(gen_csv_dataload)
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
@@ -112,11 +112,15 @@ class JavaStructGenerator:
         content = '\n'
         content += self.gen_java_class(struct)
         if self.load_gen is not None:
-            content += self.load_gen.gen_static_data(struct)
+            if self.load_gen.gen_csv_dataload:
+                content += self.load_gen.gen_static_data(struct)
+            else:
+                content += '\n'
             content += self.load_gen.gen_parse_method(struct)
-            content += self.load_gen.gen_load_method(struct)
-            content += self.load_gen.gen_get_method(struct)
-            content += self.load_gen.gen_range_method(struct)
+            if self.load_gen.gen_csv_dataload:
+                content += self.load_gen.gen_load_method(struct)
+                content += self.load_gen.gen_get_method(struct)
+                content += self.load_gen.gen_range_method(struct)
         content += '}\n'
         return content
 
@@ -149,8 +153,7 @@ class JavaStructGenerator:
             sep_delim = strutil.escape_delimiter(args.out_csv_delim)
             quote_delim = strutil.escape_delimiter('"')
             mgr_content += java_template.JAVA_MGR_CLASS_TEMPLATE % (args.config_manager_class, sep_delim, quote_delim,
-                                                                    array_delim, map_delims[0], map_delims[1],
-                                                                    args.data_file_encoding)
+                                                                    array_delim, map_delims[0], map_delims[1])
 
         class_dict = {}
 
@@ -178,10 +181,12 @@ class JavaStructGenerator:
             content += self.generate_class(struct, args)
             class_dict[filename] = content
 
-            name = strutil.camel_to_snake(struct['name'])
-            load_call_content += '        %s.loadFrom(reader.apply("%s.csv"));\n' % (struct['name'], name)
+            if self.load_gen and self.load_gen.gen_csv_dataload:
+                name = strutil.camel_to_snake(struct['name'])
+                load_call_content += '        %s.loadFrom(reader.apply("%s.csv"));\n' % (struct['name'], name)
 
-        mgr_content += java_template.JAVA_LOAD_ALL_METHOD_TEMPLATE % load_call_content
+        if self.load_gen and self.load_gen.gen_csv_dataload:
+            mgr_content += java_template.JAVA_LOAD_ALL_METHOD_TEMPLATE % load_call_content
         mgr_content += '}\n'
 
         if self.load_gen is not None:

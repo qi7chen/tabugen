@@ -15,7 +15,8 @@ import tabular.generator.java.template as java_template
 class JavaCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    def __init__(self):
+    def __init__(self, gen_csv_dataload):
+        self.gen_csv_dataload = gen_csv_dataload
         self.array_delim = ','
         self.map_delims = [',', '=']
         self.config_manager_name = ''
