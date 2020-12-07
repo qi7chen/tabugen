@@ -22,8 +22,13 @@ static const char TAB_CSV_QUOTE = '%s';     // CSV field quote
 static const char* TAB_ARRAY_DELIM = "%s";  // array item delimiter
 static const char* TAB_MAP_DELIM1 = "%s";   // map item delimiter
 static const char* TAB_MAP_DELIM2 = "%s";   // map key-value delimiter
+
 """
 
+CPP_READER_ASSIGN = """
+std::function<std::string(const char*)> %s::reader = %s::ReadFileContent;
+
+"""
 
 CPP_READ_FUNC_TEMPLATE = """
 //Load content of an asset file'
@@ -46,6 +51,7 @@ std::string %s::ReadFileContent(const char* filepath)
     fclose(fp);
     return std::move(content);
 }
+
 """
 
 CPP_INSTANCE_METHOD_TEMPLATE = """

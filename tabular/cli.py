@@ -45,8 +45,8 @@ def run(args):
         for pair in code_generators:
             codegen = pair[0]
             filepath = pair[1]
-            if args.with_csv_codegen:
-                codegen.setup('csv')
+            if args.gen_csv_parse:
+                codegen.setup('csv', args.gen_csv_dataload)
             codegen.run(descriptors, filepath, args)
 
     if not args.without_data and args.out_data_format is not None:
@@ -78,7 +78,7 @@ def verify_args(args):
 def main():
     parser = argparse.ArgumentParser(description="A configuration import/export and code generation tool")
     parser.add_argument("-v", "--version", action='version', version=VER_STRING)
-    parser.add_argument("--parser", default="excel", help="where your row data come from(excel, mysql etc)")
+    parser.add_argument("--parser", default="excel", help="where your row data come from(excel, xml, database etc)")
     parser.add_argument("--without_data", action="store_true", help="parse struct definition but no data rows")
 
     # excel options
@@ -91,7 +91,8 @@ def main():
 
     # source code options
     parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of auto-generated config manager class")
-    parser.add_argument("--with_csv_codegen", action='store_true', help="also generator csv load code")
+    parser.add_argument("--gen_csv_parse", action='store_true', help="also generator csv parse method code")
+    parser.add_argument("--gen_csv_dataload", action='store_true', help="also generator csv data load method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
     parser.add_argument("--csharp_out", help="file path of generate C# class source code")

@@ -22,7 +22,7 @@ class CppStructGenerator:
     def __init__(self):
         self.load_gen = None
 
-    def setup(self, name):
+    def setup(self, name, gen_dataload):
         """
             :param name: loader需要满足2个接口
                 gen_struct_method_declare()
@@ -31,7 +31,7 @@ class CppStructGenerator:
         """
         if name is not None:
             if name == 'csv':
-                self.load_gen = CppCsvLoadGenerator()
+                self.load_gen = CppCsvLoadGenerator(gen_dataload)
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
@@ -155,7 +155,7 @@ class CppStructGenerator:
         cpp_content = ''
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims, args.config_manager_class)
+            self.load_gen.setup(array_delim, map_delims, args.out_csv_delim, args.config_manager_class)
             filename = outname + '.h'
             cpp_content = self.load_gen.gen_source_method(descriptors, args, filename)
 
@@ -178,7 +178,7 @@ class CppStructGenerator:
 
 def unit_test():
     codegen = CppStructGenerator()
-    codegen.setup('csv')
+    codegen.setup('csv', true)
 
 
 if __name__ == '__main__':
