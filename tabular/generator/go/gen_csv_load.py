@@ -15,7 +15,8 @@ import tabular.generator.go.template as go_template
 class GoCsvLoadGenerator:
     TAB_SPACE = '\t'
 
-    def __init__(self):
+    def __init__(self, gen_csv_dataload):
+        self.gen_csv_dataload = gen_csv_dataload
         self.array_delim = ','
         self.map_delims = [',', '=']
 

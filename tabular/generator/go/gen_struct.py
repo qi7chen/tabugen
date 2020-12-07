@@ -25,10 +25,10 @@ class GoStructGenerator:
         self.load_gen = None
         self.json_snake_case = False
 
-    def setup(self, name):
+    def setup(self, name, gen_csv_dataload):
         if name is not None:
             if name == 'csv':
-                self.load_gen = GoCsvLoadGenerator()
+                self.load_gen = GoCsvLoadGenerator(gen_csv_dataload)
 
             else:
                 print('content loader of name %s not implemented' % name)
@@ -155,7 +155,7 @@ class GoStructGenerator:
             content += go_template.GO_HEAD_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
                                                              map_delims[0], map_delims[1])
 
-        if self.load_gen is not None:
+        if self.load_gen is not None and self.load_gen.gen_csv_dataload:
             content += self.gen_const_names(descriptors)
 
         for struct in descriptors:
@@ -169,11 +169,12 @@ class GoStructGenerator:
         print('wrote Go source to %s' % filename)
 
         if args.go_fmt:
+            cmd = 'go fmt ' + filename
             goroot = os.getenv('GOROOT')
             if goroot is not None:
-                cmd = goroot + '/bin/go fmt ' + filename
-                print(cmd)
-                os.system(cmd)
+                cmd = goroot + '/bin/' + cmd
+            print(cmd)
+            os.system(cmd)
 
 
 def unit_test():
