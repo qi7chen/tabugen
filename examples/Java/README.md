@@ -57,5 +57,6 @@
 * `--package` 指定Java包名
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
 * `--config_manager_class` 指定管理配置的class名称，默认为AutogenConfigManager
-* `--with_csv_codegen` 是否包含CSV加载代码，
+* `--gen_csv_parse` 是否包含CSV解析代码
+* `--gen_csv_dataload` 是否包含CSV数据加载代码
 
