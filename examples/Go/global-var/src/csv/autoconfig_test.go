@@ -1,13 +1,12 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
 
 func TestAutogenConfig(t *testing.T) {
-	filename := fmt.Sprintf("../../res/%s.csv", KeyGlobalPropertyDefineName)
+	filename := "../../res/global_property_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)

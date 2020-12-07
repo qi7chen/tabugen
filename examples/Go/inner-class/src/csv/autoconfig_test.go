@@ -7,7 +7,7 @@ import (
 )
 
 func TestAutogenConfig(t *testing.T) {
-	filename := fmt.Sprintf("../../res/%s.csv", KeyBoxProbabilityDefineName)
+	filename := "../../res/box_probability_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)

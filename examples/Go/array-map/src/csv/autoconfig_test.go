@@ -1,13 +1,13 @@
 package config
 
 import (
-	"testing"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
+	"testing"
 )
 
 func TestAutogenConfig(t *testing.T) {
-	filename := fmt.Sprintf("../../res/%s.csv", KeyNewbieGuideDefineName)
+	filename := "../../res/newbie_guide_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)

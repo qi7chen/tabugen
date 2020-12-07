@@ -18,15 +18,11 @@ var (
 )
 
 const (
-	TAB_CSV_SEP     = `,`
-	TAB_CSV_QUOTE   = `"`
-	TAB_ARRAY_DELIM = `,`
-	TAB_MAP_DELIM1  = `;`
-	TAB_MAP_DELIM2  = `=`
-)
-
-const (
-	KeyNewbieGuideDefineName = "newbie_guide_define"
+	TAB_CSV_SEP     = `,` // CSV field delimiter
+	TAB_CSV_QUOTE   = `"` // CSV field quote
+	TAB_ARRAY_DELIM = `,` // array item delimiter
+	TAB_MAP_DELIM1  = `;` // map item delimiter
+	TAB_MAP_DELIM2  = `=` // map key-value delimiter
 )
 
 // 新手引导配置, 新手任务.xlsx
