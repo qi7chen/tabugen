@@ -14,7 +14,8 @@ import tabular.generator.csharp.template as csharp_template
 class CSharpCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    def __init__(self):
+    def __init__(self, gen_dataload):
+        self.gen_dataload = gen_dataload
         self.array_delim = ','
         self.map_delims = [',', '=']
         self.config_manager_name = ''
@@ -241,17 +242,6 @@ class CSharpCsvLoadGenerator:
         assert keycol > 0 and valcol > 0 and typcol > 0
 
         content = csharp_template.CSHARP_LOAD_FROM_METHOD_TEMPLATE % (self.config_manager_name, struct['name'])
-        # content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
-        # content += '%s{\n' % self.TAB_SPACE
-        # content += '%svar rows = new List<List<string>>();\n' % (self.TAB_SPACE * 2)
-        # content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE*2)
-        # content += '%s{\n' % (self.TAB_SPACE*2)
-        # content += '%svar row = %s.ReadRecordFromLine(lines[i]);\n' % (self.TAB_SPACE * 3, self.config_manager_name)
-        # content += "%srows.Add(row);\n" % (self.TAB_SPACE*3)
-        # content += '%s}\n' % (self.TAB_SPACE*2)
-        # content += '%sInstance = new %s();\n' % (self.TAB_SPACE * 2, struct['name'])
-        # content += '%sInstance.ParseFromRows(rows);\n' % (self.TAB_SPACE * 2)
-        # content += '%s}\n\n' % self.TAB_SPACE
         return content
 
     # 生成Load方法
@@ -260,18 +250,6 @@ class CSharpCsvLoadGenerator:
             return self.gen_kv_struct_load_method(struct)
 
         content = csharp_template.CSHARP_LOAD_METHOD_TEMPLATE % (struct['name'], self.config_manager_name, struct['name'])
-        # content = '%spublic static void LoadFromLines(List<string> lines)\n' % self.TAB_SPACE
-        # content += '%s{\n' % self.TAB_SPACE
-        # content += '%svar list = new %s[lines.Count];\n' % (self.TAB_SPACE * 2, struct['name'])
-        # content += '%sfor(int i = 0; i < lines.Count; i++)\n' % (self.TAB_SPACE * 2)
-        # content += '%s{\n' % (self.TAB_SPACE * 2)
-        # content += "%svar row = %s.ReadRecordFromLine(lines[i]);\n" % (self.TAB_SPACE * 3, self.config_manager_name)
-        # content += '%svar obj = new %s();\n' % (self.TAB_SPACE * 3, struct['name'])
-        # content += "%sobj.ParseFromRow(row);\n" % (self.TAB_SPACE * 3)
-        # content += "%slist[i] = obj;\n" % (self.TAB_SPACE * 3)
-        # content += '%s}\n' % (self.TAB_SPACE * 2)
-        # content += '%sData = list;\n' % (self.TAB_SPACE * 2)
-        # content += '%s}\n\n' % self.TAB_SPACE
         return content
 
     # 生成Get()方法
@@ -324,20 +302,21 @@ class CSharpCsvLoadGenerator:
         content = ''
         content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
                                                               self.array_delim, self.map_delims[0], self.map_delims[1])
-        content += '    public static void LoadAllConfig(Action completeFunc) \n'
-        content += '    {\n'
-        for i in range(len(descriptors)):
-            struct = descriptors[i]
-            name = strutil.camel_to_snake(struct['name'])
-            content += '        reader("%s.csv", (content) =>\n' % name
-            content += '        {\n'
-            content += '            var lines = ReadTextToLines(content);\n'
-            content += '            %s.LoadFromLines(lines);\n' % struct['name']
-            if i + 1 == len(descriptors):
-                content += '\n'
-                content += '            if (completeFunc != null) completeFunc();\n'
-            content += '        });\n\n'
-        content += '    }\n'
+        if self.gen_dataload:
+            content += '    public static void LoadAllConfig(Action completeFunc) \n'
+            content += '    {\n'
+            for i in range(len(descriptors)):
+                struct = descriptors[i]
+                name = strutil.camel_to_snake(struct['name'])
+                content += '        reader("%s.csv", (content) =>\n' % name
+                content += '        {\n'
+                content += '            var lines = ReadTextToLines(content);\n'
+                content += '            %s.LoadFromLines(lines);\n' % struct['name']
+                if i + 1 == len(descriptors):
+                    content += '\n'
+                    content += '            if (completeFunc != null) completeFunc();\n'
+                content += '        });\n\n'
+            content += '    }\n'
 
         content += '}\n\n'
         return content
@@ -345,9 +324,11 @@ class CSharpCsvLoadGenerator:
     #
     def gen_source_method(self, struct):
         content = ''
-        content += self.gen_static_data(struct)
+        if self.gen_dataload:
+            content += self.gen_static_data(struct)
         content += self.gen_parse_method(struct)
-        content += self.gen_load_method(struct)
-        content += self.gen_get_method(struct)
-        content += self.gen_range_method(struct)
+        if self.gen_dataload:
+            content += self.gen_load_method(struct)
+            content += self.gen_get_method(struct)
+            content += self.gen_range_method(struct)
         return content

@@ -12,8 +12,6 @@ public class %s
     public const char TAB_MAP_DELIM1 = '%s';        // map item delimiter
     public const char TAB_MAP_DELIM2 = '%s';        // map key-value delimiter
     
-    public delegate void ContentReader(string filepath, Action<string> callback);
-    public static ContentReader reader = ReadFileContent;
 
     public static bool ParseBool(string text)
     {
@@ -29,11 +27,10 @@ public class %s
     }
 
     // 读取文件内容
-    public static void ReadFileContent(string filepath, Action<string> cb)
+    public static string ReadFileContent(string filepath)
     {
         StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
+        return reader.ReadToEnd();
     }
     
     // 把内容分行
@@ -103,7 +100,6 @@ public class %s
         field = line.Substring(start, pos);
         return -1;
     }
-
 """
 
 CSHARP_RANGE_METHOD_TEMPLATE = """

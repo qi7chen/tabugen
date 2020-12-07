@@ -23,10 +23,10 @@ class CSharpStructGenerator:
     def __init__(self):
         self.load_gen = None
 
-    def setup(self, name):
+    def setup(self, name, gen_dataload):
         if name is not None:
             if name == "csv":
-                self.load_gen = CSharpCsvLoadGenerator()
+                self.load_gen = CSharpCsvLoadGenerator(gen_dataload)
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
