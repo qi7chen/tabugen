@@ -54,10 +54,23 @@ namespace CSharpDemo
             cb(content);    
 #endif
         }
-
-        static void onLoaded()
+        
+        static void TestLoadCSV()
         {
-            foreach (var item in Config.BoxProbabilityDefine.Data)
+            string filename = "box_probability_define.csv";
+            string filepath = string.Format("../../../../res/{0}", filename);
+            string content = Config.AutogenConfigManager.ReadFileContent(filepath);
+            var lines = Config.AutogenConfigManager.ReadTextToLines(content);
+            var list = new Config.BoxProbabilityDefine[lines.Count];
+            for (int i = 0; i < list.Length; i++)
+            {
+                var row = Config.AutogenConfigManager.ReadRecordFromLine(lines[i]);
+                var item = new Config.BoxProbabilityDefine();
+                item.ParseFromRow(row);
+                list[i] = item;
+            }
+
+            foreach(var item in list)
             {
                 Console.WriteLine(item.ID);
                 Console.WriteLine(item.Total);
@@ -66,16 +79,6 @@ namespace CSharpDemo
                     Console.WriteLine(string.Format("  {0} {1} {2}", elem.GoodsID, elem.Num, elem.Probability));
                 }
             }
-        }
-        
-        static void TestLoadCSV()
-        {
-            Config.AutogenConfigManager.reader = ReadFileContent;
-            Config.AutogenConfigManager.LoadAllConfig(() =>
-            {
-                Console.WriteLine("OK");
-                onLoaded();
-            });
         }
 
         static void TestLoadJSON()

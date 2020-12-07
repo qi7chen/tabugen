@@ -16,9 +16,6 @@ public class NewbieGuideDefine
     public short[]                   Accomplishment = null; // 完成步骤
     public Dictionary<string, uint>  Goods = null;          // 物品
     public string                    Description = "";      // 描述
-
-    public static NewbieGuideDefine[] Data { get; private set; } 
-
     // parse object fields from a text row
     public void ParseFromRow(List<string> row)
     {
@@ -64,19 +61,6 @@ public class NewbieGuideDefine
             this.Description = row[5].Trim();
         }
     }
-
-    public static void LoadFromLines(List<string> lines)
-    {
-        var list = new NewbieGuideDefine[lines.Count];
-        for(int i = 0; i < lines.Count; i++)
-        {
-            var row = AutogenConfigManager.ReadRecordFromLine(lines[i]);
-            var obj = new NewbieGuideDefine();
-            obj.ParseFromRow(row);
-            list[i] = obj;
-        }
-        Data = list;
-    }
 }
 
 
@@ -84,12 +68,10 @@ public class AutogenConfigManager
 {    
     public const char TAB_CSV_SEP = ',';           // CSV field delimiter
     public const char TAB_CSV_QUOTE = '"';          // CSV field quote
-    public const char TAB_ARRAY_DELIM = ','; 
-    public const char TAB_MAP_DELIM1 = ';';
-    public const char TAB_MAP_DELIM2 = '=';
+    public const char TAB_ARRAY_DELIM = ',';       // array item delimiter
+    public const char TAB_MAP_DELIM1 = ';';        // map item delimiter
+    public const char TAB_MAP_DELIM2 = '=';        // map key-value delimiter
     
-    public delegate void ContentReader(string filepath, Action<string> callback);
-    public static ContentReader reader = ReadFileContent;
 
     public static bool ParseBool(string text)
     {
@@ -105,11 +87,10 @@ public class AutogenConfigManager
     }
 
     // 读取文件内容
-    public static void ReadFileContent(string filepath, Action<string> cb)
+    public static string ReadFileContent(string filepath)
     {
         StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
+        return reader.ReadToEnd();
     }
     
     // 把内容分行
@@ -178,18 +159,6 @@ public class AutogenConfigManager
         }
         field = line.Substring(start, pos);
         return -1;
-    }
-
-    public static void LoadAllConfig(Action completeFunc) 
-    {
-        reader("newbie_guide_define.csv", (content) =>
-        {
-            var lines = ReadTextToLines(content);
-            NewbieGuideDefine.LoadFromLines(lines);
-
-            if (completeFunc != null) completeFunc();
-        });
-
     }
 }
 

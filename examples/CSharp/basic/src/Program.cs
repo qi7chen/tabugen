@@ -55,22 +55,20 @@ namespace CSharpDemo
 #endif
         }
 
-        static void onLoaded()
-        {
-            foreach (var item in Config.SoldierPropertyDefine.Data)
-            {
-                Console.WriteLine(string.Format("{0} {1}", item.Name, item.Level));
-            }
-        }
-
         static void TestLoadCSV()
         {
-            Config.AutogenConfigManager.reader = ReadFileContent;
-            Config.AutogenConfigManager.LoadAllConfig(() =>
+            string filename = "soldier_property_define.csv";
+            string filepath = string.Format("../../../../res/{0}", filename);
+            string content = Config.AutogenConfigManager.ReadFileContent(filepath);
+            var lines = Config.AutogenConfigManager.ReadTextToLines(content);
+            var list = new Config.SoldierPropertyDefine[lines.Count];
+            for(int i = 0; i < list.Length; i++)
             {
-                Console.WriteLine("OK");
-                onLoaded();
-            });
+                var row = Config.AutogenConfigManager.ReadRecordFromLine(lines[i]);
+                var item = new Config.SoldierPropertyDefine();
+                item.ParseFromRow(row);
+                list[i] = item;
+            }
         }
 
         static void TestLoadJSON()

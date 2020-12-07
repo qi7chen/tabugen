@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -54,23 +55,25 @@ namespace CSharpDemo
             cb(content);    
 #endif
         }
-
-        static void onLoaded()
-        {
-            var instance = Config.GlobalPropertyDefine.Instance;
-            Console.WriteLine(instance.FreeCompleteSeconds);
-            Console.WriteLine(instance.SpawnLevelLimit);
-            Console.WriteLine(instance.FirstRechargeReward);
-        }
         
         static void TestLoadCSV()
         {
-            Config.AutogenConfigManager.reader = ReadFileContent;
-            Config.AutogenConfigManager.LoadAllConfig(() =>
+            string filename = "global_property_define.csv";
+            string filepath = string.Format("../../../../res/{0}", filename);
+            string content = Config.AutogenConfigManager.ReadFileContent(filepath);
+            var lines = Config.AutogenConfigManager.ReadTextToLines(content);
+            var rows = new List<List<string>>();
+            for (int i = 0; i < lines.Count; i++)
             {
-                Console.WriteLine("OK");
-                onLoaded();
-            });
+                var row = Config.AutogenConfigManager.ReadRecordFromLine(lines[i]);
+                rows.Add(row);
+            }
+            var instance = new Config.GlobalPropertyDefine();
+            instance.ParseFromRows(rows);
+
+            Console.WriteLine(instance.FreeCompleteSeconds);
+            Console.WriteLine(instance.SpawnLevelLimit);
+            Console.WriteLine(instance.FirstRechargeReward);
         }
 
         static void TestLoadJSON()

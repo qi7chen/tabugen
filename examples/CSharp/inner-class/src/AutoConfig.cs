@@ -22,9 +22,6 @@ public class BoxProbabilityDefine
     public int                       Time = 0;            // 冷却时间
     public bool                      Repeat = false;      // 是否可重复
     public ProbabilityGoodsDefine[] ProbabilityGoods = null; 
-
-    public static BoxProbabilityDefine[] Data { get; private set; } 
-
     // parse object fields from a text row
     public void ParseFromRow(List<string> row)
     {
@@ -62,32 +59,6 @@ public class BoxProbabilityDefine
             this.ProbabilityGoods[j] = item;
         }
     }
-
-    public static void LoadFromLines(List<string> lines)
-    {
-        var list = new BoxProbabilityDefine[lines.Count];
-        for(int i = 0; i < lines.Count; i++)
-        {
-            var row = AutogenConfigManager.ReadRecordFromLine(lines[i]);
-            var obj = new BoxProbabilityDefine();
-            obj.ParseFromRow(row);
-            list[i] = obj;
-        }
-        Data = list;
-    }
-
-    // get an item by key
-    public static BoxProbabilityDefine Get(string ID)
-    {
-        foreach (BoxProbabilityDefine item in Data)
-        {
-            if (item.ID == ID)
-            {
-                return item;
-            }
-        }
-        return null;
-    }
 }
 
 
@@ -95,12 +66,10 @@ public class AutogenConfigManager
 {    
     public const char TAB_CSV_SEP = ',';           // CSV field delimiter
     public const char TAB_CSV_QUOTE = '"';          // CSV field quote
-    public const char TAB_ARRAY_DELIM = ','; 
-    public const char TAB_MAP_DELIM1 = ';';
-    public const char TAB_MAP_DELIM2 = '=';
+    public const char TAB_ARRAY_DELIM = ',';       // array item delimiter
+    public const char TAB_MAP_DELIM1 = ';';        // map item delimiter
+    public const char TAB_MAP_DELIM2 = '=';        // map key-value delimiter
     
-    public delegate void ContentReader(string filepath, Action<string> callback);
-    public static ContentReader reader = ReadFileContent;
 
     public static bool ParseBool(string text)
     {
@@ -116,11 +85,10 @@ public class AutogenConfigManager
     }
 
     // 读取文件内容
-    public static void ReadFileContent(string filepath, Action<string> cb)
+    public static string ReadFileContent(string filepath)
     {
         StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
+        return reader.ReadToEnd();
     }
     
     // 把内容分行
@@ -189,18 +157,6 @@ public class AutogenConfigManager
         }
         field = line.Substring(start, pos);
         return -1;
-    }
-
-    public static void LoadAllConfig(Action completeFunc) 
-    {
-        reader("box_probability_define.csv", (content) =>
-        {
-            var lines = ReadTextToLines(content);
-            BoxProbabilityDefine.LoadFromLines(lines);
-
-            if (completeFunc != null) completeFunc();
-        });
-
     }
 }
 

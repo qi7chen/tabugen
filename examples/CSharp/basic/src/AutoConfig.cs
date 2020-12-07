@@ -32,9 +32,6 @@ public class SoldierPropertyDefine
     public double  AtkRange = 0.0f;           // 攻击距离
     public double  MovingSpeed = 0.0f;        // 移动速度
     public bool    EnableBurn = false;        // 燃烧特效
-
-    public static SoldierPropertyDefine[] Data { get; private set; } 
-
     // parse object fields from a text row
     public void ParseFromRow(List<string> row)
     {
@@ -108,46 +105,6 @@ public class SoldierPropertyDefine
             this.EnableBurn = AutogenConfigManager.ParseBool(row[24]);
         }
     }
-
-    public static void LoadFromLines(List<string> lines)
-    {
-        var list = new SoldierPropertyDefine[lines.Count];
-        for(int i = 0; i < lines.Count; i++)
-        {
-            var row = AutogenConfigManager.ReadRecordFromLine(lines[i]);
-            var obj = new SoldierPropertyDefine();
-            obj.ParseFromRow(row);
-            list[i] = obj;
-        }
-        Data = list;
-    }
-
-    // get an item by key
-    public static SoldierPropertyDefine Get(string Name, int Level)
-    {
-        foreach (SoldierPropertyDefine item in Data)
-        {
-            if (item.Name == Name && item.Level == Level)
-            {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    // get a range of items by key
-    public static List<SoldierPropertyDefine> GetRange(string Name)
-    {
-        var range = new List<SoldierPropertyDefine>();
-        foreach (SoldierPropertyDefine item in Data)
-        {
-            if (item.Name == Name)
-            {
-                range.Add(item);
-            }
-        }
-        return range;
-    }
 }
 
 
@@ -155,12 +112,10 @@ public class AutogenConfigManager
 {    
     public const char TAB_CSV_SEP = ',';           // CSV field delimiter
     public const char TAB_CSV_QUOTE = '"';          // CSV field quote
-    public const char TAB_ARRAY_DELIM = ','; 
-    public const char TAB_MAP_DELIM1 = ';';
-    public const char TAB_MAP_DELIM2 = '=';
+    public const char TAB_ARRAY_DELIM = ',';       // array item delimiter
+    public const char TAB_MAP_DELIM1 = ';';        // map item delimiter
+    public const char TAB_MAP_DELIM2 = '=';        // map key-value delimiter
     
-    public delegate void ContentReader(string filepath, Action<string> callback);
-    public static ContentReader reader = ReadFileContent;
 
     public static bool ParseBool(string text)
     {
@@ -176,11 +131,10 @@ public class AutogenConfigManager
     }
 
     // 读取文件内容
-    public static void ReadFileContent(string filepath, Action<string> cb)
+    public static string ReadFileContent(string filepath)
     {
         StreamReader reader = new StreamReader(filepath);
-        var content = reader.ReadToEnd();
-        cb(content);
+        return reader.ReadToEnd();
     }
     
     // 把内容分行
@@ -249,18 +203,6 @@ public class AutogenConfigManager
         }
         field = line.Substring(start, pos);
         return -1;
-    }
-
-    public static void LoadAllConfig(Action completeFunc) 
-    {
-        reader("soldier_property_define.csv", (content) =>
-        {
-            var lines = ReadTextToLines(content);
-            SoldierPropertyDefine.LoadFromLines(lines);
-
-            if (completeFunc != null) completeFunc();
-        });
-
     }
 }
 

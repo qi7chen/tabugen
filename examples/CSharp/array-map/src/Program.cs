@@ -55,22 +55,25 @@ namespace CSharpDemo
 #endif
         }
 
-        static void onLoaded()
-        {
-            foreach (var item in Config.NewbieGuideDefine.Data)
-            {
-                Console.WriteLine(string.Format("{0} {1} {2}", item.Name, item.Type, item.Accomplishment));
-            }
-        }
 
         static void TestLoadCSV()
         {
-            Config.AutogenConfigManager.reader = ReadFileContent;
-            Config.AutogenConfigManager.LoadAllConfig(() =>
+            string filename = "newbie_guide_define.csv";
+            string filepath = string.Format("../../../../res/{0}", filename);
+            string content = Config.AutogenConfigManager.ReadFileContent(filepath);
+            var lines = Config.AutogenConfigManager.ReadTextToLines(content);
+            var list = new Config.NewbieGuideDefine[lines.Count];
+            for (int i = 0; i < lines.Count; i++)
             {
-                Console.WriteLine("OK");
-                onLoaded();
-            });
+                var row = Config.AutogenConfigManager.ReadRecordFromLine(lines[i]);
+                var obj = new Config.NewbieGuideDefine();
+                obj.ParseFromRow(row);
+                list[i] = obj;
+            }
+            foreach (var item in list)
+            {
+                Console.WriteLine(string.Format("{0} {1} {2}", item.Name, item.Type, item.Accomplishment));
+            }
         }
 
         static void TestLoadJSON()
