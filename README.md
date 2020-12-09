@@ -35,7 +35,7 @@ Marine              |  500                  |  5          | Food=5000;Steel=1000
 
 运行Tabular脚本，生成C#代码和导出CSV数据文件
 ```
-python Tabular/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --package=Config --with_csv_codegen --out_data_format=csv
+python Tabular/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --package=Config --gen_csv_parse --out_data_format=csv
 ```
 
 
@@ -56,10 +56,10 @@ Windows上没有默认安装Python环境，可以使用PyInstaller将Tabular打�
 
 ```
 pip install -r requirements.txt
-pyinstaller -F --name=Tabular tabular\cli.py
+pyinstaller -F --name=Tabular tabular/cli.py
 ```
 
 # TO-DO
 
-* 优化excel导出速度；
+* 支持struct字段重排，利用对齐节省内存占用；
 * 提供[WebGUI](https://adminlte.io/preview)后台，实现配置数据查看、编辑，方便非技术人员进行数值更改、验证；
