@@ -85,7 +85,6 @@ GO_HELP_FILE_TEMPLATE = """
 import (
 	"log"
 	"math"
-	"reflect"
 	"strconv"
 )
 
