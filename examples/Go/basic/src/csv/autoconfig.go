@@ -59,7 +59,7 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 		p.Name = row[0]
 	}
 	if row[1] != "" {
-		var value = MustParseStringAs("int", row[1], row)
+		var value = ParseStringAs("int", row[1])
 		p.Level = value.(int)
 	}
 	if row[2] != "" {
@@ -72,69 +72,69 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 		p.BuildingName = row[4]
 	}
 	if row[5] != "" {
-		var value = MustParseStringAs("uint32", row[5], row)
+		var value = ParseStringAs("uint32", row[5])
 		p.BuildingLevel = value.(uint32)
 	}
 	if row[6] != "" {
-		var value = MustParseStringAs("uint32", row[6], row)
+		var value = ParseStringAs("uint32", row[6])
 		p.RequireSpace = value.(uint32)
 	}
 	if row[7] != "" {
-		var value = MustParseStringAs("uint32", row[7], row)
+		var value = ParseStringAs("uint32", row[7])
 		p.Volume = value.(uint32)
 	}
 	if row[8] != "" {
-		var value = MustParseStringAs("uint32", row[8], row)
+		var value = ParseStringAs("uint32", row[8])
 		p.UpgradeTime = value.(uint32)
 	}
 	if row[9] != "" {
 		p.UpgradeMaterialID = row[9]
 	}
 	if row[10] != "" {
-		var value = MustParseStringAs("int64", row[10], row)
+		var value = ParseStringAs("int64", row[10])
 		p.UpgradeMaterialNum = value.(int64)
 	}
 	if row[11] != "" {
 		p.ConsumeMaterial = row[11]
 	}
 	if row[12] != "" {
-		var value = MustParseStringAs("int", row[12], row)
+		var value = ParseStringAs("int", row[12])
 		p.ConsumeMaterialNum = value.(int)
 	}
 	if row[13] != "" {
-		var value = MustParseStringAs("int", row[13], row)
+		var value = ParseStringAs("int", row[13])
 		p.ConsumeTime = value.(int)
 	}
 	if row[14] != "" {
-		var value = MustParseStringAs("int", row[14], row)
+		var value = ParseStringAs("int", row[14])
 		p.Act = value.(int)
 	}
 	if row[15] != "" {
-		var value = MustParseStringAs("int", row[15], row)
+		var value = ParseStringAs("int", row[15])
 		p.Hp = value.(int)
 	}
 	if row[17] != "" {
-		var value = MustParseStringAs("uint32", row[17], row)
+		var value = ParseStringAs("uint32", row[17])
 		p.Hurt = value.(uint32)
 	}
 	if row[20] != "" {
-		var value = MustParseStringAs("int16", row[20], row)
+		var value = ParseStringAs("int16", row[20])
 		p.SearchScope = value.(int16)
 	}
 	if row[21] != "" {
-		var value = MustParseStringAs("float32", row[21], row)
+		var value = ParseStringAs("float32", row[21])
 		p.AtkFrequency = value.(float32)
 	}
 	if row[22] != "" {
-		var value = MustParseStringAs("float64", row[22], row)
+		var value = ParseStringAs("float64", row[22])
 		p.AtkRange = value.(float64)
 	}
 	if row[23] != "" {
-		var value = MustParseStringAs("float64", row[23], row)
+		var value = ParseStringAs("float64", row[23])
 		p.MovingSpeed = value.(float64)
 	}
 	if row[24] != "" {
-		var value = MustParseStringAs("bool", row[24], row)
+		var value = ParseStringAs("bool", row[24])
 		p.EnableBurn = value.(bool)
 	}
 	return nil

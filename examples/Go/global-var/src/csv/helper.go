@@ -2,202 +2,157 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"strconv"
-	"strings"
 )
 
-// parse int64 number from string
-func MustParseInt64(text string) int64 {
-	n, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		log.Panicf("ParseInt64: %s, %v", text, err)
-	}
-	return n
-}
-
-// parse uint64 number from string
-func MustParseUnt64(text string) uint64 {
-	n, err := strconv.ParseUint(text, 10, 64)
-	if err != nil {
-		log.Panicf("ParseUnt64: %s, %v", text, err)
-	}
-	return n
-}
-
-// parse int32 number from string
-func ParseInt32(text string) (int32, error) {
-	n, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxInt32 || n < math.MinInt32 {
-		return 0, fmt.Errorf("int32 [%s] out of range", text)
-	}
-	return int32(n), nil
-}
-
-// parse uint32 number from string
-func ParseUint32(text string) (uint32, error) {
-	n, err := strconv.ParseUint(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxUint32 || n < 0 {
-		return 0, fmt.Errorf("uint32 [%s] out of range", text)
-	}
-	return uint32(n), nil
-}
-
-// parse int16 number from string
-func ParseInt16(text string) (int16, error) {
-	n, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxInt16 || n < math.MinInt16 {
-		return 0, fmt.Errorf("int16 [%s] out of range", text)
-	}
-	return int16(n), nil
-}
-
-// parse uint16 number from string
-func ParseUint16(text string) (uint16, error) {
-	n, err := strconv.ParseUint(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxUint16 || n < 0 {
-		return 0, fmt.Errorf("uint16 [%s] out of range", text)
-	}
-	return uint16(n), nil
-}
-
-// parse int8 number from string
-func ParseInt8(text string) (int8, error) {
-	n, err := strconv.ParseInt(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxInt8 || n < math.MinInt8 {
-		return 0, fmt.Errorf("uint8 [%s] out of range", text)
-	}
-	return int8(n), nil
-}
-
-// parse uint8 number from string
-func ParseUint8(text string) (uint8, error) {
-	n, err := strconv.ParseUint(text, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	if n > math.MaxUint8 || n < 0 {
-		return 0, fmt.Errorf("uint8 [%s] out of range", text)
-	}
-	return uint8(n), nil
-}
-
-// parse float64 from string
-func ParseFloat64(text string) (float64, error) {
-	f, err := strconv.ParseFloat(text, 64)
-	if err != nil {
-		return 0, err
-	}
-	if math.IsNaN(f) || math.IsInf(f, 0) {
-		return 0, fmt.Errorf("ParseFloat64: [%s] not a number", text)
-	}
-	return f, nil
-}
-
-// parse float32 from string
-func ParseFloat32(text string) (float32, error) {
-	f, err := strconv.ParseFloat(text, 32)
-	if err != nil {
-		return 0, err
-	}
-	if math.IsNaN(f) || math.IsInf(f, 0) {
-		return 0, fmt.Errorf("ParseFloat32: [%s] not a number", text)
-	}
-	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
-		return 0, fmt.Errorf("uint8 [%s] out of range", text)
-	}
-	return float32(f), nil
-}
-
-// parse boolean value from string
-func ParseBool(text string) (bool, error) {
-	switch len(text) {
+func ParseBool(s string) bool {
+	switch len(s) {
 	case 0:
-		return false, nil
+		return false
 	case 1:
-		if text[0] == '1' || text[0] == 'Y' || text[0] == 'y' {
-			return true, nil
-		} else if text[0] == '0' || text[0] == 'N' || text[0] == 'n' {
-			return false, nil
-		}
-		return false, fmt.Errorf("ParseBool: cannot parse %s", text)
+		return s[0] == '1'
 	case 2:
-		if text == "ON" || text == "on" {
-			return true, nil
-		} else if text == "NO" || text == "no" {
-			return false, nil
-		}
-		return false, fmt.Errorf("ParseBool: cannot parse %s", text)
+		return s == "on" || s == "ON"
 	case 3:
-		if text == "YES" || text == "yes" {
-			return true, nil
-		} else if text == "OFF" || text == "off" {
-			return false, nil
-		}
-		return false, fmt.Errorf("ParseBool: cannot parse %s", text)
+		return s == "yes" || s == "YES"
+	case 4:
+		return s == "true" || s == "TRUE"
 	default:
-		return strconv.ParseBool(text)
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			log.Panicf("ParseBool: cannot pasre %s to boolean: %v", s, err)
+		}
+		return b
 	}
+}
+
+func ParseI8(s string) int8 {
+	n := ParseI32(s)
+	if n > math.MaxInt8 || n < math.MinInt8 {
+		log.Panicf("ParseI8: value %s out of range", s)
+	}
+	return int8(n)
+}
+
+func ParseU8(s string) uint8 {
+	n := ParseI32(s)
+	if n > math.MaxUint8 || n < 0 {
+		log.Panicf("ParseU8: value %s out of range", s)
+	}
+	return uint8(n)
+}
+
+func ParseI16(s string) int16 {
+	n := ParseI32(s)
+	if n > math.MaxInt16 || n < math.MinInt16 {
+		log.Panicf("ParseI16: value %s out of range", s)
+	}
+	return int16(n)
+}
+
+func ParseU16(s string) uint16 {
+	n := ParseI32(s)
+	if n > math.MaxUint16 || n < 0 {
+		log.Panicf("ParseU16: value %s out of range", s)
+	}
+	return uint16(n)
+}
+
+func ParseI32(s string) int32 {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		log.Panicf("ParseI32: cannot parse [%s] to int32: %v", s, err)
+	}
+	return int32(n)
+}
+
+func ParseU32(s string) uint32 {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.ParseUint(s, 10, 32)
+	if err != nil {
+		log.Panicf("ParseU32: cannot parse [%s] to uint32: %v", s, err)
+	}
+	return uint32(n)
+}
+
+func ParseI64(s string) int64 {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		log.Panicf("ParseI64: cannot parse [%s] to int64: %v", s, err)
+	}
+	return n
+}
+
+func ParseU64(s string) uint64 {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		log.Panicf("ParseU64: cannot parse [%s] to uint64: %v", s, err)
+	}
+	return n
+}
+
+func ParseF32(s string) float32 {
+	f := ParseF64(s)
+	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
+		log.Panicf("ParseFloat32: value %s out of range", s)
+	}
+	return float32(f)
+}
+
+func ParseF64(s string) float64 {
+	if s == "" {
+		return 0
+	}
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		log.Panicf("ParseFloat64: cannot parse [%s] to double: %v", s, err)
+	}
+	return f
 }
 
 // parse string to number or boolean
-func ParseStringAs(typename, value string) (interface{}, error) {
+func ParseStringAs(typename, value string) interface{} {
 	switch typename {
 	case "int":
-		n, err := strconv.ParseInt(value, 10, 64)
-		return int(n), err
-	case "uint":
-		n, err := strconv.ParseUint(value, 10, 64)
-		return uint(n), err
-	case "int32":
-		return ParseInt32(value)
-	case "uint32":
-		return ParseUint32(value)
-	case "int64":
-		return strconv.ParseInt(value, 10, 64)
-	case "uint64":
-		return strconv.ParseUint(value, 10, 64)
-	case "int16":
-		return ParseInt16(value)
-	case "uint16":
-		return ParseUint16(value)
+		return ParseI64(value)
 	case "int8":
-		return ParseInt8(value)
+		return ParseI8(value)
+	case "int16":
+		return ParseI16(value)
+	case "int32":
+		return ParseI32(value)
+	case "int64":
+		return ParseI64(value)
+	case "uint":
+		return ParseU64(value)
 	case "uint8":
-		return ParseUint8(value)
+		return ParseU8(value)
+	case "uint16":
+		return ParseU16(value)
+	case "uint32":
+		return ParseU32(value)
+	case "uint64":
+		return ParseU64(value)
 	case "float32":
-		return ParseFloat32(value)
+		return ParseF32(value)
 	case "float64":
-		return ParseFloat64(value)
+		return ParseF64(value)
 	case "bool":
 		return ParseBool(value)
 	}
-	return strings.TrimSpace(value), nil
-}
-
-// parse string to numeric value
-func MustParseStringAs(typename, value string, posTips interface{}) interface{} {
-	v, err := ParseStringAs(typename, value)
-	if err != nil {
-		log.Panicf("parse value %s to %s : %v, row: %s", value, typename, err, posTips)
-	}
-	return v
+	return value
 }
 

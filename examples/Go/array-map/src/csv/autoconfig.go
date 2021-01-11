@@ -50,7 +50,7 @@ func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
 	}
 	if row[3] != "" {
 		for _, item := range strings.Split(row[3], TAB_ARRAY_DELIM) {
-			var value = MustParseStringAs("int16", item, row[3])
+			var value = ParseStringAs("int16", item)
 			p.Accomplishment = append(p.Accomplishment, value.(int16))
 		}
 	}
@@ -61,9 +61,9 @@ func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
 				continue
 			}
 			var items = strings.Split(text, TAB_MAP_DELIM2)
-			var value = MustParseStringAs("string", items[0], row[4])
+			var value = ParseStringAs("string", items[0])
 			var key = value.(string)
-			value = MustParseStringAs("uint32", items[1], row[4])
+			value = ParseStringAs("uint32", items[1])
 			var val = value.(uint32)
 			p.Goods[key] = val
 		}
