@@ -32,7 +32,7 @@ class GoCsvLoadGenerator:
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = MustParseStringAs("%s", %s, %s)\n' % (space, typename, valuetext, tips)
+            content += '%svar value = ParseStringAs("%s", %s, %s)\n' % (space, typename, valuetext, tips)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
@@ -46,7 +46,7 @@ class GoCsvLoadGenerator:
         elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, TAB_ARRAY_DELIM) {\n' % (space, row_name)
-        content += '%s    var value = MustParseStringAs("%s", item, %s)\n' % (space, elem_type, row_name)
+        content += '%s    var value = ParseStringAs("%s", item, %s)\n' % (space, elem_type, row_name)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
@@ -67,9 +67,9 @@ class GoCsvLoadGenerator:
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var items = strings.Split(text, TAB_MAP_DELIM2)\n' % space
-        content += '%s    var value = MustParseStringAs("%s", items[0], %s)\n' % (space, key_type, row_name)
+        content += '%s    var value = ParseStringAs("%s", items[0], %s)\n' % (space, key_type, row_name)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = MustParseStringAs("%s", items[1], %s)\n' % (space, val_type, row_name)
+        content += '%s    value = ParseStringAs("%s", items[1], %s)\n' % (space, val_type, row_name)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
