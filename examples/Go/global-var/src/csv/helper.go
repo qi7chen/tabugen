@@ -127,7 +127,7 @@ func ParseF64(s string) float64 {
 func ParseStringAs(typename, value string) interface{} {
 	switch typename {
 	case "int":
-		return ParseI64(value)
+		return int(ParseI64(value))
 	case "int8":
 		return ParseI8(value)
 	case "int16":
@@ -137,7 +137,7 @@ func ParseStringAs(typename, value string) interface{} {
 	case "int64":
 		return ParseI64(value)
 	case "uint":
-		return ParseU64(value)
+		return uint(ParseU64(value))
 	case "uint8":
 		return ParseU8(value)
 	case "uint16":
