@@ -10,6 +10,7 @@ import tabular.predef as predef
 import tabular.util.strutil as strutil
 
 
+# 是否字段内容唯一
 def is_all_row_field_value_unique(rows, index):
     all_set = {}
     for i, row in rows:

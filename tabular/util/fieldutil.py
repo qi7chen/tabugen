@@ -8,13 +8,16 @@ import tabular.predef as predef
 # KV模式
 def setup_meta_kv_mode(meta):
     meta[predef.PredefParseKVMode] = False
-    kvcolumns = meta.get(predef.PredefKeyValueColumn, "")
-    if kvcolumns != "":
-        kv = kvcolumns.split(",")
-        assert len(kv) == 2
+    text = meta.get(predef.PredefKeyValueColumns, "")
+    if text != "":
+        columns = text.split(",")
+        assert len(columns) >= 3
         meta[predef.PredefParseKVMode] = True
-        meta[predef.PredefKeyColumn] = int(kv[0])
-        meta[predef.PredefValueColumn] = int(kv[1])
+        meta[predef.PredefKeyColumn] = int(columns[0])
+        meta[predef.PredefValueTypeColumn] = int(columns[1])
+        meta[predef.PredefValueColumn] = int(columns[2])
+        if len(columns) > 3:
+            meta[predef.PredefCommentColumn] = int(columns[3])
 
 
 # meta字段处理

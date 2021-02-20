@@ -16,11 +16,11 @@ PredefTargetFileSheet = "target_sheet"      # 作用的sheet
 PredefHideColumns = 'hide_value_columns'    # 对于这些列，它们的值会在hide-column选项开启的时候隐藏
 
 PredefParseKVMode = "kv_mode"                   # 是否是KV模式
-PredefKeyValueColumn = "key_value_column"       # KV模式中的key和value所在列，如 1，2
-PredefKeyColumn = "key_column"                  # KV模式种的key所在列，从PredefKeyValueColumn解析
-PredefValueColumn = "value_column"              # KV模式种的value所在列，从PredefKeyValueColumn解析
-PredefValueTypeColumn = "value_type_column"     # KV模式中的value类型所在列
-PredefCommentColumn = "comment_column"          # KV模式中的注释所在列
+PredefKeyValueColumns = "kv_columns"            # KV模式中的key,type,value所在列，如 1，2, 3
+PredefKeyColumn = "kv_key_column"               # KV模式中的key所在列，从PredefKeyValueColumn解析
+PredefValueColumn = "kv_value_column"           # KV模式中的value所在列，从PredefKeyValueColumn解析
+PredefValueTypeColumn = "kv_value_type_column"  # KV模式中的value类型所在列
+PredefCommentColumn = "kv_comment_column"       # KV模式中的注释所在列
 
 
 PredefGetMethodKeys = "get_keys"        # 生成的Get()函数的参数列表

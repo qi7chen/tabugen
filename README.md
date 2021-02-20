@@ -1,8 +1,8 @@
 # Tabular
 
-Tabular是一个配置导出和代码生成工具。
+tabular是一个配置导出和代码生成工具。
 
-Tabular导入Excel表格生成编程语言的结构体定义，导出CSV数据文件，并生成对应的CSV文件加载代码，旨在简化业务开发中的数据抽象过程。
+tabular导入Excel表格生成编程语言的结构体定义，导出CSV数据文件，并生成对应的CSV文件加载代码，旨在简化业务开发中的数据抽象过程。
 
 
 # Tabular特性
@@ -24,7 +24,7 @@ Tabular导入Excel表格生成编程语言的结构体定义，导出CSV数据�
 Name                |  DamagePerSec         |  Level      |  Cost
 --------------------|-----------------------|-------------|--------------------------------------------
 string              |  int                  |  int16      |  map<string, int>
-名称                |  每秒伤害             |  等级       |  升级消耗
+名称                |  每秒伤害               |  等级       |  升级消耗
 Marine              |  100                  |  1          | Food=100;Steel=200
 Marine              |  150                  |  2          | Food=500;Steel=1000
 Marine              |  200                  |  3          | Food=1000;Steel=2000
@@ -35,13 +35,13 @@ Marine              |  500                  |  5          | Food=5000;Steel=1000
 
 运行Tabular脚本，生成C#代码和导出CSV数据文件
 ```
-python Tabular/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --package=Config --gen_csv_parse --out_data_format=csv
+python tabular/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --package=Config --gen_csv_parse --out_data_format=csv
 ```
 
 
 # 各种语言的示例
 
-    请查看examples目录下的Tabular导出示例：
+    请查看examples目录下的tabular导出示例：
 
 * [C++的示例](examples/Cpp) 演示如何配合C++使用;
 * [C#的示例](examples/CSharp) 演示如何配合C#(Unity)使用;
@@ -52,14 +52,14 @@ python Tabular/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --pa
 
 # 如何打包Tabular成执行档
 
-Windows上没有默认安装Python环境，可以使用PyInstaller将Tabular打包成执行档发布
+Windows上没有默认安装Python环境，可以使用PyInstaller将tabular打包成执行档发布
 
 ```
 pip install -r requirements.txt
-pyinstaller -F --name=Tabular tabular/cli.py
+pyinstaller -F --name=tabular tabular/cli.py
 ```
 
 # TO-DO
 
-* 支持struct字段重排，利用对齐节省内存占用；
+* 部分细节优化；
 * 提供[WebGUI](https://adminlte.io/preview)后台，实现配置数据查看、编辑，方便非技术人员进行数值更改、验证；
