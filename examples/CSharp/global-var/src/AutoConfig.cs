@@ -28,38 +28,38 @@ public class GlobalPropertyDefine
         if (rows.Count < 12) {
             throw new ArgumentException(string.Format("GlobalPropertyDefine: row length out of index, {0} < 12", rows.Count));
         }
-        if (rows[0][3].Length > 0) {
-            this.GoldExchangeTimeFactor1 = double.Parse(rows[0][3]);
+        if (rows[0][2].Length > 0) {
+            this.GoldExchangeTimeFactor1 = double.Parse(rows[0][2]);
         }
-        if (rows[1][3].Length > 0) {
-            this.GoldExchangeTimeFactor2 = double.Parse(rows[1][3]);
+        if (rows[1][2].Length > 0) {
+            this.GoldExchangeTimeFactor2 = double.Parse(rows[1][2]);
         }
-        if (rows[2][3].Length > 0) {
-            this.GoldExchangeTimeFactor3 = double.Parse(rows[2][3]);
+        if (rows[2][2].Length > 0) {
+            this.GoldExchangeTimeFactor3 = double.Parse(rows[2][2]);
         }
-        if (rows[3][3].Length > 0) {
-            this.GoldExchangeResource1Price = ushort.Parse(rows[3][3]);
+        if (rows[3][2].Length > 0) {
+            this.GoldExchangeResource1Price = ushort.Parse(rows[3][2]);
         }
-        if (rows[4][3].Length > 0) {
-            this.GoldExchangeResource2Price = ushort.Parse(rows[4][3]);
+        if (rows[4][2].Length > 0) {
+            this.GoldExchangeResource2Price = ushort.Parse(rows[4][2]);
         }
-        if (rows[5][3].Length > 0) {
-            this.GoldExchangeResource3Price = ushort.Parse(rows[5][3]);
+        if (rows[5][2].Length > 0) {
+            this.GoldExchangeResource3Price = ushort.Parse(rows[5][2]);
         }
-        if (rows[6][3].Length > 0) {
-            this.GoldExchangeResource4Price = ushort.Parse(rows[6][3]);
+        if (rows[6][2].Length > 0) {
+            this.GoldExchangeResource4Price = ushort.Parse(rows[6][2]);
         }
-        if (rows[7][3].Length > 0) {
-            this.FreeCompleteSeconds = ushort.Parse(rows[7][3]);
+        if (rows[7][2].Length > 0) {
+            this.FreeCompleteSeconds = ushort.Parse(rows[7][2]);
         }
-        if (rows[8][3].Length > 0) {
-            this.CancelBuildReturnPercent = ushort.Parse(rows[8][3]);
+        if (rows[8][2].Length > 0) {
+            this.CancelBuildReturnPercent = ushort.Parse(rows[8][2]);
         }
-        if (rows[9][3].Length > 0) {
-            this.EnableSearch = AutogenConfigManager.ParseBool(rows[9][3]);
+        if (rows[9][2].Length > 0) {
+            this.EnableSearch = AutogenConfigManager.ParseBool(rows[9][2]);
         }
         {
-            var items = rows[10][3].Split(AutogenConfigManager.TAB_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[10][2].Split(AutogenConfigManager.TAB_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
             this.SpawnLevelLimit = new int[items.Length];
             for(int i = 0; i < items.Length; i++) 
             {
@@ -68,7 +68,7 @@ public class GlobalPropertyDefine
             }
         }
         {
-            var items = rows[11][3].Split(AutogenConfigManager.TAB_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[11][2].Split(AutogenConfigManager.TAB_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
             this.FirstRechargeReward = new Dictionary<string,int>();
             for(int i = 0; i < items.Length; i++) 
             {

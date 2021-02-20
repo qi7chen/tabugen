@@ -28,38 +28,38 @@ public class GlobalPropertyDefine
         if (records.size() < 12) {
             throw new RuntimeException(String.format("GlobalPropertyDefine: records length too short, %d < 12", records.size()));
         }
-        if (!records.get(0).get(3).isEmpty()) {
-            this.GoldExchangeTimeFactor1 = Double.parseDouble(records.get(0).get(3));
+        if (!records.get(0).get(2).isEmpty()) {
+            this.GoldExchangeTimeFactor1 = Double.parseDouble(records.get(0).get(2));
         }
-        if (!records.get(1).get(3).isEmpty()) {
-            this.GoldExchangeTimeFactor2 = Double.parseDouble(records.get(1).get(3));
+        if (!records.get(1).get(2).isEmpty()) {
+            this.GoldExchangeTimeFactor2 = Double.parseDouble(records.get(1).get(2));
         }
-        if (!records.get(2).get(3).isEmpty()) {
-            this.GoldExchangeTimeFactor3 = Double.parseDouble(records.get(2).get(3));
+        if (!records.get(2).get(2).isEmpty()) {
+            this.GoldExchangeTimeFactor3 = Double.parseDouble(records.get(2).get(2));
         }
-        if (!records.get(3).get(3).isEmpty()) {
-            this.GoldExchangeResource1Price = Short.parseShort(records.get(3).get(3));
+        if (!records.get(3).get(2).isEmpty()) {
+            this.GoldExchangeResource1Price = Short.parseShort(records.get(3).get(2));
         }
-        if (!records.get(4).get(3).isEmpty()) {
-            this.GoldExchangeResource2Price = Short.parseShort(records.get(4).get(3));
+        if (!records.get(4).get(2).isEmpty()) {
+            this.GoldExchangeResource2Price = Short.parseShort(records.get(4).get(2));
         }
-        if (!records.get(5).get(3).isEmpty()) {
-            this.GoldExchangeResource3Price = Short.parseShort(records.get(5).get(3));
+        if (!records.get(5).get(2).isEmpty()) {
+            this.GoldExchangeResource3Price = Short.parseShort(records.get(5).get(2));
         }
-        if (!records.get(6).get(3).isEmpty()) {
-            this.GoldExchangeResource4Price = Short.parseShort(records.get(6).get(3));
+        if (!records.get(6).get(2).isEmpty()) {
+            this.GoldExchangeResource4Price = Short.parseShort(records.get(6).get(2));
         }
-        if (!records.get(7).get(3).isEmpty()) {
-            this.FreeCompleteSeconds = Short.parseShort(records.get(7).get(3));
+        if (!records.get(7).get(2).isEmpty()) {
+            this.FreeCompleteSeconds = Short.parseShort(records.get(7).get(2));
         }
-        if (!records.get(8).get(3).isEmpty()) {
-            this.CancelBuildReturnPercent = Short.parseShort(records.get(8).get(3));
+        if (!records.get(8).get(2).isEmpty()) {
+            this.CancelBuildReturnPercent = Short.parseShort(records.get(8).get(2));
         }
-        if (!records.get(9).get(3).isEmpty()) {
-            this.EnableSearch = AutogenConfigManager.parseBool(records.get(9).get(3));
+        if (!records.get(9).get(2).isEmpty()) {
+            this.EnableSearch = AutogenConfigManager.parseBool(records.get(9).get(2));
         }
         {
-            String[] kvList = records.get(10).get(3).split(AutogenConfigManager.TAB_ARRAY_DELIM);
+            String[] kvList = records.get(10).get(2).split(AutogenConfigManager.TAB_ARRAY_DELIM);
             int[] list = new int[kvList.length];
             for (int i = 0; i < kvList.length; i++) {
                 if (!kvList[i].isEmpty()) {
@@ -70,7 +70,7 @@ public class GlobalPropertyDefine
             this.SpawnLevelLimit = list;
         }
         {
-            String[] kvList = records.get(11).get(3).split(AutogenConfigManager.TAB_MAP_DELIM1);
+            String[] kvList = records.get(11).get(2).split(AutogenConfigManager.TAB_MAP_DELIM1);
             for(int i = 0; i < kvList.length; i++) {
                 String text = kvList[i];
                 if (text.isEmpty()) {

@@ -45,55 +45,55 @@ func (p *GlobalPropertyDefine) ParseFromRows(rows [][]string) error {
 	if len(rows) < 12 {
 		log.Panicf("GlobalPropertyDefine:row length out of index, %d < 12", len(rows))
 	}
-	if rows[0][3] != "" {
-		var value = ParseStringAs("float64", rows[0][3])
+	if rows[0][2] != "" {
+		var value = ParseStringAs("float64", rows[0][2])
 		p.GoldExchangeTimeFactor1 = value.(float64)
 	}
-	if rows[1][3] != "" {
-		var value = ParseStringAs("float64", rows[1][3])
+	if rows[1][2] != "" {
+		var value = ParseStringAs("float64", rows[1][2])
 		p.GoldExchangeTimeFactor2 = value.(float64)
 	}
-	if rows[2][3] != "" {
-		var value = ParseStringAs("float64", rows[2][3])
+	if rows[2][2] != "" {
+		var value = ParseStringAs("float64", rows[2][2])
 		p.GoldExchangeTimeFactor3 = value.(float64)
 	}
-	if rows[3][3] != "" {
-		var value = ParseStringAs("uint16", rows[3][3])
+	if rows[3][2] != "" {
+		var value = ParseStringAs("uint16", rows[3][2])
 		p.GoldExchangeResource1Price = value.(uint16)
 	}
-	if rows[4][3] != "" {
-		var value = ParseStringAs("uint16", rows[4][3])
+	if rows[4][2] != "" {
+		var value = ParseStringAs("uint16", rows[4][2])
 		p.GoldExchangeResource2Price = value.(uint16)
 	}
-	if rows[5][3] != "" {
-		var value = ParseStringAs("uint16", rows[5][3])
+	if rows[5][2] != "" {
+		var value = ParseStringAs("uint16", rows[5][2])
 		p.GoldExchangeResource3Price = value.(uint16)
 	}
-	if rows[6][3] != "" {
-		var value = ParseStringAs("uint16", rows[6][3])
+	if rows[6][2] != "" {
+		var value = ParseStringAs("uint16", rows[6][2])
 		p.GoldExchangeResource4Price = value.(uint16)
 	}
-	if rows[7][3] != "" {
-		var value = ParseStringAs("uint16", rows[7][3])
+	if rows[7][2] != "" {
+		var value = ParseStringAs("uint16", rows[7][2])
 		p.FreeCompleteSeconds = value.(uint16)
 	}
-	if rows[8][3] != "" {
-		var value = ParseStringAs("uint16", rows[8][3])
+	if rows[8][2] != "" {
+		var value = ParseStringAs("uint16", rows[8][2])
 		p.CancelBuildReturnPercent = value.(uint16)
 	}
-	if rows[9][3] != "" {
-		var value = ParseStringAs("bool", rows[9][3])
+	if rows[9][2] != "" {
+		var value = ParseStringAs("bool", rows[9][2])
 		p.EnableSearch = value.(bool)
 	}
-	if rows[10][3] != "" {
-		for _, item := range strings.Split(rows[10][3], TAB_ARRAY_DELIM) {
+	if rows[10][2] != "" {
+		for _, item := range strings.Split(rows[10][2], TAB_ARRAY_DELIM) {
 			var value = ParseStringAs("int", item)
 			p.SpawnLevelLimit = append(p.SpawnLevelLimit, value.(int))
 		}
 	}
-	if rows[11][3] != "" {
+	if rows[11][2] != "" {
 		p.FirstRechargeReward = map[string]int{}
-		for _, text := range strings.Split(rows[11][3], TAB_MAP_DELIM1) {
+		for _, text := range strings.Split(rows[11][2], TAB_MAP_DELIM1) {
 			if text == "" {
 				continue
 			}
