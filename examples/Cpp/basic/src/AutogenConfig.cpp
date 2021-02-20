@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Utility/Conv.h"
 #include "Utility/StringUtil.h"
-#include "Utility/CSVReader.h"
 
 using namespace std;
 
@@ -18,109 +17,6 @@ using namespace std;
 
 namespace config
 {
-
-
-std::function<std::string(const char*)> AutogenConfigManager::reader = AutogenConfigManager::ReadFileContent;
-
-namespace 
-{
-    static std::vector<SoldierPropertyDefine>* _instance_soldierpropertydefine = nullptr;
-}
-
-void AutogenConfigManager::LoadAll()
-{
-    ASSERT(reader);
-    SoldierPropertyDefine::Load("soldier_property_define.csv");
-}
-
-void AutogenConfigManager::ClearAll()
-{
-    delete _instance_soldierpropertydefine;
-    _instance_soldierpropertydefine = nullptr;
-}
-
-
-//Load content of an asset file'
-std::string AutogenConfigManager::ReadFileContent(const char* filepath)
-{
-    ASSERT(filepath != nullptr);
-    FILE* fp = std::fopen(filepath, "rb");
-    if (fp == NULL) {
-        return "";
-    }
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    if (size == 0) {
-        fclose(fp);
-        return "";
-    }
-    std::string content;
-    fread(&content[0], 1, size, fp);
-    fclose(fp);
-    return std::move(content);
-}
-
-
-const std::vector<SoldierPropertyDefine>* SoldierPropertyDefine::GetData()
-{
-    ASSERT(_instance_soldierpropertydefine != nullptr);
-    return _instance_soldierpropertydefine;
-}
-
-
-const SoldierPropertyDefine* SoldierPropertyDefine::Get(const std::string& Name, int Level)
-{
-    const vector<SoldierPropertyDefine>* dataptr = GetData();
-    ASSERT(dataptr != nullptr && dataptr->size() > 0);
-    for (size_t i = 0; i < dataptr->size(); i++)
-    {
-        if (dataptr->at(i).Name == Name && dataptr->at(i).Level == Level)
-        {
-            return &dataptr->at(i);
-        }
-    }
-    return nullptr;
-}
-
-std::vector<const SoldierPropertyDefine*> SoldierPropertyDefine::GetRange(const std::string& Name)
-{
-    const vector<SoldierPropertyDefine>* dataptr = GetData();
-    std::vector<const SoldierPropertyDefine*> range;
-    ASSERT(dataptr != nullptr && dataptr->size() > 0);
-    for (size_t i = 0; i < dataptr->size(); i++)
-    {
-        if (dataptr->at(i).Name == Name)
-        {
-            range.push_back(&dataptr->at(i));
-        }
-    }
-    return range;
-}
-
-// load SoldierPropertyDefine data from csv file
-int SoldierPropertyDefine::Load(const char* filepath)
-{
-    vector<SoldierPropertyDefine>* dataptr = new vector<SoldierPropertyDefine>;
-    std::string content = AutogenConfigManager::reader(filepath);
-    CSVReader reader(TAB_CSV_SEP, TAB_CSV_QUOTE);
-    reader.Parse(content);
-    auto rows = reader.GetRows();
-    ASSERT(!rows.empty());
-    for (size_t i = 0; i < rows.size(); i++)
-    {
-        auto row = rows[i];
-        if (!row.empty())
-        {
-            SoldierPropertyDefine item;
-            SoldierPropertyDefine::ParseFromRow(row, &item);
-            dataptr->push_back(item);
-        }
-    }
-    delete _instance_soldierpropertydefine;
-    _instance_soldierpropertydefine = dataptr;
-    return 0;
-}
 
 // parse data object from an csv row
 int SoldierPropertyDefine::ParseFromRow(const vector<StringPiece>& row, SoldierPropertyDefine* ptr)

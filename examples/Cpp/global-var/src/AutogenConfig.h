@@ -20,42 +20,23 @@ static const char* TAB_ARRAY_DELIM = ",";  // array item delimiter
 static const char* TAB_MAP_DELIM1 = ";";   // map item delimiter
 static const char* TAB_MAP_DELIM2 = "=";   // map key-value delimiter
 
-class AutogenConfigManager
-{
-public:
-
-    // Load all configurations
-    static void LoadAll();
-
-    // Clear all configurations
-    static void ClearAll();
-
-    // Read content from an asset file
-    static std::string ReadFileContent(const char* filepath);
-
-    // default loader
-    static std::function<std::string(const char*)> reader;
-};
-
-// å…¨å±€æ•°å€¼é…ç½®
+// È«¾ÖÊıÖµÅäÖÃ
 struct GlobalPropertyDefine 
 {
-    double                      GoldExchangeTimeFactor1 = 0.0;     // é‡‘å¸å…‘æ¢æ—¶é—´å‚æ•°1
-    double                      GoldExchangeTimeFactor2 = 0.0;     // é‡‘å¸å…‘æ¢æ—¶é—´å‚æ•°2
-    double                      GoldExchangeTimeFactor3 = 0.0;     // é‡‘å¸å…‘æ¢æ—¶é—´å‚æ•°3
-    uint16_t                    GoldExchangeResource1Price = 0;    // é‡‘å¸å…‘æ¢èµ„æº1ä»·æ ¼
-    uint16_t                    GoldExchangeResource2Price = 0;    // é‡‘å¸å…‘æ¢èµ„æº2ä»·æ ¼
-    uint16_t                    GoldExchangeResource3Price = 0;    // é‡‘å¸å…‘æ¢èµ„æº3ä»·æ ¼
-    uint16_t                    GoldExchangeResource4Price = 0;    // é‡‘å¸å…‘æ¢èµ„æº4ä»·æ ¼
-    uint16_t                    FreeCompleteSeconds = 0;           // å…è´¹ç«‹å³å®Œæˆæ—¶é—´
-    uint16_t                    CancelBuildReturnPercent = 0;      // å–æ¶ˆå»ºé€ åè¿”è¿˜èµ„æºæ¯”ä¾‹
-    bool                        EnableSearch = false;              // å¼€å¯æœç´¢
-    std::vector<int>            SpawnLevelLimit;                   // æœ€å¤§åˆ·æ–°ä¸ªæ•°æ˜¾ç¤º
-    std::map<std::string, int>  FirstRechargeReward;               // é¦–å……å¥–åŠ±
+    double                      GoldExchangeTimeFactor1 = 0.0;     // ½ğ±Ò¶Ò»»Ê±¼ä²ÎÊı1
+    double                      GoldExchangeTimeFactor2 = 0.0;     // ½ğ±Ò¶Ò»»Ê±¼ä²ÎÊı2
+    double                      GoldExchangeTimeFactor3 = 0.0;     // ½ğ±Ò¶Ò»»Ê±¼ä²ÎÊı3
+    uint16_t                    GoldExchangeResource1Price = 0;    // ½ğ±Ò¶Ò»»×ÊÔ´1¼Û¸ñ
+    uint16_t                    GoldExchangeResource2Price = 0;    // ½ğ±Ò¶Ò»»×ÊÔ´2¼Û¸ñ
+    uint16_t                    GoldExchangeResource3Price = 0;    // ½ğ±Ò¶Ò»»×ÊÔ´3¼Û¸ñ
+    uint16_t                    GoldExchangeResource4Price = 0;    // ½ğ±Ò¶Ò»»×ÊÔ´4¼Û¸ñ
+    uint16_t                    FreeCompleteSeconds = 0;           // Ãâ·ÑÁ¢¼´Íê³ÉÊ±¼ä
+    uint16_t                    CancelBuildReturnPercent = 0;      // È¡Ïû½¨Ôìºó·µ»¹×ÊÔ´±ÈÀı
+    bool                        EnableSearch = false;              // ¿ªÆôËÑË÷
+    std::vector<int>            SpawnLevelLimit;                   // ×î´óË¢ĞÂ¸öÊıÏÔÊ¾
+    std::map<std::string, int>  FirstRechargeReward;               // Ê×³ä½±Àø
 
     static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, GlobalPropertyDefine* ptr);
-    static int Load(const char* filepath);
-    static const GlobalPropertyDefine* Instance();
 };
 
 } // namespace config

@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Utility/Conv.h"
 #include "Utility/StringUtil.h"
-#include "Utility/CSVReader.h"
 
 using namespace std;
 
@@ -18,94 +17,6 @@ using namespace std;
 
 namespace config
 {
-
-
-std::function<std::string(const char*)> AutogenConfigManager::reader = AutogenConfigManager::ReadFileContent;
-
-namespace 
-{
-    static std::vector<BoxProbabilityDefine>* _instance_boxprobabilitydefine = nullptr;
-}
-
-void AutogenConfigManager::LoadAll()
-{
-    ASSERT(reader);
-    BoxProbabilityDefine::Load("box_probability_define.csv");
-}
-
-void AutogenConfigManager::ClearAll()
-{
-    delete _instance_boxprobabilitydefine;
-    _instance_boxprobabilitydefine = nullptr;
-}
-
-
-//Load content of an asset file'
-std::string AutogenConfigManager::ReadFileContent(const char* filepath)
-{
-    ASSERT(filepath != nullptr);
-    FILE* fp = std::fopen(filepath, "rb");
-    if (fp == NULL) {
-        return "";
-    }
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    if (size == 0) {
-        fclose(fp);
-        return "";
-    }
-    std::string content;
-    fread(&content[0], 1, size, fp);
-    fclose(fp);
-    return std::move(content);
-}
-
-
-const std::vector<BoxProbabilityDefine>* BoxProbabilityDefine::GetData()
-{
-    ASSERT(_instance_boxprobabilitydefine != nullptr);
-    return _instance_boxprobabilitydefine;
-}
-
-
-const BoxProbabilityDefine* BoxProbabilityDefine::Get(const std::string& ID)
-{
-    const vector<BoxProbabilityDefine>* dataptr = GetData();
-    ASSERT(dataptr != nullptr && dataptr->size() > 0);
-    for (size_t i = 0; i < dataptr->size(); i++)
-    {
-        if (dataptr->at(i).ID == ID)
-        {
-            return &dataptr->at(i);
-        }
-    }
-    return nullptr;
-}
-
-// load BoxProbabilityDefine data from csv file
-int BoxProbabilityDefine::Load(const char* filepath)
-{
-    vector<BoxProbabilityDefine>* dataptr = new vector<BoxProbabilityDefine>;
-    std::string content = AutogenConfigManager::reader(filepath);
-    CSVReader reader(TAB_CSV_SEP, TAB_CSV_QUOTE);
-    reader.Parse(content);
-    auto rows = reader.GetRows();
-    ASSERT(!rows.empty());
-    for (size_t i = 0; i < rows.size(); i++)
-    {
-        auto row = rows[i];
-        if (!row.empty())
-        {
-            BoxProbabilityDefine item;
-            BoxProbabilityDefine::ParseFromRow(row, &item);
-            dataptr->push_back(item);
-        }
-    }
-    delete _instance_boxprobabilitydefine;
-    _instance_boxprobabilitydefine = dataptr;
-    return 0;
-}
 
 // parse data object from an csv row
 int BoxProbabilityDefine::ParseFromRow(const vector<StringPiece>& row, BoxProbabilityDefine* ptr)

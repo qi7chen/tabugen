@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Utility/Conv.h"
 #include "Utility/StringUtil.h"
-#include "Utility/CSVReader.h"
 
 using namespace std;
 
@@ -18,80 +17,6 @@ using namespace std;
 
 namespace config
 {
-
-
-std::function<std::string(const char*)> AutogenConfigManager::reader = AutogenConfigManager::ReadFileContent;
-
-namespace 
-{
-    static std::vector<NewbieGuideDefine>* _instance_newbieguidedefine = nullptr;
-}
-
-void AutogenConfigManager::LoadAll()
-{
-    ASSERT(reader);
-    NewbieGuideDefine::Load("newbie_guide_define.csv");
-}
-
-void AutogenConfigManager::ClearAll()
-{
-    delete _instance_newbieguidedefine;
-    _instance_newbieguidedefine = nullptr;
-}
-
-
-//Load content of an asset file'
-std::string AutogenConfigManager::ReadFileContent(const char* filepath)
-{
-    ASSERT(filepath != nullptr);
-    FILE* fp = std::fopen(filepath, "rb");
-    if (fp == NULL) {
-        return "";
-    }
-    fseek(fp, 0, SEEK_END);
-    long size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    if (size == 0) {
-        fclose(fp);
-        return "";
-    }
-    std::string content;
-    fread(&content[0], 1, size, fp);
-    fclose(fp);
-    return std::move(content);
-}
-
-
-const std::vector<NewbieGuideDefine>* NewbieGuideDefine::GetData()
-{
-    ASSERT(_instance_newbieguidedefine != nullptr);
-    return _instance_newbieguidedefine;
-}
-
-
-// load NewbieGuideDefine data from csv file
-int NewbieGuideDefine::Load(const char* filepath)
-{
-    vector<NewbieGuideDefine>* dataptr = new vector<NewbieGuideDefine>;
-    std::string content = AutogenConfigManager::reader(filepath);
-    CSVReader reader(TAB_CSV_SEP, TAB_CSV_QUOTE);
-    reader.Parse(content);
-    auto rows = reader.GetRows();
-    ASSERT(!rows.empty());
-    for (size_t i = 0; i < rows.size(); i++)
-    {
-        auto row = rows[i];
-        if (!row.empty())
-        {
-            NewbieGuideDefine item;
-            NewbieGuideDefine::ParseFromRow(row, &item);
-            dataptr->push_back(item);
-        }
-    }
-    delete _instance_newbieguidedefine;
-    _instance_newbieguidedefine = dataptr;
-    return 0;
-}
 
 // parse data object from an csv row
 int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideDefine* ptr)
