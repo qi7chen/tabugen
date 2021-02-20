@@ -11,6 +11,8 @@ import shutil
 import tabular.util.strutil as strutil
 import tabular.util.rowutil as rowutil
 
+
+# 写入csv文件
 class CsvDataWriter:
     def __init__(self):
         pass

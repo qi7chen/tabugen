@@ -93,7 +93,6 @@ class ExcelStructParser:
                 assert target_filename not in self.meta_index
                 self.meta_index[target_filename] = meta
 
-
     # 获取一个sheet的meta信息
     def get_file_meta(self, filename, wb, sheet_names):
         # 优先本文件
@@ -104,8 +103,7 @@ class ExcelStructParser:
         else:
             meta = self.meta_index.get(filename)
             if meta is None:
-                meta = {}
-                meta[predef.PredefClassName] = sheet_names[0]   # 没有定义`@meta`
+                meta = {predef.PredefClassName: sheet_names[0]}
             return fieldutil.validated_meta(meta)
 
     # 解析数据列
@@ -125,10 +123,10 @@ class ExcelStructParser:
         assert data_start_index < len(rows), data_start_index
         assert data_start_index <= data_end_index, data_end_index
 
-        struct = {}
-        struct['fields'] = []
-
-        struct['comment'] = meta.get(predef.PredefClassComment, "")
+        struct = {
+            'fields': [],
+            'comment': meta.get(predef.PredefClassComment, ""),
+        }
 
         class_name = meta[predef.PredefClassName]
         assert len(class_name) > 0
@@ -150,13 +148,15 @@ class ExcelStructParser:
                 continue
             if type_row[i] == "" or name_row[i] == "":  # skip empty column
                 continue
-            field = {}
-            field["name"] = name_row[i]
-            field["camel_case_name"] = strutil.camel_case(name_row[i])
-            field["original_type_name"] = type_row[i]
-            field["type"] = types.get_type_by_name(type_row[i])
-            field["type_name"] = types.get_name_of_type(field["type"])
-            field["column_index"] = i + 1
+            ftype = types.get_type_by_name(type_row[i])
+            field = {
+                "name": name_row[i],
+                "camel_case_name": strutil.camel_case(name_row[i]),
+                "original_type_name": type_row[i],
+                "type": ftype,
+                "type_name": types.get_name_of_type(ftype),
+                "column_index": i + 1,
+            }
 
             assert field["name"] not in fields_names, field["name"]
             fields_names[field["name"]] = True

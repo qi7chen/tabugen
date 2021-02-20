@@ -30,12 +30,13 @@ class CppCsvLoadGenerator:
         self.out_csv_delim = out_csv_delim
         self.config_manager_name = name
 
-    #
-    def get_instance_data_name(self, name):
+    @staticmethod
+    def get_instance_data_name(name):
         return '_instance_%s' % name.lower()
 
     # 生成赋值表达式
-    def gen_equal_stmt(self, prefix, struct, key):
+    @staticmethod
+    def gen_equal_stmt(prefix, struct, key):
         keys = structutil.get_struct_keys(struct, key, lang.map_cpp_type)
         assert len(keys) > 0
         args = []
@@ -82,7 +83,8 @@ class CppCsvLoadGenerator:
         return content
 
     # 内部class赋值
-    def gen_inner_class_field_assgin_stmt(self, struct, prefix):
+    @staticmethod
+    def gen_inner_class_field_assgin_stmt(struct, prefix):
         content = ''
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerTypeName]
@@ -128,22 +130,22 @@ class CppCsvLoadGenerator:
 
                 if typename != 'std::string' and field['name'] in vec_names:
                     text += '%s%s%s[%d] = %s;\n' % (
-                    space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
+                        space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
 
                 if origin_type.startswith('array'):
                     text += self.gen_field_array_assign_stmt(prefix, origin_type, field_name,
-                                                                ('row[%d]' % idx), tabs)
+                                                             ('row[%d]' % idx), tabs)
                 elif origin_type.startswith('map'):
                     text += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name,
-                                                              ('row[%d]' % idx), tabs)
+                                                           ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
                         text += '%s%s%s[%d] = ParseTextAs<%s>(row[%d]);\n' % (
-                        self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
+                            self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
                         text += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
-                        self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
+                            self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
             content += text
         return content
 
@@ -213,7 +215,7 @@ class CppCsvLoadGenerator:
         content = ''
         content += '// parse data object from csv rows\n'
         content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (
-        struct['name'], struct['name'])
+            struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
         content += '    ASSERT(ptr != nullptr);\n'
@@ -270,9 +272,10 @@ class CppCsvLoadGenerator:
             return self.gen_kv_struct_load_method(struct)
 
         varname = self.get_instance_data_name(struct['name'])
-        content += cpp_template.CPP_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'], struct['name'],
-                                               self.config_manager_name, struct['name'], struct['name'],
-                                               varname, varname)
+        content += cpp_template.CPP_LOAD_FUNC_TEMPLATE % (
+        struct['name'], struct['name'], struct['name'], struct['name'],
+        self.config_manager_name, struct['name'], struct['name'],
+        varname, varname)
         content += '\n'
         return content
 
@@ -334,8 +337,9 @@ class CppCsvLoadGenerator:
             arg_names.append(tpl[1])
 
         cond_text = self.gen_equal_stmt('dataptr->at(i).', struct, predef.PredefRangeMethodKeys)
-        content += cpp_template.CPP_GET_RANGE_METHOD_TEMPLATE % (struct['name'], struct['name'], ', '.join(formal_param),
-                                                                 struct['name'], struct['name'], cond_text)
+        content += cpp_template.CPP_GET_RANGE_METHOD_TEMPLATE % (
+        struct['name'], struct['name'], ', '.join(formal_param),
+        struct['name'], struct['name'], cond_text)
         return content
 
     # 生成全局Load和Clear方法
@@ -375,7 +379,7 @@ class CppCsvLoadGenerator:
     def gen_global_class(self):
         content = ''
         content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (self.out_csv_delim, '"', self.array_delim[0],
-                                                        self.map_delims[0], self.map_delims[1])
+                                                          self.map_delims[0], self.map_delims[1])
         if self.gen_dataload:
             content += 'class %s\n' % self.config_manager_name
             content += '{\n'
@@ -408,7 +412,6 @@ class CppCsvLoadGenerator:
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'
 
-
         if args.package is not None:
             cpp_content += '\nnamespace %s\n{\n\n' % args.package
 
@@ -430,4 +433,3 @@ class CppCsvLoadGenerator:
         if args.package is not None:
             cpp_content += '\n} // namespace %s \n' % args.package  # namespace
         return cpp_content
-

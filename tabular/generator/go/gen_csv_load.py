@@ -26,7 +26,7 @@ class GoCsvLoadGenerator:
         self.map_delims = map_delims
 
     # 生成赋值方法
-    def gen_field_assgin_stmt(self, name, typename, valuetext, tabs, tips):
+    def gen_field_assign_stmt(self, name, typename, valuetext, tabs, tips):
         content = ''
         space = self.TAB_SPACE * tabs
         if typename == 'string':
@@ -107,14 +107,14 @@ class GoCsvLoadGenerator:
             elif origin_typename.startswith('map'):
                 content += self.gen_field_map_assign_stmt('p.', origin_typename, name, valuetext, 2)
             else:
-                content += self.gen_field_assgin_stmt('p.'+name, typename, valuetext, 2, idx)
+                content += self.gen_field_assign_stmt('p.' + name, typename, valuetext, 2, idx)
             content += '%s}\n' % self.TAB_SPACE
             idx += 1
         content += '%sreturn nil\n' % self.TAB_SPACE
         content += '}\n\n'
         return content
 
-    #生成ParseFromRow方法
+    # 生成ParseFromRow方法
     def gen_parse_method(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
@@ -155,10 +155,10 @@ class GoCsvLoadGenerator:
                 else:
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
-                        text += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 2, 'row')
+                        text += self.gen_field_assign_stmt(prefix + name, typename, valuetext, 2, 'row')
                         vec_idx += 1
                     else:
-                        text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 2, 'row')
+                        text += self.gen_field_assign_stmt(prefix + field_name, typename, valuetext, 2, 'row')
                 text += '%s}\n' % self.TAB_SPACE
             content += text
 
@@ -183,14 +183,15 @@ class GoCsvLoadGenerator:
             field_name = field['camel_case_name']
             valuetext = 'row[i + %d]' % n
             content += '        if row[i + %d] != "" {\n' % n
-            content += self.gen_field_assgin_stmt('item.' + field_name, typename, valuetext, 2, 'row')
+            content += self.gen_field_assign_stmt('item.' + field_name, typename, valuetext, 2, 'row')
             content += '        }\n'
         content += '        %s%s = append(%s%s, item);\n' % (prefix, inner_var_name, prefix, inner_var_name)
         content += '    }\n'
         return content
 
     # KV模式下的Load方法
-    def gen_load_method_kv(self, struct):
+    @staticmethod
+    def gen_load_method_kv(struct):
         content = ''
         content += go_template.GO_KV_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
                                                              struct['name'], struct['name'],
@@ -210,7 +211,8 @@ class GoCsvLoadGenerator:
         return content
 
     # 生成helper.go文件
-    def gen_helper_file(self, main_filepath, ver, pkgname):
+    @staticmethod
+    def gen_helper_file(main_filepath, ver, pkgname):
         filepath = os.path.abspath(os.path.dirname(main_filepath))
         filename = filepath + os.path.sep + 'helper.go'
         content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, pkgname)

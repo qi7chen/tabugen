@@ -11,6 +11,8 @@ import tabular.util.strutil as strutil
 import tabular.util.structutil as structutil
 import tabular.util.rowutil as rowutil
 
+
+# 写入json文件
 class JsonDataWriter:
     def __init__(self):
         self.array_delim = '|'
@@ -76,10 +78,10 @@ class JsonDataWriter:
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
-        kvlist = struct['options'][predef.PredefKeyValueColumn].split(',')
-        assert len(kvlist) == 2, kvlist
+        kvlist = struct['options'][predef.PredefKeyValueColumns].split(',')
+        assert len(kvlist) >= 3, kvlist
         keycol = int(kvlist[0])
-        valuecol = int(kvlist[1])
+        valuecol = int(kvlist[2])
 
         obj = {}
         for row in rows:
@@ -111,7 +113,7 @@ class JsonDataWriter:
             inner_obj_list.append(inner_item)
         return inner_obj_list
 
-    #解析数据行
+    # 解析数据行
     def parse_row(self, struct, enable_column_skip):
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)

@@ -89,7 +89,8 @@ class CppStructGenerator:
         return content
 
     # 内部class定义
-    def gen_inner_struct_define(self, struct):
+    @staticmethod
+    def gen_inner_struct_define(struct):
         inner_fields = structutil.get_inner_class_struct_fields(struct)
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
@@ -178,7 +179,7 @@ class CppStructGenerator:
 
 def unit_test():
     codegen = CppStructGenerator()
-    codegen.setup('csv', true)
+    codegen.setup('csv', True)
 
 
 if __name__ == '__main__':

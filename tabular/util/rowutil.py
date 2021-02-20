@@ -46,6 +46,7 @@ def validate_unique_column(struct, rows):
 # 置空不必要显示的内容
 def hide_skipped_row_fields(enable_column_skip, struct, rows):
     if predef.PredefValueTypeColumn in struct['options']:
+        # 把KV模式的类型和注释从csv中删除
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
         commentcol = int(struct['options'][predef.PredefCommentColumn])
         for row in rows:

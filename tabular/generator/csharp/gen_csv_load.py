@@ -26,11 +26,13 @@ class CSharpCsvLoadGenerator:
         self.map_delims = map_delims
         self.config_manager_name = name
 
+    @staticmethod
     def get_data_member_name(self, name):
         return name + 'Data'
 
     # 字段比较
-    def gen_equal_stmt(self, prefix, struct, key):
+    @staticmethod
+    def gen_equal_stmt(prefix, struct, key):
         keys = structutil.get_struct_keys(struct, key, lang.map_cs_type)
         args = []
         for tpl in keys:
@@ -38,7 +40,7 @@ class CSharpCsvLoadGenerator:
         return ' && '.join(args)
 
     # 生成赋值方法
-    def gen_field_assgin_stmt(self, name, typename, valuetext, tabs):
+    def gen_field_assign_stmt(self, name, typename, valuetext, tabs):
         content = ''
         space = self.TAB_SPACE * tabs
         if typename.lower() == 'string':
@@ -62,7 +64,7 @@ class CSharpCsvLoadGenerator:
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
         content += "%s{\n" % space
-        content += self.gen_field_assgin_stmt('var value', elem_type, 'items[i]', tabs + 1)
+        content += self.gen_field_assign_stmt('var value', elem_type, 'items[i]', tabs + 1)
         content += '%s    %s%s[i] = value;\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
@@ -88,8 +90,8 @@ class CSharpCsvLoadGenerator:
         content += "%s    var item = text.Split(%s.TAB_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);\n" % (
             space, self.config_manager_name)
         content += '%s    if (items.Length == 2) {\n' % space
-        content += self.gen_field_assgin_stmt('var key', key_type, 'item[0]', tabs+1)
-        content += self.gen_field_assgin_stmt('var value', val_type, 'item[1]', tabs + 1)
+        content += self.gen_field_assign_stmt('var key', key_type, 'item[0]', tabs+1)
+        content += self.gen_field_assign_stmt('var value', val_type, 'item[1]', tabs + 1)
         content += '%s    %s%s[key] = value;\n' % (self.TAB_SPACE * (tabs + 1), prefix, name)
         content += '%s    }\n' % space
         content += '%s}\n' % space
@@ -136,7 +138,7 @@ class CSharpCsvLoadGenerator:
                 text += '%s}\n' % (self.TAB_SPACE * 2)
             else:
                 text += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
-                text += self.gen_field_assgin_stmt(prefix + name, typename, valuetext, 3)
+                text += self.gen_field_assign_stmt(prefix + name, typename, valuetext, 3)
                 text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
             idx += 1
@@ -190,10 +192,10 @@ class CSharpCsvLoadGenerator:
                     text += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
-                        text += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
+                        text += self.gen_field_assign_stmt(prefix+name, typename, valuetext, 3)
                         vec_idx += 1
                     else:
-                        text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
+                        text += self.gen_field_assign_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
         content += '%s}\n' % self.TAB_SPACE
@@ -218,7 +220,7 @@ class CSharpCsvLoadGenerator:
             valuetext = 'row[i + %d]' % n
             content += '            if (row[i + %d].Length > 0) \n' % n
             content += '            {\n'
-            content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
+            content += self.gen_field_assign_stmt("item." + field['name'], typename, valuetext, 4)
             content += '            }\n'
         content += '            %s%s[j] = item;\n' % (prefix, inner_var_name)
         content += '        }\n'

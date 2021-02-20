@@ -87,7 +87,8 @@ class CSharpStructGenerator:
         return content
 
     # 生成嵌套内部类定义
-    def gen_cs_inner_class(self, struct):
+    @staticmethod
+    def gen_cs_inner_class(struct):
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
         inner_fields = structutil.get_inner_class_struct_fields(struct)
@@ -142,7 +143,7 @@ class CSharpStructGenerator:
 
 def unit_test():
     codegen = CSharpStructGenerator()
-    codegen.setup('csv')
+    codegen.setup('csv', True)
 
 
 if __name__ == '__main__':

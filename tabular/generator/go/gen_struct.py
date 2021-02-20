@@ -34,7 +34,8 @@ class GoStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-    def get_const_key_name(self, name):
+    @staticmethod
+    def get_const_key_name(name):
         return 'Key%sName' % name
 
     def gen_const_names(self, descriptors):
@@ -179,7 +180,7 @@ class GoStructGenerator:
 
 def unit_test():
     codegen = GoStructGenerator()
-    codegen.setup('csv')
+    codegen.setup('csv', True)
 
 
 if __name__ == '__main__':

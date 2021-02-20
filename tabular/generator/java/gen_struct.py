@@ -33,7 +33,8 @@ class JavaStructGenerator:
                 sys.exit(1)
 
     # 合并嵌套类
-    def gen_java_inner_class(self, struct):
+    @staticmethod
+    def gen_java_inner_class(struct):
         content = ''
         class_name = struct["options"][predef.PredefInnerTypeClass]
         inner_fields = structutil.get_inner_class_struct_fields(struct)

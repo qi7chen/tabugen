@@ -29,11 +29,13 @@ class JavaCsvLoadGenerator:
         self.map_delims = map_delims
         self.config_manager_name = class_name
 
-    def get_instance_data_name(self, name):
+    @staticmethod
+    def get_instance_data_name(name):
         return '_instance_%s' % name.lower()
 
     # 静态变量
-    def gen_static_data(self, struct):
+    @staticmethod
+    def gen_static_data(struct):
         content = '\n'
         if struct['options'][predef.PredefParseKVMode]:
             content += '    private static %s instance_;\n' % struct['name']
@@ -44,7 +46,7 @@ class JavaCsvLoadGenerator:
         return content
 
     # 生成赋值方法
-    def gen_field_assgin_stmt(self, name, typename, valuetext, tabs):
+    def gen_field_assign_stmt(self, name, typename, valuetext, tabs):
         content = ''
         space = self.TAB_SPACE * tabs
         if typename.lower() == 'string':
@@ -78,7 +80,7 @@ class JavaCsvLoadGenerator:
         content += '%sfor (int i = 0; i < kvList.length; i++) {\n' % space
         content += '%s    if (!kvList[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
         varname = '%s value' % elem_type
-        content += self.gen_field_assgin_stmt(varname, elem_type, 'kvList[i]', tabs + 2)
+        content += self.gen_field_assign_stmt(varname, elem_type, 'kvList[i]', tabs + 2)
         content += '%s        list[i] = value;\n' % (self.TAB_SPACE * tabs)
         content += '%s    }\n' % (self.TAB_SPACE * tabs)
         content += '%s}\n' % space
@@ -103,8 +105,8 @@ class JavaCsvLoadGenerator:
         content += '%s    String[] item = text.split(%s.TAB_MAP_DELIM2);\n' % (space, self.config_manager_name)
         prefix1 = '%s key' % key_type
         prefix2 = '%s value' % val_type
-        content += self.gen_field_assgin_stmt(prefix1, key_type, 'item[0]', tabs + 1)
-        content += self.gen_field_assgin_stmt(prefix2, val_type, 'item[1]', tabs + 1)
+        content += self.gen_field_assign_stmt(prefix1, key_type, 'item[0]', tabs + 1)
+        content += self.gen_field_assign_stmt(prefix2, val_type, 'item[1]', tabs + 1)
         content += '%s    %s%s.put(key, value);\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
@@ -127,7 +129,7 @@ class JavaCsvLoadGenerator:
             valuetext = 'record.get(i + %d)' % n
             content += '            if (!record.get(i + %d).isEmpty()) \n' % n
             content += '            {\n'
-            content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
+            content += self.gen_field_assign_stmt("item." + field['name'], typename, valuetext, 4)
             content += '            }\n'
         content += '            %s%s.add(item);\n' % (prefix, inner_var_name)
         content += '        }\n'
@@ -172,7 +174,7 @@ class JavaCsvLoadGenerator:
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             else:
                 content += '%sif (!records.get(%d).get(%d).isEmpty()) {\n' % (self.TAB_SPACE * 2, idx, validx)
-                content += self.gen_field_assgin_stmt('this.' + name, typename, valuetext, 3)
+                content += self.gen_field_assign_stmt('this.' + name, typename, valuetext, 3)
                 content += '%s}\n' % (self.TAB_SPACE * 2)
             idx += 1
         content += '%s}\n' % self.TAB_SPACE
@@ -225,10 +227,10 @@ class JavaCsvLoadGenerator:
                     text += '%sif (!record.get(%d).isEmpty()) {\n' % (self.TAB_SPACE * 2, idx)
                     if field_name in vec_names:
                         name = '%s[%d]' % (vec_name, vec_idx)
-                        text += self.gen_field_assgin_stmt(prefix+name, typename, valuetext, 3)
+                        text += self.gen_field_assign_stmt(prefix+name, typename, valuetext, 3)
                         vec_idx += 1
                     else:
-                        text += self.gen_field_assgin_stmt(prefix+field_name, typename, valuetext, 3)
+                        text += self.gen_field_assign_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
             content += text
         content += '%s}\n' % self.TAB_SPACE
@@ -251,7 +253,7 @@ class JavaCsvLoadGenerator:
             valuetext = 'row[i + %d]' % n
             content += '            if (!row[i + %d].isEmpty()) \n' % n
             content += '            {\n'
-            content += self.gen_field_assgin_stmt("item." + field['name'], typename, valuetext, 4)
+            content += self.gen_field_assign_stmt("item." + field['name'], typename, valuetext, 4)
             content += '            }\n'
         content += '            %s%s.add(item);\n' % (prefix, inner_var_name)
         content += '        }\n'
