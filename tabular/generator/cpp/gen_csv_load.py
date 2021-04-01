@@ -53,7 +53,7 @@ class CppCsvLoadGenerator:
         content += '%sconst auto& array = Split(%s, TAB_ARRAY_DELIM, true);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    %s%s.push_back(ParseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
+        content += '%s    %s%s.push_back(parseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
@@ -74,9 +74,9 @@ class CppCsvLoadGenerator:
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const auto& key = ParseTextAs<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        const auto& key = parseTextAs<%s>(kv[0]);\n' % (space, key_type)
         content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
-        content += '%s        %s%s[key] = ParseTextAs<%s>(kv[1]);\n' % (space, prefix, name, val_type)
+        content += '%s        %s%s[key] = parseTextAs<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
@@ -98,7 +98,7 @@ class CppCsvLoadGenerator:
             field = inner_fields[n]
             origin_type = field['original_type_name']
             typename = lang.map_cpp_type(origin_type)
-            content += '        item.%s = ParseTextAs<%s>(row[i + %d]);\n' % (field['name'], typename, n)
+            content += '        item.%s = parseTextAs<%s>(row[i + %d]);\n' % (field['name'], typename, n)
         content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
         content += '    }\n'
         return content
@@ -140,12 +140,12 @@ class CppCsvLoadGenerator:
                                                            ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
-                        text += '%s%s%s[%d] = ParseTextAs<%s>(row[%d]);\n' % (
-                            self.TAB_SPACE * (tabs), prefix, vec_name, vec_idx, typename, idx)
+                        text += '%s%s%s[%d] = parseTextAs<%s>(row[%d]);\n' % (
+                            self.TAB_SPACE * tabs, prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        text += '%s%s%s = ParseTextAs<%s>(row[%d]);\n' % (
-                            self.TAB_SPACE * (tabs), prefix, field_name, typename, idx)
+                        text += '%s%s%s = parseTextAs<%s>(row[%d]);\n' % (
+                            self.TAB_SPACE * tabs, prefix, field_name, typename, idx)
             content += text
         return content
 
@@ -231,7 +231,7 @@ class CppCsvLoadGenerator:
             elif origin_typename.startswith('map'):
                 text += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
             else:
-                text += '%sptr->%s = ParseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
+                text += '%sptr->%s = parseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
             content += text
         content += '    return 0;\n'

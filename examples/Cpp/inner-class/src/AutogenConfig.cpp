@@ -23,16 +23,16 @@ int BoxProbabilityDefine::ParseFromRow(const vector<StringPiece>& row, BoxProbab
 {
     ASSERT(row.size() >= 13);
     ASSERT(ptr != nullptr);
-    ptr->ID = ParseTextAs<std::string>(row[0]);
-    ptr->Total = ParseTextAs<int>(row[1]);
-    ptr->Time = ParseTextAs<int>(row[2]);
-    ptr->Repeat = ParseTextAs<bool>(row[3]);
+    ptr->ID = parseTextAs<std::string>(row[0]);
+    ptr->Total = parseTextAs<int>(row[1]);
+    ptr->Time = parseTextAs<int>(row[2]);
+    ptr->Repeat = parseTextAs<bool>(row[3]);
     for (int i = 4; i < 13; i += 3) 
     {
         ProbabilityGoodsDefine item;
-        item.GoodsID = ParseTextAs<std::string>(row[i + 0]);
-        item.Num = ParseTextAs<uint32_t>(row[i + 1]);
-        item.Probability = ParseTextAs<uint32_t>(row[i + 2]);
+        item.GoodsID = parseTextAs<std::string>(row[i + 0]);
+        item.Num = parseTextAs<uint32_t>(row[i + 1]);
+        item.Probability = parseTextAs<uint32_t>(row[i + 2]);
         ptr->ProbabilityGoods.push_back(item);
     }
     return 0;

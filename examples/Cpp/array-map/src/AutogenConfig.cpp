@@ -23,14 +23,14 @@ int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideD
 {
     ASSERT(row.size() >= 6);
     ASSERT(ptr != nullptr);
-    ptr->Name = ParseTextAs<std::string>(row[0]);
-    ptr->Type = ParseTextAs<std::string>(row[1]);
-    ptr->Target = ParseTextAs<std::string>(row[2]);
+    ptr->Name = parseTextAs<std::string>(row[0]);
+    ptr->Type = parseTextAs<std::string>(row[1]);
+    ptr->Target = parseTextAs<std::string>(row[2]);
     {
         const auto& array = Split(row[3], TAB_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
-            ptr->Accomplishment.push_back(ParseTextAs<int16_t>(array[i]));
+            ptr->Accomplishment.push_back(parseTextAs<int16_t>(array[i]));
         }
     }
     {
@@ -41,13 +41,13 @@ int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideD
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
-                const auto& key = ParseTextAs<std::string>(kv[0]);
+                const auto& key = parseTextAs<std::string>(kv[0]);
                 ASSERT(ptr->Goods.count(key) == 0);
-                ptr->Goods[key] = ParseTextAs<uint32_t>(kv[1]);
+                ptr->Goods[key] = parseTextAs<uint32_t>(kv[1]);
             }
         }
     }
-    ptr->Description = ParseTextAs<std::string>(row[5]);
+    ptr->Description = parseTextAs<std::string>(row[5]);
     return 0;
 }
 

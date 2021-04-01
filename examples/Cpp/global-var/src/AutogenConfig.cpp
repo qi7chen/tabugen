@@ -23,21 +23,21 @@ int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows,
 {
     ASSERT(rows.size() >= 12 && rows[0].size() >= 2);
     ASSERT(ptr != nullptr);
-    ptr->GoldExchangeTimeFactor1 = ParseTextAs<double>(rows[0][2]);
-    ptr->GoldExchangeTimeFactor2 = ParseTextAs<double>(rows[1][2]);
-    ptr->GoldExchangeTimeFactor3 = ParseTextAs<double>(rows[2][2]);
-    ptr->GoldExchangeResource1Price = ParseTextAs<uint16_t>(rows[3][2]);
-    ptr->GoldExchangeResource2Price = ParseTextAs<uint16_t>(rows[4][2]);
-    ptr->GoldExchangeResource3Price = ParseTextAs<uint16_t>(rows[5][2]);
-    ptr->GoldExchangeResource4Price = ParseTextAs<uint16_t>(rows[6][2]);
-    ptr->FreeCompleteSeconds = ParseTextAs<uint16_t>(rows[7][2]);
-    ptr->CancelBuildReturnPercent = ParseTextAs<uint16_t>(rows[8][2]);
-    ptr->EnableSearch = ParseTextAs<bool>(rows[9][2]);
+    ptr->GoldExchangeTimeFactor1 = parseTextAs<double>(rows[0][2]);
+    ptr->GoldExchangeTimeFactor2 = parseTextAs<double>(rows[1][2]);
+    ptr->GoldExchangeTimeFactor3 = parseTextAs<double>(rows[2][2]);
+    ptr->GoldExchangeResource1Price = parseTextAs<uint16_t>(rows[3][2]);
+    ptr->GoldExchangeResource2Price = parseTextAs<uint16_t>(rows[4][2]);
+    ptr->GoldExchangeResource3Price = parseTextAs<uint16_t>(rows[5][2]);
+    ptr->GoldExchangeResource4Price = parseTextAs<uint16_t>(rows[6][2]);
+    ptr->FreeCompleteSeconds = parseTextAs<uint16_t>(rows[7][2]);
+    ptr->CancelBuildReturnPercent = parseTextAs<uint16_t>(rows[8][2]);
+    ptr->EnableSearch = parseTextAs<bool>(rows[9][2]);
     {
         const auto& array = Split(rows[10][2], TAB_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
-            ptr->SpawnLevelLimit.push_back(ParseTextAs<int>(array[i]));
+            ptr->SpawnLevelLimit.push_back(parseTextAs<int>(array[i]));
         }
     }
     {
@@ -48,9 +48,9 @@ int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows,
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
-                const auto& key = ParseTextAs<std::string>(kv[0]);
+                const auto& key = parseTextAs<std::string>(kv[0]);
                 ASSERT(ptr->FirstRechargeReward.count(key) == 0);
-                ptr->FirstRechargeReward[key] = ParseTextAs<int>(kv[1]);
+                ptr->FirstRechargeReward[key] = parseTextAs<int>(kv[1]);
             }
         }
     }
