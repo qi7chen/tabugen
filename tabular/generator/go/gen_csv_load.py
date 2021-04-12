@@ -32,7 +32,7 @@ class GoCsvLoadGenerator:
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = ParseStringAs("%s", %s)\n' % (space, typename, valuetext)
+            content += '%svar value = parseStringAs("%s", %s)\n' % (space, typename, valuetext)
             content += '%s%s = value.(%s)\n' % (space, name, typename)
         return content
 
@@ -45,8 +45,8 @@ class GoCsvLoadGenerator:
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_go_type(elem_type)
 
-        content += '%sfor _, item := range strings.Split(%s, TAB_ARRAY_DELIM) {\n' % (space, row_name)
-        content += '%s    var value = ParseStringAs("%s", item)\n' % (space, elem_type)
+        content += '%sfor _, item := range strings.Split(%s, TABULAR_ARRAY_DELIM) {\n' % (space, row_name)
+        content += '%s    var value = parseStringAs("%s", item)\n' % (space, elem_type)
         content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
         content += '%s}\n' % space
         return content
@@ -62,14 +62,14 @@ class GoCsvLoadGenerator:
 
         content = ''
         content += '%s%s%s = map[%s]%s{}\n' % (space, prefix, name, key_type, val_type)
-        content += '%sfor _, text := range strings.Split(%s, TAB_MAP_DELIM1) {\n' % (space, row_name)
+        content += '%sfor _, text := range strings.Split(%s, TABULAR_MAP_DELIM1) {\n' % (space, row_name)
         content += '%s    if text == "" {\n' % space
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
-        content += '%s    var items = strings.Split(text, TAB_MAP_DELIM2)\n' % space
-        content += '%s    var value = ParseStringAs("%s", items[0])\n' % (space, key_type)
+        content += '%s    var items = strings.Split(text, TABULAR_MAP_DELIM2)\n' % space
+        content += '%s    var value = parseStringAs("%s", items[0])\n' % (space, key_type)
         content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = ParseStringAs("%s", items[1])\n' % (space, val_type)
+        content += '%s    value = parseStringAs("%s", items[1])\n' % (space, val_type)
         content += '%s    var val = value.(%s)\n' % (space, val_type)
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
@@ -194,21 +194,14 @@ class GoCsvLoadGenerator:
     def gen_load_method_kv(struct):
         content = ''
         content += go_template.GO_KV_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
-                                                             struct['name'], struct['name'],
-                                                             struct['name']
-                                                             )
+                                                             struct['name'])
         return content
 
     # 生成Load方法
     def gen_load_method(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_load_method_kv(struct)
-
-        content = ''
-        content += go_template.GO_LOAD_METHOD_TEMPLATE % (struct['name'], struct['name'],
-                                                          struct['name'], struct['name'],
-                                                          struct['name'], struct['name'])
-        return content
+        return ''
 
     # 生成helper.go文件
     @staticmethod
