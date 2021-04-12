@@ -8,7 +8,7 @@ dataDir = $(shell realpath ../../datasheet)
 
 export PYTHONPATH=$(rootDir)
 
-cli_entry = python $(rootDir)/tabular/cli.py
+cli_entry = python $(rootDir)/tabugen/cli.py
 filepath = $(dataDir)/全局变量表.xlsx
 
 OUT_SRC_DIR = $(currentDir)/src
