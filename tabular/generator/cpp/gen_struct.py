@@ -124,7 +124,7 @@ class CppStructGenerator:
             '#include <stdint.h>',
             '#include <string>',
             '#include <vector>',
-            '#include <map>',
+            '#include <unordered_map>',
         ]
         if self.load_gen is not None:
             other_headers = [
@@ -137,7 +137,7 @@ class CppStructGenerator:
         header_content += '\n'.join(h_include_headers) + '\n\n'
 
         if args.package is not None:
-            header_content += '\nnamespace %s\n{\n\n' % args.package
+            header_content += '\nnamespace %s {\n\n' % args.package
 
         if self.load_gen is not None:
             header_content += self.load_gen.gen_global_class()

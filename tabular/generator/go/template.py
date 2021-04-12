@@ -25,7 +25,7 @@ var (
 
 GO_HEAD_CONST_TEMPLATE = """
 const (
-    TAB_CSV_SEP = `%s`		// CSV field delimiter
+    TAB_CSV_SEP = `%s`      // CSV field delimiter
     TAB_CSV_QUOTE = `%s`	// CSV field quote
     TAB_ARRAY_DELIM = `%s`	// array item delimiter
     TAB_MAP_DELIM1 = `%s`	// map item delimiter
@@ -60,19 +60,18 @@ func Load%sList(data []byte) ([]*%s, error) {
 """
 
 GO_KV_LOAD_METHOD_TEMPLATE = """
-func Load%s(data []byte) (*%s, error) {
+func (s *%s) Unmarshal(data []byte) error {
     r := csv.NewReader(bytes.NewReader(data))
     rows, err := r.ReadAll()
     if err != nil {
         log.Printf("%s: csv read all, %%v", err)
-        return nil, err
+        return err
     }
-    var item %s
-    if err := item.ParseFromRows(rows); err != nil {
+    if err := s.ParseFromRows(rows); err != nil {
         log.Printf("%s: parse row %%d, %%v", len(rows), err)
-        return nil, err
+        return err
     }
-    return &item, nil
+    return nil
 }
 
 """
@@ -88,18 +87,16 @@ import (
 	"strconv"
 )
 
-func ParseBool(s string) bool {
+func parseBool(s string) bool {
 	switch len(s) {
 	case 0:
 		return false
 	case 1:
-		return s[0] == '1'
+		return s[0] == '1' || s[0] == 'y' || s[0] == 'Y'
 	case 2:
 		return s == "on" || s == "ON"
 	case 3:
 		return s == "yes" || s == "YES"
-	case 4:
-		return s == "true" || s == "TRUE"
 	default:
 		b, err := strconv.ParseBool(s)
 		if err != nil {
@@ -109,7 +106,7 @@ func ParseBool(s string) bool {
 	}
 }
 
-func ParseI8(s string) int8 {
+func parseI8(s string) int8 {
 	n := ParseI32(s)
 	if n > math.MaxInt8 || n < math.MinInt8 {
 		log.Panicf("ParseI8: value %s out of range", s)
@@ -117,7 +114,7 @@ func ParseI8(s string) int8 {
 	return int8(n)
 }
 
-func ParseU8(s string) uint8 {
+func parseU8(s string) uint8 {
 	n := ParseI32(s)
 	if n > math.MaxUint8 || n < 0 {
 		log.Panicf("ParseU8: value %s out of range", s)
@@ -125,7 +122,7 @@ func ParseU8(s string) uint8 {
 	return uint8(n)
 }
 
-func ParseI16(s string) int16 {
+func parseI16(s string) int16 {
 	n := ParseI32(s)
 	if n > math.MaxInt16 || n < math.MinInt16 {
 		log.Panicf("ParseI16: value %s out of range", s)
@@ -133,7 +130,7 @@ func ParseI16(s string) int16 {
 	return int16(n)
 }
 
-func ParseU16(s string) uint16 {
+func parseU16(s string) uint16 {
 	n := ParseI32(s)
 	if n > math.MaxUint16 || n < 0 {
 		log.Panicf("ParseU16: value %s out of range", s)
@@ -141,7 +138,7 @@ func ParseU16(s string) uint16 {
 	return uint16(n)
 }
 
-func ParseI32(s string) int32 {
+func parseI32(s string) int32 {
 	if s == "" {
 		return 0
 	}
@@ -152,7 +149,7 @@ func ParseI32(s string) int32 {
 	return int32(n)
 }
 
-func ParseU32(s string) uint32 {
+func parseU32(s string) uint32 {
 	if s == "" {
 		return 0
 	}
@@ -163,7 +160,7 @@ func ParseU32(s string) uint32 {
 	return uint32(n)
 }
 
-func ParseI64(s string) int64 {
+func parseI64(s string) int64 {
 	if s == "" {
 		return 0
 	}
@@ -174,7 +171,7 @@ func ParseI64(s string) int64 {
 	return n
 }
 
-func ParseU64(s string) uint64 {
+func parseU64(s string) uint64 {
 	if s == "" {
 		return 0
 	}
@@ -185,7 +182,7 @@ func ParseU64(s string) uint64 {
 	return n
 }
 
-func ParseF32(s string) float32 {
+func parseF32(s string) float32 {
 	f := ParseF64(s)
 	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
 		log.Panicf("ParseFloat32: value %s out of range", s)
@@ -193,7 +190,7 @@ func ParseF32(s string) float32 {
 	return float32(f)
 }
 
-func ParseF64(s string) float64 {
+func parseF64(s string) float64 {
 	if s == "" {
 		return 0
 	}
@@ -208,31 +205,31 @@ func ParseF64(s string) float64 {
 func ParseStringAs(typename, value string) interface{} {
 	switch typename {
 	case "int":
-		return int(ParseI64(value))
+		return int(parseI64(value))
 	case "int8":
-		return ParseI8(value)
+		return parseI8(value)
 	case "int16":
-		return ParseI16(value)
+		return parseI16(value)
 	case "int32":
-		return ParseI32(value)
+		return parseI32(value)
 	case "int64":
-		return ParseI64(value)
+		return parseI64(value)
 	case "uint":
-		return uint(ParseU64(value))
+		return uint(parseU64(value))
 	case "uint8":
-		return ParseU8(value)
+		return parseU8(value)
 	case "uint16":
-		return ParseU16(value)
+		return parseU16(value)
 	case "uint32":
-		return ParseU32(value)
+		return parseU32(value)
 	case "uint64":
-		return ParseU64(value)
+		return parseU64(value)
 	case "float32":
-		return ParseF32(value)
+		return parseF32(value)
 	case "float64":
-		return ParseF64(value)
+		return parseF64(value)
 	case "bool":
-		return ParseBool(value)
+		return parseBool(value)
 	}
 	return value
 }

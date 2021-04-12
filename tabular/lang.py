@@ -37,7 +37,7 @@ def map_cpp_type(typ):
         k, v = types.map_key_value_types(typ)
         key_type = type_mapping[k]
         value_type = type_mapping[v]
-        return 'std::map<%s, %s>' % (key_type, value_type)
+        return 'std::unordered_map<%s, %s>' % (key_type, value_type)
     assert False, typ
 
 

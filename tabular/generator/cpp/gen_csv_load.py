@@ -50,7 +50,7 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& array = Split(%s, TAB_ARRAY_DELIM, true);\n' % (space, row_name)
+        content += '%sconst auto& array = Split(%s, TABULAR_ARRAY_DELIM, true);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(parseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -67,10 +67,10 @@ class CppCsvLoadGenerator:
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& dict = Split(%s, TAB_MAP_DELIM1, true);\n' % (space, row_name)
+        content += '%sconst auto& dict = Split(%s, TABULAR_MAP_DELIM1, true);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < dict.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const auto& kv = Split(dict[i], TAB_MAP_DELIM2, true);\n' % space
+        content += '%s    const auto& kv = Split(dict[i], TABULAR_MAP_DELIM2, true);\n' % space
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
@@ -378,6 +378,7 @@ class CppCsvLoadGenerator:
 
     def gen_global_class(self):
         content = ''
+        # 常量定义在头文件，方便外部解析使用
         content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (self.out_csv_delim, '"', self.array_delim[0],
                                                           self.map_delims[0], self.map_delims[1])
         if self.gen_dataload:
@@ -413,7 +414,7 @@ class CppCsvLoadGenerator:
         cpp_content += '#endif\n\n'
 
         if args.package is not None:
-            cpp_content += '\nnamespace %s\n{\n\n' % args.package
+            cpp_content += '\nnamespace %s {\n\n' % args.package
 
         static_var_content = ''
         if self.gen_dataload:

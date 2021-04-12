@@ -59,10 +59,9 @@ def run(args):
 
 # 校验参数
 def verify_args(args):
-    if args.go_out is not None:
-        if args.package is None:
-            print('Go package name must be set')
-            sys.exit(1)
+    if args.package is None:
+        print('package name must be set')
+        sys.exit(1)
 
     if args.array_delim is not None:
         if len(args.array_delim) != 1:

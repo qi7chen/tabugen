@@ -16,12 +16,12 @@ CPP_MANAGER_METHOD_TEMPLATE = """
     static std::function<std::string(const char*)> reader;
 """
 
-CPP_CSV_TOKEN_TEMPLATE = """
-static const char TAB_CSV_SEP = '%s';       // CSV field separator
-static const char TAB_CSV_QUOTE = '%s';     // CSV field quote
-static const char* TAB_ARRAY_DELIM = "%s";  // array item delimiter
-static const char* TAB_MAP_DELIM1 = "%s";   // map item delimiter
-static const char* TAB_MAP_DELIM2 = "%s";   // map key-value delimiter
+CPP_CSV_TOKEN_TEMPLATE = """// separator used by Tabular
+static const char TABULAR_CSV_SEP = '%s';       // CSV field separator
+static const char TABULAR_CSV_QUOTE = '%s';     // CSV field quote
+static const char* TABULAR_ARRAY_DELIM = "%s";  // array item delimiter
+static const char* TABULAR_MAP_DELIM1 = "%s";   // map item delimiter
+static const char* TABULAR_MAP_DELIM2 = "%s";   // map key-value delimiter
 
 """
 
@@ -78,7 +78,7 @@ int %s::Load(const char* filepath)
 {
     vector<%s>* dataptr = new vector<%s>;
     std::string content = %s::reader(filepath);
-    CSVReader reader(TAB_CSV_SEP, TAB_CSV_QUOTE);
+    CSVReader reader(TABULAR_CSV_SEP, TABULAR_CSV_QUOTE);
     reader.Parse(content);
     auto rows = reader.GetRows();
     ASSERT(!rows.empty());
@@ -103,7 +103,7 @@ CPP_KV_LOAD_FUNC_TEMPLATE = """
 int %s::Load(const char* filepath)
 {
     std::string content = %s::reader(filepath);
-    CSVReader reader(TAB_CSV_SEP, TAB_CSV_QUOTE);
+    CSVReader reader(TABULAR_CSV_SEP, TABULAR_CSV_QUOTE);
     reader.Parse(content);
     auto rows = reader.GetRows();
     ASSERT(!rows.empty());
