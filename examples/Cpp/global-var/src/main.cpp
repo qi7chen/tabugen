@@ -10,9 +10,11 @@
 using namespace std;
 using namespace config;
 
+static std::string resPath = "../res";
+
 static std::string readfile(const char* filepath)
 {
-    std::string filename = stringPrintf("../res/%s", filepath);
+    std::string filename = stringPrintf("%s/%s", resPath.c_str(), filepath);
     std::ifstream ifs(filename.c_str());
     std::string content((std::istreambuf_iterator<char>(ifs)),
         (std::istreambuf_iterator<char>()));
@@ -21,9 +23,14 @@ static std::string readfile(const char* filepath)
 
 int main(int argc, char* argv[])
 {
+    if (argc > 1)
+    {
+        resPath = argv[1];
+    }
+
     GlobalPropertyDefine inst;
     string content = readfile("global_property_define.csv");
-    CSVReader reader(config::TAB_CSV_SEP, config::TAB_CSV_QUOTE);
+    CSVReader reader(config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
     reader.Parse(content);
     auto rows = reader.GetRows();
     GlobalPropertyDefine::ParseFromRows(rows, &inst);

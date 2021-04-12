@@ -15,8 +15,7 @@ using namespace std;
 #endif
 
 
-namespace config
-{
+namespace config {
 
 // parse data object from an csv row
 int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideDefine* ptr)
@@ -27,17 +26,17 @@ int NewbieGuideDefine::ParseFromRow(const vector<StringPiece>& row, NewbieGuideD
     ptr->Type = parseTextAs<std::string>(row[1]);
     ptr->Target = parseTextAs<std::string>(row[2]);
     {
-        const auto& array = Split(row[3], TAB_ARRAY_DELIM, true);
+        const auto& array = Split(row[3], TABULAR_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
             ptr->Accomplishment.push_back(parseTextAs<int16_t>(array[i]));
         }
     }
     {
-        const auto& dict = Split(row[4], TAB_MAP_DELIM1, true);
+        const auto& dict = Split(row[4], TABULAR_MAP_DELIM1, true);
         for (size_t i = 0; i < dict.size(); i++)
         {
-            const auto& kv = Split(dict[i], TAB_MAP_DELIM2, true);
+            const auto& kv = Split(dict[i], TABULAR_MAP_DELIM2, true);
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {

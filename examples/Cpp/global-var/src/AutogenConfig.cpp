@@ -15,8 +15,7 @@ using namespace std;
 #endif
 
 
-namespace config
-{
+namespace config {
 
 // parse data object from csv rows
 int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows, GlobalPropertyDefine* ptr)
@@ -34,17 +33,17 @@ int GlobalPropertyDefine::ParseFromRows(const vector<vector<StringPiece>>& rows,
     ptr->CancelBuildReturnPercent = parseTextAs<uint16_t>(rows[8][2]);
     ptr->EnableSearch = parseTextAs<bool>(rows[9][2]);
     {
-        const auto& array = Split(rows[10][2], TAB_ARRAY_DELIM, true);
+        const auto& array = Split(rows[10][2], TABULAR_ARRAY_DELIM, true);
         for (size_t i = 0; i < array.size(); i++)
         {
             ptr->SpawnLevelLimit.push_back(parseTextAs<int>(array[i]));
         }
     }
     {
-        const auto& dict = Split(rows[11][2], TAB_MAP_DELIM1, true);
+        const auto& dict = Split(rows[11][2], TABULAR_MAP_DELIM1, true);
         for (size_t i = 0; i < dict.size(); i++)
         {
-            const auto& kv = Split(dict[i], TAB_MAP_DELIM2, true);
+            const auto& kv = Split(dict[i], TABULAR_MAP_DELIM2, true);
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {

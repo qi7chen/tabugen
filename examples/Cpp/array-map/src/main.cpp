@@ -13,9 +13,11 @@ using namespace std;
 #define ASSERT assert
 #endif
 
+static std::string resPath = "../res";
+
 static std::string readfile(const char* filepath)
 {
-    std::string filename = stringPrintf("../res/%s", filepath);
+    std::string filename = stringPrintf("%s/%s", resPath.c_str(), filepath);
     std::ifstream ifs(filename.c_str());
     std::string content((std::istreambuf_iterator<char>(ifs)),
         (std::istreambuf_iterator<char>()));
@@ -27,7 +29,7 @@ static std::string readfile(const char* filepath)
 static void LoadConfig(vector<config::NewbieGuideDefine>& data) 
 {
     string content = readfile("newbie_guide_define.csv");
-    CSVReader reader(config::TAB_CSV_SEP, config::TAB_CSV_QUOTE);
+    CSVReader reader(config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
     reader.Parse(content);
     auto rows = reader.GetRows();
     ASSERT(!rows.empty());
@@ -45,6 +47,10 @@ static void LoadConfig(vector<config::NewbieGuideDefine>& data)
 
 int main(int argc, char* argv[])
 {
+    if (argc > 1)
+    {
+        resPath = argv[1];
+    }
     vector<config::NewbieGuideDefine> data;
     LoadConfig(data);
     cout << stringPrintf("%d soldier config loaded", (int)data.size());

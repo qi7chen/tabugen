@@ -17,9 +17,9 @@
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
     
-双击`导出csv.bat`，即可导出默认选项的C++代码及csv数据文件
+执行`make output`，即可导出默认选项的C++代码及csv数据文件
 
-双击cmake-msvc.bat，即可生成对应的Visual Studio项目（要求安装[CMake](https://cmake.org/download)和[Visual Studio](https://visualstudio.microsoft.com/en/downloads/))
+执行`make build`，即可生成对应的C++项目（要求安装[CMake](https://cmake.org/download)和[Visual Studio](https://visualstudio.microsoft.com/en/downloads/))并编译执行档
 
 
 ## 配置详解

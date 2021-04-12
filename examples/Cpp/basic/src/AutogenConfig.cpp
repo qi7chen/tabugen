@@ -15,8 +15,7 @@ using namespace std;
 #endif
 
 
-namespace config
-{
+namespace config {
 
 // parse data object from an csv row
 int SoldierPropertyDefine::ParseFromRow(const vector<StringPiece>& row, SoldierPropertyDefine* ptr)
