@@ -1,7 +1,9 @@
 ## 使用Tabular导出C++
 
 
-## 示例说明
+## 示例
+
+### 目录说明
 
 * [basic](basic) 演示基本使用
     在excel里默认第1栏为字段名称，第2栏为数据类型，第3栏为注释文字，数据内容从第4栏开始。
@@ -17,9 +19,13 @@
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
     
-执行`make output`，即可导出默认选项的C++代码及csv数据文件
+### 使用make
 
-执行`make build`，即可生成对应的C++项目（要求安装[CMake](https://cmake.org/download)和[Visual Studio](https://visualstudio.microsoft.com/en/downloads/))并编译执行档
+1. 执行`make output`，即可导出默认选项的C++代码及csv数据文件
+
+2. 执行`make build`，即可生成对应的C++项目（要求安装[CMake](https://cmake.org/download)和[Visual Studio](https://visualstudio.microsoft.com/en/downloads/))并编译执行档
+
+3. 执行`make run`，可以执行测试示例
 
 
 ## 配置详解
