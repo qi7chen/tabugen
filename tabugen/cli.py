@@ -6,8 +6,8 @@
 
 import sys
 import argparse
-from tabular.version import VER_STRING
-from tabular.registry import get_struct_parser, get_code_generator, get_data_writer
+from tabugen.version import VER_STRING
+from tabugen.registry import get_struct_parser, get_code_generator, get_data_writer
 
 
 def run(args):

@@ -4,12 +4,12 @@
 
 import os
 import sys
-import tabular.predef as predef
-import tabular.typedef as types
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.util.fieldutil as fieldutil
-import tabular.parser.xlsxhelp as xlsxhelp
+import tabugen.predef as predef
+import tabugen.typedef as types
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.util.fieldutil as fieldutil
+import tabugen.parser.xlsxhelp as xlsxhelp
 
 
 # 使用excel解析结构描述

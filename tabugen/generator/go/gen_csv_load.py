@@ -3,12 +3,12 @@
 # See accompanying files LICENSE.
 
 import os
-import tabular.typedef as types
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.generator.go.template as go_template
+import tabugen.typedef as types
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.generator.go.template as go_template
 
 
 # 生成Go加载CSV文件数据代码

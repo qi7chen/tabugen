@@ -5,11 +5,11 @@
 import os
 import json
 import codecs
-import tabular.predef as predef
-import tabular.typedef as types
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.util.rowutil as rowutil
+import tabugen.predef as predef
+import tabugen.typedef as types
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.util.rowutil as rowutil
 
 
 # 写入json文件

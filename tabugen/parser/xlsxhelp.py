@@ -4,7 +4,7 @@
 
 import sys
 import openpyxl
-import tabular.typedef as types
+import tabugen.typedef as types
 
 # TODO: speedup excel parsing
 #

@@ -4,13 +4,13 @@
 
 import os
 import sys
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.version as version
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.generator.go.template as go_template
-from tabular.generator.go.gen_csv_load import GoCsvLoadGenerator
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.version as version
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.generator.go.template as go_template
+from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
 
 # Go代码生成器

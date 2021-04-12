@@ -8,8 +8,8 @@ import codecs
 import tempfile
 import filecmp
 import shutil
-import tabular.util.strutil as strutil
-import tabular.util.rowutil as rowutil
+import tabugen.util.strutil as strutil
+import tabugen.util.rowutil as rowutil
 
 
 # 写入csv文件

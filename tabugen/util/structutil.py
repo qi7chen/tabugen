@@ -3,8 +3,8 @@
 # See accompanying files LICENSE.
 
 import re
-import tabular.predef as predef
-import tabular.util.strutil as strutil
+import tabugen.predef as predef
+import tabugen.util.strutil as strutil
 
 
 # 初始化struct

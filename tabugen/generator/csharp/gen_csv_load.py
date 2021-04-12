@@ -2,12 +2,12 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import tabular.typedef as types
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.generator.csharp.template as csharp_template
+import tabugen.typedef as types
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.generator.csharp.template as csharp_template
 
 
 # 生成C#加载CSV文件数据代码

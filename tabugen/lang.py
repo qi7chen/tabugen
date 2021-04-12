@@ -2,7 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import tabular.typedef as types
+import tabugen.typedef as types
 
 
 # C++类型映射

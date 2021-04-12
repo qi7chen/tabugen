@@ -3,13 +3,13 @@
 # See accompanying files LICENSE.
 
 import os
-import tabular.typedef as types
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.version as version
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.generator.cpp.template as cpp_template
+import tabugen.typedef as types
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.version as version
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.generator.cpp.template as cpp_template
 
 
 # 生成C++加载CSV文件数据代码

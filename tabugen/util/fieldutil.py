@@ -2,7 +2,7 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import tabular.predef as predef
+import tabugen.predef as predef
 
 
 # KV模式

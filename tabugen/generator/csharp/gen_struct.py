@@ -4,12 +4,12 @@
 
 import os
 import sys
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.version as version
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-from tabular.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.version as version
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+from tabugen.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
 
 # C#代码生成器

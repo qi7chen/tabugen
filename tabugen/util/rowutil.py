@@ -6,8 +6,8 @@ import os
 import sys
 import csv
 import codecs
-import tabular.predef as predef
-import tabular.util.strutil as strutil
+import tabugen.predef as predef
+import tabugen.util.strutil as strutil
 
 
 # 是否字段内容唯一

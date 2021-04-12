@@ -2,16 +2,16 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from tabular.parser.excel import ExcelStructParser
+from tabugen.parser.excel import ExcelStructParser
 
-from tabular.generator.cpp.gen_struct import CppStructGenerator
-from tabular.generator.csharp.gen_struct import CSharpStructGenerator
-from tabular.generator.go.gen_struct import GoStructGenerator
-from tabular.generator.java.gen_struct import JavaStructGenerator
+from tabugen.generator.cpp.gen_struct import CppStructGenerator
+from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
+from tabugen.generator.go.gen_struct import GoStructGenerator
+from tabugen.generator.java.gen_struct import JavaStructGenerator
 
-from tabular.datatran.csv import CsvDataWriter
-from tabular.datatran.json import JsonDataWriter
-from tabular.datatran.sql import SQLDataWriter
+from tabugen.datatran.csv import CsvDataWriter
+from tabugen.datatran.json import JsonDataWriter
+from tabugen.datatran.sql import SQLDataWriter
 
 # 结构体描述解析
 struct_parser_registry = {

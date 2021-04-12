@@ -4,13 +4,13 @@
 
 import os
 import sys
-import tabular.predef as predef
-import tabular.lang as lang
-import tabular.version as version
-import tabular.util.strutil as strutil
-import tabular.util.structutil as structutil
-import tabular.generator.java.template as java_template
-from tabular.generator.java.gen_csv_load import JavaCsvLoadGenerator
+import tabugen.predef as predef
+import tabugen.lang as lang
+import tabugen.version as version
+import tabugen.util.strutil as strutil
+import tabugen.util.structutil as structutil
+import tabugen.generator.java.template as java_template
+from tabugen.generator.java.gen_csv_load import JavaCsvLoadGenerator
 
 
 # java代码生成器
