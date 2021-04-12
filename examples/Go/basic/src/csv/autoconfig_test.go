@@ -13,11 +13,15 @@ func TestAutogenConfig(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	conflist, err := LoadSoldierPropertyDefineList(data)
+	rows, err := ReadCSVRows(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, cfg := range conflist {
-		fmt.Printf("%v\n", cfg)
+	for _, row := range rows {
+	    var item SoldierPropertyDefine
+	    if err := item.ParseFromRow(row); err != nil {
+	        t.Fatalf("%v", err)
+	    }
+		fmt.Printf("%v\n", item)
 	}
 }

@@ -11,9 +11,8 @@ func TestAutogenConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-
-	global, err := LoadGlobalPropertyDefine(data)
-	if err != nil {
+    var global GlobalPropertyDefine
+    if err := global.Unmarshal(data); err != nil {
 		t.Fatalf("%v", err)
 	}
 	t.Logf("global properties: %v", global)

@@ -12,11 +12,15 @@ func TestAutogenConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	cfgList, err := LoadNewbieGuideDefineList(data)
+	rows, err := ReadCSVRows(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, cfg := range cfgList {
-		fmt.Printf("%v\n", cfg)
+	for _, row := range rows {
+	    var item NewbieGuideDefine
+	    if err := item.ParseFromRow(row); err != nil {
+	        t.Fatalf("%v", err)
+	    }
+		fmt.Printf("%v\n", item)
 	}
 }
