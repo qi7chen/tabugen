@@ -59,7 +59,7 @@ class CSharpCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split(%s.TAB_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);\n" % (
+        content += "%svar items = %s.Split(%s.TABUGEN_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);\n" % (
             space, row_name, self.config_manager_name)
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
@@ -78,7 +78,7 @@ class CSharpCsvLoadGenerator:
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = "%svar items = %s.Split(%s.TAB_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);\n" % (
+        content = "%svar items = %s.Split(%s.TABUGEN_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);\n" % (
             space, row_name, self.config_manager_name)
         content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
         content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
@@ -87,7 +87,7 @@ class CSharpCsvLoadGenerator:
         content += '%s    if (text.Length == 0) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split(%s.TAB_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);\n" % (
+        content += "%s    var item = text.Split(%s.TABUGEN_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);\n" % (
             space, self.config_manager_name)
         content += '%s    if (items.Length == 2) {\n' % space
         content += self.gen_field_assign_stmt('var key', key_type, 'item[0]', tabs+1)
@@ -109,7 +109,7 @@ class CSharpCsvLoadGenerator:
         validx = valcol - 1
         typeidx = typcol - 1
 
-        content = ''
+        content = '\n'
         content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRows(List<List<string>> rows)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
@@ -157,6 +157,7 @@ class CSharpCsvLoadGenerator:
         inner_class_done = False
         inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
 
+        content += '\n'
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRow(List<string> row)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
