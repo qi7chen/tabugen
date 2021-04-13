@@ -58,7 +58,7 @@ namespace CSharpDemo
         static void TestLoadCSV()
         {
             string filename = "soldier_property_define.csv";
-            string filepath = string.Format("../../../../res/{0}", filename);
+            string filepath = string.Format("../res/{0}", filename);
             string content = Config.AutogenConfigManager.ReadFileContent(filepath);
             var lines = Config.AutogenConfigManager.ReadTextToLines(content);
             var list = new Config.SoldierPropertyDefine[lines.Count];
@@ -74,7 +74,7 @@ namespace CSharpDemo
         static void TestLoadJSON()
         {
             string filename = "soldier_property_define.json";
-            string filepath = string.Format("../../../../res/{0}", filename);
+            string filepath = string.Format("../res/{0}", filename);
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 

@@ -48,7 +48,7 @@ namespace CSharpDemo
 #if UNITY
             GetStreamingContent(filepath, cb);
 #else
-            string path = string.Format("../../../../res/{0}", filepath);
+            string path = string.Format("../res/{0}", filepath);
             StreamReader reader = new StreamReader(path);
             var content = reader.ReadToEnd();
             cb(content);    
@@ -59,7 +59,7 @@ namespace CSharpDemo
         static void TestLoadCSV()
         {
             string filename = "newbie_guide_define.csv";
-            string filepath = string.Format("../../../../res/{0}", filename);
+            string filepath = string.Format("../res/{0}", filename);
             string content = Config.AutogenConfigManager.ReadFileContent(filepath);
             var lines = Config.AutogenConfigManager.ReadTextToLines(content);
             var list = new Config.NewbieGuideDefine[lines.Count];
@@ -79,7 +79,7 @@ namespace CSharpDemo
         static void TestLoadJSON()
         {
             string filename = "newbie_guide_define.json";
-            string filepath = string.Format("../../../../res/{0}", filename);
+            string filepath = string.Format("../res/{0}", filename);
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 

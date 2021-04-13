@@ -17,9 +17,7 @@
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
     
-双击`导出csv.bat`，即可导出默认选项的C#代码及csv数据文件
-
-双击`导出json.bat`，即可导出默认选项的C#代码及json数据文件
+执行`make run`，即可导出默认选项的C#代码及CSV和JSON数据文件
 
 
 ## 配置详解
