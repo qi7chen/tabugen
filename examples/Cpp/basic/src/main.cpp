@@ -59,7 +59,24 @@ int main(int argc, char* argv[])
     cout << stringPrintf("%d soldier config loaded", (int)data.size());
     for (const SoldierPropertyDefine& item : data)
     {
-        cout << stringPrintf("%s %d", item.Name.c_str(), (int)item.Level) << endl;
+        cout << item.Name << " "
+            << item.Level << " "
+            << item.BuildingName << " "
+            << item.BuildingLevel << " "
+            << item.RequireSpace << " "
+            << item.UpgradeTime << " "
+            << item.UpgradeMaterialID << " "
+            << item.UpgradeMaterialNum << " "
+            << item.ConsumeMaterial << " "
+            << item.ConsumeMaterialNum << " "
+            << item.ConsumeTime << " "
+            << item.Act << " "
+            << item.Hp << " "
+            << item.SearchScope << " "
+            << item.AtkRange << " "
+            << item.MovingSpeed << " "
+            << item.EnableBurn << " "
+            << endl;
     }
     return 0;
 }

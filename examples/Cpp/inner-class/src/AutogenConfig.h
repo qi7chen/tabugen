@@ -24,19 +24,18 @@ struct BoxProbabilityDefine
 {
     struct ProbabilityGoodsDefine 
     {
-        std::string  GoodsID;            // ÎïÆ·1id
-        uint32_t     Num = 0;            // ÎïÆ·1ÊıÁ¿
-        uint32_t     Probability = 0;    // ÎïÆ·1¸ÅÂÊ
+        std::string  GoodsID;            // ç‰©å“1id
+        uint32_t     Num = 0;            // ç‰©å“1æ•°é‡
+        uint32_t     Probability = 0;    // ç‰©å“1æ¦‚ç‡
     };
 
     std::string                          ID;                  // ID
-    int                                  Total = 0;           // ½±Àø×ÜÊı
-    int                                  Time = 0;            // ÀäÈ´Ê±¼ä
-    bool                                 Repeat = false;      // ÊÇ·ñ¿ÉÖØ¸´
+    int                                  Total = 0;           // å¥–åŠ±æ€»æ•°
+    int                                  Time = 0;            // å†·å´æ—¶é—´
+    bool                                 Repeat = false;      // æ˜¯å¦å¯é‡å¤
     std::vector<ProbabilityGoodsDefine>  ProbabilityGoods    ; //
 
     static int ParseFromRow(const std::vector<StringPiece>& row, BoxProbabilityDefine* ptr);
-    static const BoxProbabilityDefine* Get(const std::string& ID);
 };
 
 } // namespace config

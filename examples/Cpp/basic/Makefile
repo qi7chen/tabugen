@@ -15,17 +15,17 @@ OUT_SRC_DIR = $(currentDir)/src/AutogenConfig
 OUT_DATA_DIR = $(currentDir)/res
 
 
-all: clean build
+all: run
 
 clean:
 	rm -rf build
 	rm -f res/*
 
-run:
+run: build
 	build/CppExample1 res
 
 build: output
 	mkdir -p build && cd build && cmake $(currentDir) && cmake --build $(currentDir)/build
 
-output:
-	$(cli_entry) --parse_files=$(filepath) --enable_column_skip --gen_csv_parse --source_file_encoding=gbk --cpp_out=$(OUT_SRC_DIR) --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+output: clean
+	$(cli_entry) --parse_files=$(filepath) --skip_column=Volume,Hurt --gen_csv_parse --cpp_out=$(OUT_SRC_DIR) --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
