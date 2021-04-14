@@ -114,9 +114,10 @@ class JsonDataWriter:
         return inner_obj_list
 
 
-    def row_to_object(row, fields, inner_field_names, inner_var_name, inner_fields):
+    def row_to_object(self, struct, row, fields, inner_field_names, inner_var_name, inner_fields):
         obj = {}
         inner_class_done = False
+        idx = 0
         for field in fields:
             if not field['enable']:
                 continue
@@ -128,23 +129,24 @@ class JsonDataWriter:
                     obj[inner_var_name] = value
                     inner_class_done = True
             else:
-                valuetext = row[field['column_index'] - 1]
+                valuetext = row[idx]
                 value = self.parse_value(struct, field['original_type_name'], valuetext)
                 if self.use_snake_case:
                     name = strutil.camel_to_snake(field['camel_case_name'])
                 else:
                     name = field['name']
                 obj[name] = value
+            idx += 1
         return obj
 
 
     # 解析数据行
-    def parse_row(self, struct, enable_column_skip):
+    def parse_row(self, struct):
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)
         rows = rowutil.hide_skipped_row_fields(struct, rows)
 
-        fields = struct['fields']
+        fields = structutil.enabled_fields(struct)
 
         # 嵌套类
         inner_var_name = ''
@@ -156,7 +158,7 @@ class JsonDataWriter:
 
         obj_list = []
         for row in rows:
-            obj = row_to_object(row, fields, inner_field_names, inner_var_name, inner_fields)
+            obj = self.row_to_object(struct, row, fields, inner_field_names, inner_var_name, inner_fields)
             obj_list.append(obj)
         return obj_list
 
@@ -164,7 +166,7 @@ class JsonDataWriter:
     def generate(self, struct, args):
         if predef.PredefValueTypeColumn in struct['options']:
             return self.parse_kv_rows(struct, args)
-        return self.parse_row(struct, args.enable_column_skip)
+        return self.parse_row(struct)
 
     # 写入JSON文件
     def write_file(self, struct, filepath, encoding, json_indent, obj):

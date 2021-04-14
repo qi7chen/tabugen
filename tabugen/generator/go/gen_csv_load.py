@@ -15,8 +15,7 @@ import tabugen.generator.go.template as go_template
 class GoCsvLoadGenerator:
     TAB_SPACE = '\t'
 
-    def __init__(self, gen_csv_dataload):
-        self.gen_csv_dataload = gen_csv_dataload
+    def __init__(self):
         self.array_delim = ','
         self.map_delims = [',', '=']
 
@@ -124,19 +123,20 @@ class GoCsvLoadGenerator:
 
         vec_idx = 0
         vec_names, vec_name = structutil.get_vec_field_range(struct)
+        fields = structutil.enabled_fields(struct)
 
         content = ''
         content += 'func (p *%s) ParseFromRow(row []string) error {\n' % struct['camel_case_name']
-        content += '\tif len(row) < %d {\n' % len(struct['fields'])
+        content += '\tif len(row) < %d {\n' % len(fields)
         content += '\t\tlog.Panicf("%s: row length too short %%d", len(row))\n' % struct['name']
         content += '\t}\n'
 
+        idx = 0
         for field in struct['fields']:
             if not field['enable']:
                 continue
             text = ''
             fname = field['name']
-            idx = field['column_index'] - 1
             prefix = 'p.'
             if fname in inner_field_names:
                 if not inner_class_done:
@@ -160,6 +160,7 @@ class GoCsvLoadGenerator:
                     else:
                         text += self.gen_field_assign_stmt(prefix + field_name, typename, valuetext, 2, 'row')
                 text += '%s}\n' % self.TAB_SPACE
+            idx += 1
             content += text
 
         content += '%sreturn nil\n' % self.TAB_SPACE

@@ -9,7 +9,6 @@ import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
 import tabugen.util.structutil as structutil
-import tabugen.util.fieldutil as fieldutil
 import tabugen.generator.cpp.template as cpp_template
 
 
@@ -207,12 +206,12 @@ class CppCsvLoadGenerator:
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
 
-        cnt = fieldutil.enabled_fields_count(struct)
+        fields = structutil.enabled_fields(struct)
         content = ''
         content += '// parse data object from an csv row\n'
         content += 'int %s::ParseFromRow(const vector<StringPiece>& row, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
-        content += '    ASSERT(row.size() >= %d);\n' % cnt
+        content += '    ASSERT(row.size() >= %d);\n' % len(fields)
         content += '    ASSERT(ptr != nullptr);\n'
         content += self.gen_all_field_assign_stmt(struct, 'ptr->', 1)
         content += '    return 0;\n'

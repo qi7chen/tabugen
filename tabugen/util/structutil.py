@@ -191,3 +191,12 @@ def get_inner_class_mapped_fields(struct, camel_case_name=False):
             field_names.append(field["name"])
 
     return field_names, fields
+
+
+#
+def enabled_fields(struct):
+    fields = []
+    for field in struct["fields"]:
+        if field["enable"]:
+            fields.append(field)
+    return fields

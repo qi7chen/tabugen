@@ -25,26 +25,15 @@ class GoStructGenerator:
         self.load_gen = None
         self.json_snake_case = False
 
-    def setup(self, name, gen_csv_dataload):
+    def setup(self, name):
         if name is not None:
             if name == 'csv':
-                self.load_gen = GoCsvLoadGenerator(gen_csv_dataload)
+                self.load_gen = GoCsvLoadGenerator()
 
             else:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-    @staticmethod
-    def get_const_key_name(name):
-        return 'Key%sName' % name
-
-    def gen_const_names(self, descriptors):
-        content = 'const (\n'
-        for struct in descriptors:
-            name = strutil.camel_to_snake(struct['name'])
-            content += '\t%s = "%s"\n' % (self.get_const_key_name(struct['name']), name)
-        content += ')\n\n'
-        return content
 
     # 生成struct定义
     def gen_go_struct(self, struct, params):
@@ -156,9 +145,6 @@ class GoStructGenerator:
             content += go_template.GO_HEAD_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
                                                              map_delims[0], map_delims[1])
 
-        if self.load_gen is not None and self.load_gen.gen_csv_dataload:
-            content += self.gen_const_names(descriptors)
-
         for struct in descriptors:
             content += self.generate(struct, args)
 
@@ -180,7 +166,7 @@ class GoStructGenerator:
 
 def unit_test():
     codegen = GoStructGenerator()
-    codegen.setup('csv', True)
+    codegen.setup('csv')
 
 
 if __name__ == '__main__':
