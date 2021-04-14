@@ -32,6 +32,14 @@ def parse_meta_rows(sheet_rows):
     return meta
 
 
+def enabled_fields_count(struct):
+    count = 0
+    for field in struct["fields"]:
+        if field["enable"]:
+            count += 1
+    return count
+
+
 # 处理meta字段
 def validated_meta(meta):
     if predef.OptionUniqueColumns in meta:

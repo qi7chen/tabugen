@@ -7,6 +7,7 @@ import sys
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
+import tabugen.util.rowutil as rowutil
 import tabugen.util.structutil as structutil
 import tabugen.util.fieldutil as fieldutil
 import tabugen.parser.xlsxhelp as xlsxhelp
@@ -188,7 +189,7 @@ class ExcelStructParser:
             data_rows = strutil.pad_data_rows(data_rows, struct['fields'])
             data_rows = xlsxhelp.validate_data_rows(data_rows, struct)
             if len(self.skipped_columns) > 0:
-                data_rows = shrink_enabled_rows(data_rows, struct)
+                data_rows = rowutil.shrink_enabled_rows(data_rows, struct)
             struct["data_rows"] = data_rows
         return struct
 

@@ -50,7 +50,7 @@ def shrink_enabled_rows(rows, struct):
         new_row = []
         for field in struct['fields']:
             if field['enable']:
-                idx = field['column_index']
+                idx = field['column_index'] - 1
                 new_row.append(row[idx])
         new_rows.append(new_row)
     return new_rows
