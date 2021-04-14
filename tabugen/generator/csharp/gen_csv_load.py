@@ -14,8 +14,7 @@ import tabugen.generator.csharp.template as csharp_template
 class CSharpCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    def __init__(self, gen_dataload):
-        self.gen_dataload = gen_dataload
+    def __init__(self):
         self.array_delim = ','
         self.map_delims = [',', '=']
         self.config_manager_name = ''
@@ -153,6 +152,7 @@ class CSharpCsvLoadGenerator:
 
         vec_idx = 0
         vec_names, vec_name = structutil.get_vec_field_range(struct)
+        fields = structutil.enabled_fields(struct)
 
         inner_class_done = False
         inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
@@ -161,18 +161,18 @@ class CSharpCsvLoadGenerator:
         content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
         content += '%spublic void ParseFromRow(List<string> row)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(struct['fields']))
+        content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(fields))
         content += '%sthrow new ArgumentException(string.Format("%s: row length too short {0}", row.Count));\n' % (
             self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE*2)
 
+        idx = 0
         prefix = 'this.'
         for field in struct['fields']:
             if not field['enable']:
                 continue
             text = ''
             field_name = field['name']
-            idx = field['column_index'] - 1
             if field_name in inner_field_names:
                 if not inner_class_done:
                     inner_class_done = True
@@ -198,6 +198,7 @@ class CSharpCsvLoadGenerator:
                     else:
                         text += self.gen_field_assign_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
+            idx += 1
             content += text
         content += '%s}\n' % self.TAB_SPACE
         return content
@@ -227,111 +228,17 @@ class CSharpCsvLoadGenerator:
         content += '        }\n'
         return content
 
-    #
-    def gen_static_data(self, struct):
-        content = '\n'
-        if struct['options'][predef.PredefParseKVMode]:
-            content += '    public static %s Instance { get; private set; }\n\n' % struct['name']
-        else:
-            content += '    public static %s[] Data { get; private set; } \n\n' % struct['name']
-
-        return content
-
-    def gen_kv_struct_load_method(self, struct):
-        rows = struct['data_rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
-
-        content = csharp_template.CSHARP_LOAD_FROM_METHOD_TEMPLATE % (self.config_manager_name, struct['name'])
-        return content
-
-    # 生成Load方法
-    def gen_load_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_struct_load_method(struct)
-
-        content = csharp_template.CSHARP_LOAD_METHOD_TEMPLATE % (struct['name'], self.config_manager_name, struct['name'])
-        return content
-
-    # 生成Get()方法
-    def gen_get_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return ''
-
-        keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cs_type)
-        if len(keys) == 0:
-            return ''
-
-        formal_param = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        condtext = self.gen_equal_stmt('item.', struct, predef.PredefGetMethodKeys)
-        content = csharp_template.CSHARP_GET_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param),
-                                                                struct['name'], condtext)
-        return content
-
-    # 生成GetRange()方法
-    def gen_range_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return ''
-
-        if predef.PredefRangeMethodKeys not in struct['options']:
-            return ''
-
-        keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cs_type)
-        assert len(keys) > 0
-
-        formal_param = []
-        params = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        condtext = self.gen_equal_stmt('item.', struct, predef.PredefRangeMethodKeys)
-        content = csharp_template.CSHARP_RANGE_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param),
-                                                                  struct['name'], struct['name'], condtext)
-        return content
 
     # 生成manager类型
     def gen_global_class(self, descriptors, args):
         content = ''
         content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
                                                               self.array_delim, self.map_delims[0], self.map_delims[1])
-        if self.gen_dataload:
-            content += '    public static void LoadAllConfig(Action completeFunc) \n'
-            content += '    {\n'
-            for i in range(len(descriptors)):
-                struct = descriptors[i]
-                name = strutil.camel_to_snake(struct['name'])
-                content += '        reader("%s.csv", (content) =>\n' % name
-                content += '        {\n'
-                content += '            var lines = ReadTextToLines(content);\n'
-                content += '            %s.LoadFromLines(lines);\n' % struct['name']
-                if i + 1 == len(descriptors):
-                    content += '\n'
-                    content += '            if (completeFunc != null) completeFunc();\n'
-                content += '        });\n\n'
-            content += '    }\n'
-
         content += '}\n\n'
         return content
 
     #
     def gen_source_method(self, struct):
         content = ''
-        if self.gen_dataload:
-            content += self.gen_static_data(struct)
         content += self.gen_parse_method(struct)
-        if self.gen_dataload:
-            content += self.gen_load_method(struct)
-            content += self.gen_get_method(struct)
-            content += self.gen_range_method(struct)
         return content
