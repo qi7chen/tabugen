@@ -1,85 +1,102 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json;
-
-#if UNITY 
-using UnityEngine;
-using UnityEngine.Networking;
-#endif
 
 namespace CSharpDemo
 {
     class Program
     {
-#if UNITY        
-        public static void GetStreamingContent(string path, Action<string> cb)
+        static List<string> ReadFileToLines(string filepath)
         {
-            string filePath = Path.Combine(Application.streamingAssetsPath, path);
-    #if UNITY_ANDROID
-            StartCoroutine(LoadAsset(filePath, cb));
-    #else
-            using (StreamReader reader = new StreamReader(filePath))
+            StreamReader r = new StreamReader(filepath);
+            string content = r.ReadToEnd();
+            r.Close();
+            List<string> lines = new List<string>();
+            using (StringReader reader = new StringReader(content))
             {
-                cb(reader.ReadToEnd());
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
             }
-    #endif
+            return lines;
         }
 
-        IEnumerator LoadAsset(string filePath, Action<string> cb)
+        // 从一行读取record
+        public static List<string> ReadRecordFromLine(string line)
         {
-            using (UnityWebRequest www = UnityWebRequest.Get(filePath))
+            List<string> row = new List<string>();
+            int pos = 0;
+            while (pos < line.Length)
             {
-                yield return www.SendWebRequest();
-                if (www.isNetworkError || www.isHttpError)
+                string field = "";
+                pos = ParseNextColumn(line, pos, out field);
+                row.Add(field.Trim());
+                if (pos < 0)
                 {
-                    Debug.LogErrorFormat("LoadAsset: error: {0} {1}",  www.error, filePath);
-                    cb(null);
-                }
-                else
-                {
-                    cb(www.downloadHandler.data);
+                    break;
                 }
             }
+            return row;
         }
-#endif         
-    
-        static void ReadFileContent(string filepath, Action<string> cb)
+
+        public static int ParseNextColumn(string line, int start, out string field)
         {
-#if UNITY
-            GetStreamingContent(filepath, cb);
-#else
-            string path = string.Format("../res/{0}", filepath);
-            StreamReader reader = new StreamReader(path);
-            var content = reader.ReadToEnd();
-            cb(content);    
-#endif
+            bool in_quote = false;
+            if (line[start] == Config.AutogenConfigManager.TABUGEN_CSV_QUOTE)
+            {
+                in_quote = true;
+                start++;
+            }
+            int pos = start;
+            for (; pos < line.Length; pos++)
+            {
+                if (in_quote && line[pos] == Config.AutogenConfigManager.TABUGEN_CSV_QUOTE)
+                {
+                    if (pos + 1 < line.Length && line[pos + 1] == Config.AutogenConfigManager.TABUGEN_CSV_SEP)
+                    {
+                        field = line.Substring(start, pos - start);
+                        return pos + 2;
+                    }
+                    else
+                    {
+                        field = line.Substring(start, pos - start);
+                        return pos + 1;
+                    }
+                }
+                if (!in_quote && line[pos] == Config.AutogenConfigManager.TABUGEN_CSV_SEP)
+                {
+                    field = line.Substring(start, pos - start);
+                    return pos + 1;
+                }
+            }
+            field = line.Substring(start, pos);
+            return -1;
         }
         
-        static void TestLoadCSV()
+        static void TestLoadCSV(string rootPath)
         {
             string filename = "global_property_define.csv";
-            string filepath = string.Format("../res/{0}", filename);
-            string content = Config.AutogenConfigManager.ReadFileContent(filepath);
-            var lines = Config.AutogenConfigManager.ReadTextToLines(content);
+            string filepath = string.Format("{0}/res/{1}", rootPath, filename);
+            var lines = ReadFileToLines(filepath);
             var rows = new List<List<string>>();
             for (int i = 0; i < lines.Count; i++)
             {
-                var row = Config.AutogenConfigManager.ReadRecordFromLine(lines[i]);
+                var row = ReadRecordFromLine(lines[i]);
                 rows.Add(row);
             }
             var instance = new Config.GlobalPropertyDefine();
             instance.ParseFromRows(rows);
 
-            Console.WriteLine(instance.FreeCompleteSeconds);
-            Console.WriteLine(instance.SpawnLevelLimit);
-            Console.WriteLine(instance.FirstRechargeReward);
+            Console.WriteLine(JsonConvert.SerializeObject(instance));
         }
 
-        static void TestLoadJSON()
+        static void TestLoadJSON(string rootPath)
         {
             string filename = "global_property_define.json";
-            string filepath = string.Format("../res/{0}", filename);
+            string filepath = string.Format("{0}/res/{1}", rootPath, filename);
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
@@ -90,10 +107,15 @@ namespace CSharpDemo
         
         static void Main(string[] args)
         {
+            string rootPath = "..";
+            if (args.Length > 1) {
+                rootPath = args[1];
+            }
             try
             {
-                TestLoadCSV();
-                TestLoadJSON();
+                TestLoadCSV(rootPath);
+                Console.WriteLine("-----------------------------------------------");
+                TestLoadJSON(rootPath);
             }
             catch(Exception ex)
             {

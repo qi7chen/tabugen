@@ -24,7 +24,7 @@ run: output-csv output-json
 	cd src && dotnet run
 
 output-csv:
-	$(cli_entry) --parse_files=$(filepath) --gen_csv_parse --package=Config  --csharp_out=$(OUT_SRC_DIR)/AutoConfig.cs --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(cli_entry) --parse_files=$(filepath) --skip_column=Volume,Hurt --gen_csv_parse --package=Config  --csharp_out=$(OUT_SRC_DIR)/AutoConfig.cs --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
 output-json:
-	$(cli_entry) --parse_files=$(filepath) --package=Config2  --csharp_out=$(OUT_SRC_DIR)/AutoJsonConfig.cs --out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
+	$(cli_entry) --parse_files=$(filepath) --skip_column=Volume,Hurt --package=Config2  --csharp_out=$(OUT_SRC_DIR)/AutoJsonConfig.cs --out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
