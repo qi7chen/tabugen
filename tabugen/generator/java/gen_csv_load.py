@@ -15,8 +15,7 @@ import tabugen.generator.java.template as java_template
 class JavaCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    def __init__(self, gen_csv_dataload):
-        self.gen_csv_dataload = gen_csv_dataload
+    def __init__(self):
         self.array_delim = ','
         self.map_delims = [',', '=']
         self.config_manager_name = ''
@@ -33,17 +32,7 @@ class JavaCsvLoadGenerator:
     def get_instance_data_name(name):
         return '_instance_%s' % name.lower()
 
-    # 静态变量
-    @staticmethod
-    def gen_static_data(struct):
-        content = '\n'
-        if struct['options'][predef.PredefParseKVMode]:
-            content += '    private static %s instance_;\n' % struct['name']
-            content += '    public static %s getInstance() { return instance_; }\n\n' % struct['name']
-        else:
-            content += '    private static List<%s> data_;\n' % struct['name']
-            content += '    public static List<%s> getData() { return data_; } \n\n' % struct['name']
-        return content
+
 
     # 生成赋值方法
     def gen_field_assign_stmt(self, name, typename, valuetext, tabs):
@@ -52,7 +41,6 @@ class JavaCsvLoadGenerator:
         if typename.lower() == 'string':
             content += '%s%s = %s.trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            # content += '%s%s = Boolean.parseBoolean(%s);\n' % (space, name, valuetext)
             content += '%s%s = %s.parseBool(%s);\n' % (space, name, self.config_manager_name, valuetext)
         else:
             table = {
@@ -75,7 +63,7 @@ class JavaCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += '%sString[] kvList = %s.split(%s.TAB_ARRAY_DELIM);\n' % (space, row_name, self.config_manager_name)
+        content += '%sString[] kvList = %s.split(%s.TABULAR_ARRAY_DELIM);\n' % (space, row_name, self.config_manager_name)
         content += '%s%s[] list = new %s[kvList.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < kvList.length; i++) {\n' % space
         content += '%s    if (!kvList[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
@@ -96,13 +84,13 @@ class JavaCsvLoadGenerator:
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
-        content = '%sString[] kvList = %s.split(%s.TAB_MAP_DELIM1);\n' % (space, row_name, self.config_manager_name)
+        content = '%sString[] kvList = %s.split(%s.TABULAR_MAP_DELIM1);\n' % (space, row_name, self.config_manager_name)
         content += '%sfor(int i = 0; i < kvList.length; i++) {\n' % space
         content += '%s    String text = kvList[i];\n' % space
         content += '%s    if (text.isEmpty()) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += '%s    String[] item = text.split(%s.TAB_MAP_DELIM2);\n' % (space, self.config_manager_name)
+        content += '%s    String[] item = text.split(%s.TABULAR_MAP_DELIM2);\n' % (space, self.config_manager_name)
         prefix1 = '%s key' % key_type
         prefix2 = '%s value' % val_type
         content += self.gen_field_assign_stmt(prefix1, key_type, 'item[0]', tabs + 1)
@@ -191,21 +179,22 @@ class JavaCsvLoadGenerator:
 
         inner_class_done = False
         inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
+        fields = structutil.enabled_fields(struct)
 
         content += '%s// parse fields data from record\n' % self.TAB_SPACE
         content += '%spublic void parseFrom(CSVRecord record)\n' % self.TAB_SPACE
         content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (record.size() < %d) {\n' % (self.TAB_SPACE * 2, len(struct['fields']))
+        content += '%sif (record.size() < %d) {\n' % (self.TAB_SPACE * 2, len(fields))
         content += '%sthrow new RuntimeException(String.format("%s: record length too short %%d", record.size()));\n' % (
         self.TAB_SPACE * 3, struct['name'])
         content += '%s}\n' % (self.TAB_SPACE * 2)
 
+        idx = 0
         prefix = 'this.'
         for field in struct['fields']:
             if not field['enable']:
                 continue
             field_name = field['name']
-            idx = field['column_index'] - 1
             text = ''
             if field_name in inner_field_names:
                 if not inner_class_done:
@@ -232,6 +221,7 @@ class JavaCsvLoadGenerator:
                     else:
                         text += self.gen_field_assign_stmt(prefix+field_name, typename, valuetext, 3)
                     text += '%s}\n' % (self.TAB_SPACE*2)
+            idx += 1
             content += text
         content += '%s}\n' % self.TAB_SPACE
         return content
@@ -259,25 +249,6 @@ class JavaCsvLoadGenerator:
         content += '        }\n'
         return content
 
-    # KV模式的load
-    def gen_kv_struct_load_method(self, struct):
-        rows = struct['data_rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
-
-        content = java_template.JAVA_KV_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'])
-        return content
-
-    # 生成Load方法
-    def gen_load_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_struct_load_method(struct)
-
-        content = ''
-        content += java_template.JAVA_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'], struct['name'])
-        return content
 
     # 字段比较
     def gen_equal_stmt(self, prefix, struct, key):
@@ -289,52 +260,4 @@ class JavaCsvLoadGenerator:
             else:
                 args.append('%s%s.equals(%s)' % (prefix, tpl[1], tpl[1]))
         return ' && '.join(args)
-
-    # 生成getItemBy()方法
-    def gen_get_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return ''
-
-        keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_java_type)
-        if len(keys) == 0:
-            return ''
-
-        formal_param = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        condition_text = self.gen_equal_stmt('item.', struct, predef.PredefGetMethodKeys)
-        content = java_template.JAVA_GET_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param), struct['name'],
-                                                            condition_text)
-        return content
-
-        # 生成getRange()方法
-    def gen_range_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return ''
-
-        if predef.PredefRangeMethodKeys not in struct['options']:
-            return ''
-
-        keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_java_type)
-        assert len(keys) > 0
-
-        formal_param = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        condition_text = self.gen_equal_stmt('item.', struct, predef.PredefRangeMethodKeys)
-        content = java_template.JAVA_RANGE_METHOD_TEMPLATE % (struct['name'], ', '.join(formal_param),
-                                                               struct['name'], struct['name'], condition_text)
-
-        return content
-
-
-
 
