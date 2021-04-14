@@ -20,7 +20,6 @@ type SoldierPropertyDefine struct {
 	BuildingName       string  `json:"building_name"`        // 所属建筑
 	BuildingLevel      uint32  `json:"building_level"`       // 建筑等级
 	RequireSpace       uint32  `json:"require_space"`        // 登陆艇占用空间
-	Volume             uint32  `json:"volume"`               // 体积
 	UpgradeTime        uint32  `json:"upgrade_time"`         // 升级消耗的时间(秒）
 	UpgradeMaterialID  string  `json:"upgrade_material_id"`  // 升级消耗的材料
 	UpgradeMaterialNum int64   `json:"upgrade_material_num"` // 升级消耗的数量
@@ -30,7 +29,6 @@ type SoldierPropertyDefine struct {
 	Act                int     `json:"act"`                  // 攻击
 	Hp                 int     `json:"hp"`                   // 血量
 	BombLoad           int16   `json:"bomb_load"`            // 载弹量
-	Hurt               uint32  `json:"hurt"`                 // buff伤害
 	Duration           float32 `json:"duration"`             // 持续时间
 	TriggerInterval    float32 `json:"trigger_interval"`     // 触发间隔
 	SearchScope        int16   `json:"search_scope"`         // 搜索范围

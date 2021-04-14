@@ -28,7 +28,6 @@ type SoldierPropertyDefine struct {
 	BuildingName       string  // 所属建筑
 	BuildingLevel      uint32  // 建筑等级
 	RequireSpace       uint32  // 登陆艇占用空间
-	Volume             uint32  // 体积
 	UpgradeTime        uint32  // 升级消耗的时间(秒）
 	UpgradeMaterialID  string  // 升级消耗的材料
 	UpgradeMaterialNum int64   // 升级消耗的数量
@@ -38,7 +37,6 @@ type SoldierPropertyDefine struct {
 	Act                int     // 攻击
 	Hp                 int     // 血量
 	BombLoad           int16   // 载弹量
-	Hurt               uint32  // buff伤害
 	Duration           float32 // 持续时间
 	TriggerInterval    float32 // 触发间隔
 	SearchScope        int16   // 搜索范围
@@ -49,7 +47,7 @@ type SoldierPropertyDefine struct {
 }
 
 func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
-	if len(row) < 25 {
+	if len(row) < 23 {
 		log.Panicf("SoldierPropertyDefine: row length too short %d", len(row))
 	}
 	if row[0] != "" {
@@ -78,72 +76,64 @@ func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
 	}
 	if row[7] != "" {
 		var value = parseStringAs("uint32", row[7])
-		p.Volume = value.(uint32)
-	}
-	if row[8] != "" {
-		var value = parseStringAs("uint32", row[8])
 		p.UpgradeTime = value.(uint32)
 	}
-	if row[9] != "" {
-		p.UpgradeMaterialID = row[9]
+	if row[8] != "" {
+		p.UpgradeMaterialID = row[8]
 	}
-	if row[10] != "" {
-		var value = parseStringAs("int64", row[10])
+	if row[9] != "" {
+		var value = parseStringAs("int64", row[9])
 		p.UpgradeMaterialNum = value.(int64)
 	}
+	if row[10] != "" {
+		p.ConsumeMaterial = row[10]
+	}
 	if row[11] != "" {
-		p.ConsumeMaterial = row[11]
+		var value = parseStringAs("int", row[11])
+		p.ConsumeMaterialNum = value.(int)
 	}
 	if row[12] != "" {
 		var value = parseStringAs("int", row[12])
-		p.ConsumeMaterialNum = value.(int)
+		p.ConsumeTime = value.(int)
 	}
 	if row[13] != "" {
 		var value = parseStringAs("int", row[13])
-		p.ConsumeTime = value.(int)
+		p.Act = value.(int)
 	}
 	if row[14] != "" {
 		var value = parseStringAs("int", row[14])
-		p.Act = value.(int)
-	}
-	if row[15] != "" {
-		var value = parseStringAs("int", row[15])
 		p.Hp = value.(int)
 	}
-	if row[16] != "" {
-		var value = parseStringAs("int16", row[16])
+	if row[15] != "" {
+		var value = parseStringAs("int16", row[15])
 		p.BombLoad = value.(int16)
 	}
+	if row[16] != "" {
+		var value = parseStringAs("float32", row[16])
+		p.Duration = value.(float32)
+	}
 	if row[17] != "" {
-		var value = parseStringAs("uint32", row[17])
-		p.Hurt = value.(uint32)
+		var value = parseStringAs("float32", row[17])
+		p.TriggerInterval = value.(float32)
 	}
 	if row[18] != "" {
-		var value = parseStringAs("float32", row[18])
-		p.Duration = value.(float32)
+		var value = parseStringAs("int16", row[18])
+		p.SearchScope = value.(int16)
 	}
 	if row[19] != "" {
 		var value = parseStringAs("float32", row[19])
-		p.TriggerInterval = value.(float32)
-	}
-	if row[20] != "" {
-		var value = parseStringAs("int16", row[20])
-		p.SearchScope = value.(int16)
-	}
-	if row[21] != "" {
-		var value = parseStringAs("float32", row[21])
 		p.AtkFrequency = value.(float32)
 	}
-	if row[22] != "" {
-		var value = parseStringAs("float64", row[22])
+	if row[20] != "" {
+		var value = parseStringAs("float64", row[20])
 		p.AtkRange = value.(float64)
 	}
-	if row[23] != "" {
-		var value = parseStringAs("float64", row[23])
+	if row[21] != "" {
+		var value = parseStringAs("float64", row[21])
 		p.MovingSpeed = value.(float64)
 	}
-	if row[24] != "" {
-		var value = parseStringAs("bool", row[24])
+	if row[22] != "" {
+		var value = parseStringAs("bool", row[22])
 		p.EnableBurn = value.(bool)
 	}
 	return nil
