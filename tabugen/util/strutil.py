@@ -175,9 +175,9 @@ def enum_files(self, rootdir, ignore_check):
 
 
 # 对齐数据行
-def pad_data_rows(rows, struct):
+def pad_data_rows(rows, fields):
     # pad empty row
-    max_row_len = len(struct['fields'])
+    max_row_len = len(fields)
     for row in rows:
         if len(row) > max_row_len:
             max_row_len = len(row)

@@ -22,7 +22,7 @@ class ExcelStructParser:
         self.with_data = True
         self.filenames = []
         self.meta_index = {}
-        self.enable_field_skipping = False
+        self.skipped_columns = []
 
     @staticmethod
     def name():
@@ -32,8 +32,8 @@ class ExcelStructParser:
         self.filedir = args.parse_files
         if args.without_data:
             self.with_data = False
-        if args.enable_column_skip:
-            self.enable_field_skipping = True
+        if args.skip_column:
+            self.skipped_columns = [x.strip() for x in args.skip_column.split(',')]
         if args.parse_file_skip is not None:
             self.skip_names = args.parse_file_skip.split(' ')
         self.metafile = args.parse_meta_file
@@ -177,19 +177,18 @@ class ExcelStructParser:
                 field["comment"] = rows[comment_index][i]
 
             field["enable"] = True
-            if self.enable_field_skipping and predef.OptionSkippedColumns in meta and len(
-                    meta[predef.OptionSkippedColumns]) > 0:
-                if field["name"] in meta[predef.OptionSkippedColumns]:
-                    field["enable"] = False
+            if field["name"] in self.skipped_columns:
+                field["enable"] = False
 
-            # print(field)
             struct['fields'].append(field)
 
         struct["options"] = meta
         if self.with_data:
             data_rows = rows[data_start_index - 1: data_end_index]
-            data_rows = strutil.pad_data_rows(data_rows, struct)
+            data_rows = strutil.pad_data_rows(data_rows, struct['fields'])
             data_rows = xlsxhelp.validate_data_rows(data_rows, struct)
+            if len(self.skipped_columns) > 0:
+                data_rows = shrink_enabled_rows(data_rows, struct)
             struct["data_rows"] = data_rows
         return struct
 
@@ -230,7 +229,7 @@ class ExcelStructParser:
             return struct
 
 
-def unit_test(self):
+def unit_test():
     filename = u'''新建筑.xlsx'''
     parser = ExcelStructParser()
     parser.init('file=%s' % filename)
@@ -242,4 +241,4 @@ def unit_test(self):
 
 
 if __name__ == '__main__':
-    unit_test
+    unit_test()

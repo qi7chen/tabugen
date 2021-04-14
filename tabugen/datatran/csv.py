@@ -52,6 +52,6 @@ class CsvDataWriter:
         for struct in descriptors:
             rows = struct["data_rows"]
             rows = rowutil.validate_unique_column(struct, rows)
-            rows = rowutil.hide_skipped_row_fields(args.enable_column_skip, struct, rows)
+            rows = rowutil.hide_skipped_row_fields(struct, rows)
             name = strutil.camel_to_snake(struct['camel_case_name'])
             self.write_file(name, rows, args.out_csv_delim, filepath, encoding)

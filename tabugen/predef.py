@@ -22,17 +22,12 @@ PredefValueColumn = "kv_value_column"           # KV模式中的value所在列�
 PredefValueTypeColumn = "kv_value_type_column"  # KV模式中的value类型所在列
 PredefCommentColumn = "kv_comment_column"       # KV模式中的注释所在列
 
-
-PredefGetMethodKeys = "get_keys"        # 生成的Get()函数的参数列表
-PredefRangeMethodKeys = "range_keys"    # 生成的GetRange()函数的参数列表
-
 PredefInnerTypeRange = "inner_type_range"
 PredefInnerTypeClass = "inner_type_class"
 PredefInnerTypeName = "inner_type_name"
 
 OptionAutoVector = "auto_vector"            # 自动把名称相近的字段合并为数组
 
-OptionSkippedColumns = "skipped_fields"   # 跳过某些列
 OptionUniqueColumns = "unique_columns"    # 值唯一的列
 
 #

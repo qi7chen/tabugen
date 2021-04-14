@@ -113,11 +113,36 @@ class JsonDataWriter:
             inner_obj_list.append(inner_item)
         return inner_obj_list
 
+
+    def row_to_object(row, fields, inner_field_names, inner_var_name, inner_fields):
+        obj = {}
+        inner_class_done = False
+        for field in fields:
+            if not field['enable']:
+                continue
+            if field['name'] in inner_field_names:
+                if not inner_class_done:
+                    value = self.parse_row_inner_obj(struct, row, inner_fields)
+                    if self.use_snake_case:
+                        inner_var_name = strutil.camel_to_snake(inner_var_name)
+                    obj[inner_var_name] = value
+                    inner_class_done = True
+            else:
+                valuetext = row[field['column_index'] - 1]
+                value = self.parse_value(struct, field['original_type_name'], valuetext)
+                if self.use_snake_case:
+                    name = strutil.camel_to_snake(field['camel_case_name'])
+                else:
+                    name = field['name']
+                obj[name] = value
+        return obj
+
+
     # 解析数据行
     def parse_row(self, struct, enable_column_skip):
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)
-        rows = rowutil.hide_skipped_row_fields(enable_column_skip, struct, rows)
+        rows = rowutil.hide_skipped_row_fields(struct, rows)
 
         fields = struct['fields']
 
@@ -131,26 +156,7 @@ class JsonDataWriter:
 
         obj_list = []
         for row in rows:
-            obj = {}
-            inner_class_done = False
-            for field in fields:
-                if not field['enable']:
-                    continue
-                if field['name'] in inner_field_names:
-                    if not inner_class_done:
-                        value = self.parse_row_inner_obj(struct, row, inner_fields)
-                        if self.use_snake_case:
-                            inner_var_name = strutil.camel_to_snake(inner_var_name)
-                        obj[inner_var_name] = value
-                        inner_class_done = True
-                else:
-                    valuetext = row[field['column_index'] - 1]
-                    value = self.parse_value(struct, field['original_type_name'], valuetext)
-                    if self.use_snake_case:
-                        name = strutil.camel_to_snake(field['camel_case_name'])
-                    else:
-                        name = field['name']
-                    obj[name] = value
+            obj = row_to_object(row, fields, inner_field_names, inner_var_name, inner_fields)
             obj_list.append(obj)
         return obj_list
 

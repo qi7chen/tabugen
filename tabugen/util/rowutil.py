@@ -43,8 +43,21 @@ def validate_unique_column(struct, rows):
     return rows
 
 
+# 只保留enable的field
+def shrink_enabled_rows(rows, struct):
+    new_rows = []
+    for row in rows:
+        new_row = []
+        for field in struct['fields']:
+            if field['enable']:
+                idx = field['column_index']
+                new_row.append(row[idx])
+        new_rows.append(new_row)
+    return new_rows
+
+
 # 置空不必要显示的内容
-def hide_skipped_row_fields(enable_column_skip, struct, rows):
+def hide_skipped_row_fields(struct, rows):
     if predef.PredefValueTypeColumn in struct['options']:
         # 把KV模式的类型和注释从csv中删除
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
@@ -52,11 +65,4 @@ def hide_skipped_row_fields(enable_column_skip, struct, rows):
         for row in rows:
             row[typecol - 1] = ''
             row[commentcol - 1] = ''
-    else:
-        if enable_column_skip:
-            for row in rows:
-                for field in struct["fields"]:
-                    if not field["enable"]:
-                        idx = field["column_index"] - 1
-                        row[idx] = ''
     return rows

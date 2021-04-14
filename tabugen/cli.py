@@ -46,7 +46,7 @@ def run(args):
             codegen = pair[0]
             filepath = pair[1]
             if args.gen_csv_parse:
-                codegen.setup('csv', args.gen_csv_dataload)
+                codegen.setup('csv')
             codegen.run(descriptors, filepath, args)
 
     if not args.without_data and args.out_data_format is not None:
@@ -84,14 +84,13 @@ def main():
     parser.add_argument("--parse_files", help="files or directory for struct parsing")
     parser.add_argument("--parse_meta_file", help="meta file for struct parsing")
     parser.add_argument("--parse_file_skip", help="files or directory to skip in struct parsing")
-    parser.add_argument("--enable_column_skip", action='store_true', help="enable skipping column when do parsing")
+    parser.add_argument("--skip_column", default='', help="skipping column when do parsing")
     parser.add_argument("--array_delim", default=",", help="array item delimiter")
-    parser.add_argument("--map_delims", default=";=", help="map item delimiter")
+    parser.add_argument("--map_delims", default=";=", help="map item delimiters")
 
     # source code options
     parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of auto-generated config manager class")
     parser.add_argument("--gen_csv_parse", action='store_true', help="also generator csv parse method code")
-    parser.add_argument("--gen_csv_dataload", action='store_true', help="also generator csv data load method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
     parser.add_argument("--csharp_out", help="file path of generate C# class source code")

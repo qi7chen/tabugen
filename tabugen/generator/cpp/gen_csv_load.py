@@ -16,12 +16,11 @@ import tabugen.generator.cpp.template as cpp_template
 class CppCsvLoadGenerator:
     TAB_SPACE = '    '
 
-    def __init__(self, gen_dataload):
+    def __init__(self):
         self.array_delim = ','
         self.map_delims = [',', '=']
         self.out_csv_delim = ','
         self.config_manager_name = ''
-        self.gen_dataload = gen_dataload
 
     # 初始化array, map分隔符
     def setup(self, array_delim, map_delims, out_csv_delim, name):
@@ -112,13 +111,13 @@ class CppCsvLoadGenerator:
 
         vec_names, vec_name = structutil.get_vec_field_range(struct)
         vec_idx = 0
+        idx = 0
         space = self.TAB_SPACE * tabs
         for field in struct['fields']:
             if not field['enable']:
                 continue
             text = ''
             field_name = field['name']
-            idx = field['column_index'] - 1
             assert idx >= 0
             if field_name in inner_field_names:
                 if not inner_class_done:
@@ -146,6 +145,7 @@ class CppCsvLoadGenerator:
                     else:
                         text += '%s%s%s = parseTextAs<%s>(row[%d]);\n' % (
                             self.TAB_SPACE * tabs, prefix, field_name, typename, idx)
+            idx += 1
             content += text
         return content
 
@@ -156,49 +156,12 @@ class CppCsvLoadGenerator:
         if struct['options'][predef.PredefParseKVMode]:
             content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % \
                        struct['name']
-            if self.gen_dataload:
-                content += '    static int Load(const char* filepath);\n'
-                content += '    static const %s* Instance();\n' % struct['name']
             return content
 
         content += '    static int ParseFromRow(const std::vector<StringPiece>& row, %s* ptr);\n' % struct['name']
-        if self.gen_dataload:
-            content += '    static int Load(const char* filepath);\n'
-            content += '    static const std::vector<%s>* GetData(); \n' % struct['name']
-
-        if predef.PredefGetMethodKeys in struct['options']:
-            get_keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
-            if len(get_keys) > 0:
-                get_args = []
-                for tpl in get_keys:
-                    typename = tpl[0]
-                    if not lang.is_cpp_pod_type(typename):
-                        typename = 'const %s&' % typename
-                    get_args.append(typename + ' ' + tpl[1])
-
-                content += '    static const %s* Get(%s);\n' % (struct['name'], ', '.join(get_args))
-
-        if predef.PredefRangeMethodKeys in struct['options']:
-            range_keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
-            range_args = []
-            for tpl in range_keys:
-                typename = tpl[0]
-                if not lang.is_cpp_pod_type(typename):
-                    typename = 'const %s&' % typename
-                range_args.append(typename + ' ' + tpl[1])
-            content += '    static std::vector<const %s*> GetRange(%s);\n' % (struct['name'], ', '.join(range_args))
 
         return content
 
-    # 生成GetData()方法
-    def gen_struct_data_method(self, struct):
-        content = ''
-        varname = self.get_instance_data_name(struct['name'])
-        if struct['options'][predef.PredefParseKVMode]:
-            content += cpp_template.CPP_INSTANCE_METHOD_TEMPLATE % (struct['name'], struct['name'], varname, varname)
-        else:
-            content += cpp_template.CPP_GETDATA_METHOD_TEMPLATE % (struct['name'], struct['name'], varname, varname)
-        return content
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
@@ -254,125 +217,10 @@ class CppCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-    # KV模式的Load()方法
-    def gen_kv_struct_load_method(self, struct):
-        varname = self.get_instance_data_name(struct['name'])
-        content = ''
-        content += cpp_template.CPP_KV_LOAD_FUNC_TEMPLATE % (struct['name'], struct['name'],
-                                                             self.config_manager_name,
-                                                             struct['name'], struct['name'], struct['name'],
-                                                             varname, varname)
-        content += '\n'
-        return content
-
-    # 生成Load()方法
-    def gen_struct_load_method(self, struct):
-        content = ''
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_struct_load_method(struct)
-
-        varname = self.get_instance_data_name(struct['name'])
-        content += cpp_template.CPP_LOAD_FUNC_TEMPLATE % (
-        struct['name'], struct['name'], struct['name'], struct['name'],
-        self.config_manager_name, struct['name'], struct['name'],
-        varname, varname)
-        content += '\n'
-        return content
-
-    # class静态成员定义
-    def gen_global_static_define(self, struct):
-        content = ''
-        content = ''
-        varname = self.get_instance_data_name(struct['name'])
-        if struct['options'][predef.PredefParseKVMode]:
-            content += '    static %s* %s = nullptr;\n' % (struct['name'], varname)
-        else:
-            content += '    static std::vector<%s>* %s = nullptr;\n' % (struct['name'], varname)
-        return content
-
-    # 生成Get()方法
-    def gen_struct_get_method(self, struct):
-        content = ''
-        if struct['options'][predef.PredefParseKVMode]:
-            return content
-
-        keys = structutil.get_struct_keys(struct, predef.PredefGetMethodKeys, lang.map_cpp_type)
-        if len(keys) == 0:
-            return content
-
-        formal_param = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            if not lang.is_cpp_pod_type(typename):
-                typename = 'const %s&' % typename
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        cond_text = self.gen_equal_stmt('dataptr->at(i).', struct, predef.PredefGetMethodKeys)
-        content += cpp_template.CPP_GET_METHOD_TEMPLATE % (struct['name'], struct['name'], ', '.join(formal_param),
-                                                           struct['name'], cond_text)
-        return content
-
-    # 生成GetRange()方法
-    def gen_struct_range_method(self, struct):
-        content = ''
-        if struct['options'][predef.PredefParseKVMode]:
-            return content
-
-        if predef.PredefRangeMethodKeys not in struct['options']:
-            return content
-
-        keys = structutil.get_struct_keys(struct, predef.PredefRangeMethodKeys, lang.map_cpp_type)
-        assert len(keys) > 0
-
-        formal_param = []
-        params = []
-        arg_names = []
-        for tpl in keys:
-            typename = tpl[0]
-            if not lang.is_cpp_pod_type(typename):
-                typename = 'const %s&' % typename
-            formal_param.append('%s %s' % (typename, tpl[1]))
-            arg_names.append(tpl[1])
-
-        cond_text = self.gen_equal_stmt('dataptr->at(i).', struct, predef.PredefRangeMethodKeys)
-        content += cpp_template.CPP_GET_RANGE_METHOD_TEMPLATE % (
-        struct['name'], struct['name'], ', '.join(formal_param),
-        struct['name'], struct['name'], cond_text)
-        return content
-
-    # 生成全局Load和Clear方法
-    def gen_manager_static_method(self, descriptors):
-        if not self.gen_dataload:
-            return ''
-        content = ''
-        content += 'void %s::LoadAll()\n' % self.config_manager_name
-        content += '{\n'
-        content += '    ASSERT(reader);\n'
-        for struct in descriptors:
-            filename = strutil.camel_to_snake(struct['camel_case_name'])
-            content += '    %s::Load("%s.csv");\n' % (struct['name'], filename)
-        content += '}\n\n'
-
-        content += 'void %s::ClearAll()\n' % self.config_manager_name
-        content += '{\n'
-        for struct in descriptors:
-            content += '    delete %s;\n' % self.get_instance_data_name(struct['name'])
-            content += '    %s = nullptr;\n' % self.get_instance_data_name(struct['name'])
-        content += '}\n\n'
-
-        content += cpp_template.CPP_READ_FUNC_TEMPLATE % self.config_manager_name
-        return content
 
     # 生成源文件定义
     def gen_cpp_source(self, struct):
         content = ''
-        if self.gen_dataload:
-            content += self.gen_struct_data_method(struct)
-            content += self.gen_struct_get_method(struct)
-            content += self.gen_struct_range_method(struct)
-            content += self.gen_struct_load_method(struct)
         content += self.gen_parse_method(struct)
         return content
 
@@ -381,12 +229,6 @@ class CppCsvLoadGenerator:
         # 常量定义在头文件，方便外部解析使用
         content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (self.out_csv_delim, '"', self.array_delim[0],
                                                           self.map_delims[0], self.map_delims[1])
-        if self.gen_dataload:
-            content += 'class %s\n' % self.config_manager_name
-            content += '{\n'
-            content += 'public:\n'
-            content += cpp_template.CPP_MANAGER_METHOD_TEMPLATE
-            content += '};\n\n'
         return content
 
     def gen_source_method(self, descriptors, args, headerfile):
@@ -404,9 +246,6 @@ class CppCsvLoadGenerator:
             pchfile = '#include "%s"' % args.cpp_pch
             cpp_include_headers = [pchfile] + cpp_include_headers
 
-        if self.gen_dataload:
-            cpp_include_headers.append('#include "Utility/CSVReader.h"')
-
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
         cpp_content += 'using namespace std;\n\n'
         cpp_content += '#ifndef ASSERT\n'
@@ -417,19 +256,12 @@ class CppCsvLoadGenerator:
             cpp_content += '\nnamespace %s {\n\n' % args.package
 
         static_var_content = ''
-        if self.gen_dataload:
-            cpp_content += cpp_template.CPP_READER_ASSIGN % (self.config_manager_name, self.config_manager_name)
-            static_var_content += 'namespace \n{\n'
-            for struct in descriptors:
-                static_var_content += self.gen_global_static_define(struct)
-            static_var_content += '}\n\n'
 
         class_content = ''
         for struct in descriptors:
             class_content += self.gen_cpp_source(struct)
 
         cpp_content += static_var_content
-        cpp_content += self.gen_manager_static_method(descriptors)
         cpp_content += class_content
         if args.package is not None:
             cpp_content += '\n} // namespace %s \n' % args.package  # namespace
