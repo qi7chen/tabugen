@@ -3,10 +3,25 @@
 # See accompanying files LICENSE.
 
 
-all: dist
+all: run install upload
 
-dist:
+# run all examples
+run:
+	cd examples/Cpp && make
+	cd examples/CSharp && make
+	cd examples/Go && make
+	cd examples/Java && make
+
+# build distribute binary
+install:
 	pip install -r requirements.txt
-	pyinstaller -F --name=tabular tabular/cli.py
+	pyinstaller -F --name=tabugen tabugen/cli.py
 
-run_examples:
+# upload to pip
+upload:
+	python setup.py check && python setup.py sdist upload
+
+clean:
+	rm -rf build dist
+
+.PHONEY: clean run install upload

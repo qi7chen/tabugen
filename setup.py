@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='tabugen',
-    version='0.5.0',
+    version='0.6.1',
     license='Apache',
     author='cheadaq',
     author_email='ichenq@outlook.com',
