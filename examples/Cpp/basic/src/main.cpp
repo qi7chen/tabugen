@@ -47,6 +47,33 @@ static void LoadConfig(vector<config::SoldierPropertyDefine>& data)
     }
 }
 
+static void printSoldierProperty(const config::SoldierPropertyDefine& item) 
+{
+    cout << item.Name << " "
+        << item.Level << " "
+        << item.NameID << " "
+        << item.Description << " "
+        << item.BuildingName << " "
+        << item.BuildingLevel << " "
+        << item.RequireSpace << " "
+        << item.UpgradeTime << " "
+        << item.UpgradeMaterialID << " "
+        << item.UpgradeMaterialNum << " "
+        << item.ConsumeMaterial << " "
+        << item.ConsumeMaterialNum << " "
+        << item.ConsumeTime << " "
+        << item.Act << " "
+        << item.Hp << " "
+        << item.BombLoad << " "
+        << item.Duration << " "
+        << item.TriggerInterval << " "
+        << item.SearchScope << " "
+        << item.AtkFrequency << " "
+        << item.AtkRange << " "
+        << item.MovingSpeed << " "
+        << item.EnableBurn << " "
+        << endl;
+}
 
 int main(int argc, char* argv[])
 {
@@ -56,27 +83,10 @@ int main(int argc, char* argv[])
     }
     vector<config::SoldierPropertyDefine> data;
     LoadConfig(data);
-    cout << stringPrintf("%d soldier config loaded", (int)data.size());
+    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const SoldierPropertyDefine& item : data)
     {
-        cout << item.Name << " "
-            << item.Level << " "
-            << item.BuildingName << " "
-            << item.BuildingLevel << " "
-            << item.RequireSpace << " "
-            << item.UpgradeTime << " "
-            << item.UpgradeMaterialID << " "
-            << item.UpgradeMaterialNum << " "
-            << item.ConsumeMaterial << " "
-            << item.ConsumeMaterialNum << " "
-            << item.ConsumeTime << " "
-            << item.Act << " "
-            << item.Hp << " "
-            << item.SearchScope << " "
-            << item.AtkRange << " "
-            << item.MovingSpeed << " "
-            << item.EnableBurn << " "
-            << endl;
+        printSoldierProperty(item);
     }
     return 0;
 }

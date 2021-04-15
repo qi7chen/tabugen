@@ -45,6 +45,29 @@ static void LoadConfig(vector<config::NewbieGuideDefine>& data)
     }
 }
 
+static void printNewbieGuide(const config::NewbieGuideDefine& item) 
+{
+    cout << item.Name << " "
+        << item.Type << " "
+        << item.Target << " "
+        << item.Description << " "
+        ;
+    cout << "{ ";
+    for (auto n : item.Accomplishment)
+    {
+        cout << n << ", ";
+    }
+    cout << "} ";
+        
+    cout << "{ ";
+    for (auto iter = item.Goods.begin(); iter != item.Goods.end(); ++iter)
+    {
+        cout << iter->first << ": " << iter->second << ", ";
+    }
+    cout << "} ";
+    cout << endl;
+}
+
 int main(int argc, char* argv[])
 {
     if (argc > 1)
@@ -53,14 +76,10 @@ int main(int argc, char* argv[])
     }
     vector<config::NewbieGuideDefine> data;
     LoadConfig(data);
-    cout << stringPrintf("%d soldier config loaded", (int)data.size());
+    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const config::NewbieGuideDefine& item : data)
     {
-        cout << stringPrintf("%s %s %d", item.Name.c_str(), item.Type.c_str(), (int)item.Accomplishment.size()) << endl;
-		for (auto iter = item.Goods.begin(); iter != item.Goods.end(); ++iter)
-		{
-			cout << stringPrintf("\t%s: %d", iter->first.c_str(), iter->second) << endl;
-		}
+        printNewbieGuide(item);
     }
     return 0;
 }

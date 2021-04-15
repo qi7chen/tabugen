@@ -46,6 +46,26 @@ static void LoadConfig(vector<config::BoxProbabilityDefine>& data)
     }
 }
 
+static void printBoxProbability(const BoxProbabilityDefine& item)
+{
+    cout << item.ID << " " 
+        << item.Total << " " 
+        << item.Time << " " 
+        << item.Repeat << " " 
+        ;
+    cout << "[ ";
+    for (size_t i = 0; i < item.ProbabilityGoods.size(); i++)
+    {
+        const BoxProbabilityDefine::ProbabilityGoodsDefine& goods = item.ProbabilityGoods[i];
+        cout << "{ " 
+            << goods.GoodsID << " "
+            << goods.Num << " "
+            << goods.Probability << " "
+            << "},";
+    }
+    cout << "]" << endl;
+}
+
 int main(int argc, char* argv[])
 {
     if (argc > 1)
@@ -54,15 +74,10 @@ int main(int argc, char* argv[])
     }
     vector<config::BoxProbabilityDefine> data;
     LoadConfig(data);
-    cout << stringPrintf("%d box config loaded", (int)data.size());
+    cout << stringPrintf("%d box config loaded.\n", (int)data.size());
     for (const BoxProbabilityDefine& item : data)
     {
-        cout << stringPrintf("%s, %d", item.ID.c_str(), item.Total) << endl;
-		for (size_t i = 0; i < item.ProbabilityGoods.size(); i++)
-		{
-			const BoxProbabilityDefine::ProbabilityGoodsDefine& goods = item.ProbabilityGoods[i];
-			cout << stringPrintf("\t%s: %d, %d", goods.GoodsID.c_str(), goods.Num, goods.Probability) << endl;
-		}
+        printBoxProbability(item);
     }
     return 0;
 }
