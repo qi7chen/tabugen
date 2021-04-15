@@ -13,7 +13,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 140,
-    "Hurt": 0,
     "Level": 1,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -23,8 +22,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 1500,
-    "UpgradeTime": 50,
-    "Volume": 1
+    "UpgradeTime": 50
   },
   {
     "Act": 32,
@@ -40,7 +38,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 150,
-    "Hurt": 0,
     "Level": 2,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -50,8 +47,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 6000,
-    "UpgradeTime": 250,
-    "Volume": 1
+    "UpgradeTime": 250
   },
   {
     "Act": 35,
@@ -67,7 +63,6 @@
     "Duration": 0.0,
     "EnableBurn": true,
     "Hp": 160,
-    "Hurt": 0,
     "Level": 3,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -77,8 +72,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 11600,
-    "UpgradeTime": 1420,
-    "Volume": 1
+    "UpgradeTime": 1420
   },
   {
     "Act": 38,
@@ -94,7 +88,6 @@
     "Duration": 0.0,
     "EnableBurn": true,
     "Hp": 172,
-    "Hurt": 0,
     "Level": 4,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -104,8 +97,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 18700,
-    "UpgradeTime": 2290,
-    "Volume": 1
+    "UpgradeTime": 2290
   },
   {
     "Act": 41,
@@ -121,7 +113,6 @@
     "Duration": 0.0,
     "EnableBurn": true,
     "Hp": 184,
-    "Hurt": 0,
     "Level": 5,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -131,8 +122,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 30000,
-    "UpgradeTime": 2870,
-    "Volume": 1
+    "UpgradeTime": 2870
   },
   {
     "Act": 44,
@@ -148,7 +138,6 @@
     "Duration": 0.0,
     "EnableBurn": true,
     "Hp": 196,
-    "Hurt": 0,
     "Level": 6,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -158,8 +147,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 50000,
-    "UpgradeTime": 4450,
-    "Volume": 1
+    "UpgradeTime": 4450
   },
   {
     "Act": 48,
@@ -175,7 +163,6 @@
     "Duration": 0.0,
     "EnableBurn": true,
     "Hp": 210,
-    "Hurt": 0,
     "Level": 7,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -185,8 +172,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 80000,
-    "UpgradeTime": 7160,
-    "Volume": 1
+    "UpgradeTime": 7160
   },
   {
     "Act": 52,
@@ -202,7 +188,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 225,
-    "Hurt": 0,
     "Level": 8,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -212,8 +197,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 120000,
-    "UpgradeTime": 14300,
-    "Volume": 1
+    "UpgradeTime": 14300
   },
   {
     "Act": 56,
@@ -229,7 +213,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 241,
-    "Hurt": 0,
     "Level": 9,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -239,8 +222,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 170000,
-    "UpgradeTime": 19100,
-    "Volume": 1
+    "UpgradeTime": 19100
   },
   {
     "Act": 61,
@@ -256,7 +238,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 257,
-    "Hurt": 0,
     "Level": 10,
     "MovingSpeed": 3.9,
     "Name": "Marine",
@@ -266,8 +247,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 350000,
-    "UpgradeTime": 34400,
-    "Volume": 1
+    "UpgradeTime": 34400
   },
   {
     "Act": 26,
@@ -283,7 +263,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1000,
-    "Hurt": 0,
     "Level": 1,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -293,8 +272,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 14960,
-    "UpgradeTime": 2290,
-    "Volume": 1
+    "UpgradeTime": 2290
   },
   {
     "Act": 28,
@@ -310,7 +288,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1080,
-    "Hurt": 0,
     "Level": 2,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -320,8 +297,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 24000,
-    "UpgradeTime": 2870,
-    "Volume": 1
+    "UpgradeTime": 2870
   },
   {
     "Act": 31,
@@ -337,7 +313,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1166,
-    "Hurt": 0,
     "Level": 3,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -347,8 +322,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 39600,
-    "UpgradeTime": 4450,
-    "Volume": 1
+    "UpgradeTime": 4450
   },
   {
     "Act": 33,
@@ -364,7 +338,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1260,
-    "Hurt": 0,
     "Level": 4,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -374,8 +347,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 62880,
-    "UpgradeTime": 7160,
-    "Volume": 1
+    "UpgradeTime": 7160
   },
   {
     "Act": 36,
@@ -391,7 +363,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1361,
-    "Hurt": 0,
     "Level": 5,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -401,8 +372,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 98640,
-    "UpgradeTime": 14300,
-    "Volume": 1
+    "UpgradeTime": 14300
   },
   {
     "Act": 39,
@@ -418,7 +388,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1470,
-    "Hurt": 0,
     "Level": 6,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -428,8 +397,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 133920,
-    "UpgradeTime": 19100,
-    "Volume": 1
+    "UpgradeTime": 19100
   },
   {
     "Act": 42,
@@ -445,7 +413,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1587,
-    "Hurt": 0,
     "Level": 7,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -455,8 +422,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 282560,
-    "UpgradeTime": 34400,
-    "Volume": 1
+    "UpgradeTime": 34400
   },
   {
     "Act": 46,
@@ -472,7 +438,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1714,
-    "Hurt": 0,
     "Level": 8,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -482,8 +447,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 432800,
-    "UpgradeTime": 56900,
-    "Volume": 1
+    "UpgradeTime": 56900
   },
   {
     "Act": 50,
@@ -499,7 +463,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1851,
-    "Hurt": 0,
     "Level": 9,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -509,8 +472,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 578680,
-    "UpgradeTime": 58800,
-    "Volume": 1
+    "UpgradeTime": 58800
   },
   {
     "Act": 54,
@@ -526,7 +488,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 2000,
-    "Hurt": 0,
     "Level": 10,
     "MovingSpeed": 4.0,
     "Name": "FatMan",
@@ -536,8 +497,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 724560,
-    "UpgradeTime": 60700,
-    "Volume": 1
+    "UpgradeTime": 60700
   },
   {
     "Act": 80,
@@ -553,7 +513,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 50,
-    "Hurt": 0,
     "Level": 1,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -563,8 +522,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 45000,
-    "UpgradeTime": 2870,
-    "Volume": 1
+    "UpgradeTime": 2870
   },
   {
     "Act": 88,
@@ -580,7 +538,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 54,
-    "Hurt": 0,
     "Level": 2,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -590,8 +547,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 74250,
-    "UpgradeTime": 4450,
-    "Volume": 1
+    "UpgradeTime": 4450
   },
   {
     "Act": 97,
@@ -607,7 +563,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 59,
-    "Hurt": 0,
     "Level": 3,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -617,8 +572,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 117900,
-    "UpgradeTime": 7160,
-    "Volume": 1
+    "UpgradeTime": 7160
   },
   {
     "Act": 106,
@@ -634,7 +588,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 64,
-    "Hurt": 0,
     "Level": 4,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -644,8 +597,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 184950,
-    "UpgradeTime": 14300,
-    "Volume": 1
+    "UpgradeTime": 14300
   },
   {
     "Act": 117,
@@ -661,7 +613,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 70,
-    "Hurt": 0,
     "Level": 5,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -671,8 +622,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 251100,
-    "UpgradeTime": 19100,
-    "Volume": 1
+    "UpgradeTime": 19100
   },
   {
     "Act": 129,
@@ -688,7 +638,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 76,
-    "Hurt": 0,
     "Level": 6,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -698,8 +647,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 529800,
-    "UpgradeTime": 34400,
-    "Volume": 1
+    "UpgradeTime": 34400
   },
   {
     "Act": 142,
@@ -715,7 +663,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 83,
-    "Hurt": 0,
     "Level": 7,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -725,8 +672,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 811500,
-    "UpgradeTime": 56900,
-    "Volume": 1
+    "UpgradeTime": 56900
   },
   {
     "Act": 156,
@@ -742,7 +688,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 90,
-    "Hurt": 0,
     "Level": 8,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -752,8 +697,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 1085025,
-    "UpgradeTime": 58800,
-    "Volume": 1
+    "UpgradeTime": 58800
   },
   {
     "Act": 171,
@@ -769,7 +713,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 98,
-    "Hurt": 0,
     "Level": 9,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -779,8 +722,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 1358550,
-    "UpgradeTime": 60700,
-    "Volume": 1
+    "UpgradeTime": 60700
   },
   {
     "Act": 189,
@@ -796,7 +738,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 107,
-    "Hurt": 0,
     "Level": 10,
     "MovingSpeed": 3.5,
     "Name": "Rocketer",
@@ -806,8 +747,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 2189100,
-    "UpgradeTime": 66900,
-    "Volume": 1
+    "UpgradeTime": 66900
   },
   {
     "Act": 40,
@@ -823,7 +763,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 500,
-    "Hurt": 0,
     "Level": 1,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -833,8 +772,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 5374950,
-    "UpgradeTime": 79300,
-    "Volume": 1
+    "UpgradeTime": 79300
   },
   {
     "Act": 42,
@@ -850,7 +788,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 544,
-    "Hurt": 0,
     "Level": 2,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -860,8 +797,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 7627800,
-    "UpgradeTime": 91900,
-    "Volume": 1
+    "UpgradeTime": 91900
   },
   {
     "Act": 44,
@@ -877,7 +813,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 592,
-    "Hurt": 0,
     "Level": 3,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -887,8 +822,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 9373500,
-    "UpgradeTime": 106950,
-    "Volume": 1
+    "UpgradeTime": 106950
   },
   {
     "Act": 46,
@@ -904,7 +838,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 644,
-    "Hurt": 0,
     "Level": 4,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -914,8 +847,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 11119200,
-    "UpgradeTime": 122000,
-    "Volume": 1
+    "UpgradeTime": 122000
   },
   {
     "Act": 48,
@@ -931,7 +863,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 701,
-    "Hurt": 0,
     "Level": 5,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -941,8 +872,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 12795900,
-    "UpgradeTime": 134500,
-    "Volume": 1
+    "UpgradeTime": 134500
   },
   {
     "Act": 50,
@@ -958,7 +888,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 762,
-    "Hurt": 0,
     "Level": 6,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -968,8 +897,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 14472600,
-    "UpgradeTime": 147000,
-    "Volume": 1
+    "UpgradeTime": 147000
   },
   {
     "Act": 52,
@@ -985,7 +913,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 829,
-    "Hurt": 0,
     "Level": 7,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -995,8 +922,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 16078800,
-    "UpgradeTime": 162500,
-    "Volume": 1
+    "UpgradeTime": 162500
   },
   {
     "Act": 54,
@@ -1012,7 +938,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 902,
-    "Hurt": 0,
     "Level": 8,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -1022,8 +947,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 17685000,
-    "UpgradeTime": 178000,
-    "Volume": 1
+    "UpgradeTime": 178000
   },
   {
     "Act": 56,
@@ -1039,7 +963,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 981,
-    "Hurt": 0,
     "Level": 9,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -1049,8 +972,7 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 21375900,
-    "UpgradeTime": 205500,
-    "Volume": 1
+    "UpgradeTime": 205500
   },
   {
     "Act": 58,
@@ -1066,7 +988,6 @@
     "Duration": 0.0,
     "EnableBurn": false,
     "Hp": 1068,
-    "Hurt": 0,
     "Level": 10,
     "MovingSpeed": 4.1,
     "Name": "MedicSoldier",
@@ -1076,7 +997,6 @@
     "TriggerInterval": 0.0,
     "UpgradeMaterialID": "Food",
     "UpgradeMaterialNum": 25066800,
-    "UpgradeTime": 233000,
-    "Volume": 1
+    "UpgradeTime": 233000
   }
 ]
