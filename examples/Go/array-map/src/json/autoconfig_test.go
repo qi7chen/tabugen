@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -18,6 +17,6 @@ func TestAutogenConfig(t *testing.T) {
 		t.Fatalf("JSON: %v", err)
 	}
 	for _, cfg := range cfgList {
-		fmt.Printf("%v\n", cfg)
+		t.Logf("%v\n", cfg)
 	}
 }

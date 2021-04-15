@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -17,5 +16,5 @@ func TestAutogenConfig(t *testing.T) {
 	if err = json.Unmarshal(data, &conf); err != nil {
 		t.Fatalf("JSON: %v", err)
 	}
-	fmt.Printf("%v\n", conf)
+	t.Logf("%v\n", conf)
 }

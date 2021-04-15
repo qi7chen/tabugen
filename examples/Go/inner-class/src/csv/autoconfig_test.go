@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -18,10 +17,10 @@ func TestAutogenConfig(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 	for _, row := range rows {
-	    var item BoxProbabilityDefine
-	    if err := item.ParseFromRow(row); err != nil {
-	        t.Fatalf("%v", err)
-	    }
-		fmt.Printf("%v\n", item)
+		var item BoxProbabilityDefine
+		if err := item.ParseFromRow(row); err != nil {
+			t.Fatalf("%v", err)
+		}
+		t.Logf("%v\n", item)
 	}
 }

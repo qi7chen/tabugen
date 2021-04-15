@@ -6,13 +6,13 @@
 all: eg1 eg2 eg3 eg4
 
 eg1:
-	cd basic && make run
+	cd basic && ${MAKE}
 
 eg2:
-	cd global-var && make run
+	cd global-var && ${MAKE}
 
 eg3:
-	cd array-map && make run
+	cd array-map && ${MAKE}
 
 eg4:
-	cd inner-class && make run
+	cd inner-class && ${MAKE}
