@@ -26,7 +26,7 @@ build: output
 	mkdir -p build && cd build && cmake $(currentDir) && cmake --build $(currentDir)/build
 
 output: 
-	rm -f res/*
+	rm -f $(OUT_DATA_DIR)/*.csv
 	$(cli_entry) --parse_files=$(filepath) --gen_csv_parse --cpp_out=$(OUT_SRC_DIR) \
 		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 

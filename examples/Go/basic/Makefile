@@ -24,12 +24,12 @@ run: output-csv output-json
 	cd src/json && go test -v .
 
 output-csv:
-	rm -f res/*.csv
+	rm -f $(OUT_DATA_DIR)/*.csv
 	$(cli_entry) --parse_files=$(filepath) --gen_csv_parse --skip_column=Volume,Hurt --package=config \
 		--go_out=$(OUT_SRC_DIR)/csv/autoconfig.go --go_fmt --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
 output-json:
-	rm -f res/*.json
+	rm -f $(OUT_DATA_DIR)/*.json
 	$(cli_entry) --parse_files=$(filepath) --go_json_tag --skip_column=Volume,Hurt --package=config \
 		--go_out=$(OUT_SRC_DIR)/json/autoconfig.go --go_fmt --out_data_format=json --json_indent --json_snake_case --out_data_path=$(OUT_DATA_DIR)
 
