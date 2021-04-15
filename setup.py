@@ -10,7 +10,7 @@ sys.path.append(this_directory)
 
 from tabugen import version
 
-with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(os.path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     readme = f.read()
 
 install_requires = [
@@ -29,7 +29,7 @@ setup(
     url='https://github.com/cheadaq/tabugen',
     description=u'a table export and code generate tool for rapid game development',
     long_description=readme,
-    long_description_content_type='text/markdown',
+    long_description_content_type='text/x-rst',
     python_requires='>=3.6',
     include_package_data=True,
     packages=find_packages(),
