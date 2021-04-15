@@ -100,8 +100,8 @@ namespace CSharpDemo
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
-            var conflist = JsonConvert.DeserializeObject<Config.GlobalPropertyDefine>(content);
-            var text = JsonConvert.SerializeObject(conflist);
+            var glob = JsonConvert.DeserializeObject<Config.GlobalPropertyDefine>(content);
+            var text = JsonConvert.SerializeObject(glob);
             Console.WriteLine(text);
         }
         

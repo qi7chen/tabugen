@@ -101,8 +101,12 @@ namespace CSharpDemo
             var content = reader.ReadToEnd();
 
             var conflist = JsonConvert.DeserializeObject<Config.NewbieGuideDefine[]>(content);
-            var text = JsonConvert.SerializeObject(conflist);
-            Console.WriteLine(text);
+            for (int i = 0; i < conflist.Length; i++)
+            {
+                var text = JsonConvert.SerializeObject(conflist[i]);
+                Console.WriteLine(text);
+            }
+            
         }
 
         static void Main(string[] args)
