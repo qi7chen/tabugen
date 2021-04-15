@@ -50,13 +50,10 @@ python tabugen/cli.py --parse_files=example.xlsx --csharp_out=AutoConfig.cs --pa
 * 对于python, javascript, lua等动态语言，将excel导出为json即可
 
 
-# 如何打包Tabugen成执行档
-
-Windows上没有默认安装Python环境，可以使用PyInstaller将tabugen打包成执行档发布
+# 如何安装
 
 ```
-pip install -r requirements.txt
-pyinstaller -F --name=tabugen tabugen/cli.py
+pip install tabugen
 ```
 
 # TO-DO
