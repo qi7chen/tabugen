@@ -76,7 +76,7 @@ def verify_args(args):
 
 def main():
     parser = argparse.ArgumentParser(description="A configuration import/export and code generation tool")
-    parser.add_argument("-v", "--version", action='version', version=VER_STRING)
+    parser.add_argument("-v", "--version", action='version', version='v' + VER_STRING)
     parser.add_argument("--parser", default="excel", help="where your row data come from(excel, xml, database etc)")
     parser.add_argument("--without_data", action="store_true", help="parse struct definition but no data rows")
 
