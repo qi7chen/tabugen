@@ -8,10 +8,10 @@ import sys
 this_directory = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(this_directory)
 
-from tabugen import version
-
 with open(os.path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     readme = f.read()
+
+tabugen_version = '0.6.6'
 
 install_requires = [
     'et-xmlfile>=1.0.1',
@@ -22,7 +22,7 @@ install_requires = [
 
 setup(
     name='tabugen',
-    version=version.VER_STRING,
+    version=tabugen_version,
     license='Apache License 2.0',
     author='cheadaq',
     author_email='ichenq@outlook.com',
