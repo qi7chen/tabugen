@@ -74,7 +74,7 @@ func parseBool(s string) bool {
 	default:
 		b, err := strconv.ParseBool(s)
 		if err != nil {
-			log.Panicf("ParseBool: cannot pasre %s to boolean: %v", s, err)
+			log.Panicf("parseBool: cannot pasre %s to boolean: %v", s, err)
 		}
 		return b
 	}
@@ -83,7 +83,7 @@ func parseBool(s string) bool {
 func parseI8(s string) int8 {
 	n := parseI32(s)
 	if n > math.MaxInt8 || n < math.MinInt8 {
-		log.Panicf("ParseI8: value %s out of range", s)
+		log.Panicf("parseI8: value %s out of range", s)
 	}
 	return int8(n)
 }
@@ -91,7 +91,7 @@ func parseI8(s string) int8 {
 func parseU8(s string) uint8 {
 	n := parseI32(s)
 	if n > math.MaxUint8 || n < 0 {
-		log.Panicf("ParseU8: value %s out of range", s)
+		log.Panicf("parseU8: value %s out of range", s)
 	}
 	return uint8(n)
 }
@@ -99,7 +99,7 @@ func parseU8(s string) uint8 {
 func parseI16(s string) int16 {
 	n := parseI32(s)
 	if n > math.MaxInt16 || n < math.MinInt16 {
-		log.Panicf("ParseI16: value %s out of range", s)
+		log.Panicf("parseI16: value %s out of range", s)
 	}
 	return int16(n)
 }
@@ -107,7 +107,7 @@ func parseI16(s string) int16 {
 func parseU16(s string) uint16 {
 	n := parseI32(s)
 	if n > math.MaxUint16 || n < 0 {
-		log.Panicf("ParseU16: value %s out of range", s)
+		log.Panicf("parseU16: value %s out of range", s)
 	}
 	return uint16(n)
 }
@@ -118,7 +118,7 @@ func parseI32(s string) int32 {
 	}
 	n, err := strconv.ParseInt(s, 10, 32)
 	if err != nil {
-		log.Panicf("ParseI32: cannot parse [%s] to int32: %v", s, err)
+		log.Panicf("parseI32: cannot parse [%s] to int32: %v", s, err)
 	}
 	return int32(n)
 }
@@ -129,7 +129,7 @@ func parseU32(s string) uint32 {
 	}
 	n, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		log.Panicf("ParseU32: cannot parse [%s] to uint32: %v", s, err)
+		log.Panicf("parseU32: cannot parse [%s] to uint32: %v", s, err)
 	}
 	return uint32(n)
 }
@@ -140,7 +140,7 @@ func parseI64(s string) int64 {
 	}
 	n, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		log.Panicf("ParseI64: cannot parse [%s] to int64: %v", s, err)
+		log.Panicf("parseI64: cannot parse [%s] to int64: %v", s, err)
 	}
 	return n
 }
@@ -151,7 +151,7 @@ func parseU64(s string) uint64 {
 	}
 	n, err := strconv.ParseUint(s, 10, 64)
 	if err != nil {
-		log.Panicf("ParseU64: cannot parse [%s] to uint64: %v", s, err)
+		log.Panicf("parseU64: cannot parse [%s] to uint64: %v", s, err)
 	}
 	return n
 }
@@ -159,7 +159,7 @@ func parseU64(s string) uint64 {
 func parseF32(s string) float32 {
 	f := parseF64(s)
 	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
-		log.Panicf("ParseFloat32: value %s out of range", s)
+		log.Panicf("parseF32: value %s out of range", s)
 	}
 	return float32(f)
 }
@@ -170,7 +170,7 @@ func parseF64(s string) float64 {
 	}
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		log.Panicf("ParseFloat64: cannot parse [%s] to double: %v", s, err)
+		log.Panicf("parseF64: cannot parse [%s] to double: %v", s, err)
 	}
 	return f
 }
@@ -222,7 +222,7 @@ func ReadCSVRows(data []byte) ([][]string, error) {
             break
         }
         if err != nil {
-            log.Printf("ReadCSVLines: read csv %v", err)
+            log.Printf("ReadCSVRows: read csv %v", err)
             return nil, err
         }
         rows = append(rows, row)
