@@ -11,7 +11,7 @@ sys.path.append(this_directory)
 with open(os.path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     readme = f.read()
 
-tabugen_version = '0.6.7'
+tabugen_version = '0.6.8'
 
 install_requires = [
     'et-xmlfile>=1.0.1',
