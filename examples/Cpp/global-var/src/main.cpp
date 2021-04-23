@@ -3,8 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "AutoGenConfig.h"
-#include "Utility/StringUtil.h"
-#include "Utility/CSVReader.h"
+#include <absl/strings/str_format.h>
 
 
 using namespace std;
@@ -14,7 +13,7 @@ static std::string resPath = "../res";
 
 static std::string readfile(const char* filepath)
 {
-    std::string filename = stringPrintf("%s/%s", resPath.c_str(), filepath);
+    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), filepath);
     std::ifstream ifs(filename.c_str());
     std::string content((std::istreambuf_iterator<char>(ifs)),
         (std::istreambuf_iterator<char>()));
@@ -59,9 +58,13 @@ int main(int argc, char* argv[])
 
     GlobalPropertyDefine inst;
     string content = readfile("global_property_define.csv");
-    CSVReader reader(config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
-    reader.Parse(content);
-    auto rows = reader.GetRows();
+    auto lines = splitContentToLines(content);
+    vector<CSVRow> rows;
+    for (int i = 0; i < lines.size(); i++)
+    {
+        auto row = parseLineToRows(lines[i]);
+        rows.push_back(row);
+    }
     GlobalPropertyDefine::ParseFromRows(rows, &inst);
 
     printGlobalProperty(inst);

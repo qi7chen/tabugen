@@ -4,8 +4,7 @@
 #include <fstream>
 #include <type_traits>
 #include "AutogenConfig.h"
-#include "Utility/StringUtil.h"
-#include "Utility/CSVReader.h"
+#include <absl/strings/str_format.h>
 
 using namespace std;
 
@@ -17,7 +16,7 @@ static std::string resPath = "../res";
 
 static std::string readfile(const char* filepath)
 {
-    std::string filename = stringPrintf("%s/%s", resPath.c_str(), filepath);
+    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), filepath);
     std::ifstream ifs(filename.c_str());
     std::string content((std::istreambuf_iterator<char>(ifs)),
         (std::istreambuf_iterator<char>()));
@@ -29,13 +28,10 @@ static std::string readfile(const char* filepath)
 static void LoadConfig(vector<config::NewbieGuideDefine>& data) 
 {
     string content = readfile("newbie_guide_define.csv");
-    CSVReader reader(config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
-    reader.Parse(content);
-    auto rows = reader.GetRows();
-    ASSERT(!rows.empty());
-    for (size_t i = 0; i < rows.size(); i++)
+    auto lines = splitContentToLines(content);
+    for (int i = 0; i < lines.size(); i++) 
     {
-        auto row = rows[i];
+        auto row = parseLineToRows(lines[i], config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
         if (!row.empty())
         {
             config::NewbieGuideDefine item;
@@ -76,7 +72,7 @@ int main(int argc, char* argv[])
     }
     vector<config::NewbieGuideDefine> data;
     LoadConfig(data);
-    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
+    cout << absl::StrFormat("%d soldier config loaded.\n", (int)data.size());
     for (const config::NewbieGuideDefine& item : data)
     {
         printNewbieGuide(item);

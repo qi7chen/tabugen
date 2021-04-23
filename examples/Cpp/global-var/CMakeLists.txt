@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project (CppExample2)
 
+find_package(absl CONFIG REQUIRED)
+
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
-set(COMMON_SRC_DIR ${PROJECT_ROOT_DIR}/../../../3rdparty/CppSource)
+set(BOOTSTRAP_SRC_DIR ${PROJECT_ROOT_DIR}/../bootstrap)
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -19,27 +21,18 @@ if (WIN32)
     )
 endif()
 
-include_directories(${PROJECT_ROOT_DIR})
-include_directories(${COMMON_SRC_DIR})
-
+include_directories(${PROJECT_ROOT_DIR}/src)
+include_directories(${BOOTSTRAP_SRC_DIR})
 
 set(ALL_SRC_FILES 
     ${PROJECT_ROOT_DIR}/src/main.cpp
     ${PROJECT_ROOT_DIR}/src/AutogenConfig.h
     ${PROJECT_ROOT_DIR}/src/AutogenConfig.cpp
-    ${COMMON_SRC_DIR}/Utility/Conv.h
-    ${COMMON_SRC_DIR}/Utility/Conv.cpp
-    ${COMMON_SRC_DIR}/Utility/Logging.h
-    ${COMMON_SRC_DIR}/Utility/Logging.cpp
-    ${COMMON_SRC_DIR}/Utility/Preprocessor.h
-    ${COMMON_SRC_DIR}/Utility/Range.cpp
-    ${COMMON_SRC_DIR}/Utility/Range.h
-    ${COMMON_SRC_DIR}/Utility/Traits.h
-    ${COMMON_SRC_DIR}/Utility/StringUtil.h
-    ${COMMON_SRC_DIR}/Utility/StringUtil.cpp
-    ${COMMON_SRC_DIR}/Utility/CSVReader.h
-    ${COMMON_SRC_DIR}/Utility/CSVReader.cpp
+    ${BOOTSTRAP_SRC_DIR}/helper.h
+    ${BOOTSTRAP_SRC_DIR}/helper.cpp
     )
 
     
 add_executable(CppExample2 ${ALL_SRC_FILES})
+
+target_link_libraries(CppExample2 PRIVATE absl::any absl::base absl::strings)

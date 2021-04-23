@@ -2,17 +2,12 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-rootDir = $(shell realpath ../../../)
-currentDir = $(shell pwd)
-dataDir = $(shell realpath ../../datasheet)
+include ../build.mk
 
-export PYTHONPATH=$(rootDir)
+FILE_PATH = $(DATASHEET_DIR)/兵种.xlsx
 
-cli_entry = python $(rootDir)/tabugen/cli.py
-filepath = $(dataDir)/兵种.xlsx
-
-OUT_SRC_DIR = $(currentDir)/src/AutogenConfig
-OUT_DATA_DIR = $(currentDir)/res
+OUT_SRC_DIR = $(CURRENT_DIR)/src/AutogenConfig
+OUT_DATA_DIR = $(CURRENT_DIR)/res
 
 
 all: run clean
@@ -23,12 +18,14 @@ clean:
 run: build
 	build/CppExample1 res
 
-build: output
-	mkdir -p build && cd build && cmake $(currentDir) && cmake --build $(currentDir)/build
+build: install_vcpkg output
+	mkdir -p build  && cd build && \
+	cmake $(CURRENT_DIR) -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_DIR)/scripts/buildsystems/vcpkg.cmake && cmake --build $(CURRENT_DIR)/build
 
 output: 
 	rm -f $(OUT_DATA_DIR)/*.csv
-	$(cli_entry) --parse_files=$(filepath) --skip_column=Volume,Hurt --gen_csv_parse \
+	$(TABUGEN_CLI) --parse_files=$(FILE_PATH) --skip_column=Volume,Hurt --gen_csv_parse \
 		--cpp_out=$(OUT_SRC_DIR) --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+
 
 .PHONY: clean build run output
