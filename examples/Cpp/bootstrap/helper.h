@@ -1,18 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
-
-
-CPP_CSV_TOKEN_TEMPLATE = """// separator used by Tabular
-static const char TABULAR_CSV_SEP = '%s';       // CSV field separator
-static const char TABULAR_CSV_QUOTE = '%s';     // CSV field quote
-static const char* TABULAR_ARRAY_DELIM = "%s";  // array item delimiter
-static const char* TABULAR_MAP_DELIM1 = "%s";   // map item delimiter
-static const char* TABULAR_MAP_DELIM2 = "%s";   // map key-value delimiter
-
-"""
-
-CPP_HELPER_HEAD_FILE = """// Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
+// Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
 // Distributed under the terms and conditions of the Apache License.
 // See accompanying files LICENSE.
 
@@ -68,13 +54,6 @@ namespace detail {
         strm << value;
         return strm.str();
     }
-
-    template <class E>
-    constexpr std::underlying_type_t<E> to_underlying(E e) noexcept {
-        static_assert(std::is_enum<E>::value, "not an enum type");
-        return static_cast<std::underlying_type_t<E>>(e);
-    }
-
 
 } // namespace detail
 
@@ -215,8 +194,8 @@ inline void toAppend(std::string*) {}
 template <class Tgt, class Src>
 typename std::enable_if<
     std::is_enum<Src>::value>::type
-toAppend(Src value, Tgt* result) {
-    toAppend(detail::to_underlying(value), result);
+toAppend(Tgt* result, Src value) {
+    toAppend(result, typename std::underlying_type<Tgt>::type(value));
 }
 
 /**
@@ -250,14 +229,32 @@ typename std::enable_if<
   */
 template <class Tgt>
 typename std::enable_if<
-    std::is_integral<Tgt>::value
-    && !std::is_same<typename std::remove_cv<Tgt>::type, bool>::value,
+    std::is_integral<Tgt>::value &&
+    sizeof(Tgt) >= 4 &&
+    !std::is_same<typename std::remove_cv<Tgt>::type, bool>::value,
     Tgt>::type
 to(absl::string_view src) {
     Tgt result = 0;
-    absl::SimpleAtoi<Tgt>(src, &result);
-    return result;
+    if (absl::SimpleAtoi<Tgt>(src, &result)) {
+        return result;
+    }
+    return 0;
 }
+
+template <class Tgt>
+typename std::enable_if<
+    std::is_integral<Tgt>::value &&
+    sizeof(Tgt) < 4 &&
+    !std::is_same<typename std::remove_cv<Tgt>::type, bool>::value,
+    Tgt>::type
+to(absl::string_view src) {
+    int result = 0;
+    if (absl::SimpleAtoi(src, &result)) {
+        return to<Tgt>(result);
+    }
+    return 0;
+}
+
 
 /**
  * string_view to bool
@@ -269,8 +266,10 @@ typename std::enable_if<
 to(absl::string_view src)
 {
     bool result = false;
-    absl::SimpleAtob(src, &result);
-    return result;
+    if (absl::SimpleAtob(src, &result)) {
+        return result;
+    }
+    return false;
 }
 
 /**
@@ -283,8 +282,10 @@ typename std::enable_if<
 to(absl::string_view src)
 {
     float result = 0.0f;
-    absl::SimpleAtof(src, &result);
-    return result;
+    if (absl::SimpleAtof(src, &result)) {
+        return result;
+    }
+    return 0.0f;
 }
 
 
@@ -298,8 +299,10 @@ typename std::enable_if<
 to(absl::string_view src)
 {
     double result = 0.0;
-    absl::SimpleAtod(src, &result);
-    return result;
+    if (absl::SimpleAtod(src, &result)) {
+        return result;
+    }
+    return 0.0;
 }
 
 /*******************************************************************************
@@ -388,127 +391,7 @@ inline T parseStrAs(absl::string_view s)
 typedef std::vector<absl::string_view> CSVRow;
 
 // parse text line to delimiter-seperated rows
-std::vector<absl::string_view> parseCSVRows(absl::string_view line, int delim = ',', int quote = '"');
+std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim = ',', int quote = '"');
 
 // split content to lines
-std::vector<absl::string_view> splitLines(absl::string_view content);
-"""
-
-
-CPP_HELPER_SRC_FILE = """// Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
-// Distributed under the terms and conditions of the Apache License.
-// See accompanying files LICENSE.
-
-#include "helper.h"
-
-
-inline bool is_oddspace(char c) {
-    return c == '\n' || c == '\t' || c == '\r';
-}
-
-// Spaces other than ' ' characters are less common but should be
-// checked.  This configuration where we loop on the ' '
-// separately from oddspaces was empirically fastest.
-absl::string_view ltrimWhitespace(absl::string_view sp) {
-    while (true) {
-        while (!sp.empty() && sp.front() == ' ') {
-            sp.remove_prefix(1);
-        }
-        if (!sp.empty() && is_oddspace(sp.front())) {
-            sp.remove_prefix(1);
-            continue;
-        }
-
-        return sp;
-    }
-}
-
-// Spaces other than ' ' characters are less common but should be
-// checked.  This configuration where we loop on the ' '
-// separately from oddspaces was empirically fastest.
-absl::string_view rtrimWhitespace(absl::string_view sp) {
-    while (true) {
-        while (!sp.empty() && sp.back() == ' ') {
-            sp.remove_suffix(1);
-        }
-        if (!sp.empty() && is_oddspace(sp.back())) {
-            sp.remove_suffix(1);
-            continue;
-        }
-
-        return sp;
-    }
-}
-
-static int parseNextColumn(absl::string_view& line, absl::string_view& field, int delim, int quote)
-{
-    bool in_quote = false;
-    size_t start = 0;
-    if (line[start] == quote) {
-        in_quote = true;
-        start++;
-    }
-    size_t pos = start;
-    for (; pos < line.size(); pos++) {
-        if (in_quote && line[pos] == quote) {
-            if (pos + 1 < line.size() && line[pos + 1] == delim) {
-                field = line.substr(start, pos - start);
-                line.remove_prefix(pos + 2);
-            }
-            else { // end of line
-                field = line.substr(start, pos - start);
-                line.remove_prefix(pos + 1);
-            }
-            return (int)pos;
-        }
-        if (!in_quote && line[pos] == delim) {
-            field = line.substr(start, pos - start);
-            line.remove_prefix(pos + 1);
-            return (int)pos;
-        }
-    }
-    field = line.substr(start, pos);
-    return -1;
-}
-
-std::vector<absl::string_view> parseCSVRows(absl::string_view line, int delim, int quote)
-{
-    std::vector<absl::string_view> row;
-    int pos = 0;
-    while (!line.empty()) {
-        absl::string_view field;
-        int n = parseNextColumn(line, field, delim, quote);
-        row.push_back(field);
-        if (n < 0) {
-            break;
-        }
-    }
-    return row;
-}
-
-std::vector<absl::string_view> splitLines(absl::string_view content) {
-    std::vector<absl::string_view> lines;
-    size_t pos = 0;
-    // UTF8-BOM
-    if (content.size() >= 3 && content[0] == '\xEF' && content[1] == '\xBB' && content[2] == '\xBF') {
-        pos = 3;
-    }
-    while (pos < content.size()) {
-        size_t begin = pos;
-        while (content[pos] != '\n') {
-            pos++;
-        }
-        size_t end = pos;
-        if (end > begin && content[end - 1] == '\r') {
-            end--;
-        }
-        pos = end + 1;
-        absl::string_view line = content.substr(begin, end - begin);
-        line = trimWhitespace(line);
-        if (!line.empty()) {
-            lines.push_back(line);
-        }
-    }
-    return lines;
-}
-"""
+std::vector<absl::string_view> splitContentToLines(absl::string_view content);

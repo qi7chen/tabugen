@@ -129,7 +129,7 @@ class CppStructGenerator:
         if self.load_gen is not None:
             other_headers = [
                 '#include <functional>',
-                '#include "Utility/Range.h"',
+                '#include "helper.h"',
             ]
             h_include_headers += other_headers
 
@@ -149,6 +149,7 @@ class CppStructGenerator:
         if args.package is not None:
             header_content += '} // namespace %s\n' % args.package
         return header_content
+
 
     def run(self, descriptors, filepath, args):
         outname = os.path.split(filepath)[-1]

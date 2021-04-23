@@ -49,10 +49,10 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& array = Split(%s, TABULAR_ARRAY_DELIM, true);\n' % (space, row_name)
+        content += '%sconst std::vector<std::string>& array = absl::StrSplit(%s, TABULAR_ARRAY_DELIM);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    %s%s.push_back(parseTextAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
+        content += '%s    %s%s.push_back(parseStrAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
@@ -66,16 +66,16 @@ class CppCsvLoadGenerator:
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst auto& dict = Split(%s, TABULAR_MAP_DELIM1, true);\n' % (space, row_name)
-        content += '%sfor (size_t i = 0; i < dict.size(); i++)\n' % space
+        content += '%sconst std::vector<std::string>& vec = absl::StrSplit(%s, TABULAR_MAP_DELIM1);\n' % (space, row_name)
+        content += '%sfor (size_t i = 0; i < vec.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const auto& kv = Split(dict[i], TABULAR_MAP_DELIM2, true);\n' % space
+        content += '%s    const std::vector<std::string>& kv = absl::StrSplit(vec[i], TABULAR_MAP_DELIM2);\n' % space
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
-        content += '%s        const auto& key = parseTextAs<%s>(kv[0]);\n' % (space, key_type)
+        content += '%s        const auto& key = parseStrAs<%s>(kv[0]);\n' % (space, key_type)
         content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
-        content += '%s        %s%s[key] = parseTextAs<%s>(kv[1]);\n' % (space, prefix, name, val_type)
+        content += '%s        %s%s[key] = parseStrAs<%s>(kv[1]);\n' % (space, prefix, name, val_type)
         content += '%s    }\n' % space
         content += '%s}\n' % space
         content += '%s}\n' % (self.TAB_SPACE * tabs)
@@ -97,7 +97,7 @@ class CppCsvLoadGenerator:
             field = inner_fields[n]
             origin_type = field['original_type_name']
             typename = lang.map_cpp_type(origin_type)
-            content += '        item.%s = parseTextAs<%s>(row[i + %d]);\n' % (field['name'], typename, n)
+            content += '        item.%s = parseStrAs<%s>(row[i + %d]);\n' % (field['name'], typename, n)
         content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
         content += '    }\n'
         return content
@@ -139,11 +139,11 @@ class CppCsvLoadGenerator:
                                                            ('row[%d]' % idx), tabs)
                 else:
                     if field['name'] in vec_names:
-                        text += '%s%s%s[%d] = parseTextAs<%s>(row[%d]);\n' % (
+                        text += '%s%s%s[%d] = parseStrAs<%s>(row[%d]);\n' % (
                             self.TAB_SPACE * tabs, prefix, vec_name, vec_idx, typename, idx)
                         vec_idx += 1
                     else:
-                        text += '%s%s%s = parseTextAs<%s>(row[%d]);\n' % (
+                        text += '%s%s%s = parseStrAs<%s>(row[%d]);\n' % (
                             self.TAB_SPACE * tabs, prefix, field_name, typename, idx)
             idx += 1
             content += text
@@ -154,11 +154,11 @@ class CppCsvLoadGenerator:
         content = ''
 
         if struct['options'][predef.PredefParseKVMode]:
-            content += '    static int ParseFromRows(const std::vector<std::vector<StringPiece>>& rows, %s* ptr);\n' % \
+            content += '    static int ParseFromRows(const std::vector<CSVRow>& rows, %s* ptr);\n' % \
                        struct['name']
             return content
 
-        content += '    static int ParseFromRow(const std::vector<StringPiece>& row, %s* ptr);\n' % struct['name']
+        content += '    static int ParseFromRow(const CSVRow& row, %s* ptr);\n' % struct['name']
 
         return content
 
@@ -177,7 +177,7 @@ class CppCsvLoadGenerator:
 
         content = ''
         content += '// parse data object from csv rows\n'
-        content += 'int %s::ParseFromRows(const vector<vector<StringPiece>>& rows, %s* ptr)\n' % (
+        content += 'int %s::ParseFromRows(const vector<CSVRow>& rows, %s* ptr)\n' % (
             struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
@@ -194,7 +194,7 @@ class CppCsvLoadGenerator:
             elif origin_typename.startswith('map'):
                 text += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
             else:
-                text += '%sptr->%s = parseTextAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
+                text += '%sptr->%s = parseStrAs<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
             idx += 1
             content += text
         content += '    return 0;\n'
@@ -209,7 +209,7 @@ class CppCsvLoadGenerator:
         fields = structutil.enabled_fields(struct)
         content = ''
         content += '// parse data object from an csv row\n'
-        content += 'int %s::ParseFromRow(const vector<StringPiece>& row, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += 'int %s::ParseFromRow(const CSVRow& row, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(row.size() >= %d);\n' % len(fields)
         content += '    ASSERT(ptr != nullptr);\n'
@@ -239,8 +239,7 @@ class CppCsvLoadGenerator:
             '#include <assert.h>',
             '#include <memory>',
             '#include <fstream>',
-            '#include "Utility/Conv.h"',
-            '#include "Utility/StringUtil.h"',
+            '#include <absl/strings/str_split.h>',
         ]
         cpp_content = '// This file is auto-generated by Tabular v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         if args.cpp_pch is not None:
