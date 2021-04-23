@@ -9,9 +9,11 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/cli.py
 
-install_vcpkg: $(VCPKG_DIR)/vcpkg
-	$(VCPKG_DIR)/vcpkg install abseil
+all: run clean
+
+install_abseil: $(CURRENT_DIR)/build/conanbuildinfo.cmake
+	cd $(CURRENT_DIR)/build && conan install $(CURRENT_DIR)/..
 	
-$(VCPKG_DIR)/vcpkg:
-	git clone https://github.com/microsoft/vcpkg $(VCPKG_DIR)
-	sh $(VCPKG_DIR)/bootstrap-vcpkg.sh
+$(CURRENT_DIR)/build/conanbuildinfo.cmake:
+	pip install conan
+	mkdir -p $(CURRENT_DIR)/build && cd $(CURRENT_DIR)/build && conan install $(CURRENT_DIR)/..

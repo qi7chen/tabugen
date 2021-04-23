@@ -11,17 +11,15 @@ OUT_SRC_DIR = $(CURRENT_DIR)/src/AutogenConfig
 OUT_DATA_DIR = $(CURRENT_DIR)/res
 
 
-all: run clean
-
 clean:
 	rm -rf build
 	
 run: build
-	build/CppExample2 res
+	build/bin/CppExample2 res
 
 build: install_vcpkg output
 	mkdir -p build && cd build && \
-	cmake $(CURRENT_DIR) -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_DIR)/scripts/buildsystems/vcpkg.cmake && cmake --build $(CURRENT_DIR)/build
+	cmake $(CURRENT_DIR) && cmake --build $(CURRENT_DIR)/build
 
 output: 
 	rm -f $(OUT_DATA_DIR)/*

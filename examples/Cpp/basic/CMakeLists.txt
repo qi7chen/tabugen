@@ -4,9 +4,9 @@ project (CppExample1)
 
 set(CMAKE_CXX_STANDARD 11)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
-find_package(absl CONFIG REQUIRED)
-find_library(ABSL_LIBRARY absl)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(BOOTSTRAP_SRC_DIR ${PROJECT_ROOT_DIR}/../bootstrap)
@@ -23,7 +23,7 @@ if (WIN32)
     -DWIN32_LEAN_AND_MEAN 
     -D _CRT_SECURE_NO_WARNINGS
     -D_SCL_SECURE_NO_WARNINGS 
-    -DNOMINMAX
+    -DNOMINMAXbui
     )
 endif()
 
@@ -40,4 +40,4 @@ set(ALL_SRC_FILES
 
 add_executable(CppExample1 ${ALL_SRC_FILES})
 
-target_link_libraries(CppExample1 PRIVATE absl::any absl::base absl::strings)
+target_link_libraries(CppExample1 ${CONAN_LIBS})

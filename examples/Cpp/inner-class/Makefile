@@ -10,18 +10,15 @@ FILE_PATH = $(DATASHEET_DIR)/随机宝箱.xlsx
 OUT_SRC_DIR = $(CURRENT_DIR)/src/AutogenConfig
 OUT_DATA_DIR = $(CURRENT_DIR)/res
 
-
-all: run clean
-
 clean:
 	rm -rf build
 
 run: build
-	build/CppExample4 res
+	build/bin/CppExample4 res
 
-build: output
+build: install_abseil output
 	mkdir -p build && cd build && \
-	cmake $(CURRENT_DIR) -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_DIR)/scripts/buildsystems/vcpkg.cmake && cmake --build $(CURRENT_DIR)/build
+	cmake $(CURRENT_DIR)  && cmake --build $(CURRENT_DIR)/build
 
 output: 
 	rm -f $(OUT_DATA_DIR)/*

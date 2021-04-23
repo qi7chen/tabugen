@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project (CppExample3)
 
+set(CMAKE_CXX_STANDARD 11)
 
-find_package(absl CONFIG REQUIRED)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(BOOTSTRAP_SRC_DIR ${PROJECT_ROOT_DIR}/../bootstrap)
@@ -36,4 +38,4 @@ set(ALL_SRC_FILES
 
 add_executable(CppExample3 ${ALL_SRC_FILES})
 
-target_link_libraries(CppExample3 PRIVATE absl::any absl::base absl::strings)
+target_link_libraries(CppExample3 ${CONAN_LIBS})

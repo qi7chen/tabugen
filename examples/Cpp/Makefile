@@ -5,6 +5,12 @@
 
 all: eg1 eg2 eg3 eg4
 
+clean:
+	cd basic && $(MAKE) clean
+	cd global-var && $(MAKE) clean
+	cd array-map && $(MAKE) clean
+	cd inner-class && $(MAKE) clean
+
 eg1:
 	cd basic && $(MAKE)
 
