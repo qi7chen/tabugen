@@ -17,7 +17,7 @@ clean:
 run: build
 	build/bin/CppExample2 res
 
-build: install_vcpkg output
+build: install_abseil output
 	mkdir -p build && cd build && \
 	cmake $(CURRENT_DIR) && cmake --build $(CURRENT_DIR)/build
 

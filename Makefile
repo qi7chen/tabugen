@@ -7,10 +7,10 @@ all: run install upload
 
 # run all examples
 run:
-	cd examples/Cpp && make
-	cd examples/CSharp && make
-	cd examples/Go && make
-	cd examples/Java && make
+	cd examples/Cpp && ${MAKE}
+	cd examples/CSharp && ${MAKE}
+	cd examples/Go && ${MAKE}
+	cd examples/Java && ${MAKE}
 
 # build distribute binary
 install:
@@ -19,7 +19,7 @@ install:
 
 # upload to pip
 upload:
-	python setup.py check && python setup.py sdist upload
+	python setup.py check && python setup.py bdist_wheel upload
 
 clean:
 	rm -rf build dist
