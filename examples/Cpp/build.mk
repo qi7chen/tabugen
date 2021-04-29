@@ -1,5 +1,4 @@
 
-VCPKG_DIR = $(HOME)/vcpkg
 
 CURRENT_DIR = $(shell pwd)
 ROOT_DIR = $(shell realpath ../../../)
