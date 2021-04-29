@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
-import com.mycompany.csvconfig.SoldierPropertyDefine;
+import com.pdfun.csvconfig.SoldierPropertyDefine;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -58,9 +58,9 @@ public class Sample
     private static void testJson() {
         String filename = "src/main/resources/soldier_property_define.json";
         String content = readFileContent(filename);
-        List<com.mycompany.jsonconfig.SoldierPropertyDefine> conflist = JSON.parseArray(content, com.mycompany.jsonconfig.SoldierPropertyDefine.class);
+        List<com.pdfun.jsonconfig.SoldierPropertyDefine> conflist = JSON.parseArray(content, com.pdfun.jsonconfig.SoldierPropertyDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
-            com.mycompany.jsonconfig.SoldierPropertyDefine item = conflist.get(i);
+            com.pdfun.jsonconfig.SoldierPropertyDefine item = conflist.get(i);
             System.out.println(JSON.toJSONString(item));
         }
     }

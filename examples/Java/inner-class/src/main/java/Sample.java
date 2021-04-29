@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
-import com.mycompany.csvconfig.BoxProbabilityDefine;
+import com.pdfun.csvconfig.BoxProbabilityDefine;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -57,9 +57,9 @@ public class Sample
     private static void testJson() {
         String filename = "src/main/resources/box_probability_define.json";
         String content = readFileContent(filename);
-        List<com.mycompany.jsonconfig.BoxProbabilityDefine> conflist = JSON.parseArray(content, com.mycompany.jsonconfig.BoxProbabilityDefine.class);
+        List<com.pdfun.jsonconfig.BoxProbabilityDefine> conflist = JSON.parseArray(content, com.pdfun.jsonconfig.BoxProbabilityDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
-            com.mycompany.jsonconfig.BoxProbabilityDefine item = conflist.get(i);
+            com.pdfun.jsonconfig.BoxProbabilityDefine item = conflist.get(i);
             System.out.println(JSON.toJSONString(item));
         }
     }

@@ -6,7 +6,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 import com.alibaba.fastjson.JSON;
-import com.mycompany.csvconfig.GlobalPropertyDefine;
+import com.pdfun.csvconfig.GlobalPropertyDefine;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -53,7 +53,7 @@ public class Sample
     private static void testJson() {
         String filename = "src/main/resources/global_property_define.json";
         String content = readFileContent(filename);
-        com.mycompany.jsonconfig.GlobalPropertyDefine obj = JSON.parseObject(content, com.mycompany.jsonconfig.GlobalPropertyDefine.class);
+        com.pdfun.jsonconfig.GlobalPropertyDefine obj = JSON.parseObject(content, com.pdfun.jsonconfig.GlobalPropertyDefine.class);
         System.out.println(JSON.toJSONString(obj));
     }
 

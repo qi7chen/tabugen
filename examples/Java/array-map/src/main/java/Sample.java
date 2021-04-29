@@ -36,13 +36,13 @@ public class Sample
 
     private static void testCsv() throws IOException {
         String content = readCsvFile("newbie_guide_define.csv");
-        List<com.mycompany.csvconfig.NewbieGuideDefine> data = new ArrayList<>();
+        List<com.pdfun.csvconfig.NewbieGuideDefine> data = new ArrayList<>();
         CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
         for (CSVRecord record : parser)
         {
             if (record.size() == 0)
                 continue;
-            com.mycompany.csvconfig.NewbieGuideDefine item = new com.mycompany.csvconfig.NewbieGuideDefine();
+            com.pdfun.csvconfig.NewbieGuideDefine item = new com.pdfun.csvconfig.NewbieGuideDefine();
             item.parseFrom(record);
             data.add(item);
         }
@@ -56,9 +56,9 @@ public class Sample
     private static void testJson() {
         String filename = "src/main/resources/newbie_guide_define.json";
         String content = readFileContent(filename);
-        List<com.mycompany.jsonconfig.NewbieGuideDefine> conflist = JSON.parseArray(content, com.mycompany.jsonconfig.NewbieGuideDefine.class);
+        List<com.pdfun.jsonconfig.NewbieGuideDefine> conflist = JSON.parseArray(content, com.pdfun.jsonconfig.NewbieGuideDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
-            com.mycompany.jsonconfig.NewbieGuideDefine item = conflist.get(i);
+            com.pdfun.jsonconfig.NewbieGuideDefine item = conflist.get(i);
             System.out.println(JSON.toJSONString(item));
         }
     }
