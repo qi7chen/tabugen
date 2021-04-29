@@ -209,24 +209,24 @@ func parseStringAs(typename, value string) interface{} {
 }
 
 type StructuredConfig interface {
-    ParseFromRow(row []string) error
+	ParseFromRow(row []string) error
 }
 
 // read CSV data to rows
 func ReadCSVRows(data []byte) ([][]string, error) {
-    var rows [][]string
-    var r = csv.NewReader(bytes.NewReader(data))
-    for i := 0; ; i++ {
-        row, err := r.Read()
-        if err == io.EOF {
-            break
-        }
-        if err != nil {
-            log.Printf("ReadCSVRows: read csv %v", err)
-            return nil, err
-        }
-        rows = append(rows, row)
-    }
-    return rows, nil
+	var rows [][]string
+	var r = csv.NewReader(bytes.NewReader(data))
+	for i := 0; ; i++ {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("ReadCSVRows: read csv %v", err)
+			return nil, err
+		}
+		rows = append(rows, row)
+	}
+	return rows, nil
 }
 """
