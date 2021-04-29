@@ -18,11 +18,11 @@ clean:
 run: build/bin/CppExample3
 	build/bin/CppExample3 res
 
-build: install_vcpkg $(OUT_DATA_DIR)/newbie_guide_define.csv
+build: install_abseil $(OUT_DATA_DIR)/newbie_guide_define.csv
 	mkdir -p build && cd build && \
 	cmake $(CURRENT_DIR) && cmake --build $(CURRENT_DIR)/build
 
-$(OUT_DATA_DIR)/newbie_guide_define.csv: 
+output: 
 	$(TABUGEN_CLI) --parse_files=$(FILE_PATH) --gen_csv_parse --cpp_out=$(OUT_SRC_DIR) \
 		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 

@@ -14,7 +14,6 @@ clean:
 	rm -rf build
 
 run: build/bin/CppExample1
-	echo 'run'
 	build/bin/CppExample1 res
 
 build/bin/CppExample1: build
@@ -22,7 +21,6 @@ build/bin/CppExample1: build
 build: install_abseil output
 	mkdir -p build  && cd build && \
 	cmake $(CURRENT_DIR) && cmake --build $(CURRENT_DIR)/build
-
 
 output: 
 	rm -f $(OUT_DATA_DIR)/*.csv

@@ -9,7 +9,7 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/cli.py
 
-all: run clean
+all: output build run clean
 
 install_abseil: $(CURRENT_DIR)/build/conanbuildinfo.cmake
 	cd $(CURRENT_DIR)/build && conan install $(CURRENT_DIR)/..
