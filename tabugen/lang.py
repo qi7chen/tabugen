@@ -130,6 +130,28 @@ def map_go_raw_type(typ):
     return go_type_mapping[typ]
 
 
+def map_go_reflect_type(typ):
+    mapping = {
+        'bool':     'reflect.Bool',
+        'int8':     'reflect.Int8',
+        'uint8':    'reflect.Uint8',
+        'int16':    'reflect.Int16',
+        'uint16':   'reflect.Uint16',
+        'int':      'reflect.Int',
+        'uint':      'reflect.Uint',
+        'int32':    'reflect.Int32',
+        'uint32':   'reflect.Uint32',
+        'int64':    'reflect.Int64',
+        'uint64':   'reflect.Uint64',
+        'float':    'reflect.Float32',
+        'float32':  'reflect.Float32',
+        'float64':  'reflect.Float64',
+        'enum':     'reflect.Int',
+        'string':   'reflect.String',
+    }
+    return mapping[typ]
+
+
 # C#类型映射
 def map_cs_type(typ):
     type_mapping = {

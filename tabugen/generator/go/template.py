@@ -7,12 +7,14 @@ package %s
 
 import (
 	"log"
+	"reflect"
 	"strings"
 )
 
 var (
-	_ = strings.Split
 	_ = log.Panicf
+	_ = reflect.TypeOf
+	_ = strings.Split
 )
 
 """
@@ -58,6 +60,7 @@ import (
 	"io"
 	"log"
 	"math"
+	"reflect"
 	"strconv"
 )
 
@@ -176,33 +179,33 @@ func parseF64(s string) float64 {
 }
 
 // parse string to number or boolean
-func parseStringAs(typename, value string) interface{} {
-	switch typename {
-	case "int":
+func parseStringAs(kind reflect.Kind, value string) interface{} {
+	switch kind {
+	case reflect.Int:
 		return int(parseI64(value))
-	case "int8":
+	case reflect.Int8:
 		return parseI8(value)
-	case "int16":
+	case reflect.Int16:
 		return parseI16(value)
-	case "int32":
+	case reflect.Int32:
 		return parseI32(value)
-	case "int64":
+	case reflect.Int64:
 		return parseI64(value)
-	case "uint":
+	case reflect.Uint:
 		return uint(parseU64(value))
-	case "uint8":
+	case reflect.Uint8:
 		return parseU8(value)
-	case "uint16":
+	case reflect.Uint16:
 		return parseU16(value)
-	case "uint32":
+	case reflect.Uint32:
 		return parseU32(value)
-	case "uint64":
+	case reflect.Uint64:
 		return parseU64(value)
-	case "float32":
+	case reflect.Float32:
 		return parseF32(value)
-	case "float64":
+	case reflect.Float64:
 		return parseF64(value)
-	case "bool":
+	case reflect.Bool:
 		return parseBool(value)
 	}
 	return value
