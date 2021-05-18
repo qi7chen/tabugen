@@ -2,16 +2,13 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
 import sys
-import csv
-import codecs
+import typing
 import tabugen.predef as predef
-import tabugen.util.strutil as strutil
 
 
 # 是否字段内容唯一
-def is_all_row_field_value_unique(rows, index):
+def is_all_row_field_value_unique(rows: typing.Sequence, index: int) -> typing.Tuple:
     all_set = {}
     for i, row in rows:
         if len(row[index]) > 0:

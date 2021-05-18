@@ -22,7 +22,8 @@ class CsvDataWriter:
         return "csv"
 
     # 将数据写入csv文件
-    def write_file(self, name, rows, delim, filepath, encoding):
+    @staticmethod
+    def write_file(name, rows, delim, filepath, encoding):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), strutil.random_word(10))
         filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)

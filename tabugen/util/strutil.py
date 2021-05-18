@@ -11,15 +11,16 @@ import tempfile
 import filecmp
 import codecs
 import datetime
+import typing
 import unittest
 
 
-def current_time():
+def current_time() -> str:
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
 # 最长串的大小
-def max_field_length(table, key, f):
+def max_field_length(table: object, key: str, f: typing.Callable) -> int:
     max_len = 0
     for v in table:
         n = len(v[key])
@@ -31,7 +32,7 @@ def max_field_length(table, key, f):
 
 
 # 空格对齐
-def pad_spaces(text, min_len):
+def pad_spaces(text: str, min_len: int) -> str:
     if len(text) < min_len:
         for n in range(min_len - len(text)):
             text += ' '
@@ -39,7 +40,7 @@ def pad_spaces(text, min_len):
 
 
 # snake case to camel case
-def camel_case(s):
+def camel_case(s: str) -> str:
     if s == '':
         return s
     components = s.split('_')
@@ -49,12 +50,12 @@ def camel_case(s):
 
 
 # camel case to snake case
-def camel_to_snake(name):
+def camel_to_snake(name: str) -> str:
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def escape_delimiter(ch):
+def escape_delimiter(ch: str) -> str:
     assert len(ch) == 1
     if ch == '\\':
         return '\\\\'
@@ -64,14 +65,15 @@ def escape_delimiter(ch):
         return '\\"'
     return ch
 
+
 # 随机字符
-def random_word(length):
+def random_word(length: int) -> str:
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
 
 # a=1,b=2 => {a:1,b:2}
-def parse_kv_to_obj(text):
+def parse_kv_to_obj(text: str) -> typing.Mapping:
     table = {}
     if len(text) == 0:
         return table
@@ -83,7 +85,7 @@ def parse_kv_to_obj(text):
 
 
 # 最长共同前缀
-def find_common_prefix(s1, s2):
+def find_common_prefix(s1: str, s2: str) -> str:
     if len(s1) == 0 or len(s2) == 0:
         return ""
     prefix = s1
@@ -99,7 +101,7 @@ def find_common_prefix(s1, s2):
 
 
 # 是否全部是空字符串
-def is_row_empty(row):
+def is_row_empty(row: typing.Sequence) -> bool:
     for v in row:
         v = v.strip()
         if len(v) > 0:
@@ -108,7 +110,7 @@ def is_row_empty(row):
 
 
 # 是否是相似的列（归为数组）
-def is_vector_fields(prev, cur):
+def is_vector_fields(prev: typing.Mapping, cur: typing.Mapping) -> bool:
     if prev["original_type_name"] != cur["original_type_name"]:
         return False
 
@@ -129,7 +131,7 @@ def is_vector_fields(prev, cur):
 
 
 # 删除末尾的数字
-def remove_suffix_number(text):
+def remove_suffix_number(text: str) -> str:
     n = len(text)
     if n == 0:
         return text
@@ -142,7 +144,7 @@ def remove_suffix_number(text):
 
 
 # 比较内容不相同时再写入文件
-def save_content_if_not_same(filename, content, enc):
+def save_content_if_not_same(filename: str, content: str, enc: str) -> bool:
     # first write content to a temporary file
     tmp_filename = '%s/taksi_%s' % (tempfile.gettempdir(), random_word(10))
     f = codecs.open(tmp_filename, 'w', enc)
@@ -159,11 +161,11 @@ def save_content_if_not_same(filename, content, enc):
 
 
 # 从路径种搜索所有excel文件
-def enum_files(self, rootdir, ignore_check):
+def enum_excel_files(rootdir: str, ignore_check: typing.Callable) -> typing.Sequence:
     files = []
     for dirpath, dirnames, filenames in os.walk(rootdir):
         for filename in filenames:
-            if filename.endswith(".xlsx"):
+            if filename.endswith(".xlsx") or filename.endswith(".xls"):
                 files.append(dirpath + os.sep + filename)
     filenames = []
     for filename in files:
@@ -175,7 +177,7 @@ def enum_files(self, rootdir, ignore_check):
 
 
 # 对齐数据行
-def pad_data_rows(rows, fields):
+def pad_data_rows(rows: typing.Sequence, fields: object) -> typing.Sequence:
     # pad empty row
     max_row_len = len(fields)
     for row in rows:
@@ -189,7 +191,7 @@ def pad_data_rows(rows, fields):
 
 
 # array和map分隔符  "|=" --> ['|', '=']
-def to_sep_delimiters(array_delim, map_delims):
+def to_sep_delimiters(array_delim: str, map_delims: str) -> typing.Tuple:
     assert isinstance(array_delim, str) and len(array_delim) == 1, array_delim
     assert len(map_delims) == 2, map_delims
     delim1 = array_delim.strip()
@@ -201,7 +203,7 @@ def to_sep_delimiters(array_delim, map_delims):
         delim2[0] = '\\\\'
     if delim2[1] == '\\':
         delim2[1] = '\\\\'
-    return (delim1, delim2)
+    return delim1, delim2
 
 
 class TestUtils(unittest.TestCase):

@@ -2,11 +2,12 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+from typing import Mapping
 import tabugen.typedef as types
 
 
 # C++类型映射
-def map_cpp_type(typ):
+def map_cpp_type(typ: str) -> str:
     type_mapping = {
         'bool':     'bool',
         'int8':     'int8_t',
@@ -26,7 +27,7 @@ def map_cpp_type(typ):
         'string':   'std::string',
     }
     abs_type = types.is_abstract_type(typ)
-    if abs_type is None:
+    if len(abs_type) == 0:
         return type_mapping[typ]
 
     if abs_type == 'array':
@@ -42,13 +43,13 @@ def map_cpp_type(typ):
 
 
 # POD类型
-def is_cpp_pod_type(typ):
+def is_cpp_pod_type(typ: str) -> bool:
     assert len(typ.strip()) > 0
     return not typ.startswith('std::')  # std::string, std::vector, std::map
 
 
 # C++为类型加上默认值
-def name_with_default_cpp_value(field, typename):
+def name_with_default_cpp_value(field: Mapping, typename: str) -> str:
     typename = typename.strip()
     if typename == 'bool':
         return '%s = false;' % field['name']
@@ -61,7 +62,7 @@ def name_with_default_cpp_value(field, typename):
 
 
 # C++默认值
-def default_value_by_cpp_type(typename):
+def default_value_by_cpp_type(typename: str) -> str:
     if typename == 'bool':
         return 'false'
     elif types.is_integer_type(typename):
@@ -72,7 +73,7 @@ def default_value_by_cpp_type(typename):
 
 
 # Go类型映射
-def map_go_type(typ):
+def map_go_type(typ: str) -> str:
     type_mapping = {
         'bool':     'bool',
         'int8':     'int8',
@@ -108,7 +109,7 @@ def map_go_type(typ):
 
 
 # Go类型
-def map_go_raw_type(typ):
+def map_go_raw_type(typ: str) -> str:
     go_type_mapping = {
         'bool': 'bool',
         'int8': 'int8',

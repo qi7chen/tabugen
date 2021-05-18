@@ -23,7 +23,8 @@ class JsonDataWriter:
     def name():
         return "json"
 
-    def parse_primary_value(self, typename, text):
+    @staticmethod
+    def parse_primary_value(typename, text):
         typename = typename.strip()
         text = text.strip()
         if typename == 'bool':

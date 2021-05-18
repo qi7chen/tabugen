@@ -2,75 +2,82 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-# type enum
-Type_Unknown = 0
-Type_Nil = 1
-Type_Bool = 2
-Type_Int8 = 3
-Type_Uint8 = 4
-Type_Int16 = 5
-Type_Uint16 = 6
-Type_Int = 7
-Type_Uint = 8
-Type_Int32 = 9
-Type_Uint32 = 10
-Type_Int64 = 11
-Type_Uint64 = 12
-Type_Float = 13
-Type_Float32 = 14
-Type_Float64 = 15
-Type_String = 16
-Type_Enum = 17
-Type_Bytes = 18
-Type_DateTime = 19
-Type_Array = 20
-Type_Map = 21
-Type_Any = 22
+
+from enum import Enum
+from typing import Tuple
+
+
+# 类型定义枚举
+class Type(Enum):
+    Unknown = 0
+    Nil = 1
+    Bool = 2
+    Int8 = 3
+    UInt8 = 4
+    Int16 = 5
+    UInt16 = 6
+    Int = 7
+    UInt = 8
+    Int32 = 9
+    UInt32 = 10
+    Int64 = 11
+    UInt64 = 12
+    Float = 13
+    Float32 = 14
+    Float64 = 15
+    String = 16
+    Enum2 = 17
+    Bytes = 18
+    Array = 19
+    DateTime = 20
+    Map = 21
+    Any = 22
+
 
 # text name of a type
 type_names = {
-    Type_Nil:      "nil",
-    Type_Bool:     "bool",
-    Type_Int8:     "int8",
-    Type_Uint8:    "uint8",
-    Type_Int16:    "int16",
-    Type_Uint16:   "uint16",
-    Type_Int:      "int",
-    Type_Uint:     "uint32",
-    Type_Int32:    "int32",
-    Type_Uint32:   "uint32",
-    Type_Int64:    "int64",
-    Type_Uint64:   "uint64",
-    Type_Float:    "float",
-    Type_Float32:  "float32",
-    Type_Float64:  "float64",
-    Type_String:   "string",
-    Type_Enum:     "enum",
-    Type_Bytes:    "bytes",
-    Type_DateTime: "datetime",
-    Type_Array:    "array",
-    Type_Map:      "map",
-    Type_Any:      "any",
+    Type.Nil: "nil",
+    Type.Bool: "bool",
+    Type.Int8: "int8",
+    Type.UInt8: "uint8",
+    Type.Int16: "int16",
+    Type.UInt16: "uint16",
+    Type.Int: "int",
+    Type.UInt: "uint32",
+    Type.Int32: "int32",
+    Type.UInt32: "uint32",
+    Type.Int64: "int64",
+    Type.UInt64: "uint64",
+    Type.Float: "float",
+    Type.Float32: "float32",
+    Type.Float64: "float64",
+    Type.String: "string",
+    Type.Enum2: "enum",
+    Type.Bytes: "bytes",
+    Type.DateTime: "datetime",
+    Type.Array: "array",
+    Type.Map: "map",
+    Type.Any: "any",
 }
 
 # non-primitive type names
 abstract_type_names = {
-    "array": Type_Array,
-    "map":   Type_Map,
-    "any":   Type_Any,
+    "array": Type.Array,
+    "map": Type.Map,
+    "any": Type.Any,
 }
 
-interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint','int32', 'uint32', 'int64', 'uint64', 'enum']
+interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'int64', 'uint64', 'enum']
 floating_types = ['float', 'float32', 'float64']
 
 
 # get name of an integer type
-def get_name_of_type(t):
+def get_name_of_type(t: Type) -> str:
     return type_names[t]
 
 
 # 基础类型
-def is_primitive_type(name):
+def is_primitive_type(name: str) -> bool:
     found = False
     for k, v in type_names.items():
         if v == name:
@@ -87,43 +94,43 @@ def is_primitive_type(name):
 
 
 # get integer type by name
-def get_type_by_name(name):
+def get_type_by_name(name: str) -> Type:
     for k, v in abstract_type_names.items():
         if name.find(k) >= 0:
             return v
     for k, v in type_names.items():
         if v == name:
             return k
-    return Type_Unknown
+    assert False, name
 
 
 # is integer type
-def is_integer_type(typ):
+def is_integer_type(typ: Type) -> bool:
     return typ in interger_types
 
 
 # is floating point
-def is_floating_type(typ):
+def is_floating_type(typ: Type) -> bool:
     return typ in floating_types
 
 
 # 是否抽象类型, map, array
-def is_abstract_type(typename):
+def is_abstract_type(typename: str) -> str:
     if typename.startswith('map<'):
         return 'map'
     elif typename.startswith('array<'):
         return 'array'
-    return None
+    return ''
 
 
 # array<int> --> int
-def array_element_type(typename):
+def array_element_type(typename: str) -> str:
     assert typename.startswith('array<'), typename
     return typename[6:-1]
 
 
 # map<int, string> --> int, string
-def map_key_value_types(typename):
+def map_key_value_types(typename: str) -> Tuple:
     keytype = ''
     valtype = ''
     assert typename.startswith('map<'), typename
@@ -142,7 +149,7 @@ def map_key_value_types(typename):
     return keytype, valtype
 
 
-def test_is_primitive_type(self):
+def test_is_primitive_type():
     test_data = [
         ('int', True),
         ('map', False),
@@ -151,7 +158,6 @@ def test_is_primitive_type(self):
     for pair in test_data:
         out = is_primitive_type(pair[0])
         print(out)
-        self.assertEqual(pair[1], out)
 
 
 if __name__ == '__main__':

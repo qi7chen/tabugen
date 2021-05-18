@@ -35,15 +35,15 @@ data_writer_registry = {
 
 
 #
-def get_struct_parser(name):
+def get_struct_parser(name: str):
     return struct_parser_registry.get(name, None)
 
 
 #
-def get_code_generator(name):
+def get_code_generator(name: str):
     return code_generator_registry.get(name, None)
 
 
 #
-def get_data_writer(name):
+def get_data_writer(name: str):
     return data_writer_registry.get(name, None)
