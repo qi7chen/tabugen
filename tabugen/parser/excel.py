@@ -49,7 +49,7 @@ class ExcelStructParser:
         if os.path.isdir(filedir):  # filename is a directory
             filedir = os.path.abspath(filedir)
             print('parse files in directory:', filedir)
-            filenames = strutil.enum_files(filedir, xlsxhelp.is_ignored_filename)
+            filenames = strutil.enum_excel_files(filedir, xlsxhelp.is_ignored_filename)
         else:
             assert os.path.isfile(filedir)
             filename = os.path.abspath(filedir)
@@ -69,11 +69,10 @@ class ExcelStructParser:
 
     def parse_meta_file(self):
         assert os.path.isfile(self.metafile)
-        wb, sheet_names = xlsxhelp.read_workbook_and_sheet_names(self.metafile)
+        sheet_names = xlsxhelp.read_workbook_sheet_names(self.metafile)
         if predef.PredefMetaSheet not in sheet_names:
             raise RuntimeError('sheet %s not found in file %s' % (predef.PredefMetaSheet, self.metafile))
-        sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
-        xlsxhelp.close_workbook(wb)
+        sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(self.metafile, predef.PredefMetaSheet)
 
         last_row = 0
         for i in range(len(sheet_rows)):
@@ -95,10 +94,10 @@ class ExcelStructParser:
                 self.meta_index[target_filename] = meta
 
     # 获取一个sheet的meta信息
-    def get_file_meta(self, filename, wb, sheet_names):
+    def get_file_meta(self, filename, sheet_names):
         # 优先本文件
         if predef.PredefMetaSheet in sheet_names:
-            sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(wb, predef.PredefMetaSheet)
+            sheet_rows = xlsxhelp.read_workbook_sheet_to_rows(filename, predef.PredefMetaSheet)
             meta = fieldutil.parse_meta_rows(sheet_rows)
             return fieldutil.validated_meta(meta)
         else:
@@ -170,7 +169,7 @@ class ExcelStructParser:
                     field["is_vector"] = True
             prev_field = field
 
-            assert field["type"] != types.Type_Unknown
+            assert field["type"] != types.Type.Unknown
             assert field["type_name"] != ""
 
             field["comment"] = " "
@@ -212,19 +211,18 @@ class ExcelStructParser:
 
     # 解析单个文件
     def parse_one_file(self, filename):
-        wb, sheet_names = xlsxhelp.read_workbook_and_sheet_names(filename)
+        sheet_names = xlsxhelp.read_workbook_sheet_names(filename)
         if len(sheet_names) == 0:
             print('%s has no sheet' % filename)
             return
 
-        meta = self.get_file_meta(filename, wb, sheet_names)
+        meta = self.get_file_meta(filename, sheet_names)
         fieldutil.setup_meta_kv_mode(meta)
-        xlsxhelp.close_workbook(wb)
         if meta is None:
             raise RuntimeError("not meta found for file %s" % filename)
         else:
             sheet_name = meta.get(predef.PredefTargetFileSheet, sheet_names[0])  # 没有指定就使用第一个sheet
-            sheet_data = xlsxhelp.read_workbook_sheet_to_rows(wb, sheet_name)
+            sheet_data = xlsxhelp.read_workbook_sheet_to_rows(filename, sheet_name)
             struct = self.parse_data_sheet(meta, sheet_data)
             struct['file'] = os.path.basename(filename)
             return struct

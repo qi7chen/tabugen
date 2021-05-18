@@ -2,15 +2,9 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import sys
+import xlrd
 import openpyxl
 import tabugen.typedef as types
-
-# TODO: speedup excel parsing
-#
-# Visual Studio Tools for Office
-# https://www.microsoft.com/en-us/download/details.aspx?id=56961
-# xlapp = win32com.client.gencache.EnsureDispatch('Excel.Application')
 
 ignored_extension = [
     '~$',
@@ -19,7 +13,7 @@ ignored_extension = [
 ]
 
 
-def is_ignored_filename(filename):
+def is_ignored_filename(filename: str) -> bool:
     for text in ignored_extension:
         if filename.find(text) >= 0:
             return True
@@ -27,29 +21,55 @@ def is_ignored_filename(filename):
 
 
 # read to workbook and its sheet names
-def read_workbook_and_sheet_names(filename):
-    print('load workbook', filename)
-    wb = openpyxl.load_workbook(filename, data_only=True)
+def read_workbook_sheet_names(filename: str):
+    if filename.endswith('.xls'):
+        return __xlrd_read_workbook_sheet_names(filename)
+    elif filename.endswith('.xlsx'):
+        return __openpyxl_read_workbook_sheet_names(filename)
+    else:
+        raise RuntimeError('file %s extension not recognized' % filename)
+
+
+def __xlrd_read_workbook_sheet_names(filename: str):
+    book = xlrd.open_workbook(filename, on_demand=True)
+    return book.sheet_names()
+
+
+def __openpyxl_read_workbook_sheet_names(filename: str):
+    wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     wb.close()
-    return wb, wb.sheetnames
+    return wb.sheetnames
 
 
-def read_workbook_by_sheet_name(filename, sheet_name):
+def read_workbook_sheet_to_rows(filename: str, sheet_name: str):
     print('load workbook', filename)
-    wb = openpyxl.load_workbook(filename, data_only=True)
-    wb.close()
-    return wb.get_sheet_by_name(sheet_name)
+    if filename.endswith('.xls'):
+        return __xlrd_read_workbook_sheet_to_rows(filename, sheet_name)
+    elif filename.endswith('.xlsx'):
+        return __openpyxl_read_workbook_sheet_to_rows(filename, sheet_name)
+    else:
+        raise RuntimeError('file %s extension not recognized' % filename)
 
 
-# read sheet data to csv rows
-def read_workbook_sheet_to_rows(wb, sheet_name):
-    return read_workbook_sheet_to_rows_openpyxl(wb, sheet_name)
+def __xlrd_read_workbook_sheet_to_rows(filename: str, sheet_name: str):
+    book = xlrd.open_workbook(filename, on_demand=True)
+    sheet = book.sheet_by_name(sheet_name)
+    rows = []
+    for rx in range(sheet.nrows):
+        row = sheet.row(rx)
+        new_row = []
+        for cell in row:
+            new_row.append(str(cell.value))
+        rows.append(new_row)
+    return rows
 
 
 #
-def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
-    rows = []
+def __openpyxl_read_workbook_sheet_to_rows(filename: str, sheet_name: str):
+    print('load workbook', filename)
+    wb = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     sheet = wb.get_sheet_by_name(sheet_name)
+    rows = []
     assert sheet is not None, sheet_name
     for i, sheet_row in enumerate(sheet.rows):
         row = []
@@ -59,6 +79,7 @@ def read_workbook_sheet_to_rows_openpyxl(wb, sheet_name):
                 text = str(cell.value)
             row.append(text.strip())
         rows.append(row)
+    wb.close()
     return rows
 
 
