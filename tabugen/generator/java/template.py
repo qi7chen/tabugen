@@ -6,12 +6,12 @@
 JAVA_MGR_CLASS_TEMPLATE = """
 
 public class %s {
-    final public static String TABULAR_CSV_SEP = "%s";     // CSV field separator
-    final public static String TABULAR_CSV_QUOTE = "%s";   // CSV field quote
+    final public static String TABUGEN_CSV_SEP = "%s";     // CSV field separator
+    final public static String TABUGEN_CSV_QUOTE = "%s";   // CSV field quote
     
-    final public static String TABULAR_ARRAY_DELIM = "%s";      // array item delimiter
-    final public static String TABULAR_MAP_DELIM1 = "%s";       // map item delimiter
-    final public static String TABULAR_MAP_DELIM2 = "%s";       // map key-value delimiter
+    final public static String TABUGEN_ARRAY_DELIM = "%s";      // array item delimiter
+    final public static String TABUGEN_MAP_DELIM1 = "%s";       // map item delimiter
+    final public static String TABUGEN_MAP_DELIM2 = "%s";       // map key-value delimiter
     
     // `Boolean.parseBoolean()` only detects "true"
     public static boolean parseBool(String text) {

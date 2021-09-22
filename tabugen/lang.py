@@ -27,7 +27,7 @@ def map_cpp_type(typ: str) -> str:
         'string':   'std::string',
     }
     abs_type = types.is_abstract_type(typ)
-    if len(abs_type) == 0:
+    if abs_type == '':
         return type_mapping[typ]
 
     if abs_type == 'array':
@@ -93,7 +93,7 @@ def map_go_type(typ: str) -> str:
         'string':   'string',
     }
     abs_type = types.is_abstract_type(typ)
-    if abs_type is None:
+    if abs_type == '':
         return type_mapping[typ]
 
     if abs_type == 'array':
@@ -174,7 +174,7 @@ def map_cs_type(typ):
         'string':   'string',
     }
     abs_type = types.is_abstract_type(typ)
-    if abs_type is None:
+    if abs_type == '':
         return type_mapping[typ]
 
     if abs_type == 'array':
@@ -186,6 +186,7 @@ def map_cs_type(typ):
         key_type = type_mapping[k]
         value_type = type_mapping[v]
         return 'Dictionary<%s, %s>' % (key_type, value_type)
+    print(typ)
     assert False, typ
 
 
@@ -240,7 +241,7 @@ def map_java_type(typ):
         'string':   'String',
     }
     abs_type = types.is_abstract_type(typ)
-    if abs_type is None:
+    if abs_type == '':
         return type_mapping[typ]
     if abs_type == 'array':
         t = types.array_element_type(typ)

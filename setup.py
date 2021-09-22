@@ -11,7 +11,7 @@ sys.path.append(this_directory)
 with open(os.path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     readme = f.read()
 
-tabugen_version = '0.6.10'
+tabugen_version = '0.6.12'
 
 install_requires = [
     'et-xmlfile>=1.0.1',
@@ -24,10 +24,10 @@ setup(
     name='tabugen',
     version=tabugen_version,
     license='Apache License 2.0',
-    author='cheadaq',
+    author='qchencd',
     author_email='ichenq@outlook.com',
-    url='https://github.com/cheadaq/tabugen',
-    description=u'a table export and code generate tool for rapid game development',
+    url='https://github.com/qchencd/tabugen',
+    description=u'a spreedsheet export and code generate tool for rapid game development',
     long_description=readme,
     long_description_content_type='text/x-rst',
     python_requires='>=3.6',

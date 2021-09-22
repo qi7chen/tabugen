@@ -34,7 +34,6 @@ class GoStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-
     # 生成struct定义
     def gen_go_struct(self, struct, params):
         content = ''
@@ -66,7 +65,7 @@ class GoStructGenerator:
                         if self.json_snake_case:
                             inner_var_name = strutil.camel_to_snake(inner_var_name)
                         text += '    %s %s `json:"%s"` //\n' % (strutil.camel_case(inner_var_name),
-                                                                   inner_typename, inner_var_name)
+                                                                inner_typename, inner_var_name)
                     else:
                         text += '    %s %s //\n' % (strutil.camel_case(inner_var_name), inner_typename)
                     inner_class_done = True
@@ -80,7 +79,7 @@ class GoStructGenerator:
                         if self.json_snake_case:
                             name = strutil.camel_to_snake(name)
                         text += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
-                                                                      name, field['comment'])
+                                                                   name, field['comment'])
                     else:
                         text += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
                 elif not vec_done:
@@ -89,7 +88,7 @@ class GoStructGenerator:
                         if self.json_snake_case:
                             vec_name = strutil.camel_to_snake(vec_name)
                         text += '    %s [%d]%s `json:"%s"` // %s\n' % (strutil.camel_case(vec_name), len(vec_names),
-                                                                          typename, vec_name, field['comment'])
+                                                                       typename, vec_name, field['comment'])
                     else:
                         text += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
             content += text

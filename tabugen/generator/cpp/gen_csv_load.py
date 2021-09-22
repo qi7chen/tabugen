@@ -49,7 +49,7 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst std::vector<absl::string_view>& array = absl::StrSplit(%s, TABULAR_ARRAY_DELIM);\n' % (space, row_name)
+        content += '%sconst std::vector<absl::string_view>& array = absl::StrSplit(%s, TABUGEN_ARRAY_DELIM);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(parseStrAs<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -66,10 +66,10 @@ class CppCsvLoadGenerator:
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst std::vector<absl::string_view>& vec = absl::StrSplit(%s, TABULAR_MAP_DELIM1);\n' % (space, row_name)
+        content += '%sconst std::vector<absl::string_view>& vec = absl::StrSplit(%s, TABUGEN_MAP_DELIM1);\n' % (space, row_name)
         content += '%sfor (size_t i = 0; i < vec.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], TABULAR_MAP_DELIM2);\n' % space
+        content += '%s    const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], TABUGEN_MAP_DELIM2);\n' % space
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
