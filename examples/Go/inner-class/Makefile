@@ -13,8 +13,8 @@ OUT_DATA_DIR = $(CURRENT_DIR)/res
 clean:
 
 run: output-csv output-json
-	cd src/csv && go test -v .
-	cd src/json && go test -v .
+	cd src/csv && GO111MODULE=off go test -v .
+	cd src/json && GO111MODULE=off go test -v .
 
 output-csv:
 	rm -rf $(OUT_DATA_DIR)/*.csv

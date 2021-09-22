@@ -5,14 +5,14 @@
       2,
       3
     ],
-    "Description": "建造1个引擎控制室",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_01",
-    "Target": "BigSupplyDepot",
-    "Type": "eAT_CreateBuilding"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -20,14 +20,14 @@
       2,
       4
     ],
-    "Description": "建造1个太空温室",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_02",
-    "Target": "CrystalRefinery",
-    "Type": "eAT_CreateBuilding"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -35,14 +35,14 @@
       2,
       5
     ],
-    "Description": "将大力神登陆艇升至2级",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_03",
-    "Target": "SoldierLandingship",
-    "Type": "eAT_ReachLevel"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -50,14 +50,14 @@
       2,
       6
     ],
-    "Description": "解放1个太空殖民地",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_04",
-    "Target": "NPC",
-    "Type": "eAT_DefeatNpc"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -65,14 +65,14 @@
       2,
       7
     ],
-    "Description": "建造1个保险库",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_05",
-    "Target": "Vault",
-    "Type": "eAT_CreateBuilding"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -80,14 +80,14 @@
       2,
       8
     ],
-    "Description": "建造1个幽灵哨塔",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_06",
-    "Target": "GhostTower",
-    "Type": "eAT_CreateBuilding"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -95,14 +95,14 @@
       2,
       9
     ],
-    "Description": "将章北海等级提升至2级",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_07",
-    "Target": "ColonelZhang",
-    "Type": "eAT_UpgradeHero"
+    "Name": null,
+    "Target": null,
+    "Type": null
   },
   {
     "Accomplishment": [
@@ -110,13 +110,13 @@
       2,
       10
     ],
-    "Description": "将陆战队等级提升至2级",
+    "Description": null,
     "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "Name": "Guide_08",
-    "Target": "Marine",
-    "Type": "eAT_UpgradeSoldier"
+    "Name": null,
+    "Target": null,
+    "Type": null
   }
 ]

@@ -8,7 +8,7 @@
 
 ## 其它动态语言
  
-    Tabular支持将excel导出为json，对于python, javascript, lua等动态语言，可直接加载json文件拿到结构定义。
+    Tabugen支持将excel导出为json，对于python, javascript, lua等动态语言，可直接加载json文件拿到结构定义。
     
 ## 基本使用
 

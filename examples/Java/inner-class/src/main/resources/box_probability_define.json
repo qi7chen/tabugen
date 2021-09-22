@@ -1,71 +1,71 @@
 [
   {
-    "ID": "Box01",
+    "ID": null,
     "ProbabilityGoods": [
       {
-        "GoodsID": "Food",
-        "Num": 1000,
-        "Probability": 5000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Hero1",
-        "Num": 5,
-        "Probability": 1000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Soldier1",
-        "Num": 10,
-        "Probability": 100
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       }
     ],
-    "Repeat": true,
-    "Time": 1400,
-    "Total": 1
+    "Repeat": null,
+    "Time": null,
+    "Total": null
   },
   {
-    "ID": "Box02",
+    "ID": null,
     "ProbabilityGoods": [
       {
-        "GoodsID": "Gold",
-        "Num": 2000,
-        "Probability": 5000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Hero2",
-        "Num": 5,
-        "Probability": 1000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Soldier2",
-        "Num": 10,
-        "Probability": 100
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       }
     ],
-    "Repeat": true,
-    "Time": 1800,
-    "Total": 2
+    "Repeat": null,
+    "Time": null,
+    "Total": null
   },
   {
-    "ID": "Box03",
+    "ID": null,
     "ProbabilityGoods": [
       {
-        "GoodsID": "Power",
-        "Num": 3000,
-        "Probability": 5000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Hero3",
-        "Num": 5,
-        "Probability": 1000
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       },
       {
-        "GoodsID": "Soldier3",
-        "Num": 10,
-        "Probability": 100
+        "GoodsID": null,
+        "Num": null,
+        "Probability": null
       }
     ],
-    "Repeat": true,
-    "Time": 2400,
-    "Total": 3
+    "Repeat": null,
+    "Time": null,
+    "Total": null
   }
 ]

@@ -32,7 +32,7 @@ static void LoadConfig(vector<config::BoxProbabilityDefine>& data)
     auto lines = splitContentToLines(content);
     for (int i = 0; i < lines.size(); i++) 
     {
-        auto row = parseLineToRows(lines[i], config::TABULAR_CSV_SEP, config::TABULAR_CSV_QUOTE);
+        auto row = parseLineToRows(lines[i], config::TABUGEN_CSV_SEP, config::TABUGEN_CSV_QUOTE);
         if (!row.empty())
         {
             config::BoxProbabilityDefine item;

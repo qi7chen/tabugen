@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 
 
@@ -90,7 +91,7 @@ namespace CSharpDemo
                 var item = new Config.SoldierPropertyDefine();
                 item.ParseFromRow(row);
                 list[i] = item;
-                Console.WriteLine(JsonConvert.SerializeObject(item));
+                Console.WriteLine(JsonSerializer.Serialize<Config.SoldierPropertyDefine>(item));
             }
         }
 
@@ -100,9 +101,8 @@ namespace CSharpDemo
             string filepath = string.Format("{0}/res/{1}", rootPath, filename);
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
-
-            var conflist = JsonConvert.DeserializeObject<Config.SoldierPropertyDefine[]>(content);
-            var text = JsonConvert.SerializeObject(conflist);
+            var conflist = JsonSerializer.Deserialize<Config.SoldierPropertyDefine[]>(content);
+            var text = JsonSerializer.Serialize<Config.SoldierPropertyDefine[]>(conflist);
             Console.WriteLine(text);
         }
         

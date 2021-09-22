@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 
 namespace CSharpDemo
 {
@@ -89,7 +91,7 @@ namespace CSharpDemo
                 var item = new Config.BoxProbabilityDefine();
                 item.ParseFromRow(row);
                 list[i] = item;
-                Console.WriteLine(JsonConvert.SerializeObject(item));
+                Console.WriteLine(JsonSerializer.Serialize(item));
             }
         }
 
@@ -100,8 +102,8 @@ namespace CSharpDemo
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
-            var conflist = JsonConvert.DeserializeObject<Config.BoxProbabilityDefine[]>(content);
-            var text = JsonConvert.SerializeObject(conflist);
+            var conflist = JsonSerializer.Deserialize<Config.BoxProbabilityDefine[]>(content);
+            var text = JsonSerializer.Serialize(conflist);
             Console.WriteLine(text);
         }
         

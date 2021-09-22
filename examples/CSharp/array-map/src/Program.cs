@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 
 namespace CSharpDemo
@@ -89,7 +90,7 @@ namespace CSharpDemo
                 var obj = new Config.NewbieGuideDefine();
                 obj.ParseFromRow(row);
                 list[i] = obj;
-                Console.WriteLine(JsonConvert.SerializeObject(obj));
+                Console.WriteLine(JsonSerializer.Serialize<Config.NewbieGuideDefine>(obj));
             }
         }
 
@@ -100,10 +101,10 @@ namespace CSharpDemo
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
-            var conflist = JsonConvert.DeserializeObject<Config.NewbieGuideDefine[]>(content);
+            var conflist = JsonSerializer.Deserialize<Config.NewbieGuideDefine[]>(content);
             for (int i = 0; i < conflist.Length; i++)
             {
-                var text = JsonConvert.SerializeObject(conflist[i]);
+                var text = JsonSerializer.Serialize(conflist[i]);
                 Console.WriteLine(text);
             }
             

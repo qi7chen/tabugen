@@ -1,71 +1,71 @@
 [
   {
-    "id": "Box01",
+    "id": null,
     "probability_goods": [
       {
-        "goods_id": "Food",
-        "num": 1000,
-        "probability": 5000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Hero1",
-        "num": 5,
-        "probability": 1000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Soldier1",
-        "num": 10,
-        "probability": 100
+        "goods_id": null,
+        "num": null,
+        "probability": null
       }
     ],
-    "repeat": true,
-    "time": 1400,
-    "total": 1
+    "repeat": null,
+    "time": null,
+    "total": null
   },
   {
-    "id": "Box02",
+    "id": null,
     "probability_goods": [
       {
-        "goods_id": "Gold",
-        "num": 2000,
-        "probability": 5000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Hero2",
-        "num": 5,
-        "probability": 1000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Soldier2",
-        "num": 10,
-        "probability": 100
+        "goods_id": null,
+        "num": null,
+        "probability": null
       }
     ],
-    "repeat": true,
-    "time": 1800,
-    "total": 2
+    "repeat": null,
+    "time": null,
+    "total": null
   },
   {
-    "id": "Box03",
+    "id": null,
     "probability_goods": [
       {
-        "goods_id": "Power",
-        "num": 3000,
-        "probability": 5000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Hero3",
-        "num": 5,
-        "probability": 1000
+        "goods_id": null,
+        "num": null,
+        "probability": null
       },
       {
-        "goods_id": "Soldier3",
-        "num": 10,
-        "probability": 100
+        "goods_id": null,
+        "num": null,
+        "probability": null
       }
     ],
-    "repeat": true,
-    "time": 2400,
-    "total": 3
+    "repeat": null,
+    "time": null,
+    "total": null
   }
 ]

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 
 namespace CSharpDemo
 {
@@ -90,7 +92,7 @@ namespace CSharpDemo
             var instance = new Config.GlobalPropertyDefine();
             instance.ParseFromRows(rows);
 
-            Console.WriteLine(JsonConvert.SerializeObject(instance));
+            Console.WriteLine(JsonSerializer.Serialize(instance));
         }
 
         static void TestLoadJSON(string rootPath)
@@ -100,8 +102,8 @@ namespace CSharpDemo
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
 
-            var glob = JsonConvert.DeserializeObject<Config.GlobalPropertyDefine>(content);
-            var text = JsonConvert.SerializeObject(glob);
+            var glob = JsonSerializer.Deserialize<Config.GlobalPropertyDefine>(content);
+            var text = JsonSerializer.Serialize(glob);
             Console.WriteLine(text);
         }
         
