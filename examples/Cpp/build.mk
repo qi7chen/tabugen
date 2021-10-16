@@ -12,7 +12,8 @@ all: output build run clean
 
 install_abseil: $(CURRENT_DIR)/build/conanbuildinfo.cmake
 	cd $(CURRENT_DIR)/build && conan install $(CURRENT_DIR)/..
-	
+
 $(CURRENT_DIR)/build/conanbuildinfo.cmake:
 	pip install conan
+	conan profile update settings.compiler.libcxx=libstdc++11 default
 	mkdir -p $(CURRENT_DIR)/build && cd $(CURRENT_DIR)/build && conan install $(CURRENT_DIR)/..
