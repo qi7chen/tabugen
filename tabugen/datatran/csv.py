@@ -32,7 +32,7 @@ class CsvDataWriter:
         w.writerows(rows)
         f.close()
 
-        target_filename = os.path.join(filepath, name)
+        target_filename = os.path.join(filepath, name + ".csv")
 
         # move to destination path if content not equal
         if os.path.isfile(target_filename) and filecmp.cmp(tmp_filename, target_filename):
