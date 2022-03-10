@@ -19,13 +19,13 @@
     比如`name1, id1, name2, id2, name3, id3`, 可以将其导出为一个包含`name, id`字段的嵌套类型。
     
     
-### 使用make
+### 如何编译
 
-1. 执行`make output`，即可导出默认选项的C++代码及csv数据文件
-
-2. 执行`make build`，即可生成对应的C++项目（要求安装[CMake](https://cmake.org/download)和[Visual Studio](https://visualstudio.microsoft.com/en/downloads/))并编译执行档
-
-3. 执行`make run`，可以执行测试示例
+1. 需要安装[vcpkg](https://github.com/microsoft/vcpkg) 和[CMake](https://cmake.org/download)
+2. 项目依赖了[abseil](https://github.com/abseil/abseil-cpp) 库，需要通过vcpkg配置对应的环境
+3. 执行`make output`，即可导出默认选项的C++代码及csv数据文件
+4. 执行`make build`，即可生成对应的C++项目
+5. 执行`make run`，可以执行测试示例
 
 
 ## 配置详解

@@ -2,23 +2,44 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+CURRENT_DIR = $(shell pwd)
+ROOT_DIR = $(shell realpath ../../)
+DATASHEET_DIR = $(shell realpath ../datasheet)
+OUT_DATA_DIR = $(CURRENT_DIR)/res
 
-all: eg1 eg2 eg3 eg4
+VCPKG_TOOLCHAIN_FILE ?= $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
+VCPKG_INCLUDE_DIR_ ?= $(HOME)/vcpkg/installed/x64-linux/include
+VCPKG_LIB_DIR_ = ?= $(HOME)/vcpkg/installed/x64-linux/lib
+
+export PYTHONPATH=$(ROOT_DIR)
+export VCPKG_INCLUDE_DIR=$(VCPKG_INCLUDE_DIR_)
+export VCPKG_LIB_DIR=$(VCPKG_LIB_DIR_)
+
+TABUGEN_CLI = python $(ROOT_DIR)/tabugen/cli.py
+
+all: output build
+
+install_vcpkg:
+	cd $(HOME) && git clone https://github.com/microsoft/vcpkg 
+	$(HOME)/vcpkg/bootstrap-vcpkg.sh
+	$(HOME)/vcpkg/vcpkg install abseil
 
 clean:
-	cd basic && $(MAKE) clean
-	cd global-var && $(MAKE) clean
-	cd array-map && $(MAKE) clean
-	cd inner-class && $(MAKE) clean
+	rm -rf build
 
-eg1:
-	cd basic && $(MAKE)
+output:
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/basic/AutogenConfig \
+		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
-eg2:
-	cd global-var && $(MAKE)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/array-map/AutogenConfig \
+		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
-eg3:
-	cd array-map && $(MAKE)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/global-var/AutogenConfig \
+		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
-eg4:
-	cd inner-class && $(MAKE)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/inner-class/AutogenConfig \
+		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)	
+			
+build:
+	mkdir -p build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN_FILE) .. 
+	cmake --build $(CURRENT_DIR)/build

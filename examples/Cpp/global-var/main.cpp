@@ -4,21 +4,12 @@
 #include <fstream>
 #include "AutoGenConfig.h"
 #include <absl/strings/str_format.h>
-
+#include "common/Utils.h"
 
 using namespace std;
 using namespace config;
 
-static std::string resPath = "../res";
-
-static std::string readfile(const char* filepath)
-{
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), filepath);
-    std::ifstream ifs(filename.c_str());
-    std::string content((std::istreambuf_iterator<char>(ifs)),
-        (std::istreambuf_iterator<char>()));
-    return std::move(content);
-}
+static std::string resPath = "res";
 
 static void printGlobalProperty(const GlobalPropertyDefine& inst)
 {
@@ -56,15 +47,23 @@ int main(int argc, char* argv[])
         resPath = argv[1];
     }
 
-    GlobalPropertyDefine inst;
-    string content = readfile("global_property_define.csv");
-    auto lines = splitContentToLines(content);
-    vector<CSVRow> rows;
-    for (int i = 0; i < lines.size(); i++)
+    
+    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "global_property_define");
+    vector<std::string> lines;
+    std::ifstream infile(filename.c_str());
+    std::string line;
+    while (std::getline(infile, line)) {
+        lines.push_back(line);
+    }
+
+    vector<vector<absl::string_view>> rows;
+    for (size_t i = 0; i < lines.size(); i++)
     {
         auto row = parseLineToRows(lines[i]);
         rows.push_back(row);
     }
+
+    GlobalPropertyDefine inst;
     GlobalPropertyDefine::ParseFromRows(rows, &inst);
 
     printGlobalProperty(inst);

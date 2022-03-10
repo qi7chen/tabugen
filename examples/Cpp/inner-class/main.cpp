@@ -4,6 +4,7 @@
 #include <fstream>
 #include "AutogenConfig.h"
 #include <absl/strings/str_format.h>
+#include "common/Utils.h"
 
 #ifndef ASSERT
 #define ASSERT assert
@@ -13,26 +14,16 @@
 using namespace std;
 using namespace config;
 
-static std::string resPath = "../res";
+static std::string resPath = "res";
 
-static std::string readfile(const char* filepath)
-{
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), filepath);
-    std::ifstream ifs(filename.c_str());
-    std::string content((std::istreambuf_iterator<char>(ifs)),
-        (std::istreambuf_iterator<char>()));
-    //cout << (void*)content.data() << endl;
-    //cout << content << endl;
-    return std::move(content);
-}
 
 static void LoadConfig(vector<config::BoxProbabilityDefine>& data) 
 {
-    string content = readfile("box_probability_define.csv");
-    auto lines = splitContentToLines(content);
-    for (int i = 0; i < lines.size(); i++) 
-    {
-        auto row = parseLineToRows(lines[i], config::TABUGEN_CSV_SEP, config::TABUGEN_CSV_QUOTE);
+    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "box_probability_define.csv");
+    std::ifstream infile(filename.c_str());
+    std::string line;
+    while (std::getline(infile, line)) {
+        auto row = parseLineToRows(line);
         if (!row.empty())
         {
             config::BoxProbabilityDefine item;

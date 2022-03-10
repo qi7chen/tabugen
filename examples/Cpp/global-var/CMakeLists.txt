@@ -1,41 +1,21 @@
-cmake_minimum_required(VERSION 2.8)
-project (CppExample2)
-
-set(CMAKE_CXX_STANDARD 11)
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-
-set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
-set(BOOTSTRAP_SRC_DIR ${PROJECT_ROOT_DIR}/../bootstrap)
-
-if(MSVC)
-  add_definitions (-wd4146 -wd4800)
-endif()
+# Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 
-if (WIN32)
-  add_definitions(
-    -D_WIN32_WINNT=0x0601 
-    -DWIN32_LEAN_AND_MEAN 
-    -D _CRT_SECURE_NO_WARNINGS
-    -D_SCL_SECURE_NO_WARNINGS 
-    -DNOMINMAX
-    )
-endif()
-
-include_directories(${PROJECT_ROOT_DIR}/src)
-include_directories(${BOOTSTRAP_SRC_DIR})
+include_directories(${PROJECT_ROOT_DIR})
+include_directories(${PROJECT_ROOT_DIR}/global-var)
 
 set(ALL_SRC_FILES 
-    ${PROJECT_ROOT_DIR}/src/main.cpp
-    ${PROJECT_ROOT_DIR}/src/AutogenConfig.h
-    ${PROJECT_ROOT_DIR}/src/AutogenConfig.cpp
-    ${BOOTSTRAP_SRC_DIR}/helper.h
-    ${BOOTSTRAP_SRC_DIR}/helper.cpp
+    ${PROJECT_ROOT_DIR}/common/Conv.h
+    ${PROJECT_ROOT_DIR}/common/Utils.h
+    ${PROJECT_ROOT_DIR}/common/Utils.cpp
+    ${PROJECT_ROOT_DIR}/global-var/main.cpp
+    ${PROJECT_ROOT_DIR}/global-var/AutogenConfig.h
+    ${PROJECT_ROOT_DIR}/global-var/AutogenConfig.cpp
     )
 
-    
-add_executable(CppExample2 ${ALL_SRC_FILES})
 
-target_link_libraries(CppExample2 ${CONAN_LIBS})
+add_executable(Example2 ${ALL_SRC_FILES})
+
+target_link_libraries(Example2 PRIVATE absl::any absl::base absl::bits absl::city)
