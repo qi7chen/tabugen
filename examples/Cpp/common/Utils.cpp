@@ -2,46 +2,8 @@
 // Distributed under the terms and conditions of the Apache License.
 // See accompanying files LICENSE.
 
-#include "helper.h"
-
-
-inline bool is_oddspace(char c) {
-    return c == '\n' || c == '\t' || c == '\r';
-}
-
-// Spaces other than ' ' characters are less common but should be
-// checked.  This configuration where we loop on the ' '
-// separately from oddspaces was empirically fastest.
-absl::string_view ltrimWhitespace(absl::string_view sp) {
-    while (true) {
-        while (!sp.empty() && sp.front() == ' ') {
-            sp.remove_prefix(1);
-        }
-        if (!sp.empty() && is_oddspace(sp.front())) {
-            sp.remove_prefix(1);
-            continue;
-        }
-
-        return sp;
-    }
-}
-
-// Spaces other than ' ' characters are less common but should be
-// checked.  This configuration where we loop on the ' '
-// separately from oddspaces was empirically fastest.
-absl::string_view rtrimWhitespace(absl::string_view sp) {
-    while (true) {
-        while (!sp.empty() && sp.back() == ' ') {
-            sp.remove_suffix(1);
-        }
-        if (!sp.empty() && is_oddspace(sp.back())) {
-            sp.remove_suffix(1);
-            continue;
-        }
-
-        return sp;
-    }
-}
+#include "Utils.h"
+#include <absl/strings/ascii.h>
 
 static int parseNextColumn(absl::string_view& line, absl::string_view& field, int delim, int quote)
 {
@@ -107,7 +69,7 @@ std::vector<absl::string_view> splitContentToLines(absl::string_view content) {
         }
         pos = end + 1;
         absl::string_view line = content.substr(begin, end - begin);
-        line = trimWhitespace(line);
+        line = absl::StripAsciiWhitespace(line);
         if (!line.empty()) {
             lines.push_back(line);
         }
