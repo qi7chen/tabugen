@@ -105,13 +105,13 @@ def get_type_by_name(name: str) -> Type:
 
 
 # is integer type
-def is_integer_type(typ: Type) -> bool:
-    return typ in interger_types
+def is_integer_type(typename: str) -> bool:
+    return typename in interger_types
 
 
 # is floating point
-def is_floating_type(typ: Type) -> bool:
-    return typ in floating_types
+def is_floating_type(typename: str) -> bool:
+    return typename in floating_types
 
 
 # 是否抽象类型, map, array

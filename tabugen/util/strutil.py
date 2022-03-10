@@ -2,15 +2,15 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import os
-import re
-import random
-import string
-import shutil
-import tempfile
-import filecmp
 import codecs
 import datetime
+import filecmp
+import os
+import random
+import re
+import shutil
+import string
+import tempfile
 import typing
 import unittest
 
@@ -20,7 +20,7 @@ def current_time() -> str:
 
 
 # 最长串的大小
-def max_field_length(table: object, key: str, f: typing.Callable) -> int:
+def max_field_length(table: typing.Mapping, key: str, f: typing.Callable) -> int:
     max_len = 0
     for v in table:
         n = len(v[key])
@@ -146,7 +146,8 @@ def remove_suffix_number(text: str) -> str:
 # 比较内容不相同时再写入文件
 def save_content_if_not_same(filename: str, content: str, enc: str) -> bool:
     # first write content to a temporary file
-    tmp_filename = '%s/taksi_%s' % (tempfile.gettempdir(), random_word(10))
+    tmp_filename = 'tabugen_%s' % random_word(10)
+    tmp_filename = os.path.join(tempfile.gettempdir(), tmp_filename)
     f = codecs.open(tmp_filename, 'w', enc)
     f.writelines(content)
     f.close()
@@ -177,7 +178,7 @@ def enum_excel_files(rootdir: str, ignore_check: typing.Callable) -> typing.Sequ
 
 
 # 对齐数据行
-def pad_data_rows(rows: typing.Sequence, fields: object) -> typing.Sequence:
+def pad_data_rows(rows: typing.Sequence, fields: typing.Mapping) -> typing.Sequence:
     # pad empty row
     max_row_len = len(fields)
     for row in rows:

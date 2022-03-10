@@ -41,7 +41,7 @@ class ExcelStructParser:
         self.make_filenames(self.filedir)
 
     # 跳过忽略的文件名
-    def make_filenames(self, filedir):
+    def make_filenames(self, filedir: str):
         filenames = []
         if not os.path.exists(filedir):
             print('file path [%s] not exist' % filedir)
@@ -231,7 +231,8 @@ class ExcelStructParser:
 def unit_test():
     filename = u'''新建筑.xlsx'''
     parser = ExcelStructParser()
-    parser.init('file=%s' % filename)
+    args = {'parse_files': 'file=%s' % filename}
+    parser.init(args)
     all = parser.parser_all()
     print(strutil.current_time(), 'done')
     assert len(all) > 0

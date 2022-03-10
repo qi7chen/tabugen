@@ -1,9 +1,11 @@
 # Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
+import typing
 
-import xlrd
 import openpyxl
+import xlrd
+
 import tabugen.typedef as types
 
 ignored_extension = [
@@ -89,7 +91,7 @@ def close_workbook(wb):
 
 
 # 有些数据在excel里输入为整数，但存储形式为浮点数
-def validate_data_rows(rows, struct):
+def validate_data_rows(rows: typing.Sequence, struct: typing.Mapping):
     new_rows = []
     fields = struct['fields']
     for row in rows:

@@ -3,28 +3,29 @@
 # See accompanying files LICENSE.
 
 from typing import Mapping
+
 import tabugen.typedef as types
 
 
 # C++类型映射
 def map_cpp_type(typ: str) -> str:
     type_mapping = {
-        'bool':     'bool',
-        'int8':     'int8_t',
-        'uint8':    'uint8_t',
-        'int16':    'int16_t',
-        'uint16':   'uint16_t',
-        'int':      'int',
-        'uint':     'uint32_t',
-        'int32':    'int32_t',
-        'uint32':   'uint32_t',
-        'int64':    'int64_t',
-        'uint64':   'uint64_t',
-        'float':    'float',
-        'float32':  'float',
-        'float64':  'double',
-        'enum':     'enum',
-        'string':   'std::string',
+        'bool': 'bool',
+        'int8': 'int8_t',
+        'uint8': 'uint8_t',
+        'int16': 'int16_t',
+        'uint16': 'uint16_t',
+        'int': 'int',
+        'uint': 'uint32_t',
+        'int32': 'int32_t',
+        'uint32': 'uint32_t',
+        'int64': 'int64_t',
+        'uint64': 'uint64_t',
+        'float': 'float',
+        'float32': 'float',
+        'float64': 'double',
+        'enum': 'enum',
+        'string': 'std::string',
     }
     abs_type = types.is_abstract_type(typ)
     if abs_type == '':
@@ -75,22 +76,22 @@ def default_value_by_cpp_type(typename: str) -> str:
 # Go类型映射
 def map_go_type(typ: str) -> str:
     type_mapping = {
-        'bool':     'bool',
-        'int8':     'int8',
-        'uint8':    'uint8',
-        'int16':    'int16',
-        'uint16':   'uint16',
-        'int':      'int',
-        'uint':      'uint',
-        'int32':    'int32',
-        'uint32':   'uint32',
-        'int64':    'int64',
-        'uint64':   'uint64',
-        'float':    'float32',
-        'float32':  'float32',
-        'float64':  'float64',
-        'enum':     'int',
-        'string':   'string',
+        'bool': 'bool',
+        'int8': 'int8',
+        'uint8': 'uint8',
+        'int16': 'int16',
+        'uint16': 'uint16',
+        'int': 'int',
+        'uint': 'uint',
+        'int32': 'int32',
+        'uint32': 'uint32',
+        'int64': 'int64',
+        'uint64': 'uint64',
+        'float': 'float32',
+        'float32': 'float32',
+        'float64': 'float64',
+        'enum': 'int',
+        'string': 'string',
     }
     abs_type = types.is_abstract_type(typ)
     if abs_type == '':
@@ -131,47 +132,47 @@ def map_go_raw_type(typ: str) -> str:
     return go_type_mapping[typ]
 
 
-def map_go_reflect_type(typ):
+def map_go_reflect_type(typ: str) -> str:
     mapping = {
-        'bool':     'reflect.Bool',
-        'int8':     'reflect.Int8',
-        'uint8':    'reflect.Uint8',
-        'int16':    'reflect.Int16',
-        'uint16':   'reflect.Uint16',
-        'int':      'reflect.Int',
-        'uint':      'reflect.Uint',
-        'int32':    'reflect.Int32',
-        'uint32':   'reflect.Uint32',
-        'int64':    'reflect.Int64',
-        'uint64':   'reflect.Uint64',
-        'float':    'reflect.Float32',
-        'float32':  'reflect.Float32',
-        'float64':  'reflect.Float64',
-        'enum':     'reflect.Int',
-        'string':   'reflect.String',
+        'bool': 'reflect.Bool',
+        'int8': 'reflect.Int8',
+        'uint8': 'reflect.Uint8',
+        'int16': 'reflect.Int16',
+        'uint16': 'reflect.Uint16',
+        'int': 'reflect.Int',
+        'uint': 'reflect.Uint',
+        'int32': 'reflect.Int32',
+        'uint32': 'reflect.Uint32',
+        'int64': 'reflect.Int64',
+        'uint64': 'reflect.Uint64',
+        'float': 'reflect.Float32',
+        'float32': 'reflect.Float32',
+        'float64': 'reflect.Float64',
+        'enum': 'reflect.Int',
+        'string': 'reflect.String',
     }
     return mapping[typ]
 
 
 # C#类型映射
-def map_cs_type(typ):
+def map_cs_type(typ: str) -> str:
     type_mapping = {
-        'bool':     'bool',
-        'int8':     'sbyte',
-        'uint8':    'byte',
-        'int16':    'short',
-        'uint16':   'ushort',
-        'int':      'int',
-        'uint':     'uint',
-        'int32':    'int',
-        'uint32':   'uint',
-        'int64':    'long',
-        'uint64':   'ulong',
-        'float':    'float',
-        'float32':  'float',
-        'float64':  'double',
-        'enum':     'int',
-        'string':   'string',
+        'bool': 'bool',
+        'int8': 'sbyte',
+        'uint8': 'byte',
+        'int16': 'short',
+        'uint16': 'ushort',
+        'int': 'int',
+        'uint': 'uint',
+        'int32': 'int',
+        'uint32': 'uint',
+        'int64': 'long',
+        'uint64': 'ulong',
+        'float': 'float',
+        'float32': 'float',
+        'float64': 'double',
+        'enum': 'int',
+        'string': 'string',
     }
     abs_type = types.is_abstract_type(typ)
     if abs_type == '':
@@ -186,12 +187,12 @@ def map_cs_type(typ):
         key_type = type_mapping[k]
         value_type = type_mapping[v]
         return 'Dictionary<%s, %s>' % (key_type, value_type)
-    print(typ)
+    # print(typ)
     assert False, typ
 
 
 # C#默认值
-def name_with_default_cs_value(field, typename):
+def name_with_default_cs_value(field: Mapping, typename: str) -> str:
     typename = typename.strip()
     if typename == 'bool':
         return '%s = false;' % field['name']
@@ -206,7 +207,7 @@ def name_with_default_cs_value(field, typename):
 
 
 # java装箱类型
-def java_box_type(typ):
+def java_box_type(typ: str) -> str:
     table = {
         'boolean': 'Boolean',
         'byte': 'Byte',
@@ -221,24 +222,24 @@ def java_box_type(typ):
 
 
 # java类型
-def map_java_type(typ):
+def map_java_type(typ: str) -> str:
     type_mapping = {
-        'bool':     'boolean',
-        'int8':     'byte',
-        'uint8':    'byte',
-        'int16':    'short',
-        'uint16':   'short',
-        'int':      'int',
-        'uint':     'int',
-        'int32':    'int',
-        'uint32':   'int',
-        'int64':    'long',
-        'uint64':   'long',
-        'float':    'float',
-        'float32':  'float',
-        'float64':  'double',
-        'enum':     'int',
-        'string':   'String',
+        'bool': 'boolean',
+        'int8': 'byte',
+        'uint8': 'byte',
+        'int16': 'short',
+        'uint16': 'short',
+        'int': 'int',
+        'uint': 'int',
+        'int32': 'int',
+        'uint32': 'int',
+        'int64': 'long',
+        'uint64': 'long',
+        'float': 'float',
+        'float32': 'float',
+        'float64': 'double',
+        'enum': 'int',
+        'string': 'String',
     }
     abs_type = types.is_abstract_type(typ)
     if abs_type == '':
@@ -256,7 +257,7 @@ def map_java_type(typ):
 
 
 # java默认值
-def name_with_default_java_value(field, typename):
+def name_with_default_java_value(field: Mapping, typename: str) -> str:
     typename = typename.strip()
     # print(typename)
     if typename == 'boolean':
@@ -275,6 +276,6 @@ def name_with_default_java_value(field, typename):
         return '%s = null;' % field['name']
 
 
-def is_java_primitive_type(typ):
+def is_java_primitive_type(typ: str) -> bool:
     table = ['boolean', 'byte', 'short', 'int', 'long', 'float', 'double', 'decimal']
     return typ in table

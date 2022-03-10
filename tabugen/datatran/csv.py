@@ -18,20 +18,21 @@ class CsvDataWriter:
         pass
 
     @staticmethod
-    def name():
+    def name() -> str:
         return "csv"
 
     # 将数据写入csv文件
     @staticmethod
     def write_file(name, rows, delim, filepath, encoding):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), strutil.random_word(10))
+        os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)
         w = csv.writer(f, delimiter=delim, lineterminator='\n', quotechar='"', quoting=csv.QUOTE_ALL)
         w.writerows(rows)
         f.close()
 
-        target_filename = "%s/%s.csv" % (filepath, name)
+        target_filename = os.path.join(filepath, name)
 
         # move to destination path if content not equal
         if os.path.isfile(target_filename) and filecmp.cmp(tmp_filename, target_filename):

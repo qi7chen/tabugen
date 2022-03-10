@@ -4,10 +4,11 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-import sys
 import argparse
-from tabugen.version import VER_STRING
+import sys
+
 from tabugen.registry import get_struct_parser, get_code_generator, get_data_writer
+from tabugen.version import VER_STRING
 
 
 def run(args):
@@ -89,7 +90,8 @@ def main():
     parser.add_argument("--map_delims", default=";=", help="map item delimiters")
 
     # source code options
-    parser.add_argument("--config_manager_class", default='AutogenConfigManager', help="name of auto-generated config manager class")
+    parser.add_argument("--config_manager_class", default='AutogenConfigManager',
+                        help="name of auto-generated config manager class")
     parser.add_argument("--gen_csv_parse", action='store_true', help="also generator csv parse method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")

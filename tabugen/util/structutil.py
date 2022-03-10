@@ -3,12 +3,14 @@
 # See accompanying files LICENSE.
 
 import re
+import typing
+
 import tabugen.predef as predef
 import tabugen.util.strutil as strutil
 
 
 # 初始化struct
-def setup_struct(struct):
+def setup_struct(struct: typing.MutableMapping):
     if struct['options'][predef.PredefParseKVMode]:
         fields = get_struct_kv_fields(struct)
         struct['fields'] = fields
@@ -20,19 +22,19 @@ def setup_struct(struct):
 
 
 # 根据'column_index'查找一个字段
-def get_field_by_column_index(struct, column_idx):
+def get_field_by_column_index(struct: typing.Mapping, column_idx: int):
     assert column_idx > 0
     idx = 0
     for field in struct["fields"]:
         if field["column_index"] == column_idx:
             return idx, field
         idx += 1
-    print(struct['fields'])
+    # print(struct['fields'])
     assert False, column_idx
 
 
 # 获取字段
-def get_struct_keys(struct, keyname, keymapping):
+def get_struct_keys(struct: typing.Mapping, keyname: str, keymapping: typing.Callable)-> typing.Sequence:
     if keyname not in struct['options']:
         return []
 
@@ -49,7 +51,7 @@ def get_struct_keys(struct, keyname, keymapping):
 
 
 # 读取KV模式的字段
-def get_struct_kv_fields(struct):
+def get_struct_kv_fields(struct: typing.Mapping) -> typing.Sequence:
     rows = struct["data_rows"]
     keycol = struct["options"][predef.PredefKeyColumn]
     valcol = struct["options"][predef.PredefValueColumn]
@@ -64,12 +66,12 @@ def get_struct_kv_fields(struct):
     fields = []
     for i in range(len(rows)):
         # print(rows[i])
-        name = rows[i][keycol-1].strip()
-        typename = rows[i][typecol-1].strip()
-        assert len(name) > 0, (rows[i], keycol-1)
+        name = rows[i][keycol - 1].strip()
+        typename = rows[i][typecol - 1].strip()
+        assert len(name) > 0, (rows[i], keycol - 1)
         comment = ''
         if commentcol >= 0:
-            comment = rows[i][commentcol-1].strip()
+            comment = rows[i][commentcol - 1].strip()
         field = {
             'name': name,
             'camel_case_name': strutil.camel_case(name),
@@ -84,7 +86,7 @@ def get_struct_kv_fields(struct):
 
 
 # 获取生成数组字段的范围
-def get_vec_field_range(struct, camel_case_name=False):
+def get_vec_field_range(struct: typing.Mapping, camel_case_name=False) -> typing.Sequence:
     auto_vector = struct["options"].get(predef.OptionAutoVector, "off")
     if auto_vector == "off":
         return [], ""
@@ -107,12 +109,12 @@ def get_vec_field_range(struct, camel_case_name=False):
 
     name = strutil.find_common_prefix(names[0], names[1])
     assert len(name) > 0, struct["name"]
-    name = re.sub("[0-9]", "", name)    # remove number char
+    name = re.sub("[0-9]", "", name)  # remove number char
     return names, name
 
 
 #
-def get_inner_class_range(struct):
+def get_inner_class_range(struct: typing.Mapping) -> typing.Sequence:
     if predef.PredefInnerTypeRange not in struct["options"]:
         return 0, 0, 0
 
@@ -142,7 +144,7 @@ def get_inner_class_range(struct):
 
 
 # 内部嵌入的class
-def get_inner_class_struct_fields(struct):
+def get_inner_class_struct_fields(struct: typing.Mapping) -> typing.Sequence:
     if predef.PredefInnerTypeRange not in struct["options"]:
         return []
 
@@ -170,7 +172,7 @@ def get_inner_class_struct_fields(struct):
 
 
 # 所有嵌入类的字段
-def get_inner_class_mapped_fields(struct, camel_case_name=False):
+def get_inner_class_mapped_fields(struct: typing.Mapping, camel_case_name=False) -> typing.Sequence:
     if predef.PredefInnerTypeRange not in struct["options"]:
         return [], []
 
@@ -194,7 +196,7 @@ def get_inner_class_mapped_fields(struct, camel_case_name=False):
 
 
 #
-def enabled_fields(struct):
+def enabled_fields(struct: typing.Mapping) -> typing.Sequence:
     fields = []
     for field in struct["fields"]:
         if field["enable"]:

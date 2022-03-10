@@ -2,11 +2,12 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import typing
 import tabugen.predef as predef
 
 
 # KV模式
-def setup_meta_kv_mode(meta):
+def setup_meta_kv_mode(meta: typing.MutableMapping):
     meta[predef.PredefParseKVMode] = False
     text = meta.get(predef.PredefKeyValueColumns, "")
     if text != "":
@@ -21,7 +22,7 @@ def setup_meta_kv_mode(meta):
 
 
 # meta字段处理
-def parse_meta_rows(sheet_rows):
+def parse_meta_rows(sheet_rows: typing.Sequence) -> typing.Mapping:
     meta = {}
     for row in sheet_rows:
         if len(row) >= 2:
@@ -33,7 +34,7 @@ def parse_meta_rows(sheet_rows):
 
 
 # 处理meta字段
-def validated_meta(meta):
+def validated_meta(meta: typing.Mapping) -> typing.Mapping:
     if predef.OptionUniqueColumns in meta:
         field_names = meta[predef.OptionUniqueColumns].split(',')
         field_names = [v.strip() for v in field_names]

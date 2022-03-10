@@ -4,6 +4,7 @@
 
 import sys
 import typing
+
 import tabugen.predef as predef
 
 
@@ -21,7 +22,7 @@ def is_all_row_field_value_unique(rows: typing.Sequence, index: int) -> typing.T
 
 
 # 检查唯一主键
-def validate_unique_column(struct, rows):
+def validate_unique_column(struct: typing.Mapping, rows: typing.Sequence):
     if struct['options'][predef.PredefParseKVMode]:
         return rows
 
@@ -41,7 +42,7 @@ def validate_unique_column(struct, rows):
 
 
 # 只保留enable的field
-def shrink_enabled_rows(rows, struct):
+def shrink_enabled_rows(rows: typing.Sequence, struct: typing.Mapping):
     new_rows = []
     for row in rows:
         new_row = []
@@ -54,7 +55,7 @@ def shrink_enabled_rows(rows, struct):
 
 
 # 置空不必要显示的内容
-def hide_skipped_row_fields(struct, rows):
+def hide_skipped_row_fields(struct: typing.Mapping, rows: typing.Sequence):
     if predef.PredefValueTypeColumn in struct['options']:
         # 把KV模式的类型和注释从csv中删除
         typecol = int(struct['options'][predef.PredefValueTypeColumn])
