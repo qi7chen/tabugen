@@ -206,9 +206,12 @@ class GoCsvLoadGenerator:
 
     # 生成helper.go文件
     @staticmethod
-    def gen_helper_file(main_filepath, ver, pkgname):
+    def gen_helper_file(main_filepath, ver, args):
+        (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
+        const_def = go_template.GO_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
+                                                             map_delims[0], map_delims[1])
         filepath = os.path.abspath(os.path.dirname(main_filepath))
         filename = filepath + os.path.sep + 'helper.go'
-        content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, pkgname)
-        content += go_template.GO_HELP_FILE_TEMPLATE
+        content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, args.package)
+        content += go_template.GO_HELP_FILE_TEMPLATE + const_def
         strutil.save_content_if_not_same(filename, content, 'utf-8')

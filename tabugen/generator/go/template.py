@@ -19,7 +19,9 @@ var (
 
 """
 
-GO_HEAD_CONST_TEMPLATE = """
+
+GO_CONST_TEMPLATE = """
+
 const (
     TABUGEN_CSV_SEP = `%s`      // CSV field delimiter
     TABUGEN_CSV_QUOTE = `%s`	// CSV field quote
@@ -28,9 +30,6 @@ const (
     TABUGEN_MAP_DELIM2 = `%s`	// map key-value delimiter
 )
 
-"""
-
-GO_LOAD_METHOD_TEMPLATE = """
 """
 
 GO_KV_LOAD_METHOD_TEMPLATE = """

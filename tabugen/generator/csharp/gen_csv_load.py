@@ -45,7 +45,7 @@ class CSharpCsvLoadGenerator:
         if typename.lower() == 'string':
             content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = %s.ParseBool(%s);\n' % (space, name, self.config_manager_name, valuetext)
+            content += '%s%s = bool.Parse(%s);\n' % (space, name, valuetext)
         else:
             content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
         return content
@@ -58,8 +58,8 @@ class CSharpCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split(%s.TABUGEN_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, row_name, self.config_manager_name)
+        content += "%svar items = %s.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, row_name, self.array_delim[0])
         content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
         content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
         content += "%s{\n" % space
@@ -77,8 +77,8 @@ class CSharpCsvLoadGenerator:
         key_type = lang.map_cs_type(k)
         val_type = lang.map_cs_type(v)
 
-        content = "%svar items = %s.Split(%s.TABUGEN_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, row_name, self.config_manager_name)
+        content = "%svar items = %s.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, row_name, self.map_delims[0])
         content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
         content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
         content += '%s{\n' % space
@@ -86,8 +86,8 @@ class CSharpCsvLoadGenerator:
         content += '%s    if (text.Length == 0) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split(%s.TABUGEN_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, self.config_manager_name)
+        content += "%s    var item = text.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
+            space, self.map_delims[1])
         content += '%s    if (items.Length == 2) {\n' % space
         content += self.gen_field_assign_stmt('var key', key_type, 'item[0]', tabs+1)
         content += self.gen_field_assign_stmt('var value', val_type, 'item[1]', tabs + 1)
@@ -232,9 +232,11 @@ class CSharpCsvLoadGenerator:
     # 生成manager类型
     def gen_global_class(self, descriptors, args):
         content = ''
-        content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
+
+        if self.config_manager_name != '':
+            content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
                                                               self.array_delim, self.map_delims[0], self.map_delims[1])
-        content += '}\n\n'
+            content += '}\n\n'
         return content
 
     #

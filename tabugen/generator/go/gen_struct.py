@@ -141,15 +141,13 @@ class GoStructGenerator:
         if self.load_gen is not None:
             (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
             self.load_gen.setup(array_delim, map_delims)
-            content += go_template.GO_HEAD_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
-                                                             map_delims[0], map_delims[1])
 
         for struct in descriptors:
             content += self.generate(struct, args)
 
         filename = os.path.abspath(filepath)
         if self.load_gen is not None:
-            self.load_gen.gen_helper_file(filename, version.VER_STRING, args.package)
+            self.load_gen.gen_helper_file(filename, version.VER_STRING, args)
 
         strutil.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote Go source to %s' % filename)

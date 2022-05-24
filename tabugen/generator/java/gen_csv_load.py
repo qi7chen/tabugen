@@ -41,7 +41,7 @@ class JavaCsvLoadGenerator:
         if typename.lower() == 'string':
             content += '%s%s = %s.trim();\n' % (space, name, valuetext)
         elif typename.lower().find('bool') >= 0:
-            content += '%s%s = %s.parseBool(%s);\n' % (space, name, self.config_manager_name, valuetext)
+            content += '%s%s = Boolean.parseBoolean(%s);\n' % (space, name, valuetext)
         else:
             table = {
                 'byte': 'Byte.parseByte(%s)',
@@ -63,7 +63,7 @@ class JavaCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_java_type(elem_type)
-        content += '%sString[] kvList = %s.split(%s.TABUGEN_ARRAY_DELIM);\n' % (space, row_name, self.config_manager_name)
+        content += '%sString[] kvList = %s.split(\"%s\");\n' % (space, row_name, self.array_delim[0])
         content += '%s%s[] list = new %s[kvList.length];\n' % (space, elem_type, elem_type)
         content += '%sfor (int i = 0; i < kvList.length; i++) {\n' % space
         content += '%s    if (!kvList[i].isEmpty()) {\n' % (self.TAB_SPACE * tabs)
@@ -84,13 +84,13 @@ class JavaCsvLoadGenerator:
         key_type = lang.map_java_type(k)
         val_type = lang.map_java_type(v)
 
-        content = '%sString[] kvList = %s.split(%s.TABUGEN_MAP_DELIM1);\n' % (space, row_name, self.config_manager_name)
+        content = '%sString[] kvList = %s.split(\"%s\");\n' % (space, row_name, self.map_delims[0])
         content += '%sfor(int i = 0; i < kvList.length; i++) {\n' % space
         content += '%s    String text = kvList[i];\n' % space
         content += '%s    if (text.isEmpty()) {\n' % space
         content += '%s        continue;\n' % space
         content += '%s    }\n' % space
-        content += '%s    String[] item = text.split(%s.TABUGEN_MAP_DELIM2);\n' % (space, self.config_manager_name)
+        content += '%s    String[] item = text.split(\"%s\");\n' % (space, self.map_delims[1])
         prefix1 = '%s key' % key_type
         prefix2 = '%s value' % val_type
         content += self.gen_field_assign_stmt(prefix1, key_type, 'item[0]', tabs + 1)
