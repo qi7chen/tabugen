@@ -11,13 +11,11 @@ sys.path.append(this_directory)
 with open(os.path.join(this_directory, 'README.md'), 'r', encoding='utf-8') as fh:
     readme = fh.read()
 
-tabugen_version = '0.8.0'
+tabugen_version = '0.8.1'
 
 install_requires = [
-    'et-xmlfile>=1.0.1',
-    'jdcal>=1.4.1',
-    'openpyxl>=2.6.3',
-    'PyMySQL>=0.9.3',
+    'xlrd>=2.0.1'
+    'openpyxl>=3.0.10',
 ]
 
 setuptools.setup(
@@ -36,7 +34,7 @@ setuptools.setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
-            "tabugen = tabugen.cli:main"
+            "tabugen = tabugen.__main__:main"
         ]
     }
 )

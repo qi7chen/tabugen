@@ -4,6 +4,6 @@
 
 _major = 0
 _minor = 8
-_patch = 0
+_patch = 1
 
 VER_STRING = '%d.%d.%d' % (_major, _minor, _patch)

@@ -64,9 +64,9 @@ class JsonDataWriter:
         return obj
 
     # 解析字符串为对象
-    def parse_value(self, struct, typename, text):
+    def parse_value(self, typename, text):
         abs_type = types.is_abstract_type(typename)
-        if abs_type is None:
+        if abs_type == '':
             return self.parse_primary_value(typename, text)
 
         if abs_type == 'array':
@@ -90,7 +90,7 @@ class JsonDataWriter:
             typename = row[typecol - 1].strip()
             valuetext = row[valuecol - 1].strip()
             # print(typename, valuetext)
-            value = self.parse_value(struct, typename, valuetext)
+            value = self.parse_value(typename, valuetext)
             if self.use_snake_case:
                 key = strutil.camel_to_snake(key)
             obj[key] = value
@@ -106,7 +106,7 @@ class JsonDataWriter:
             for field in inner_struct_fields:
                 valuetext = row[idx]
                 name = field['name']
-                value = self.parse_value(struct, field['original_type_name'], valuetext)
+                value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
                     name = strutil.camel_to_snake(name)
                 inner_item[name] = value
@@ -131,7 +131,7 @@ class JsonDataWriter:
                     inner_class_done = True
             else:
                 valuetext = row[idx]
-                value = self.parse_value(struct, field['original_type_name'], valuetext)
+                value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
                     name = strutil.camel_to_snake(field['camel_case_name'])
                 else:

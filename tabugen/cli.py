@@ -90,8 +90,7 @@ def main():
     parser.add_argument("--map_delims", default=";=", help="map item delimiters")
 
     # source code options
-    parser.add_argument("--config_manager_class", default='AutogenConfigManager',
-                        help="name of auto-generated config manager class")
+    parser.add_argument("--config_manager_class", default='', help="name of auto-generated config manager class")
     parser.add_argument("--gen_csv_parse", action='store_true', help="also generator csv parse method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
