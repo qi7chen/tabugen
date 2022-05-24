@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <type_traits>
+#include <absl/strings/str_split.h>
 #include <absl/strings/str_cat.h>
 #include <absl/strings/numbers.h>
 

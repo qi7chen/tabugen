@@ -5,6 +5,7 @@
 CURRENT_DIR = $(shell pwd)
 ROOT_DIR = $(shell realpath ../../)
 DATASHEET_DIR = $(shell realpath ../datasheet)
+OUT_SRC_DIR = $(CURRENT_DIR)/src
 OUT_DATA_DIR = $(CURRENT_DIR)/res
 
 VCPKG_TOOLCHAIN_FILE ?= $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -15,7 +16,7 @@ export PYTHONPATH=$(ROOT_DIR)
 export VCPKG_INCLUDE_DIR=$(VCPKG_INCLUDE_DIR_)
 export VCPKG_LIB_DIR=$(VCPKG_LIB_DIR_)
 
-TABUGEN_CLI = python $(ROOT_DIR)/tabugen/cli.py
+TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
 all: output build
 
@@ -27,19 +28,18 @@ install_vcpkg:
 clean:
 	rm -rf build
 
+generate:
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/SoldierDefine
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GuideDefine
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GlobalDefine
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/BoxDefine
+
 output:
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/basic/AutogenConfig \
-		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/array-map/AutogenConfig \
-		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/global-var/AutogenConfig \
-		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx --gen_csv_parse --cpp_out=$(CURRENT_DIR)/inner-class/AutogenConfig \
-		--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)	
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 			
 build:
-	mkdir -p build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN_FILE) .. 
-	cmake --build $(CURRENT_DIR)/build
+	mkdir -p cmake-build && cd cmake-build && cmake -DCMAKE_TOOLCHAIN_FILE=$(VCPKG_TOOLCHAIN_FILE) .. 
+	cmake --build $(CURRENT_DIR)/cmake-build
