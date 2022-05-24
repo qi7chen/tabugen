@@ -5,10 +5,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 
+
 namespace CSharpDemo
 {
     class Program
-    {
+    {  
         static List<string> ReadFileToLines(string filepath)
         {
             StreamReader r = new StreamReader(filepath);
@@ -78,32 +79,32 @@ namespace CSharpDemo
             return -1;
         }
 
-        
         static void TestLoadCSV(string rootPath)
         {
-            string filename = "box_probability_define.csv";
-            string filepath = string.Format("{0}/res/{1}", rootPath, filename);
+            string filename = "soldier_property_define.csv";
+            string filepath = Path.GetFullPath(string.Format("{0}/res/{1}", rootPath, filename));
+            Console.WriteLine("load file {0}", filepath);
             var lines = ReadFileToLines(filepath);
-            var list = new Config.BoxProbabilityDefine[lines.Count];
-            for (int i = 0; i < list.Length; i++)
+            var list = new Config.SoldierPropertyDefine[lines.Count];
+            for(int i = 0; i < list.Length; i++)
             {
                 var row = ReadRecordFromLine(lines[i]);
-                var item = new Config.BoxProbabilityDefine();
+                var item = new Config.SoldierPropertyDefine();
                 item.ParseFromRow(row);
                 list[i] = item;
-                Console.WriteLine(JsonSerializer.Serialize(item));
+                Console.WriteLine(JsonSerializer.Serialize<Config.SoldierPropertyDefine>(item));
             }
         }
 
-        static void TestLoadJSON(string rootPath)
+        static void TestLoadJSON(String rootPath)
         {
-            string filename = "box_probability_define.json";
-            string filepath = string.Format("{0}/res/{1}", rootPath, filename);
+            string filename = "soldier_property_define.json";
+            string filepath = Path.GetFullPath(string.Format("{0}/res/{1}", rootPath, filename));
+            Console.WriteLine("load file {0}", filepath);
             StreamReader reader = new StreamReader(filepath);
             var content = reader.ReadToEnd();
-
-            var conflist = JsonSerializer.Deserialize<Config.BoxProbabilityDefine[]>(content);
-            var text = JsonSerializer.Serialize(conflist);
+            var conflist = JsonSerializer.Deserialize<Config.SoldierPropertyDefine[]>(content);
+            var text = JsonSerializer.Serialize<Config.SoldierPropertyDefine[]>(conflist);
             Console.WriteLine(text);
         }
         
@@ -112,7 +113,7 @@ namespace CSharpDemo
             string rootPath = "..";
             if (args.Length > 1) {
                 rootPath = args[1];
-            }                
+            }            
             try
             {
                 TestLoadCSV(rootPath);
