@@ -32,7 +32,7 @@ public class NewbieGuideDefine
             this.Target = row[2].Trim();
         }
         {
-            var items = row[3].Split(AutogenConfigManager.TABUGEN_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
+            var items = row[3].Split(",", StringSplitOptions.RemoveEmptyEntries);
             this.Accomplishment = new short[items.Length];
             for(int i = 0; i < items.Length; i++) 
             {
@@ -41,7 +41,7 @@ public class NewbieGuideDefine
             }
         }
         {
-            var items = row[4].Split(AutogenConfigManager.TABUGEN_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
+            var items = row[4].Split(";", StringSplitOptions.RemoveEmptyEntries);
             this.Goods = new Dictionary<string,uint>();
             for(int i = 0; i < items.Length; i++) 
             {
@@ -49,7 +49,7 @@ public class NewbieGuideDefine
                 if (text.Length == 0) {
                     continue;
                 }
-                var item = text.Split(AutogenConfigManager.TABUGEN_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);
+                var item = text.Split("=", StringSplitOptions.RemoveEmptyEntries);
                 if (items.Length == 2) {
                 var key = item[0].Trim();
                 var value = uint.Parse(item[1]);
@@ -60,27 +60,6 @@ public class NewbieGuideDefine
         if (row[5].Length > 0) {
             this.Description = row[5].Trim();
         }
-    }
-}
-
-
-public class AutogenConfigManager 
-{    
-    public const char TABUGEN_CSV_SEP = ',';           // CSV field delimiter
-    public const char TABUGEN_CSV_QUOTE = '"';          // CSV field quote
-    public const char TABUGEN_ARRAY_DELIM = ',';       // array item delimiter
-    public const char TABUGEN_MAP_DELIM1 = ';';        // map item delimiter
-    public const char TABUGEN_MAP_DELIM2 = '=';        // map key-value delimiter
-    
-    // self-defined boolean value parse
-    public static bool ParseBool(string text)
-    {
-        if (text == null || text.Length == 0) {
-            return false;
-        }
-        return string.Equals(text, "1") ||
-            string.Equals(text, "Y") || 
-            string.Equals(text, "ON");
     }
 }
 

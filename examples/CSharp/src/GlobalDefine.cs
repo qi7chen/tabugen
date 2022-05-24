@@ -56,10 +56,10 @@ public class GlobalPropertyDefine
             this.CancelBuildReturnPercent = ushort.Parse(rows[8][2]);
         }
         if (rows[9][2].Length > 0) {
-            this.EnableSearch = AutogenConfigManager.ParseBool(rows[9][2]);
+            this.EnableSearch = bool.Parse(rows[9][2]);
         }
         {
-            var items = rows[10][2].Split(AutogenConfigManager.TABUGEN_ARRAY_DELIM, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[10][2].Split(",", StringSplitOptions.RemoveEmptyEntries);
             this.SpawnLevelLimit = new int[items.Length];
             for(int i = 0; i < items.Length; i++) 
             {
@@ -68,7 +68,7 @@ public class GlobalPropertyDefine
             }
         }
         {
-            var items = rows[11][2].Split(AutogenConfigManager.TABUGEN_MAP_DELIM1, StringSplitOptions.RemoveEmptyEntries);
+            var items = rows[11][2].Split(";", StringSplitOptions.RemoveEmptyEntries);
             this.FirstRechargeReward = new Dictionary<string,int>();
             for(int i = 0; i < items.Length; i++) 
             {
@@ -76,7 +76,7 @@ public class GlobalPropertyDefine
                 if (text.Length == 0) {
                     continue;
                 }
-                var item = text.Split(AutogenConfigManager.TABUGEN_MAP_DELIM2, StringSplitOptions.RemoveEmptyEntries);
+                var item = text.Split("=", StringSplitOptions.RemoveEmptyEntries);
                 if (items.Length == 2) {
                 var key = item[0].Trim();
                 var value = int.Parse(item[1]);
@@ -84,27 +84,6 @@ public class GlobalPropertyDefine
                 }
             }
         }
-    }
-}
-
-
-public class AutogenConfigManager 
-{    
-    public const char TABUGEN_CSV_SEP = ',';           // CSV field delimiter
-    public const char TABUGEN_CSV_QUOTE = '"';          // CSV field quote
-    public const char TABUGEN_ARRAY_DELIM = ',';       // array item delimiter
-    public const char TABUGEN_MAP_DELIM1 = ';';        // map item delimiter
-    public const char TABUGEN_MAP_DELIM2 = '=';        // map key-value delimiter
-    
-    // self-defined boolean value parse
-    public static bool ParseBool(string text)
-    {
-        if (text == null || text.Length == 0) {
-            return false;
-        }
-        return string.Equals(text, "1") ||
-            string.Equals(text, "Y") || 
-            string.Equals(text, "ON");
     }
 }
 

@@ -114,29 +114,8 @@ public class SoldierPropertyDefine
             this.MovingSpeed = double.Parse(row[23]);
         }
         if (row[24].Length > 0) {
-            this.EnableBurn = AutogenConfigManager.ParseBool(row[24]);
+            this.EnableBurn = bool.Parse(row[24]);
         }
-    }
-}
-
-
-public class AutogenConfigManager 
-{    
-    public const char TABUGEN_CSV_SEP = ',';           // CSV field delimiter
-    public const char TABUGEN_CSV_QUOTE = '"';          // CSV field quote
-    public const char TABUGEN_ARRAY_DELIM = ',';       // array item delimiter
-    public const char TABUGEN_MAP_DELIM1 = ';';        // map item delimiter
-    public const char TABUGEN_MAP_DELIM2 = '=';        // map key-value delimiter
-    
-    // self-defined boolean value parse
-    public static bool ParseBool(string text)
-    {
-        if (text == null || text.Length == 0) {
-            return false;
-        }
-        return string.Equals(text, "1") ||
-            string.Equals(text, "Y") || 
-            string.Equals(text, "ON");
     }
 }
 
