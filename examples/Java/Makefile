@@ -5,22 +5,43 @@
 
 
 CURRENT_DIR = $(shell pwd)
-ROOT_DIR = $(shell realpath ../../../)
-DATASHEET_DIR = $(shell realpath ../../datasheet)
-OUT_SRC_DIR = $(CURRENT_DIR)/src
-OUT_DATA_DIR = $(CURRENT_DIR)/res
+ROOT_DIR = $(shell realpath ../../)
+DATASHEET_DIR = $(shell realpath ../datasheet)
+OUT_SRC_DIR = $(CURRENT_DIR)/src/main/java
+OUT_DATA_DIR = $(CURRENT_DIR)/src/main/resources
 
 export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
-all: output-csv output-json build run clean
+all: build clean
+
+generate:
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse  --package=com.pdfun.config --java_out=$(OUT_SRC_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx --gen_csv_parse  --package=com.pdfun.config --java_out=$(OUT_SRC_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx --gen_csv_parse  --package=com.pdfun.config --java_out=$(OUT_SRC_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx --gen_csv_parse  --package=com.pdfun.config --java_out=$(OUT_SRC_DIR)
 
 output:
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse --skip_column=Volume,Hurt --package=config \
-		--go_out=$(OUT_SRC_DIR)/soldier_csv.go --go_fmt --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx	--out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
 
-	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/兵种.xlsx --go_json_tag --skip_column=Volume,Hurt --package=config \
-		--go_out=$(OUT_SRC_DIR)/soldier_json.go --go_fmt --out_data_format=json --json_indent --json_snake_case --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/新手任务.xlsx	--out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
 
-.PHONEY: clean run output-csv output-json
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/全局变量表.xlsx	--out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)	
+
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --parse_files=$(DATASHEET_DIR)/随机宝箱.xlsx	--out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)	
+
+clean:
+	mvn clean
+
+run: build
+	mvn exec:java -Dexec.mainClass="Sample"
+
+build: 
+	mvn compile
+
+.PHONEY: clean run generate output
