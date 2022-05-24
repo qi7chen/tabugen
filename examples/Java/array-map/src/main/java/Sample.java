@@ -1,4 +1,4 @@
-// Copyright (C) 2019-present prototyped.cn. All rights reserved.
+// Copyright (C) 2019-present ichenq@outlook.com. All rights reserved.
 // Distributed under the terms and conditions of the Apache License.
 // See accompanying files LICENSE.
 
