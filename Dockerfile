@@ -1,4 +1,4 @@
-FROM python:3.9-slim as builder
+FROM python:3.6-slim as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -7,7 +7,9 @@ WORKDIR /app
 COPY . .
 
 RUN pip install -r requirements.txt && pip install pyinstaller
-RUN pyinstaller -D tabugen
+RUN pyinstaller -F ./tabugen/__main__.py -c -n tabugen
 
 
-# CMD ["python manage.py runserver 0.0.0.0:8000"]
+FROM builder
+COPY --from=builder /app/dist/tabugen ./
+CMD ["./tabugen --help"]
