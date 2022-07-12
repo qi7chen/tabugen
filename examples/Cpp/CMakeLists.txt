@@ -26,15 +26,15 @@ endif()
 
 if (WIN32)
   add_definitions(
-    -D_WIN32_WINNT=0x0601 
-    -DWIN32_LEAN_AND_MEAN 
-    -D _CRT_SECURE_NO_WARNINGS
-    -D_SCL_SECURE_NO_WARNINGS 
+    -D_WIN32_WINNT=0x0601
+    -DWIN32_LEAN_AND_MEAN
+    -D_CRT_SECURE_NO_WARNINGS
+    -D_SCL_SECURE_NO_WARNINGS
     -DNOMINMAX
     )
 endif()
 
-set(ALL_SRC_FILES 
+set(ALL_SRC_FILES
     ${PROJECT_ROOT_DIR}/src/common/Conv.h
     ${PROJECT_ROOT_DIR}/src/common/Utils.h
     ${PROJECT_ROOT_DIR}/src/common/Utils.cpp
@@ -46,7 +46,7 @@ set(ALL_SRC_FILES
     ${PROJECT_ROOT_DIR}/src/SoldierDefine.h
     ${PROJECT_ROOT_DIR}/src/SoldierDefine.cpp
     ${PROJECT_ROOT_DIR}/src/GuideDefine.h
-    ${PROJECT_ROOT_DIR}/src/GuideDefine.cpp    
+    ${PROJECT_ROOT_DIR}/src/GuideDefine.cpp
     )
 
 add_executable(Examples ${ALL_SRC_FILES})
