@@ -1,6 +1,8 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
 
 import os
 import tabugen.typedef as types
@@ -16,13 +18,8 @@ class GoCsvLoadGenerator:
     TAB_SPACE = '\t'
 
     def __init__(self):
-        self.array_delim = ','
-        self.map_delims = [',', '=']
-
-    # 初始化array, map分隔符
-    def setup(self, array_delim, map_delims):
-        self.array_delim = array_delim
-        self.map_delims = map_delims
+        self.array_delim = predef.PredefDelim1
+        self.map_delims = [predef.PredefDelim1, predef.PredefDelim2]
 
     # 生成赋值方法
     def gen_field_assign_stmt(self, name, typename, valuetext, tabs, tips):
@@ -31,8 +28,7 @@ class GoCsvLoadGenerator:
         if typename == 'string':
             return '%s%s = %s\n' % (space, name, valuetext)
         else:
-            content += '%svar value = parseStringAs(%s, %s)\n' % (space, lang.map_go_reflect_type(typename), valuetext)
-            content += '%s%s = value.(%s)\n' % (space, name, typename)
+            content += '%s%s = %s(%s)\n' % (space, name, lang.map_go_parse_fn(typename), valuetext)
         return content
 
     # 生成array赋值
@@ -45,8 +41,8 @@ class GoCsvLoadGenerator:
         elem_type = lang.map_go_type(elem_type)
 
         content += '%sfor _, item := range strings.Split(%s, TABUGEN_ARRAY_DELIM) {\n' % (space, row_name)
-        content += '%s    var value = parseStringAs(%s, item)\n' % (space, lang.map_go_reflect_type(elem_type))
-        content += '%s    %s%s = append(p.%s, value.(%s))\n' % (space, prefix, name, name, elem_type)
+        content += '%s    var value = %s(item)\n' % (space, lang.map_go_parse_fn(elem_type))
+        content += '%s    %s%s = append(p.%s, value)\n' % (space, prefix, name, name)
         content += '%s}\n' % space
         return content
 
@@ -66,10 +62,8 @@ class GoCsvLoadGenerator:
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var items = strings.Split(text, TABUGEN_MAP_DELIM2)\n' % space
-        content += '%s    var value = parseStringAs(%s, items[0])\n' % (space, lang.map_go_reflect_type(key_type))
-        content += '%s    var key = value.(%s)\n' % (space, key_type)
-        content += '%s    value = parseStringAs(%s, items[1])\n' % (space, lang.map_go_reflect_type(val_type))
-        content += '%s    var val = value.(%s)\n' % (space, val_type)
+        content += '%s    var key = %s(items[0])\n' % (space, lang.map_go_parse_fn(key_type))
+        content += '%s    var val = %s(items[1])\n' % (space, lang.map_go_parse_fn(val_type))
         content += '%s    %s%s[key] = val\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
@@ -78,14 +72,10 @@ class GoCsvLoadGenerator:
     def gen_kv_parse_method(self, struct):
         content = ''
         rows = struct['data_rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
 
-        keyidx = keycol - 1
-        validx = valcol - 1
-        typeidx = typcol - 1
+        keyidx = predef.PredefKeyColumn
+        validx = predef.PredefValueColumn
+        typeidx = predef.PredefValueTypeColumn
 
         content += 'func (p *%s) ParseFromRows(rows [][]string) error {\n' % struct['camel_case_name']
         content += '\tif len(rows) < %d {\n' % len(rows)
@@ -207,9 +197,8 @@ class GoCsvLoadGenerator:
     # 生成helper.go文件
     @staticmethod
     def gen_helper_file(main_filepath, ver, args):
-        (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-        const_def = go_template.GO_CONST_TEMPLATE % (args.out_csv_delim, '"', array_delim,
-                                                             map_delims[0], map_delims[1])
+        const_def = go_template.GO_CONST_TEMPLATE % (",", '"', predef.PredefDelim1,
+                                                     predef.PredefDelim1, predef.PredefDelim2)
         filepath = os.path.abspath(os.path.dirname(main_filepath))
         filename = filepath + os.path.sep + 'helper.go'
         content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, args.package)

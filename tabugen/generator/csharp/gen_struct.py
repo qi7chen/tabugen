@@ -23,7 +23,7 @@ class CSharpStructGenerator:
     def __init__(self):
         self.load_gen = None
 
-    def setup(self, name):
+    def enable_gen_parse(self, name):
         if name is not None:
             if name == "csv":
                 self.load_gen = CSharpCsvLoadGenerator()

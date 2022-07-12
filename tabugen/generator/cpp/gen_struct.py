@@ -22,7 +22,7 @@ class CppStructGenerator:
     def __init__(self):
         self.load_gen = None
 
-    def setup(self, name):
+    def enable_gen_parse(self, name):
         """
             :param name: loader需要满足2个接口
                 gen_struct_method_declare()
