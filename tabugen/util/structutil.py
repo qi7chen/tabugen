@@ -1,6 +1,8 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
 
 import re
 import typing
@@ -10,7 +12,7 @@ import tabugen.util.strutil as strutil
 
 
 # 初始化struct
-def setup_struct(struct: typing.MutableMapping):
+def setup_struct(struct):
     if struct['options'][predef.PredefParseKVMode]:
         fields = get_struct_kv_fields(struct)
         struct['fields'] = fields
@@ -22,7 +24,7 @@ def setup_struct(struct: typing.MutableMapping):
 
 
 # 根据'column_index'查找一个字段
-def get_field_by_column_index(struct: typing.Mapping, column_idx: int):
+def get_field_by_column_index(struct, column_idx: int):
     assert column_idx > 0
     idx = 0
     for field in struct["fields"]:
@@ -34,7 +36,7 @@ def get_field_by_column_index(struct: typing.Mapping, column_idx: int):
 
 
 # 获取字段
-def get_struct_keys(struct: typing.Mapping, keyname: str, keymapping: typing.Callable)-> typing.Sequence:
+def get_struct_keys(struct, keyname: str, keymapping):
     if keyname not in struct['options']:
         return []
 
@@ -114,7 +116,7 @@ def get_vec_field_range(struct: typing.Mapping, camel_case_name=False) -> typing
 
 
 #
-def get_inner_class_range(struct: typing.Mapping) -> typing.Sequence:
+def get_inner_class_range(struct):
     if predef.PredefInnerTypeRange not in struct["options"]:
         return 0, 0, 0
 
@@ -144,7 +146,7 @@ def get_inner_class_range(struct: typing.Mapping) -> typing.Sequence:
 
 
 # 内部嵌入的class
-def get_inner_class_struct_fields(struct: typing.Mapping) -> typing.Sequence:
+def get_inner_class_struct_fields(struct):
     if predef.PredefInnerTypeRange not in struct["options"]:
         return []
 
@@ -172,7 +174,7 @@ def get_inner_class_struct_fields(struct: typing.Mapping) -> typing.Sequence:
 
 
 # 所有嵌入类的字段
-def get_inner_class_mapped_fields(struct: typing.Mapping, camel_case_name=False) -> typing.Sequence:
+def get_inner_class_mapped_fields(struct, camel_case_name=False):
     if predef.PredefInnerTypeRange not in struct["options"]:
         return [], []
 
@@ -196,7 +198,7 @@ def get_inner_class_mapped_fields(struct: typing.Mapping, camel_case_name=False)
 
 
 #
-def enabled_fields(struct: typing.Mapping) -> typing.Sequence:
+def enabled_fields(struct):
     fields = []
     for field in struct["fields"]:
         if field["enable"]:

@@ -1,6 +1,8 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
 
 from tabugen.datatran.csv import CsvDataWriter
 from tabugen.datatran.json import JsonDataWriter

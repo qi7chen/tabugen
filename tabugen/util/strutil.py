@@ -1,6 +1,8 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
 
 import codecs
 import datetime
@@ -33,10 +35,7 @@ def max_field_length(table: typing.Mapping, key: str, f: typing.Callable) -> int
 
 # 空格对齐
 def pad_spaces(text: str, min_len: int) -> str:
-    if len(text) < min_len:
-        for n in range(min_len - len(text)):
-            text += ' '
-    return text
+    return text.ljust(min_len, ' ')
 
 
 # snake case to camel case
@@ -73,14 +72,16 @@ def random_word(length: int) -> str:
 
 
 # a=1,b=2 => {a:1,b:2}
-def parse_kv_to_obj(text: str) -> typing.Mapping:
+def parse_kv_to_dict(text: str) -> typing.Mapping:
     table = {}
     if len(text) == 0:
         return table
     for item in text.split(','):
         kv = item.split('=')
         assert len(kv) == 2, kv
-        table[kv[0].strip()] = kv[1].strip()
+        key = kv[0].strip()
+        val = kv[1].strip()
+        table[key] = val
     return table
 
 
@@ -98,15 +99,6 @@ def find_common_prefix(s1: str, s2: str) -> str:
             prefix = prefix[:i]
             break
     return prefix
-
-
-# 是否全部是空字符串
-def is_row_empty(row: typing.Sequence) -> bool:
-    for v in row:
-        v = v.strip()
-        if len(v) > 0:
-            return False
-    return True
 
 
 # 是否是相似的列（归为数组）
@@ -161,34 +153,18 @@ def save_content_if_not_same(filename: str, content: str, enc: str) -> bool:
         return True
 
 
-# 从路径种搜索所有excel文件
-def enum_excel_files(rootdir: str, ignore_check: typing.Callable) -> typing.Sequence:
-    files = []
-    for dirpath, dirnames, filenames in os.walk(rootdir):
-        for filename in filenames:
-            if filename.endswith(".xlsx") or filename.endswith(".xls"):
-                files.append(dirpath + os.sep + filename)
-    filenames = []
-    for filename in files:
-        if ignore_check is not None:
-            if not ignore_check(filename):
-                filename = os.path.abspath(filename)
-                filenames.append(filename)
-    return filenames
-
-
 # 对齐数据行
-def pad_data_rows(rows: typing.Sequence, fields: typing.Mapping) -> typing.Sequence:
+def pad_data_rows(fields, table):
     # pad empty row
     max_row_len = len(fields)
-    for row in rows:
+    for row in table:
         if len(row) > max_row_len:
             max_row_len = len(row)
 
-    for row in rows:
+    for row in table:
         for j in range(len(row), max_row_len):
-            row.append("")
-    return rows
+            row.append('')
+    return table
 
 
 # array和map分隔符  "|=" --> ['|', '=']

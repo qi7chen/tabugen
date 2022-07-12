@@ -9,7 +9,7 @@ import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
 import tabugen.util.structutil as structutil
-import tabugen.util.rowutil as rowutil
+import tabugen.util.tableutil as rowutil
 
 
 # 写入json文件

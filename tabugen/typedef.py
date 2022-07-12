@@ -1,8 +1,10 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
 
-
+import unittest
 from enum import Enum
 from typing import Tuple
 
@@ -93,7 +95,7 @@ def is_primitive_type(name: str) -> bool:
     return True
 
 
-# get integer type by name
+# get type by name
 def get_type_by_name(name: str) -> Type:
     for k, v in abstract_type_names.items():
         if name.find(k) >= 0:
@@ -101,7 +103,11 @@ def get_type_by_name(name: str) -> Type:
     for k, v in type_names.items():
         if v == name:
             return k
-    assert False, name
+    return Type.Unknown
+
+
+def is_defined_type(name: str) -> bool:
+    return get_type_by_name(name) != Type.Unknown
 
 
 # is integer type
@@ -149,16 +155,18 @@ def map_key_value_types(typename: str) -> Tuple:
     return keytype, valtype
 
 
-def test_is_primitive_type():
-    test_data = [
-        ('int', True),
-        ('map', False),
-        ('', False),
-    ]
-    for pair in test_data:
-        out = is_primitive_type(pair[0])
-        print(out)
+class TestTypes(unittest.TestCase):
+
+    def test_primitive_type(self):
+        test_data = [
+            ('int', True),
+            ('map', False),
+            ('', False),
+        ]
+        for pair in test_data:
+            out = is_primitive_type(pair[0])
+            print(out)
 
 
 if __name__ == '__main__':
-    test_is_primitive_type()
+    unittest.main()

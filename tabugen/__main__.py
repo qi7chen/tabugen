@@ -1,4 +1,5 @@
-"""The main entry point. Invoke as `tabugen' or `python -m tabugen'.
+"""
+The main entry point. Invoke as `tabugen' or `python -m tabugen'.
 """
 
 

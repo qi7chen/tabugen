@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-#
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
+"""
+Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Distributed under the terms and conditions of the Apache License.
+See accompanying files LICENSE.
+"""
+
 
 import argparse
 import sys
@@ -12,10 +14,7 @@ from tabugen.version import VER_STRING
 
 
 def run(args):
-    parser = get_struct_parser(args.parser)
-    if parser is None:
-        print('struct parser `%s` not implemented' % args.parser)
-        sys.exit(1)
+    parser = get_struct_parser('excel')
 
     pairs = [
         (args.cpp_out, 'cpp'),
@@ -64,30 +63,14 @@ def verify_args(args):
         print('package name must be set')
         sys.exit(1)
 
-    if args.array_delim is not None:
-        if len(args.array_delim) != 1:
-            print('array delimiter must contains 1 char!')
-            sys.exit(1)
-
-    if args.map_delims is not None:
-        if len(args.map_delims) != 2:
-            print('map delimiter must contains 2 char(s)!')
-            sys.exit(1)
-
 
 def main():
     parser = argparse.ArgumentParser(description="A configuration import/export and code generation tool")
     parser.add_argument("-v", "--version", action='version', version='v' + VER_STRING)
-    parser.add_argument("--parser", default="excel", help="where your row data come from(excel, xml, database etc)")
     parser.add_argument("--without_data", action="store_true", help="parse struct definition but no data rows")
-
-    # excel options
-    parser.add_argument("--parse_files", help="files or directory for struct parsing")
-    parser.add_argument("--parse_meta_file", help="meta file for struct parsing")
-    parser.add_argument("--parse_file_skip", help="files or directory to skip in struct parsing")
-    parser.add_argument("--skip_column", default='', help="skipping column when do parsing")
-    parser.add_argument("--array_delim", default=",", help="array item delimiter")
-    parser.add_argument("--map_delims", default=";=", help="map item delimiters")
+    parser.add_argument("--asset_path", help="filename or directory of excel files")
+    parser.add_argument("--skip_files", help="filenames to skip when parsing excel")
+    parser.add_argument("--enable_skip_fields", action="store_true", help="enable skip columns")
 
     # source code options
     parser.add_argument("--config_manager_class", default='', help="name of auto-generated config manager class")

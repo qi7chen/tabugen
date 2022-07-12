@@ -9,7 +9,7 @@ import tempfile
 import filecmp
 import shutil
 import tabugen.util.strutil as strutil
-import tabugen.util.rowutil as rowutil
+import tabugen.util.tableutil as rowutil
 
 
 # 写入csv文件
