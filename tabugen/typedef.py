@@ -69,7 +69,7 @@ abstract_type_names = {
     "any": Type.Any,
 }
 
-interger_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'int64', 'uint64', 'enum']
+integer_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'int64', 'uint64', 'enum']
 floating_types = ['float', 'float32', 'float64']
 
 
@@ -112,7 +112,7 @@ def is_defined_type(name: str) -> bool:
 
 # is integer type
 def is_integer_type(typename: str) -> bool:
-    return typename in interger_types
+    return typename in integer_types
 
 
 # is floating point

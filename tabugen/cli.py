@@ -45,8 +45,8 @@ def run(args):
         for pair in code_generators:
             codegen = pair[0]
             filepath = pair[1]
-            if args.gen_csv_parse:
-                codegen.setup('csv')
+            if args.enable_gen_csv_parse:
+                codegen.enable_gen_parse('csv')
             codegen.run(descriptors, filepath, args)
 
     if not args.without_data and args.out_data_format is not None:
@@ -74,7 +74,7 @@ def main():
 
     # source code options
     parser.add_argument("--config_manager_class", default='', help="name of auto-generated config manager class")
-    parser.add_argument("--gen_csv_parse", action='store_true', help="also generator csv parse method code")
+    parser.add_argument("--enable_gen_csv_parse", action='store_true', help="also generator csv parse method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
     parser.add_argument("--csharp_out", help="file path of generate C# class source code")
@@ -88,7 +88,6 @@ def main():
     parser.add_argument("--extra_cpp_include", default="common/Conv.h", help="extra include C++ header")
     parser.add_argument("--source_file_encoding", default="utf8", help="encoding of generated source file")
     parser.add_argument("--data_file_encoding", default="utf8", help="encoding of output data file")
-    parser.add_argument("--out_csv_delim", default=",", help="output CSV file field delimiter")
     parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
     parser.add_argument("--out_data_path", default=".", help="output file path")
     parser.add_argument("--json_indent", action="store_true", help="enable JSON indent for output data")

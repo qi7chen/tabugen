@@ -134,24 +134,24 @@ def map_go_raw_type(typ: str) -> str:
     return go_type_mapping[typ]
 
 
-def map_go_reflect_type(typ: str) -> str:
+def map_go_parse_fn(typ: str) -> str:
     mapping = {
-        'bool': 'reflect.Bool',
-        'int8': 'reflect.Int8',
-        'uint8': 'reflect.Uint8',
-        'int16': 'reflect.Int16',
-        'uint16': 'reflect.Uint16',
-        'int': 'reflect.Int',
-        'uint': 'reflect.Uint',
-        'int32': 'reflect.Int32',
-        'uint32': 'reflect.Uint32',
-        'int64': 'reflect.Int64',
-        'uint64': 'reflect.Uint64',
-        'float': 'reflect.Float32',
-        'float32': 'reflect.Float32',
-        'float64': 'reflect.Float64',
-        'enum': 'reflect.Int',
-        'string': 'reflect.String',
+        'bool': 'parseBool',
+        'int8': 'parseI8',
+        'uint8': 'parseU8',
+        'int16': 'parseI16',
+        'uint16': 'parseU16',
+        'int': 'parseInt',
+        'uint': 'parseUint',
+        'int32': 'parseI32',
+        'uint32': 'parseU32',
+        'int64': 'parseI64',
+        'uint64': 'parseU64',
+        'float': 'parseF64',
+        'float32': 'parseF32',
+        'float64': 'parseF64',
+        'enum': 'parseI32',
+        'string': 'strings.TrimSpace',
     }
     return mapping[typ]
 

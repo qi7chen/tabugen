@@ -67,17 +67,26 @@ class ExcelStructParser:
             if not ignored:
                 self.filenames.append(filename)
 
-    def parse_kv_table(self, meta, table):
+    def parse_kv_table(self, meta, table, struct):
         for row in table:
-            pass
+            name = row[predef.PredefKeyColumn]
+            type_name = row[predef.PredefValueTypeColumn]
+            field_type = types.get_type_by_name(type_name)
+            comment = row[predef.PredefCommentColumn]
+            field = {
+                "name": name,
+                "camel_case_name": strutil.camel_case(name),
+                "original_type_name": type_name,
+                "type": field_type,
+                "type_name": types.get_name_of_type(field_type),
+                "comment": comment,
+                "enable": name not in self.skipped_fields,
+            }
+            struct['fields'].append(field)
 
-    def parse_struct_table(self, meta, table):
-        struct = {
-            'fields': [],
-            'comment': meta.get(predef.PredefClassComment, ""),
-        }
+    def parse_struct_table(self, meta, table, struct):
         if len(table) <= predef.PredefDataStartRow:
-            return struct
+            return
 
         class_name = meta[predef.PredefClassName]
         assert len(class_name) > 0
@@ -122,7 +131,17 @@ class ExcelStructParser:
 
             struct['fields'].append(field)
 
-        struct["options"] = meta
+    # 解析数据列
+    def parse_data_sheet(self, meta, table):
+        struct = {
+            'fields': [],
+            'options': meta,
+            'comment': meta.get(predef.PredefClassComment, ""),
+        }
+        if meta[predef.PredefParseKVMode]:  # 全局KV模式
+            self.parse_kv_table(meta, table, struct)
+        else:
+            self.parse_struct_table(meta, table, struct)
 
         if self.with_data:
             data = table[predef.PredefDataStartRow:]
@@ -130,14 +149,7 @@ class ExcelStructParser:
             data = tableutil.convert_table_data(struct, data)
             data = tableutil.blanking_disabled_columns(struct, data)
             struct["data_rows"] = data
-
         return struct
-
-    # 解析数据列
-    def parse_data_sheet(self, meta, table):
-        if meta[predef.PredefParseKVMode]:  # 全局KV模式
-            return self.parse_kv_table(meta, table)
-        return self.parse_struct_table(meta, table)
 
     # 解析所有文件
     def parse_all(self):
@@ -148,7 +160,6 @@ class ExcelStructParser:
             if struct is None:
                 print('parse file %s failed' % filename)
             else:
-                structutil.setup_struct(struct)
                 struct['source'] = filename
                 descriptors.append(struct)
         return descriptors
@@ -163,6 +174,8 @@ class ExcelStructParser:
 
         tableutil.set_meta_kv_mode(data_table, meta)
         struct = self.parse_data_sheet(meta, data_table)
+        struct['name'] = meta[predef.PredefClassName]
+        struct['camel_case_name'] = strutil.camel_case(struct['name'])
         struct['file'] = os.path.basename(filename)
         return struct
 

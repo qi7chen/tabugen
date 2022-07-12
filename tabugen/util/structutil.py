@@ -11,18 +11,6 @@ import tabugen.predef as predef
 import tabugen.util.strutil as strutil
 
 
-# 初始化struct
-def setup_struct(struct):
-    if struct['options'][predef.PredefParseKVMode]:
-        fields = get_struct_kv_fields(struct)
-        struct['fields'] = fields
-    comment = struct.get("comment", "")
-    if comment == "":
-        comment = struct["options"].get(predef.PredefClassComment, "")
-        if comment != "":
-            struct["comment"] = comment
-
-
 # 根据'column_index'查找一个字段
 def get_field_by_column_index(struct, column_idx: int):
     assert column_idx > 0
@@ -50,41 +38,6 @@ def get_struct_keys(struct, keyname: str, keymapping):
         name = field['name']
         key_tuples.append((typename, name))
     return key_tuples
-
-
-# 读取KV模式的字段
-def get_struct_kv_fields(struct: typing.Mapping) -> typing.Sequence:
-    rows = struct["data_rows"]
-    keycol = struct["options"][predef.PredefKeyColumn]
-    valcol = struct["options"][predef.PredefValueColumn]
-    typecol = int(struct['options'][predef.PredefValueTypeColumn])
-    assert keycol > 0 and valcol > 0 and typecol > 0
-    commentcol = -1
-    if predef.PredefCommentColumn in struct["options"]:
-        commentcol = int(struct["options"][predef.PredefCommentColumn])
-        assert commentcol > 0
-        comment_field = {}
-
-    fields = []
-    for i in range(len(rows)):
-        # print(rows[i])
-        name = rows[i][keycol - 1].strip()
-        typename = rows[i][typecol - 1].strip()
-        assert len(name) > 0, (rows[i], keycol - 1)
-        comment = ''
-        if commentcol >= 0:
-            comment = rows[i][commentcol - 1].strip()
-        field = {
-            'name': name,
-            'camel_case_name': strutil.camel_case(name),
-            'type_name': typename,
-            'original_type_name': typename,
-            'comment': comment,
-            'enable': True,
-        }
-        fields.append(field)
-
-    return fields
 
 
 # 获取生成数组字段的范围

@@ -32,16 +32,16 @@ data_writer_registry = {
 }
 
 
-#
+# 数据结构解析
 def get_struct_parser(name: str):
     return struct_parser_registry.get(name, None)
 
 
-#
+# 代码生成
 def get_code_generator(name: str):
     return code_generator_registry.get(name, None)
 
 
-#
+# 数据转换
 def get_data_writer(name: str):
     return data_writer_registry.get(name, None)

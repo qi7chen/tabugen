@@ -167,22 +167,6 @@ def pad_data_rows(fields, table):
     return table
 
 
-# array和map分隔符  "|=" --> ['|', '=']
-def to_sep_delimiters(array_delim: str, map_delims: str) -> typing.Tuple:
-    assert isinstance(array_delim, str) and len(array_delim) == 1, array_delim
-    assert len(map_delims) == 2, map_delims
-    delim1 = array_delim.strip()
-    if delim1 == '\\':
-        delim1 = '\\\\'
-
-    delim2 = [map_delims[0].strip(), map_delims[1].strip()]
-    if delim2[0] == '\\':
-        delim2[0] = '\\\\'
-    if delim2[1] == '\\':
-        delim2[1] = '\\\\'
-    return delim1, delim2
-
-
 class TestUtils(unittest.TestCase):
 
     def test_remove_suffix_number(self):
@@ -199,7 +183,7 @@ class TestUtils(unittest.TestCase):
 
     def test_parse_args(self):
         text = 'a=b,c=d,e=f'
-        output = parse_kv_to_obj(text)
+        output = parse_kv_to_dict(text)
         print(output)
         self.assertEqual(output['a'], 'b')
         self.assertEqual(output['c'], 'd')
