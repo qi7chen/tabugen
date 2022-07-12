@@ -45,7 +45,7 @@ def remove_one_column(table, column: int):
 
 # 删除空白列(在中间的列）
 def remove_empty_columns(table):
-    header = table[predef.PredefStructNameRow]
+    header = table[0]
     col = len(header)
     while col > 0:
         col -= 1

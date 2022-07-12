@@ -28,5 +28,4 @@ PredefInnerTypeRange = "inner_type_range"
 PredefInnerTypeClass = "inner_type_class"
 PredefInnerTypeName = "inner_type_name"
 
-OptionAutoVector = "auto_vector"          # 自动把名称相近的字段合并为数组
 OptionUniqueColumns = "unique_columns"    # 值唯一的列

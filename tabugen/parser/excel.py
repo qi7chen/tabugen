@@ -113,7 +113,7 @@ class ExcelStructParser:
                 "original_type_name": type_row[col],
                 "type": field_type,
                 "type_name": types.get_name_of_type(field_type),
-                "column_index": col + 1,
+                "column_index": col,
                 "comment": comment_row[col],
                 "enable": name not in self.skipped_fields,
             }
@@ -177,5 +177,6 @@ class ExcelStructParser:
         struct['name'] = meta[predef.PredefClassName]
         struct['camel_case_name'] = strutil.camel_case(struct['name'])
         struct['file'] = os.path.basename(filename)
+        struct['inner_fields'] = structutil.parse_inner_fields(struct)
         return struct
 

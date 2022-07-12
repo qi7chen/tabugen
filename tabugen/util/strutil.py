@@ -122,6 +122,15 @@ def is_vector_fields(prev: typing.Mapping, cur: typing.Mapping) -> bool:
     return False
 
 
+def is_last_char_digit(text: str) -> bool:
+    if len(text) == 0:
+        return False
+    n = len(text)
+    if 48 <= ord(text[n - 1]) <= 57:  # ['0', '9']
+        return True
+    return False
+
+
 # 删除末尾的数字
 def remove_suffix_number(text: str) -> str:
     n = len(text)
