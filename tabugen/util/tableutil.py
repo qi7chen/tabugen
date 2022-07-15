@@ -113,36 +113,6 @@ def blanking_kv_columns(table):
     return table
 
 
-# 是否是KeyValue模式
-def set_meta_kv_mode(table, meta):
-    meta[predef.PredefParseKVMode] = False
-
-    if len(table) == 0:
-        return
-
-    # 所有列长度为4
-    header = table[0]
-    if len(header) != predef.PredefCommentColumn + 1:
-        return
-
-    # 第一行都是
-    all_head_is_type = True
-    for name in header:
-        if not types.is_defined_type(name):
-            all_head_is_type = False
-            break
-    if all_head_is_type:
-        return
-
-    # 检查类型列
-    for row in table:
-        name = row[predef.PredefValueTypeColumn]
-        if not types.is_defined_type(name):
-            return
-
-    meta[predef.PredefParseKVMode] = True
-
-
 # meta字段处理
 def parse_meta(table):
     meta = {}

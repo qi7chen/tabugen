@@ -14,16 +14,16 @@ PredefCommentRow = 2        # 这一行描述注释文字
 PredefDataStartRow = 3      # 数据从这一行开始
 
 PredefMetaSheet = "@meta"                   # meta sheet名称
-PredefClassName = "class_name"              # 生成的class名称
-PredefClassComment = "class_comment"        # 生成的class注释
+PredefClassName = "ClassName"              # 生成的class名称
+PredefClassComment = "ClassComment"        # 生成的class注释
 
-PredefParseKVMode = "kv_mode"   # 是否是KV模式
+PredefParseKVMode = "KVMode"   # 是否是KV模式
 PredefKeyColumn = 0             # KV模式中的key所在列
 PredefValueTypeColumn = 1       # KV模式中的value类型所在列
 PredefValueColumn = 2           # KV模式中的value所在列
 PredefCommentColumn = 3         # KV模式中的注释所在列
 
-PredefInnerTypeClass = "inner_type_class"
-PredefInnerFieldName = "inner_field_name"
+PredefInnerTypeClass = "InnerTypeClass"
+PredefInnerFieldName = "InnerFieldName"
 
-OptionUniqueColumns = "unique_columns"    # 值唯一的列
+OptionUniqueColumns = "UniqueFields"    # 值唯一的列名称

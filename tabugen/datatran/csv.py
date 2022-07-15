@@ -8,6 +8,7 @@ import codecs
 import tempfile
 import filecmp
 import shutil
+import tabugen.predef as predef
 import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as rowutil
 
@@ -48,6 +49,22 @@ class CsvDataWriter:
             row.append(field['name'])
         return row
 
+    # 只保留key-value
+    def parse_kv_table(self, struct):
+        table = []
+        data_rows = struct['data_rows']
+        for row in data_rows:
+            name = row[predef.PredefKeyColumn]
+            value = row[predef.PredefValueColumn]
+            table.append([name, value])
+        return table
+
+    #
+    def parse_table(self, struct):
+        data = struct["data_rows"]
+        data = rowutil.validate_unique_column(struct, data)
+        return data
+
     def process(self, descriptors, args):
         filepath = args.out_data_path
         encoding = args.data_file_encoding
@@ -59,9 +76,9 @@ class CsvDataWriter:
                 pass
 
         for struct in descriptors:
-            data = struct["data_rows"]
-            data = rowutil.validate_unique_column(struct, data)
+            if predef.PredefParseKVMode in struct['options']:
+                table = self.parse_kv_table(struct)
+            else:
+                table = self.parse_table(struct)
             name = strutil.camel_to_snake(struct['camel_case_name'])
-            header = CsvDataWriter.header_row(struct)
-            table = [header] + data
             self.write_file(name, table, filepath, encoding)

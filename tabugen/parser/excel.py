@@ -67,11 +67,14 @@ class ExcelStructParser:
                 self.filenames.append(filename)
 
     def parse_kv_table(self, table, struct):
-        for row in table:
+        data_rows = table[predef.PredefDataStartRow:]
+        for row in data_rows:
             name = row[predef.PredefKeyColumn]
             type_name = row[predef.PredefValueTypeColumn]
             field_type = types.get_type_by_name(type_name)
-            comment = row[predef.PredefCommentColumn]
+            comment = ''
+            if len(row) >= predef.PredefCommentColumn:
+                comment = row[predef.PredefCommentColumn]
             field = {
                 "name": name,
                 "camel_case_name": strutil.camel_case(name),
@@ -93,10 +96,11 @@ class ExcelStructParser:
 
         type_row = table[predef.PredefFieldTypeRow]
         comment_row = table[predef.PredefCommentRow]
+        name_row = table[predef.PredefFieldNameRow]
 
         fields_names = {}
         prev_field = None
-        for col, name in enumerate(table[predef.PredefFieldNameRow]):
+        for col, name in enumerate(name_row):
             # skip empty column
             if name == '' or name.startswith('#') or name.startswith('//') or type_row[col] == "":
                 continue
@@ -164,8 +168,12 @@ class ExcelStructParser:
     def parse_one_file(self, filename):
         data_table, meta = xlsxhelp.read_workbook_data(filename)
         data_table = tableutil.remove_empty_columns(data_table)
+        if predef.PredefParseKVMode in meta:
+            text = meta[predef.PredefParseKVMode]
+            meta[predef.PredefParseKVMode] = strutil.parse_bool(text)
+        else:
+            meta[predef.PredefParseKVMode] = False
 
-        tableutil.set_meta_kv_mode(data_table, meta)
         struct = self.parse_data_sheet(meta, data_table)
         struct['name'] = meta[predef.PredefClassName]
         struct['camel_case_name'] = strutil.camel_case(struct['name'])
