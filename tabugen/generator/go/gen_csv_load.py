@@ -38,10 +38,13 @@ class GoCsvLoadGenerator:
         elem_type = types.array_element_type(typename)
         elem_type = lang.map_go_type(elem_type)
 
-        content += '%sfor _, item := range strings.Split(%s, TABUGEN_SEP_DELIM1) {\n' % (space, row_name)
+        content += '%svar items = strings.Split(%s, TABUGEN_SEP_DELIM1)\n' % (space, row_name)
+        content += '%svar array= make([]%s, 0, len(items)\n' % (space, elem_type)
+        content += '%sfor _, item := range items {\n' % space
         content += '%s    var value = %s(item)\n' % (space, lang.map_go_parse_fn(elem_type))
-        content += '%s    %s%s = append(p.%s, value)\n' % (space, prefix, name, name)
+        content += '%s    array = append(array, value)\n' % space
         content += '%s}\n' % space
+        content += '%s%s%s = array\n' % (space, prefix, name)
         return content
 
     # 生成map赋值
@@ -53,16 +56,18 @@ class GoCsvLoadGenerator:
         val_type = lang.map_go_type(v)
 
         content = ''
-        content += '%s%s%s = map[%s]%s{}\n' % (space, prefix, name, key_type, val_type)
-        content += '%sfor _, text := range strings.Split(%s, TABUGEN_SEP_DELIM1) {\n' % (space, row_name)
+        content += '%svar items = strings.Split(%s, TABUGEN_SEP_DELIM1)\n' % (space, row_name)
+        content += '%svar dict = make(map[%s]%s, len(items))\n' % (space, key_type, val_type)
+        content += '%sfor _, text := range items {\n' % space
         content += '%s    if text == "" {\n' % space
         content += '%s        continue\n' % space
         content += '%s    }\n' % space
         content += '%s    var pair = strings.Split(text, TABUGEN_SEP_DELIM2)\n' % space
         content += '%s    var key = %s(pair[0])\n' % (space, lang.map_go_parse_fn(key_type))
         content += '%s    var val = %s(pair[1])\n' % (space, lang.map_go_parse_fn(val_type))
-        content += '%s    %s%s[key] = val\n' % (space, prefix, name)
+        content += '%s    dict[key] = val\n' % space
         content += '%s}\n' % space
+        content += '%s%s%s = dict\n' % (space, prefix, name)
         return content
 
     # KV模式的ParseFromRow方法

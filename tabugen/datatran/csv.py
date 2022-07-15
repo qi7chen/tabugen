@@ -23,13 +23,13 @@ class CsvDataWriter:
 
     # 将数据写入csv文件
     @staticmethod
-    def write_file(name, rows, filepath, encoding):
+    def write_file(name, table, filepath, encoding):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), strutil.random_word(10))
         os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)
-        w = csv.writer(f, delimiter=',', lineterminator='\n', quotechar='"', quoting=csv.QUOTE_ALL)
-        w.writerows(rows)
+        w = csv.writer(f, delimiter=',', lineterminator='\n', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        w.writerows(table)
         f.close()
 
         target_filename = os.path.join(filepath, name + ".csv")
@@ -40,6 +40,13 @@ class CsvDataWriter:
         else:
             shutil.move(tmp_filename, target_filename)
             print("wrote csv rows to", target_filename)
+
+    @staticmethod
+    def header_row(struct):
+        row = []
+        for field in struct['fields']:
+            row.append(field['name'])
+        return row
 
     def process(self, descriptors, args):
         filepath = args.out_data_path
@@ -52,7 +59,9 @@ class CsvDataWriter:
                 pass
 
         for struct in descriptors:
-            rows = struct["data_rows"]
-            rows = rowutil.validate_unique_column(struct, rows)
+            data = struct["data_rows"]
+            data = rowutil.validate_unique_column(struct, data)
             name = strutil.camel_to_snake(struct['camel_case_name'])
-            self.write_file(name, rows, filepath, encoding)
+            header = CsvDataWriter.header_row(struct)
+            table = [header] + data
+            self.write_file(name, table, filepath, encoding)

@@ -97,8 +97,7 @@ class GoStructGenerator:
         inner_field_done = False
         content += '// %s %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct {\n' % struct['camel_case_name']
-        for field in fields:
-            col = field['column_index']
+        for col, field in enumerate(fields):
             text = ''
             if inner_start_col <= col < inner_end_col:
                 if not inner_field_done:

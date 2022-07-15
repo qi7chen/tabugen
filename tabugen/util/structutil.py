@@ -99,15 +99,6 @@ def parse_inner_fields(struct):
     return {}
 
 
-#
-def enabled_fields(struct):
-    fields = []
-    for field in struct["fields"]:
-        if field["enable"]:
-            fields.append(field)
-    return fields
-
-
 class TestUtils(unittest.TestCase):
 
     def test_check_consecutive_fields(self):

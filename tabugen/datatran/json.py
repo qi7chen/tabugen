@@ -73,17 +73,11 @@ class JsonDataWriter:
 
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
-        typecol = int(struct['options'][predef.PredefValueTypeColumn])
-        kvlist = struct['options'][predef.PredefKeyValueColumns].split(',')
-        assert len(kvlist) >= 3, kvlist
-        keycol = int(kvlist[0])
-        valuecol = int(kvlist[2])
-
         obj = {}
         for row in rows:
-            key = row[keycol - 1].strip()
-            typename = row[typecol - 1].strip()
-            valuetext = row[valuecol - 1].strip()
+            key = row[predef.PredefKeyColumn].strip()
+            typename = row[predef.PredefValueTypeColumn].strip()
+            valuetext = row[predef.PredefValueColumn].strip()
             # print(typename, valuetext)
             value = self.parse_value(typename, valuetext)
             if self.use_snake_case:
@@ -92,46 +86,45 @@ class JsonDataWriter:
         return obj
 
     #
-    def parse_row_inner_obj(self, struct, row, inner_struct_fields):
-        inner_obj_list = []
-        start, end, step = structutil.get_inner_class_range(struct)
-        for n in range(start, end, step):
-            inner_item = {}
-            idx = n
-            for field in inner_struct_fields:
-                valuetext = row[idx]
-                name = field['name']
+    def parse_row_inner_obj(self, struct, row, inner_fields):
+        obj_list = []
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
+
+        while start < end:
+            obj = {}
+            for n in range(step):
+                col = start + n
+                field = struct['fields'][col]
+                valuetext = row[col]
+                name = strutil.remove_suffix_number(field['name'])
                 value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
                     name = strutil.camel_to_snake(name)
-                inner_item[name] = value
-                idx += 1
-            inner_obj_list.append(inner_item)
-        return inner_obj_list
+                obj[name] = value
+            obj_list.append(obj)
+            start += step
+        return obj_list
 
-    def row_to_object(self, struct, row, fields, inner_field_names, inner_var_name, inner_fields):
+    def row_to_object(self, struct, row, inner_fields):
         obj = {}
         inner_class_done = False
-        idx = 0
-        for field in fields:
-            if not field['enable']:
-                continue
-            if field['name'] in inner_field_names:
+        for col, field in enumerate(struct['fields']):
+            if inner_fields['start'] <= col <  inner_fields['end']:
                 if not inner_class_done:
-                    value = self.parse_row_inner_obj(struct, row, inner_fields)
-                    if self.use_snake_case:
-                        inner_var_name = strutil.camel_to_snake(inner_var_name)
-                    obj[inner_var_name] = value
                     inner_class_done = True
+                    inner_var_name = struct['options'][predef.PredefInnerFieldName]
+                    value = self.parse_row_inner_obj(struct, row, inner_fields)
+                    obj[inner_var_name] = value
             else:
-                valuetext = row[idx]
+                valuetext = row[col]
                 value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
                     name = strutil.camel_to_snake(field['camel_case_name'])
                 else:
                     name = field['name']
                 obj[name] = value
-            idx += 1
         return obj
 
     # 解析数据行
@@ -139,25 +132,22 @@ class JsonDataWriter:
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)
 
-        fields = structutil.enabled_fields(struct)
-
         # 嵌套类
-        inner_var_name = ''
-        inner_fields = []
-        inner_field_names, mapped_inner_fields = structutil.get_inner_class_mapped_fields(struct)
-        if len(mapped_inner_fields) > 0:
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_fields = structutil.get_inner_class_struct_fields(struct)
+        inner_fields = {'start': -1, 'end': -1, 'step': 0}
+        if 'inner_fields' in struct:
+            inner_fields['start'] = struct['inner_fields']['start']
+            inner_fields['end'] = struct['inner_fields']['end']
+            inner_fields['step'] = struct['inner_fields']['step']
 
         obj_list = []
         for row in rows:
-            obj = self.row_to_object(struct, row, fields, inner_field_names, inner_var_name, inner_fields)
+            obj = self.row_to_object(struct, row, inner_fields)
             obj_list.append(obj)
         return obj_list
 
     # 生成
     def generate(self, struct, args):
-        if predef.PredefValueTypeColumn in struct['options']:
+        if struct['options'][predef.PredefParseKVMode]:
             return self.parse_kv_rows(struct, args)
         return self.parse_row(struct)
 
