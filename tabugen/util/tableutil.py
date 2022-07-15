@@ -57,7 +57,7 @@ def remove_empty_columns(table):
 
 
 # 是否字段内容唯一
-def is_all_row_field_value_unique(rows, index: int) -> typing.Tuple:
+def is_all_row_field_value_unique(rows, index: int):
     all_set = {}
     for i, row in rows:
         if len(row[index]) > 0:
@@ -87,16 +87,6 @@ def validate_unique_column(struct, rows):
                 print('duplicate field %s value found, row %d and row %d' % (field['name'], exist_line, row_line))
                 sys.exit(1)
     return rows
-
-
-# 只保留enable的field
-def blanking_disabled_columns(struct, table):
-    for field in struct['fields']:
-        if not field['enable']:
-            for row in table:
-                idx = field['column_index'] - 1
-                row[idx] = ''
-    return table
 
 
 # 如果配置的类型是整数，但实际有浮点，需要转换成整数

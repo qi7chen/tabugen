@@ -21,7 +21,6 @@ class ExcelStructParser:
         self.skip_names = ''
         self.with_data = True
         self.filenames = []
-        self.skipped_fields = []
 
     @staticmethod
     def name():
@@ -67,7 +66,7 @@ class ExcelStructParser:
             if not ignored:
                 self.filenames.append(filename)
 
-    def parse_kv_table(self, meta, table, struct):
+    def parse_kv_table(self, table, struct):
         for row in table:
             name = row[predef.PredefKeyColumn]
             type_name = row[predef.PredefValueTypeColumn]
@@ -80,7 +79,6 @@ class ExcelStructParser:
                 "type": field_type,
                 "type_name": types.get_name_of_type(field_type),
                 "comment": comment,
-                "enable": name not in self.skipped_fields,
             }
             struct['fields'].append(field)
 
@@ -115,7 +113,6 @@ class ExcelStructParser:
                 "type_name": types.get_name_of_type(field_type),
                 "column_index": col,
                 "comment": comment_row[col],
-                "enable": name not in self.skipped_fields,
             }
 
             if prev_field is not None:
@@ -139,7 +136,7 @@ class ExcelStructParser:
             'comment': meta.get(predef.PredefClassComment, ""),
         }
         if meta[predef.PredefParseKVMode]:  # 全局KV模式
-            self.parse_kv_table(meta, table, struct)
+            self.parse_kv_table(table, struct)
         else:
             self.parse_struct_table(meta, table, struct)
 
@@ -147,7 +144,6 @@ class ExcelStructParser:
             data = table[predef.PredefDataStartRow:]
             data = strutil.pad_data_rows(struct['fields'], data)
             data = tableutil.convert_table_data(struct, data)
-            data = tableutil.blanking_disabled_columns(struct, data)
             struct["data_rows"] = data
         return struct
 
@@ -167,16 +163,14 @@ class ExcelStructParser:
     # 解析单个文件
     def parse_one_file(self, filename):
         data_table, meta = xlsxhelp.read_workbook_data(filename)
-
-        if predef.PredefIgnoredFields in meta:
-            text = meta[predef.PredefIgnoredFields]
-            self.skipped_fields = [x.strip() for x in text.split(',')]
+        data_table = tableutil.remove_empty_columns(data_table)
 
         tableutil.set_meta_kv_mode(data_table, meta)
         struct = self.parse_data_sheet(meta, data_table)
         struct['name'] = meta[predef.PredefClassName]
         struct['camel_case_name'] = strutil.camel_case(struct['name'])
         struct['file'] = os.path.basename(filename)
-        struct['inner_fields'] = structutil.parse_inner_fields(struct)
+        if predef.PredefInnerTypeClass in meta:
+            struct['inner_fields'] = structutil.parse_inner_fields(struct)
         return struct
 

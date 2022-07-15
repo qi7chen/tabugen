@@ -16,7 +16,6 @@ PredefDataStartRow = 3      # 数据从这一行开始
 PredefMetaSheet = "@meta"                   # meta sheet名称
 PredefClassName = "class_name"              # 生成的class名称
 PredefClassComment = "class_comment"        # 生成的class注释
-PredefIgnoredFields = 'ignored_fields'      # 在enable_skip_fields选项开启的时候忽略这些字段
 
 PredefParseKVMode = "kv_mode"   # 是否是KV模式
 PredefKeyColumn = 0             # KV模式中的key所在列
@@ -24,8 +23,7 @@ PredefValueTypeColumn = 1       # KV模式中的value类型所在列
 PredefValueColumn = 2           # KV模式中的value所在列
 PredefCommentColumn = 3         # KV模式中的注释所在列
 
-PredefInnerTypeRange = "inner_type_range"
 PredefInnerTypeClass = "inner_type_class"
-PredefInnerTypeName = "inner_type_name"
+PredefInnerFieldName = "inner_field_name"
 
 OptionUniqueColumns = "unique_columns"    # 值唯一的列

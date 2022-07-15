@@ -23,12 +23,12 @@ class CsvDataWriter:
 
     # 将数据写入csv文件
     @staticmethod
-    def write_file(name, rows, delim, filepath, encoding):
+    def write_file(name, rows, filepath, encoding):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), strutil.random_word(10))
         os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)
-        w = csv.writer(f, delimiter=delim, lineterminator='\n', quotechar='"', quoting=csv.QUOTE_ALL)
+        w = csv.writer(f, delimiter=',', lineterminator='\n', quotechar='"', quoting=csv.QUOTE_ALL)
         w.writerows(rows)
         f.close()
 
@@ -54,6 +54,5 @@ class CsvDataWriter:
         for struct in descriptors:
             rows = struct["data_rows"]
             rows = rowutil.validate_unique_column(struct, rows)
-            rows = rowutil.hide_skipped_row_fields(struct, rows)
             name = strutil.camel_to_snake(struct['camel_case_name'])
-            self.write_file(name, rows, args.out_csv_delim, filepath, encoding)
+            self.write_file(name, rows, filepath, encoding)

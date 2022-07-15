@@ -15,8 +15,6 @@ import tabugen.util.tableutil as rowutil
 # 写入json文件
 class JsonDataWriter:
     def __init__(self):
-        self.array_delim = '|'
-        self.map_delims = ['|', '=']
         self.use_snake_case = False
 
     @staticmethod
@@ -50,13 +48,10 @@ class JsonDataWriter:
         return values
 
     # 解析为字典
-    def parse_to_dict(self, ktype, vtype, text, map_delims):
+    def parse_to_dict(self, ktype, vtype, text):
         obj = {}
-        assert len(map_delims) == 2
-        dim1 = map_delims[0]
-        dim2 = map_delims[1]
-        for item in text.split(dim1):
-            pair = item.split(dim2)
+        for item in text.split(predef.PredefDelim1):
+            pair = item.split(predef.PredefDelim2)
             assert len(pair) == 2, item
             key = self.parse_primary_value(ktype, pair[0])
             value = self.parse_primary_value(vtype, pair[1])
@@ -71,10 +66,10 @@ class JsonDataWriter:
 
         if abs_type == 'array':
             elem_type = types.array_element_type(typename)
-            return self.parse_to_array(elem_type, text, self.array_delim)
+            return self.parse_to_array(elem_type, text, predef.PredefDelim1)
         elif abs_type == 'map':
             ktype, vtype = types.map_key_value_types(typename)
-            return self.parse_to_dict(ktype, vtype, text, self.map_delims)
+            return self.parse_to_dict(ktype, vtype, text)
 
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
@@ -114,7 +109,6 @@ class JsonDataWriter:
             inner_obj_list.append(inner_item)
         return inner_obj_list
 
-
     def row_to_object(self, struct, row, fields, inner_field_names, inner_var_name, inner_fields):
         obj = {}
         inner_class_done = False
@@ -140,12 +134,10 @@ class JsonDataWriter:
             idx += 1
         return obj
 
-
     # 解析数据行
     def parse_row(self, struct):
         rows = struct["data_rows"]
         rows = rowutil.validate_unique_column(struct, rows)
-        rows = rowutil.hide_skipped_row_fields(struct, rows)
 
         fields = structutil.enabled_fields(struct)
 
@@ -184,7 +176,6 @@ class JsonDataWriter:
     def process(self, descriptors, args):
         filepath = args.out_data_path
         encoding = args.data_file_encoding
-        (self.array_delim, self.map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
 
         if filepath != '.':
             try:

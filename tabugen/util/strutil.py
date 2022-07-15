@@ -149,7 +149,7 @@ def save_content_if_not_same(filename: str, content: str, enc: str) -> bool:
     # first write content to a temporary file
     tmp_filename = 'tabugen_%s' % random_word(10)
     tmp_filename = os.path.join(tempfile.gettempdir(), tmp_filename)
-    f = codecs.open(tmp_filename, 'w', enc)
+    f = codecs.open(tmp_filename, 'w+', enc)
     f.writelines(content)
     f.close()
 

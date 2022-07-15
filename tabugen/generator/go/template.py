@@ -23,11 +23,8 @@ var (
 GO_CONST_TEMPLATE = """
 
 const (
-	TABUGEN_CSV_SEP     = `%s` // CSV field delimiter
-	TABUGEN_CSV_QUOTE   = `%s` // CSV field quote
-	TABUGEN_ARRAY_DELIM = `%s` // array item delimiter
-	TABUGEN_MAP_DELIM1  = `%s` // map item delimiter
-	TABUGEN_MAP_DELIM2  = `%s` // map key-value delimiter
+	TABUGEN_SEP_DELIM1  = `%s` // map item delimiter
+	TABUGEN_SEP_DELIM2  = `%s` // map key-value delimiter
 )
 
 """

@@ -5,17 +5,15 @@ See accompanying files LICENSE.
 """
 
 import os
-import sys
-import tabugen.predef as predef
+
 import tabugen.lang as lang
-import tabugen.version as version
+import tabugen.predef as predef
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
+import tabugen.version as version
 import tabugen.generator.go.template as go_template
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
 
-# Go代码生成器
 class GoStructGenerator:
     TAB_SPACE = '\t'
 
@@ -31,98 +29,91 @@ class GoStructGenerator:
         if name == 'csv':
             self.load_gen = GoCsvLoadGenerator()
 
+    # Go代码生成器
+    @staticmethod
+    def gen_field_define(field, json_tag: bool, snake_case: bool, remove_suffix_num: bool) -> str:
+        text = ''
+        typename = lang.map_go_type(field['original_type_name'])
+        assert typename != "", field['original_type_name']
+        name = field['camel_case_name']
+        if remove_suffix_num:
+            name = strutil.remove_suffix_number(name)
+        if json_tag:
+            tag_name = field['name']
+            if remove_suffix_num:
+                tag_name = strutil.remove_suffix_number(tag_name)
+            if snake_case:
+                tag_name = strutil.camel_to_snake(tag_name)
+            text += '    %s %s `json:"%s"` // %s\n' % (name, typename,
+                                                       tag_name, field['comment'])
+        else:
+            text += '    %s %s // %s\n' % (name, typename, field['comment'])
+        return text
+
+    @staticmethod
+    def gen_inner_field_define(struct, json_tag: bool, snake_case: bool) -> str:
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        inner_field_name = struct["options"][predef.PredefInnerFieldName]
+        assert len(inner_field_name) > 0
+        if json_tag:
+            tag_name = type_class_name
+            if snake_case:
+                tag_name = strutil.camel_to_snake(type_class_name)
+            text = '\t%s []%s `json:"%s"` // \n' % (inner_field_name, type_class_name, tag_name)
+        else:
+            text = '\t%s []%s \n' % (inner_field_name, type_class_name)
+        return text
+
+    # 生成一个字段
+    @staticmethod
+    def gen_inner_type(struct, args):
+        inner_fields = struct['inner_fields']
+        start = inner_fields['start']
+        step = inner_fields['step']
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        assert len(type_class_name) > 0
+        content = 'type %s struct {\n' % type_class_name
+        col = start
+        while col < start + step:
+            field = struct['fields'][col]
+            text = GoStructGenerator.gen_field_define(field, args.go_json_tag, args.json_snake_case, True)
+            content += text
+            col += 1
+        content += '\n}\n'
+        return content
+
     # 生成struct定义
     def gen_go_struct(self, struct, args):
         content = ''
+        inner_start_col = -1
+        inner_end_col = -1
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
+            content += self.gen_inner_type(struct, args)
+            content += '\n'
 
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_go_inner_struct(struct, args.go_json_tag)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = '[]%s' % inner_type_class
-
-        vec_done = False
-        vec_names, vec_name = structutil.get_vec_field_range(struct)
         fields = struct['fields']
-
-        content += '// %s, %s\n' % (struct['comment'], struct['file'])
+        inner_field_done = False
+        content += '// %s %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct {\n' % struct['camel_case_name']
         for field in fields:
-            if not field['enable']:
-                continue
+            col = field['column_index']
             text = ''
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    if args.go_json_tag:
-                        if self.json_snake_case:
-                            inner_var_name = strutil.camel_to_snake(inner_var_name)
-                        text += '    %s %s `json:"%s"` //\n' % (strutil.camel_case(inner_var_name),
-                                                                inner_typename, inner_var_name)
-                    else:
-                        text += '    %s %s //\n' % (strutil.camel_case(inner_var_name), inner_typename)
-                    inner_class_done = True
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    text = GoStructGenerator.gen_inner_field_define(struct, args.go_json_tag, args.json_snake_case)
+                    inner_field_done = True
             else:
-                typename = lang.map_go_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-
-                if field_name not in vec_names:
-                    if args.go_json_tag:
-                        name = field['name']
-                        if self.json_snake_case:
-                            name = strutil.camel_to_snake(name)
-                        text += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
-                                                                   name, field['comment'])
-                    else:
-                        text += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-                elif not vec_done:
-                    vec_done = True
-                    if args.go_json_tag:
-                        if self.json_snake_case:
-                            vec_name = strutil.camel_to_snake(vec_name)
-                        text += '    %s [%d]%s `json:"%s"` // %s\n' % (strutil.camel_case(vec_name), len(vec_names),
-                                                                       typename, vec_name, field['comment'])
-                    else:
-                        text += '    %s [%d]%s // %s\n' % (vec_name, len(vec_names), typename, field['comment'])
+                text = GoStructGenerator.gen_field_define(field, args.go_json_tag, args.json_snake_case, False)
             content += text
-
-        return content
-
-    # 内部class生成
-    def gen_go_inner_struct(self, struct, go_json_tag):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        content += 'type %s struct {\n' % class_name
-        for field in inner_fields:
-            typename = lang.map_go_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            if go_json_tag:
-                name = field['name']
-                if self.json_snake_case:
-                    name = strutil.camel_to_snake(name)
-                content += '    %s %s `json:"%s"` // %s\n' % (field['camel_case_name'], typename,
-                                                              name, field['comment'])
-            else:
-                content += '    %s %s // %s\n' % (field['camel_case_name'], typename, field['comment'])
-        content += '}\n\n'
-
-        return content
-
-    #
-    def gen_struct_define(self, struct, args):
-        content = ''
-        content += self.gen_go_struct(struct, args)
-        content += '}\n\n'
+        content += '\n}\n'
         return content
 
     def generate(self, struct, args):
         content = ''
-        content += self.gen_struct_define(struct, args)
+        content += self.gen_go_struct(struct, args)
+        content += '\n\n'
         if self.load_gen is not None:
             content += self.load_gen.gen_parse_method(struct)
             content += self.load_gen.gen_load_method(struct)
@@ -154,4 +145,3 @@ class GoStructGenerator:
                 cmd = goroot + '/bin/' + cmd
             print(cmd)
             os.system(cmd)
-
