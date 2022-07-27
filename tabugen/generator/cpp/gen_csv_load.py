@@ -17,16 +17,10 @@ class CppCsvLoadGenerator:
     TAB_SPACE = '    '
 
     def __init__(self):
-        self.array_delim = ','
-        self.map_delims = [',', '=']
-        self.out_csv_delim = ','
         self.config_manager_name = ''
 
-    # 初始化array, map分隔符
-    def setup(self, array_delim, map_delims, out_csv_delim, name):
-        self.array_delim = array_delim
-        self.map_delims = map_delims
-        self.out_csv_delim = out_csv_delim
+    # 初始化
+    def setup(self, name):
         self.config_manager_name = name
 
     @staticmethod
@@ -45,11 +39,10 @@ class CppCsvLoadGenerator:
 
     # array赋值
     def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
-        assert isinstance(self.array_delim, str) and len(self.array_delim) == 1
         space = self.TAB_SPACE * (tabs + 1)
         elemt_type = lang.map_cpp_type(types.array_element_type(typename))
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst std::vector<absl::string_view>& array = absl::StrSplit(%s, "%s");\n' % (space, row_name, self.array_delim)
+        content += '%sconst std::vector<absl::string_view>& array = absl::StrSplit(%s, "%s");\n' % (space, row_name, predef.PredefDelim1)
         content += '%sfor (size_t i = 0; i < array.size(); i++)\n' % space
         content += '%s{\n' % space
         content += '%s    %s%s.push_back(to<%s>(array[i]));\n' % (space, prefix, name, elemt_type)
@@ -59,17 +52,15 @@ class CppCsvLoadGenerator:
 
     # map赋值
     def gen_field_map_assgin_stmt(self, prefix, typename, name, row_name, tabs):
-        assert len(self.map_delims) == 2
-
         k, v = types.map_key_value_types(typename)
         key_type = lang.map_cpp_type(k)
         val_type = lang.map_cpp_type(v)
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
-        content += '%sconst std::vector<absl::string_view>& vec = absl::StrSplit(%s, "%s");\n' % (space, row_name, self.map_delims[0])
+        content += '%sconst std::vector<absl::string_view>& vec = absl::StrSplit(%s, "%s");\n' % (space, row_name, predef.PredefDelim1)
         content += '%sfor (size_t i = 0; i < vec.size(); i++)\n' % space
         content += '%s{\n' % space
-        content += '%s    const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], "%s");\n' % (space, self.map_delims[1])
+        content += '%s    const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], "%s");\n' % (space, predef.PredefDelim2)
         content += '%s    ASSERT(kv.size() == 2);\n' % space
         content += '%s    if(kv.size() == 2)\n' % space
         content += '%s    {\n' % space
@@ -82,157 +73,131 @@ class CppCsvLoadGenerator:
         return content
 
     # 内部class赋值
-    @staticmethod
-    def gen_inner_class_field_assgin_stmt(struct, prefix):
-        content = ''
+    def gen_inner_field_assign(self, struct, prefix, rec_name, tabs):
+        inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
-        inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        start, end, step = structutil.get_inner_class_range(struct)
+        inner_var_name = struct["options"][predef.PredefInnerFieldName]
+        assert len(inner_class_type) > 0 and len(inner_var_name) > 0
+
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
         assert start > 0 and end > 0 and step > 1
-        content += '    for (int i = %s; i < %s; i += %s) \n' % (start, end, step)
-        content += '    {\n'
-        content += '        %s item;\n' % inner_class_type
-        for n in range(step):
-            field = inner_fields[n]
+
+        space = self.TAB_SPACE * tabs
+        col = start
+        content = ''
+        content += '%sfor (int i = 1; i <= %d; i++)\n' % (space, (end-start)/step)
+        content += '%s{\n' % space
+        content += '%s    %s::%s val;\n' % (space, struct['camel_case_name'], inner_class_type)
+        for i in range(step):
+            field = struct['fields'][col + i]
             origin_type = field['original_type_name']
             typename = lang.map_cpp_type(origin_type)
-            content += '        item.%s = to<%s>(row[i + %d]);\n' % (field['name'], typename, n)
-        content += '        %s%s.push_back(item);\n' % (prefix, inner_var_name)
-        content += '    }\n'
+            field_name = strutil.remove_suffix_number(field['camel_case_name'])
+            valuetext = '%s[to<std::string>("%s", i)]' % (rec_name, field_name)
+            content += '        val.%s = to<%s>(%s);\n' % (field_name, typename, valuetext)
+        content += '        %s%s.push_back(val);\n' % (prefix, inner_var_name)
+        content += '%s}\n' % space
         return content
 
     # 生成字段赋值
-    def gen_all_field_assign_stmt(self, struct, prefix, tabs):
-        content = ''
-
-        inner_class_done = False
-        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
-
-        vec_names, vec_name = structutil.get_vec_field_range(struct)
-        vec_idx = 0
-        idx = 0
-        space = self.TAB_SPACE * tabs
-        for field in struct['fields']:
-            if not field['enable']:
-                continue
-            text = ''
-            field_name = field['name']
-            assert idx >= 0
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    inner_class_done = True
-                    text += self.gen_inner_class_field_assgin_stmt(struct, prefix)
-            else:
-                origin_type = field['original_type_name']
-                typename = lang.map_cpp_type(origin_type)
-
-                if typename != 'std::string' and field['name'] in vec_names:
-                    text += '%s%s%s[%d] = %s;\n' % (
-                        space, prefix, vec_name, vec_idx, lang.default_value_by_cpp_type(origin_type))
-
-                if origin_type.startswith('array'):
-                    text += self.gen_field_array_assign_stmt(prefix, origin_type, field_name,
-                                                             ('row[%d]' % idx), tabs)
-                elif origin_type.startswith('map'):
-                    text += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name,
-                                                           ('row[%d]' % idx), tabs)
-                else:
-                    if field['name'] in vec_names:
-                        text += '%s%s%s[%d] = to<%s>(row[%d]);\n' % (
-                            self.TAB_SPACE * tabs, prefix, vec_name, vec_idx, typename, idx)
-                        vec_idx += 1
-                    else:
-                        text += '%s%s%s = to<%s>(row[%d]);\n' % (
-                            self.TAB_SPACE * tabs, prefix, field_name, typename, idx)
-            idx += 1
-            content += text
-        return content
+    def gen_field_assign(self, field, prefix, value_text, tabs):
+        text = ''
+        origin_type = field['original_type_name']
+        typename = lang.map_cpp_type(origin_type)
+        field_name = field['name']
+        if origin_type.startswith('array'):
+            text += self.gen_field_array_assign_stmt(prefix, origin_type, field_name, value_text, tabs)
+        elif origin_type.startswith('map'):
+            text += self.gen_field_map_assgin_stmt(prefix, origin_type, field_name, value_text, tabs)
+        else:
+            text += '%s%s%s = to<%s>(%s);\n' % (
+                self.TAB_SPACE * tabs, prefix, field_name, typename, value_text)
+        return text
 
     # class静态函数声明
     def gen_struct_method_declare(self, struct):
         content = ''
 
         if struct['options'][predef.PredefParseKVMode]:
-            content += '    static int ParseFromRows(const std::vector<std::vector<absl::string_view> >& rows, %s* ptr);\n' % \
+            content += '    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, %s* ptr);\n' % \
                        struct['name']
             return content
 
-        content += '    static int ParseFromRow(const std::vector<absl::string_view>& row, %s* ptr);\n' % struct['name']
+        content += '    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, %s* ptr);\n' % struct['name']
 
         return content
 
-
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct):
+        keyidx = predef.PredefKeyColumn
+        validx = predef.PredefValueColumn
+        typeidx = predef.PredefValueTypeColumn
+        assert keyidx >= 0 and validx >= 0 and typeidx >= 0
+
         rows = struct['data_rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
-
-        keyidx = keycol - 1
-        validx = valcol - 1
-        typeidx = typcol - 1
-
         content = ''
-        content += '// parse data object from csv rows\n'
-        content += 'int %s::ParseFromRows(const vector<std::vector<absl::string_view> >& rows, %s* ptr)\n' % (
+        content += '// parse data object from record\n'
+        content += 'int %s::ParseFrom(std::unordered_map<std::string, std::string>& fields, %s* ptr)\n' % (
             struct['name'], struct['name'])
         content += '{\n'
-        content += '    ASSERT(rows.size() >= %d && rows[0].size() >= %d);\n' % (len(rows), validx)
         content += '    ASSERT(ptr != nullptr);\n'
         idx = 0
         for row in rows:
-            name = rows[idx][keyidx].strip()
-            origin_typename = rows[idx][typeidx].strip()
+            name = row[keyidx].strip()
+            origin_typename = row[typeidx].strip()
             typename = lang.map_cpp_type(origin_typename)
-            row_name = 'rows[%d][%d]' % (idx, validx)
+            value_text = 'fields["%s"]' % name
             text = ''
             if origin_typename.startswith('array'):
-                text += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, row_name, 1)
+                text += self.gen_field_array_assign_stmt('ptr->', origin_typename, name, value_text, 1)
             elif origin_typename.startswith('map'):
-                text += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, row_name, 1)
+                text += self.gen_field_map_assgin_stmt('ptr->', origin_typename, name, value_text, 1)
             else:
-                text += '%sptr->%s = to<%s>(%s);\n' % (self.TAB_SPACE, name, typename, row_name)
+                text += '%sptr->%s = to<%s>(%s);\n' % (self.TAB_SPACE, name, typename, value_text)
             idx += 1
             content += text
         content += '    return 0;\n'
         content += '}\n\n'
         return content
 
-    # 生成ParseFromRow方法
+    # 生成ParseFrom方法
     def gen_parse_method(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_parse_method(struct)
-
-        fields = structutil.enabled_fields(struct)
         content = ''
+        inner_start_col = -1
+        inner_end_col = -1
+        inner_field_done = False
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
+
         content += '// parse data object from an csv row\n'
-        content += 'int %s::ParseFromRow(const std::vector<absl::string_view>& row, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += 'int %s::ParseFrom(std::unordered_map<std::string, std::string>& record, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
-        content += '    ASSERT(row.size() >= %d);\n' % len(fields)
         content += '    ASSERT(ptr != nullptr);\n'
-        content += self.gen_all_field_assign_stmt(struct, 'ptr->', 1)
+
+        for col, field in enumerate(struct['fields']):
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    inner_field_done = True
+                    content += self.gen_inner_field_assign(struct, 'ptr->', 'record', 1)
+            else:
+                value_text = 'record["%s"]' % field['name']
+                content += self.gen_field_assign(field, 'ptr->', value_text, 1)
+
         content += '    return 0;\n'
         content += '}\n\n'
         return content
 
-
     # 生成源文件定义
     def gen_cpp_source(self, struct):
-        content = ''
-        content += self.gen_parse_method(struct)
-        return content
+        if struct['options'][predef.PredefParseKVMode]:
+            return self.gen_kv_parse_method(struct)
+        else:
+            return self.gen_parse_method(struct)
 
-    def gen_global_class(self):
-        content = ''
-        # 常量定义在头文件，方便外部解析使用
-        #content += cpp_template.CPP_CSV_TOKEN_TEMPLATE % (self.out_csv_delim, '"', self.array_delim[0],
-        #                                                  self.map_delims[0], self.map_delims[1])
-        return content
-
-    def gen_source_method(self, descriptors, args, headerfile):
+    def generate(self, descriptors, args, headerfile):
         extra_include = '#include "{}"'.format(args.extra_cpp_include)
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),

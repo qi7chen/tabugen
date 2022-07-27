@@ -108,9 +108,6 @@ class GoCsvLoadGenerator:
     # 生成ParseFromRow方法
     @staticmethod
     def gen_parse_method(struct):
-        if struct['options'][predef.PredefParseKVMode]:
-            return GoCsvLoadGenerator.gen_kv_parse_method(struct)
-
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False
@@ -197,8 +194,11 @@ class GoCsvLoadGenerator:
 
     # 生成Load方法
     @staticmethod
-    def gen_load_method(struct):
-        return ''
+    def generate(struct):
+        if struct['options'][predef.PredefParseKVMode]:
+            return GoCsvLoadGenerator.gen_kv_parse_method(struct)
+        else:
+            return GoCsvLoadGenerator.gen_parse_method(struct)
 
     # 生成helper.go文件
     @staticmethod

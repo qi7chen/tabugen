@@ -164,9 +164,12 @@ func parseU64(s string) uint64 {
 }
 
 func parseF32(s string) float32 {
-	f := parseF64(s)
-	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
-		log.Panicf("parseF32: value %s out of range", s)
+	if s == "" {
+		return 0
+	}
+	f, err := strconv.ParseFloat(s, 32)
+	if err != nil {
+		log.Panicf("parseF32: cannot parse [%s] to double: %v", s, err)
 	}
 	return float32(f)
 }

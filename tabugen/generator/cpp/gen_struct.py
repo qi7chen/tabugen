@@ -36,76 +36,93 @@ class CppStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-    # 生成class定义结构，不包含结尾的'}'符号
-    def gen_cpp_struct_define(self, struct):
-        content = '// %s\n' % struct['comment']
-        content += 'struct %s \n{\n' % struct['name']
+    @staticmethod
+    def gen_field_define(field, max_type_len: int, max_name_len: int) -> str:
+        typename = lang.map_cpp_type(field['original_type_name'])
+        assert typename != "", field['original_type_name']
+        typename = strutil.pad_spaces(typename, max_type_len + 1)
+        name = lang.name_with_default_cpp_value(field, typename, False)
+        name = strutil.pad_spaces(name, max_name_len + 8)
+        return '    %s %s // %s\n' % (typename, name, field['comment'])
 
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_field_names, mapped_inner_fields = structutil.get_inner_class_mapped_fields(struct)
-        if len(mapped_inner_fields) > 0:
-            content += self.gen_inner_struct_define(struct)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-            inner_typename = 'std::vector<%s>' % inner_type_class
-
-        vec_done = False
-        vec_names, vec_name = structutil.get_vec_field_range(struct)
-
-        fields = struct['fields']
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
-        if len(inner_typename) > max_type_len:
-            max_type_len = len(inner_typename)
-
-        for field in fields:
-            if not field['enable']:
-                continue
-            text = ''
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    typename = strutil.pad_spaces(inner_typename, max_type_len + 1)
-                    name = strutil.pad_spaces(inner_var_name, max_name_len + 8)
-                    text += '    %s %s; //\n' % (typename, name)
-                    inner_class_done = True
-
-            else:
-                typename = lang.map_cpp_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-                typename = strutil.pad_spaces(typename, max_type_len + 1)
-                if field_name not in vec_names:
-                    name = lang.name_with_default_cpp_value(field, typename)
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    text += '    %s %s // %s\n' % (typename, name, field['comment'])
-                elif not vec_done:
-                    name = '%s[%d];' % (vec_name, len(vec_names))
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    text += '    %s %s // %s\n' % (typename, name, field['comment'])
-                    vec_done = True
-            content += text
-        return content
+    @staticmethod
+    def gen_inner_field_define(struct, max_type_len: int, max_name_len: int) -> str:
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        inner_field_name = struct["options"][predef.PredefInnerFieldName]
+        type_name = 'std::vector<%s>' % type_class_name
+        type_name = strutil.pad_spaces(type_name, max_type_len + 1)
+        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
+        assert len(inner_field_name) > 0
+        return '    %s %s;    // \n\n' % (type_name, inner_field_name)
 
     # 内部class定义
     @staticmethod
     def gen_inner_struct_define(struct):
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        content += '    struct %s \n' % class_name
+        inner_fields = struct['inner_fields']
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        assert len(type_class_name) > 0
+
+        max_name_len = 0
+        max_type_len = 0
+        for col in range(start, end):
+            field = struct['fields'][col]
+            name_len = len(field['name'])
+            type_len = len(lang.map_cpp_type(field['original_type_name']))
+            if name_len > max_name_len:
+                max_name_len = name_len
+            if type_len > max_type_len:
+                max_type_len = type_len
+
+        content = '    struct %s \n' % type_class_name
         content += '    {\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cpp_type)
-        for field in inner_fields:
+        col = start
+        while col < start + step:
+            field = struct['fields'][col]
             typename = lang.map_cpp_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cpp_value(field, typename)
+            name = lang.name_with_default_cpp_value(field, typename, True)
             name = strutil.pad_spaces(name, max_name_len + 8)
             content += '        %s %s // %s\n' % (typename, name, field['comment'])
-        content += '    };\n\n'
+            col += 1
+        content += '    };\n'
+        return content
+
+    # 生成class定义结构，不包含结尾的'}'符号
+    def gen_cpp_struct_define(self, struct):
+        content = '// %s\n' % struct['comment']
+        content += 'struct %s \n{\n' % struct['camel_case_name']
+
+        inner_start_col = -1
+        inner_end_col = -1
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
+            content += self.gen_inner_struct_define(struct)
+            content += '\n'
+
+        inner_field_done = False
+        fields = struct['fields']
+        max_name_len = strutil.max_field_length(fields, 'name', None)
+        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
+        if inner_start_col >= 0:
+            type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+            field_name = 'std::vector<%s>' % type_class_name
+            if len(field_name) > max_type_len:
+                max_type_len = len(field_name)
+
+        for col, field in enumerate(fields):
+            text = ''
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    text = CppStructGenerator.gen_inner_field_define(struct, max_type_len, max_name_len)
+                    inner_field_done = True
+            else:
+                text = CppStructGenerator.gen_field_define(field, max_type_len, max_name_len)
+            content += text
         return content
 
     # 生成头文件声明
@@ -135,9 +152,6 @@ class CppStructGenerator:
         if args.package is not None:
             header_content += '\nnamespace %s {\n\n' % args.package
 
-        if self.load_gen is not None:
-            header_content += self.load_gen.gen_global_class()
-
         for struct in descriptors:
             print(strutil.current_time(), 'start generate', struct['source'])
             header_content += self.gen_cpp_header(struct)
@@ -146,16 +160,14 @@ class CppStructGenerator:
             header_content += '} // namespace %s\n' % args.package
         return header_content
 
-
     def run(self, descriptors, filepath, args):
         outname = os.path.split(filepath)[-1]
 
         cpp_content = ''
         if self.load_gen is not None:
-            (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims, args.out_csv_delim, args.config_manager_class)
+            self.load_gen.setup(args.config_manager_class)
             filename = outname + '.h'
-            cpp_content = self.load_gen.gen_source_method(descriptors, args, filename)
+            cpp_content = self.load_gen.generate(descriptors, args, filename)
 
         header_content = self.gen_header_content(descriptors, args)
 
@@ -173,11 +185,3 @@ class CppStructGenerator:
             else:
                 print('file content not modified', filename)
 
-
-def unit_test():
-    codegen = CppStructGenerator()
-    codegen.setup('csv')
-
-
-if __name__ == '__main__':
-    unit_test()

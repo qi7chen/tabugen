@@ -7,6 +7,7 @@ See accompanying files LICENSE.
 from typing import Mapping
 
 import tabugen.typedef as types
+import tabugen.util.strutil as strutil
 
 
 # C++类型映射
@@ -52,16 +53,19 @@ def is_cpp_pod_type(typ: str) -> bool:
 
 
 # C++为类型加上默认值
-def name_with_default_cpp_value(field: Mapping, typename: str) -> str:
+def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num) -> str:
     typename = typename.strip()
+    name = field['name']
+    if remove_suffix_num:
+        name = strutil.remove_suffix_number(name)
     if typename == 'bool':
-        return '%s = false;' % field['name']
+        return '%s = false;' % name
     elif types.is_integer_type(field['type_name']):
-        return '%s = 0;' % field['name']
+        return '%s = 0;' % name
     elif types.is_floating_type(field['type_name']):
-        return '%s = 0.0;' % field['name']
+        return '%s = 0.0;' % name
     else:
-        return '%s;' % field['name']
+        return '%s;' % name
 
 
 # C++默认值

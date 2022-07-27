@@ -64,7 +64,7 @@ class GoStructGenerator:
             text = '\t%s []%s \n' % (inner_field_name, type_class_name)
         return text
 
-    # 生成一个字段
+    # 生成内嵌字段
     @staticmethod
     def gen_inner_type(struct, args):
         inner_fields = struct['inner_fields']
@@ -114,8 +114,7 @@ class GoStructGenerator:
         content += self.gen_go_struct(struct, args)
         content += '\n\n'
         if self.load_gen is not None:
-            content += self.load_gen.gen_parse_method(struct)
-            content += self.load_gen.gen_load_method(struct)
+            content += self.load_gen.generate(struct)
         return content
 
     def run(self, descriptors, filepath, args):
