@@ -7,19 +7,19 @@ import (
 )
 
 func TestSoldierAutogenCsvConfig(t *testing.T) {
-	filename := "../res/soldier_property_define.csv"
+	filename := "../../datasheet/res/soldier_property_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 
-	rows, err := ReadCSVRows(data)
+	records, err := ReadCSVRecords(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, row := range rows {
+	for _, rec := range records {
 		var item SoldierPropertyDefine
-		if err := item.ParseFromRow(row); err != nil {
+		if err := item.ParseFrom(rec); err != nil {
 			t.Fatalf("%v", err)
 		}
 		t.Logf("%v\n", item)
@@ -27,7 +27,7 @@ func TestSoldierAutogenCsvConfig(t *testing.T) {
 }
 
 func TestSoldierAutogenJsonConfig(t *testing.T) {
-	filename := "../res/soldier_property_define.json"
+	filename := "../../datasheet/res/soldier_property_define.json"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)

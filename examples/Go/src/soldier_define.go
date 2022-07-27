@@ -3,15 +3,17 @@ package config
 
 import (
 	"log"
+	"strconv"
 	"strings"
 )
 
 var (
 	_ = log.Panicf
 	_ = strings.Split
+	_ = strconv.Itoa
 )
 
-// , 兵种.xlsx
+//  兵种.xlsx
 type SoldierPropertyDefine struct {
 	Name               string  `json:"name"`                 // 士兵ID
 	Level              int     `json:"level"`                // 士兵等级
@@ -38,86 +40,34 @@ type SoldierPropertyDefine struct {
 	AtkRange           float64 `json:"atk_range"`            // 攻击距离
 	MovingSpeed        float64 `json:"moving_speed"`         // 移动速度
 	EnableBurn         bool    `json:"enable_burn"`          // 燃烧特效
+
 }
 
-func (p *SoldierPropertyDefine) ParseFromRow(row []string) error {
-	if len(row) < 25 {
-		log.Panicf("SoldierPropertyDefine: row length too short %d", len(row))
-	}
-	if row[0] != "" {
-		p.Name = row[0]
-	}
-	if row[1] != "" {
-		p.Level = parseInt(row[1])
-	}
-	if row[2] != "" {
-		p.NameID = row[2]
-	}
-	if row[3] != "" {
-		p.Description = row[3]
-	}
-	if row[4] != "" {
-		p.BuildingName = row[4]
-	}
-	if row[5] != "" {
-		p.BuildingLevel = parseU32(row[5])
-	}
-	if row[6] != "" {
-		p.RequireSpace = parseU32(row[6])
-	}
-	if row[7] != "" {
-		p.Volume = parseU32(row[7])
-	}
-	if row[8] != "" {
-		p.UpgradeTime = parseU32(row[8])
-	}
-	if row[9] != "" {
-		p.UpgradeMaterialID = row[9]
-	}
-	if row[10] != "" {
-		p.UpgradeMaterialNum = parseI64(row[10])
-	}
-	if row[11] != "" {
-		p.ConsumeMaterial = row[11]
-	}
-	if row[12] != "" {
-		p.ConsumeMaterialNum = parseInt(row[12])
-	}
-	if row[13] != "" {
-		p.ConsumeTime = parseInt(row[13])
-	}
-	if row[14] != "" {
-		p.Act = parseInt(row[14])
-	}
-	if row[15] != "" {
-		p.Hp = parseInt(row[15])
-	}
-	if row[16] != "" {
-		p.BombLoad = parseI16(row[16])
-	}
-	if row[17] != "" {
-		p.Hurt = parseU32(row[17])
-	}
-	if row[18] != "" {
-		p.Duration = parseF32(row[18])
-	}
-	if row[19] != "" {
-		p.TriggerInterval = parseF32(row[19])
-	}
-	if row[20] != "" {
-		p.SearchScope = parseI16(row[20])
-	}
-	if row[21] != "" {
-		p.AtkFrequency = parseF32(row[21])
-	}
-	if row[22] != "" {
-		p.AtkRange = parseF64(row[22])
-	}
-	if row[23] != "" {
-		p.MovingSpeed = parseF64(row[23])
-	}
-	if row[24] != "" {
-		p.EnableBurn = parseBool(row[24])
-	}
+func (p *SoldierPropertyDefine) ParseFrom(record map[string]string) error {
+	p.Name = record["Name"]
+	p.Level = parseInt(record["Level"])
+	p.NameID = record["NameID"]
+	p.Description = record["Description"]
+	p.BuildingName = record["BuildingName"]
+	p.BuildingLevel = parseU32(record["BuildingLevel"])
+	p.RequireSpace = parseU32(record["RequireSpace"])
+	p.Volume = parseU32(record["Volume"])
+	p.UpgradeTime = parseU32(record["UpgradeTime"])
+	p.UpgradeMaterialID = record["UpgradeMaterialID"]
+	p.UpgradeMaterialNum = parseI64(record["UpgradeMaterialNum"])
+	p.ConsumeMaterial = record["ConsumeMaterial"]
+	p.ConsumeMaterialNum = parseInt(record["ConsumeMaterialNum"])
+	p.ConsumeTime = parseInt(record["ConsumeTime"])
+	p.Act = parseInt(record["Act"])
+	p.Hp = parseInt(record["Hp"])
+	p.BombLoad = parseI16(record["BombLoad"])
+	p.Hurt = parseU32(record["Hurt"])
+	p.Duration = parseF32(record["Duration"])
+	p.TriggerInterval = parseF32(record["TriggerInterval"])
+	p.SearchScope = parseI16(record["SearchScope"])
+	p.AtkFrequency = parseF32(record["AtkFrequency"])
+	p.AtkRange = parseF64(record["AtkRange"])
+	p.MovingSpeed = parseF64(record["MovingSpeed"])
+	p.EnableBurn = parseBool(record["EnableBurn"])
 	return nil
 }

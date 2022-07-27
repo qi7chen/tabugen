@@ -7,26 +7,29 @@ import (
 )
 
 func TestGlobalAutogenCsvConfig(t *testing.T) {
-	filename := "../res/global_property_define.json"
+	var filename = "../../datasheet/res/global_property_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	var conf GlobalPropertyDefine
-	if err = json.Unmarshal(data, &conf); err != nil {
-		t.Fatalf("JSON: %v", err)
+	records, err := ReadCSVRecords(data)
+	if err != nil {
+		t.Fatalf("%v", err)
 	}
+	var fields = RecordsToKVMap(records)
+	var conf GlobalPropertyDefine
+	conf.ParseFields(fields)
 	t.Logf("%v\n", conf)
 }
 
 func TestGlobalAutogenJsonConfig(t *testing.T) {
-	filename := "../res/global_property_define.csv"
+	filename := "../../datasheet/res/global_property_define.json"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 	var global GlobalPropertyDefine
-	if err := global.Unmarshal(data); err != nil {
+	if err := json.Unmarshal(data, &global); err != nil {
 		t.Fatalf("%v", err)
 	}
 	t.Logf("global properties: %v", global)

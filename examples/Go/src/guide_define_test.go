@@ -7,18 +7,18 @@ import (
 )
 
 func TestGuideAutogenCsvConfig(t *testing.T) {
-	filename := "../res/newbie_guide_define.csv"
+	filename := "../../datasheet/res/newbie_guide_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	rows, err := ReadCSVRows(data)
+	records, err := ReadCSVRecords(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, row := range rows {
+	for _, rec := range records {
 		var item NewbieGuideDefine
-		if err := item.ParseFromRow(row); err != nil {
+		if err := item.ParseFrom(rec); err != nil {
 			t.Fatalf("%v", err)
 		}
 		t.Logf("%v\n", item)
@@ -26,7 +26,7 @@ func TestGuideAutogenCsvConfig(t *testing.T) {
 }
 
 func TestGuideAutogenJsonConfig(t *testing.T) {
-	filename := "../res/newbie_guide_define.json"
+	filename := "../../datasheet/res/newbie_guide_define.json"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)

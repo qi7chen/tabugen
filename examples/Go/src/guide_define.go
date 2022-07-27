@@ -3,15 +3,17 @@ package config
 
 import (
 	"log"
+	"strconv"
 	"strings"
 )
 
 var (
 	_ = log.Panicf
 	_ = strings.Split
+	_ = strconv.Itoa
 )
 
-// , 新手任务.xlsx
+//  新手任务.xlsx
 type NewbieGuideDefine struct {
 	Name           string            `json:"name"`           // ID
 	Type           string            `json:"type"`           // 任务类型
@@ -19,41 +21,35 @@ type NewbieGuideDefine struct {
 	Accomplishment []int16           `json:"accomplishment"` // 完成步骤
 	Goods          map[string]uint32 `json:"goods"`          // 物品
 	Description    string            `json:"description"`    // 描述
+
 }
 
-func (p *NewbieGuideDefine) ParseFromRow(row []string) error {
-	if len(row) < 6 {
-		log.Panicf("NewbieGuideDefine: row length too short %d", len(row))
-	}
-	if row[0] != "" {
-		p.Name = row[0]
-	}
-	if row[1] != "" {
-		p.Type = row[1]
-	}
-	if row[2] != "" {
-		p.Target = row[2]
-	}
-	if row[3] != "" {
-		for _, item := range strings.Split(row[3], TABUGEN_ARRAY_DELIM) {
-			var value = parseI16(item)
-			p.Accomplishment = append(p.Accomplishment, value)
+func (p *NewbieGuideDefine) ParseFrom(record map[string]string) error {
+	p.Name = record["Name"]
+	p.Type = record["Type"]
+	p.Target = record["Target"]
+	if text := record["Accomplishment"]; text != "" {
+		var strArr = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var arr = make([]int16, 0, len(strArr))
+		for _, s := range strArr {
+			var val = parseI16(s)
+			arr = append(arr, val)
 		}
+		p.Accomplishment = arr
 	}
-	if row[4] != "" {
-		p.Goods = map[string]uint32{}
-		for _, text := range strings.Split(row[4], TABUGEN_MAP_DELIM1) {
-			if text == "" {
-				continue
+	if text := record["Goods"]; text != "" {
+		var kvList = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var dict = make(map[string]uint32, len(kvList))
+		for _, kv := range kvList {
+			if kv != "" {
+				var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)
+				var key = strings.TrimSpace(pair[0])
+				var val = parseU32(pair[1])
+				dict[key] = val
 			}
-			var items = strings.Split(text, TABUGEN_MAP_DELIM2)
-			var key = strings.TrimSpace(items[0])
-			var val = parseU32(items[1])
-			p.Goods[key] = val
 		}
+		p.Goods = dict
 	}
-	if row[5] != "" {
-		p.Description = row[5]
-	}
+	p.Description = record["Description"]
 	return nil
 }

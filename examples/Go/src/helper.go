@@ -128,9 +128,12 @@ func parseU64(s string) uint64 {
 }
 
 func parseF32(s string) float32 {
-	f := parseF64(s)
-	if f > math.MaxFloat32 || f < math.SmallestNonzeroFloat32 {
-		log.Panicf("parseF32: value %s out of range", s)
+	if s == "" {
+		return 0
+	}
+	f, err := strconv.ParseFloat(s, 32)
+	if err != nil {
+		log.Panicf("parseF32: cannot parse [%s] to double: %v", s, err)
 	}
 	return float32(f)
 }
@@ -150,9 +153,10 @@ type StructuredConfig interface {
 	ParseFromRow(row []string) error
 }
 
-// read CSV data to rows
-func ReadCSVRows(data []byte) ([][]string, error) {
-	var rows [][]string
+// ReadCSVRecords read CSV data to key-value record list
+func ReadCSVRecords(data []byte) ([]map[string]string, error) {
+	var records []map[string]string
+	var header []string
 	var r = csv.NewReader(bytes.NewReader(data))
 	for i := 0; ; i++ {
 		row, err := r.Read()
@@ -160,21 +164,35 @@ func ReadCSVRows(data []byte) ([][]string, error) {
 			break
 		}
 		if err != nil {
-			log.Printf("ReadCSVRows: read csv %v", err)
+			log.Printf("ReadCSVRecords: read csv %v", err)
 			return nil, err
 		}
-		rows = append(rows, row)
+		if i == 0 {
+			header = row
+			continue
+		}
+		var record = make(map[string]string)
+		for j, s := range row {
+			record[header[j]] = s
+		}
+		records = append(records, record)
 	}
-	return rows, nil
+	return records, nil
+}
+
+// RecordsToKVMap parse records to key-value string map
+func RecordsToKVMap(records []map[string]string) map[string]string {
+	var fields = make(map[string]string)
+	for _, rec := range records {
+		fields[rec["Key"]] = rec["Value"]
+	}
+	return fields
 }
 
 
 
 const (
-	TABUGEN_CSV_SEP     = `,` // CSV field delimiter
-	TABUGEN_CSV_QUOTE   = `"` // CSV field quote
-	TABUGEN_ARRAY_DELIM = `|` // array item delimiter
-	TABUGEN_MAP_DELIM1  = `|` // map item delimiter
-	TABUGEN_MAP_DELIM2  = `=` // map key-value delimiter
+	TABUGEN_SEP_DELIM1  = `|` // map item delimiter
+	TABUGEN_SEP_DELIM2  = `=` // map key-value delimiter
 )
 

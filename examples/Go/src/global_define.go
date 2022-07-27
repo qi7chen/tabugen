@@ -3,15 +3,17 @@ package config
 
 import (
 	"log"
+	"strconv"
 	"strings"
 )
 
 var (
 	_ = log.Panicf
 	_ = strings.Split
+	_ = strconv.Itoa
 )
 
-// , 全局变量表.xlsx
+//  全局变量表.xlsx
 type GlobalPropertyDefine struct {
 	GoldExchangeTimeFactor1    float64        `json:"gold_exchange_time_factor1"`    // 金币兑换时间参数1
 	GoldExchangeTimeFactor2    float64        `json:"gold_exchange_time_factor2"`    // 金币兑换时间参数2
@@ -25,63 +27,55 @@ type GlobalPropertyDefine struct {
 	EnableSearch               bool           `json:"enable_search"`                 // 开启搜索
 	SpawnLevelLimit            []int          `json:"spawn_level_limit"`             // 最大刷新个数显示
 	FirstRechargeReward        map[string]int `json:"first_recharge_reward"`         // 首充奖励
+	VIPItemReward              map[int]int    `json:"vip_item_reward"`               // VIP奖励
+
 }
 
-func (p *GlobalPropertyDefine) ParseFromRows(rows [][]string) error {
-	if len(rows) < 9 {
-		log.Panicf("GlobalPropertyDefine:row length out of index, %d < 9", len(rows))
-	}
-	if rows[0][2] != "" {
-		p.GoldExchangeResource1Price = parseU16(rows[0][2])
-	}
-	if rows[1][2] != "" {
-		p.GoldExchangeResource2Price = parseU16(rows[1][2])
-	}
-	if rows[2][2] != "" {
-		p.GoldExchangeResource3Price = parseU16(rows[2][2])
-	}
-	if rows[3][2] != "" {
-		p.GoldExchangeResource4Price = parseU16(rows[3][2])
-	}
-	if rows[4][2] != "" {
-		p.FreeCompleteSeconds = parseU16(rows[4][2])
-	}
-	if rows[5][2] != "" {
-		p.CancelBuildReturnPercent = parseU16(rows[5][2])
-	}
-	if rows[6][2] != "" {
-		p.EnableSearch = parseBool(rows[6][2])
-	}
-	if rows[7][2] != "" {
-		for _, item := range strings.Split(rows[7][2], TABUGEN_ARRAY_DELIM) {
-			var value = parseInt(item)
-			p.SpawnLevelLimit = append(p.SpawnLevelLimit, value)
+func (p *GlobalPropertyDefine) ParseFields(fields map[string]string) error {
+	p.GoldExchangeTimeFactor1 = parseF64(fields["GoldExchangeTimeFactor1"])
+	p.GoldExchangeTimeFactor2 = parseF64(fields["GoldExchangeTimeFactor2"])
+	p.GoldExchangeTimeFactor3 = parseF64(fields["GoldExchangeTimeFactor3"])
+	p.GoldExchangeResource1Price = parseU16(fields["GoldExchangeResource1Price"])
+	p.GoldExchangeResource2Price = parseU16(fields["GoldExchangeResource2Price"])
+	p.GoldExchangeResource3Price = parseU16(fields["GoldExchangeResource3Price"])
+	p.GoldExchangeResource4Price = parseU16(fields["GoldExchangeResource4Price"])
+	p.FreeCompleteSeconds = parseU16(fields["FreeCompleteSeconds"])
+	p.CancelBuildReturnPercent = parseU16(fields["CancelBuildReturnPercent"])
+	p.EnableSearch = parseBool(fields["EnableSearch"])
+	if text := fields["SpawnLevelLimit"]; text != "" {
+		var strArr = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var arr = make([]int, 0, len(strArr))
+		for _, s := range strArr {
+			var val = parseInt(s)
+			arr = append(arr, val)
 		}
+		p.SpawnLevelLimit = arr
 	}
-	if rows[8][2] != "" {
-		p.FirstRechargeReward = map[string]int{}
-		for _, text := range strings.Split(rows[8][2], TABUGEN_MAP_DELIM1) {
-			if text == "" {
-				continue
+	if text := fields["FirstRechargeReward"]; text != "" {
+		var kvList = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var dict = make(map[string]int, len(kvList))
+		for _, kv := range kvList {
+			if kv != "" {
+				var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)
+				var key = strings.TrimSpace(pair[0])
+				var val = parseInt(pair[1])
+				dict[key] = val
 			}
-			var items = strings.Split(text, TABUGEN_MAP_DELIM2)
-			var key = strings.TrimSpace(items[0])
-			var val = parseInt(items[1])
-			p.FirstRechargeReward[key] = val
 		}
+		p.FirstRechargeReward = dict
 	}
-	return nil
-}
-
-func (p *GlobalPropertyDefine) Unmarshal(data []byte) error {
-	rows, err := ReadCSVRows(data)
-	if err != nil {
-		log.Printf("GlobalPropertyDefine: csv read all, %v", err)
-		return err
-	}
-	if err := p.ParseFromRows(rows); err != nil {
-		log.Printf("GlobalPropertyDefine: parse row %d, %v", len(rows), err)
-		return err
+	if text := fields["VIPItemReward"]; text != "" {
+		var kvList = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var dict = make(map[int]int, len(kvList))
+		for _, kv := range kvList {
+			if kv != "" {
+				var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)
+				var key = parseInt(pair[0])
+				var val = parseInt(pair[1])
+				dict[key] = val
+			}
+		}
+		p.VIPItemReward = dict
 	}
 	return nil
 }

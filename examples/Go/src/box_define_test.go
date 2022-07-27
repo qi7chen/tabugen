@@ -7,19 +7,19 @@ import (
 )
 
 func TestBoxAutogenCsvConfig(t *testing.T) {
-	filename := "../res/box_probability_define.csv"
+	filename := "../../datasheet/res/box_probability_define.csv"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
 
-	rows, err := ReadCSVRows(data)
+	records, err := ReadCSVRecords(data)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	for _, row := range rows {
+	for _, rec := range records {
 		var item BoxProbabilityDefine
-		if err := item.ParseFromRow(row); err != nil {
+		if err := item.ParseFrom(rec); err != nil {
 			t.Fatalf("%v", err)
 		}
 		t.Logf("%v\n", item)
@@ -27,7 +27,7 @@ func TestBoxAutogenCsvConfig(t *testing.T) {
 }
 
 func TestBoxAutogenJsonConfig(t *testing.T) {
-	filename := "../res/box_probability_define.json"
+	filename := "../../datasheet/res/box_probability_define.json"
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
