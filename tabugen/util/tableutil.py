@@ -57,11 +57,11 @@ def remove_empty_columns(table):
 
 
 # 是否字段内容唯一
-def is_all_row_field_value_unique(rows, index: int):
+def is_all_row_field_value_unique(rows, col: int):
     all_set = {}
-    for i, row in rows:
-        if len(row[index]) > 0:
-            value = row[index]
+    for i, row in enumerate(rows):
+        if len(row[col]) > 0:
+            value = row[col]
             if value in all_set:
                 return False, i, all_set[value]
             else:
@@ -79,10 +79,10 @@ def validate_unique_column(struct, rows):
     names = struct['options'][predef.OptionUniqueColumns]
     if len(names) == 0:
         return rows
-    for _, field in struct['fields']:
+    for field in struct['fields']:
         if field['name'] in names:
-            idx = field['column_index'] - 1
-            (is_unique, row_line, exist_line) = is_all_row_field_value_unique(rows, idx)
+            col = field['column_index']
+            (is_unique, row_line, exist_line) = is_all_row_field_value_unique(rows, col)
             if not is_unique:
                 print('duplicate field %s value found, row %d and row %d' % (field['name'], exist_line, row_line))
                 sys.exit(1)

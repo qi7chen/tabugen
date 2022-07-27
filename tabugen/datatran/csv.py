@@ -51,7 +51,7 @@ class CsvDataWriter:
 
     # 只保留key-value
     def parse_kv_table(self, struct):
-        table = []
+        table = [['Key', 'Value']]
         data_rows = struct['data_rows']
         for row in data_rows:
             name = row[predef.PredefKeyColumn]
@@ -63,7 +63,8 @@ class CsvDataWriter:
     def parse_table(self, struct):
         data = struct["data_rows"]
         data = rowutil.validate_unique_column(struct, data)
-        return data
+        header = CsvDataWriter.header_row(struct)
+        return [header] + data
 
     def process(self, descriptors, args):
         filepath = args.out_data_path
@@ -76,7 +77,7 @@ class CsvDataWriter:
                 pass
 
         for struct in descriptors:
-            if predef.PredefParseKVMode in struct['options']:
+            if struct['options'][predef.PredefParseKVMode]:
                 table = self.parse_kv_table(struct)
             else:
                 table = self.parse_table(struct)

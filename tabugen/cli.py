@@ -70,7 +70,6 @@ def main():
     parser.add_argument("--without_data", action="store_true", help="parse struct definition but no data rows")
     parser.add_argument("--asset_path", help="filename or directory of excel files")
     parser.add_argument("--skip_files", help="filenames to skip when parsing excel")
-    parser.add_argument("--enable_skip_fields", action="store_true", help="enable skip columns")
 
     # source code options
     parser.add_argument("--config_manager_class", default='', help="name of auto-generated config manager class")
