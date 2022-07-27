@@ -339,3 +339,4 @@ typename std::enable_if<
 {
 	return static_cast<Tgt>(to<typename std::underlying_type<Tgt>::type>(value));
 }
+

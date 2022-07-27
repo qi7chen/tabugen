@@ -2,7 +2,8 @@
 #include <assert.h>
 #include <type_traits>
 #include <iostream>
-#include <fstream>
+
+#include <unordered_map>
 #include <absl/strings/str_format.h>
 #include "common/Utils.h"
 #include "SoldierDefine.h"
@@ -20,26 +21,23 @@ using namespace std;
 using namespace config;
 
 
-static std::string resPath = "res";
+static std::string resPath = "../../datasheet/res";
 
-
-static void LoadSoldierConfig(vector<config::SoldierPropertyDefine>& data) 
+template <typename T>
+static void LoadCsvToConfig(const char* filename, vector<T>& data)
 {
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "soldier_property_define.csv");
-    std::ifstream infile(filename.c_str());
-    std::string line;
-    while (std::getline(infile, line)) {
-        auto row = parseLineToRows(line);
-        if (!row.empty())
-        {
-            config::SoldierPropertyDefine item;
-            config::SoldierPropertyDefine::ParseFromRow(row, &item);
-            data.push_back(item);
-        }
+    std::string filepath = absl::StrFormat("%s/%s", resPath.c_str(), filename);
+    std::vector<Record> records;
+    ReadCsvRecord(filepath, records);
+    for (size_t i = 0; i < records.size(); i++)
+    {
+        T val;
+        T::ParseFrom(records[i], &val);
+        data.push_back(val);
     }
 }
 
-static void printSoldierProperty(const config::SoldierPropertyDefine& item) 
+static void printSoldierProperty(const config::SoldierPropertyDefine& item)
 {
     cout << item.Name << " "
         << item.Level << " "
@@ -67,10 +65,10 @@ static void printSoldierProperty(const config::SoldierPropertyDefine& item)
         << endl;
 }
 
-static void testSoldierConfig() 
+static void testSoldierConfig()
 {
     vector<config::SoldierPropertyDefine> data;
-    LoadSoldierConfig(data);
+    LoadCsvToConfig("soldier_property_define.csv", data);
     cout << absl::StrFormat("%d soldier config loaded.\n", (int)data.size());
     for (const SoldierPropertyDefine& item : data)
     {
@@ -80,23 +78,8 @@ static void testSoldierConfig()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static void LoadGuideConfig(vector<config::NewbieGuideDefine>& data) 
-{
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "newbie_guide_define.csv");
-    std::ifstream infile(filename.c_str());
-    std::string line;
-    while (std::getline(infile, line)) {
-        auto row = parseLineToRows(line);
-        if (!row.empty())
-        {
-            config::NewbieGuideDefine item;
-            config::NewbieGuideDefine::ParseFromRow(row, &item);
-            data.push_back(item);
-        }
-    }
-}
 
-static void printNewbieGuide(const config::NewbieGuideDefine& item) 
+static void printNewbieGuide(const config::NewbieGuideDefine& item)
 {
     cout << item.Name << " "
         << item.Type << " "
@@ -109,7 +92,7 @@ static void printNewbieGuide(const config::NewbieGuideDefine& item)
         cout << n << ", ";
     }
     cout << "} ";
-        
+
     cout << "{ ";
     for (auto iter = item.Goods.begin(); iter != item.Goods.end(); ++iter)
     {
@@ -119,10 +102,10 @@ static void printNewbieGuide(const config::NewbieGuideDefine& item)
     cout << endl;
 }
 
-static void testNewbieGuideConfig() 
+static void testNewbieGuideConfig()
 {
     vector<config::NewbieGuideDefine> data;
-    LoadGuideConfig(data);
+    LoadCsvToConfig("newbie_guide_define.csv", data);
     cout << absl::StrFormat("%d soldier config loaded.\n", (int)data.size());
     for (const config::NewbieGuideDefine& item : data)
     {
@@ -146,7 +129,7 @@ static void printGlobalProperty(const GlobalPropertyDefine& inst)
         << "CancelBuildReturnPercent: " << inst.CancelBuildReturnPercent << endl;
 
     cout << "SpawnLevelLimit: [";
-    for (auto v : inst.SpawnLevelLimit) 
+    for (auto v : inst.SpawnLevelLimit)
     {
         cout << v << ",";
     }
@@ -158,28 +141,19 @@ static void printGlobalProperty(const GlobalPropertyDefine& inst)
         cout << v.first << ":" << v.second << ",";
     }
     cout << "} ";
-    cout << endl;        
+    cout << endl;
 }
 
 static void testGlobalConfig()
 {
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "global_property_define");
-    vector<std::string> lines;
-    std::ifstream infile(filename.c_str());
-    std::string line;
-    while (std::getline(infile, line)) {
-        lines.push_back(line);
-    }
-
-    vector<vector<absl::string_view>> rows;
-    for (size_t i = 0; i < lines.size(); i++)
-    {
-        auto row = parseLineToRows(lines[i]);
-        rows.push_back(row);
-    }
+    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "global_property_define.csv");
+    std::vector<Record> records;
+    ReadCsvRecord(filename, records);
+    Record kvMap;
+    RecordToKVMap(records, kvMap);
 
     GlobalPropertyDefine inst;
-    GlobalPropertyDefine::ParseFromRows(rows, &inst);
+    GlobalPropertyDefine::ParseFrom(kvMap, &inst);
 
     printGlobalProperty(inst);
 }
@@ -187,34 +161,19 @@ static void testGlobalConfig()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static void LoadBoxConfig(vector<config::BoxProbabilityDefine>& data) 
-{
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "box_probability_define.csv");
-    std::ifstream infile(filename.c_str());
-    std::string line;
-    while (std::getline(infile, line)) {
-        auto row = parseLineToRows(line);
-        if (!row.empty())
-        {
-            config::BoxProbabilityDefine item;
-            config::BoxProbabilityDefine::ParseFromRow(row, &item);
-            data.push_back(item);
-        }
-    }
-}
 
 static void printBoxProbability(const BoxProbabilityDefine& item)
 {
-    cout << item.ID << " " 
-        << item.Total << " " 
-        << item.Time << " " 
-        << item.Repeat << " " 
+    cout << item.ID << " "
+        << item.Total << " "
+        << item.Time << " "
+        << item.Repeat << " "
         ;
     cout << "[ ";
     for (size_t i = 0; i < item.ProbabilityGoods.size(); i++)
     {
         const BoxProbabilityDefine::ProbabilityGoodsDefine& goods = item.ProbabilityGoods[i];
-        cout << "{ " 
+        cout << "{ "
             << goods.GoodsID << " "
             << goods.Num << " "
             << goods.Probability << " "
@@ -226,7 +185,7 @@ static void printBoxProbability(const BoxProbabilityDefine& item)
 static void testBoxConfig()
 {
     vector<config::BoxProbabilityDefine> data;
-    LoadBoxConfig(data);
+    LoadCsvToConfig("box_probability_define.csv", data);
     cout << absl::StrFormat("%d box config loaded.\n", (int)data.size());
     for (const BoxProbabilityDefine& item : data)
     {

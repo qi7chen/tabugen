@@ -6,10 +6,11 @@
 
 #include <string>
 #include <vector>
-#include <absl/strings/string_view.h>
+#include <unordered_map>
 
-// parse text line to delimiter-seperated rows
-std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim = ',', int quote = '"');
+// Read csv file to key-value records
+typedef std::unordered_map<std::string, std::string> Record;
 
-// split content to lines
-std::vector<absl::string_view> splitContentToLines(absl::string_view content);
+int ReadCsvRecord(const std::string& filename, std::vector<Record>& out);
+
+int RecordToKVMap(const std::vector<Record>& records, Record& out);

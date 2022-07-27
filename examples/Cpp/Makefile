@@ -6,7 +6,7 @@ CURRENT_DIR = $(shell pwd)
 ROOT_DIR = $(shell realpath ../../)
 DATASHEET_DIR = $(shell realpath ../datasheet)
 OUT_SRC_DIR = $(CURRENT_DIR)/src
-OUT_DATA_DIR = $(CURRENT_DIR)/res
+OUT_DATA_DIR = $(DATASHEET_DIR)/res
 
 VCPKG_TOOLCHAIN_FILE ?= $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
 VCPKG_INCLUDE_DIR_ ?= $(HOME)/vcpkg/installed/x64-linux/include
@@ -29,10 +29,10 @@ clean:
 	rm -rf build
 
 generate:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/SoldierDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GuideDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GlobalDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx --gen_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/BoxDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/SoldierDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GuideDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GlobalDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/BoxDefine
 
 output:
 	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)

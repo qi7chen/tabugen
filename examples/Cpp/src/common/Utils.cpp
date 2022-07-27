@@ -3,6 +3,7 @@
 // See accompanying files LICENSE.
 
 #include "Utils.h"
+#include <fstream>
 #include <absl/strings/ascii.h>
 
 static int parseNextColumn(absl::string_view& line, absl::string_view& field, int delim, int quote)
@@ -36,7 +37,7 @@ static int parseNextColumn(absl::string_view& line, absl::string_view& field, in
     return -1;
 }
 
-std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim, int quote)
+static std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim=',', int quote='"')
 {
     std::vector<absl::string_view> row;
     int pos = 0;
@@ -51,7 +52,7 @@ std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim
     return row;
 }
 
-std::vector<absl::string_view> splitContentToLines(absl::string_view content) {
+static std::vector<absl::string_view> splitContentToLines(absl::string_view content) {
     std::vector<absl::string_view> lines;
     size_t pos = 0;
     // UTF8-BOM
@@ -75,4 +76,34 @@ std::vector<absl::string_view> splitContentToLines(absl::string_view content) {
         }
     }
     return lines;
+}
+
+int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
+{
+    std::ifstream infile(filename.c_str());
+    std::vector<absl::string_view> header;
+    std::string line;
+    while (std::getline(infile, line)) {
+        auto row = parseLineToRows(line);
+        if (header.empty())
+        {
+            header = row;
+        }
+        Record record;
+        for (size_t i = 0; i < row.size(); i++ )
+        {
+            const std::string& key = std::string(header[i]);
+            record[key] = std::string(row[i]);
+        }
+        out.push_back(record);
+    }
+}
+
+int RecordToKVMap(const std::vector<Record>& records, Record& out)
+{
+    for (size_t i = 0; i < records.size(); i++ )
+    {
+        auto record = records[i];
+        out[record["Key"]] = record["Value"];
+    }
 }
