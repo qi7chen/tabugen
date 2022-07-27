@@ -1,0 +1,71 @@
+[
+  {
+    "ProbabilityGoods": [
+      {
+        "goods_id": "Food",
+        "num": 1000,
+        "probability": 5000
+      },
+      {
+        "goods_id": "Hero1",
+        "num": 5,
+        "probability": 1000
+      },
+      {
+        "goods_id": "Soldier1",
+        "num": 10,
+        "probability": 100
+      }
+    ],
+    "id": "Box01",
+    "repeat": true,
+    "time": 1400,
+    "total": 1
+  },
+  {
+    "ProbabilityGoods": [
+      {
+        "goods_id": "Gold",
+        "num": 2000,
+        "probability": 5000
+      },
+      {
+        "goods_id": "Hero2",
+        "num": 5,
+        "probability": 1000
+      },
+      {
+        "goods_id": "Soldier2",
+        "num": 10,
+        "probability": 100
+      }
+    ],
+    "id": "Box02",
+    "repeat": true,
+    "time": 1800,
+    "total": 2
+  },
+  {
+    "ProbabilityGoods": [
+      {
+        "goods_id": "Power",
+        "num": 3000,
+        "probability": 5000
+      },
+      {
+        "goods_id": "Hero3",
+        "num": 5,
+        "probability": 1000
+      },
+      {
+        "goods_id": "Soldier3",
+        "num": 10,
+        "probability": 100
+      }
+    ],
+    "id": "Box03",
+    "repeat": true,
+    "time": 2400,
+    "total": 3
+  }
+]

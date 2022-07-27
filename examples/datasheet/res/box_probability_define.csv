@@ -1,0 +1,4 @@
+ID,Total,Time,Repeat,GoodsID1,Num1,Probability1,GoodsID2,Num2,Probability2,GoodsID3,Num3,Probability3
+Box01,1,1400,1,Food,1000,5000,Hero1,5,1000,Soldier1,10,100
+Box02,2,1800,0,Gold,2000,5000,Hero2,5,1000,Soldier2,10,100
+Box03,3,2400,1,Power,3000,5000,Hero3,5,1000,Soldier3,10,100
