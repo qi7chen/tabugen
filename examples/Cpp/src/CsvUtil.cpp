@@ -2,11 +2,13 @@
 // Distributed under the terms and conditions of the Apache License.
 // See accompanying files LICENSE.
 
-#include "Utils.h"
+#include "CsvUtil.h"
 #include <fstream>
-#include <absl/strings/ascii.h>
+#include "Range.h"
+#include "StringUtil.h"
 
-static int parseNextColumn(absl::string_view& line, absl::string_view& field, int delim, int quote)
+
+static int parseNextColumn(StringPiece& line, StringPiece& field, int delim, int quote)
 {
     bool in_quote = false;
     size_t start = 0;
@@ -18,31 +20,31 @@ static int parseNextColumn(absl::string_view& line, absl::string_view& field, in
     for (; pos < line.size(); pos++) {
         if (in_quote && line[pos] == quote) {
             if (pos + 1 < line.size() && line[pos + 1] == delim) {
-                field = line.substr(start, pos - start);
-                line.remove_prefix(pos + 2);
+                field = line.subpiece(start, pos - start);
+                line.advance(pos - start + 2);
             }
             else { // end of line
-                field = line.substr(start, pos - start);
-                line.remove_prefix(pos + 1);
+                field = line.subpiece(start, pos - start);
+                line.advance(pos - start + 1);
             }
             return (int)pos;
         }
         if (!in_quote && line[pos] == delim) {
-            field = line.substr(start, pos - start);
-            line.remove_prefix(pos + 1);
+            field = line.subpiece(start, pos - start);
+            line.advance(pos - start + 1);
             return (int)pos;
         }
     }
-    field = line.substr(start, pos);
+    field = line.subpiece(start, pos);
     return -1;
 }
 
-static std::vector<absl::string_view> parseLineToRows(absl::string_view line, int delim=',', int quote='"')
+static std::vector<StringPiece> parseLineToRows(StringPiece line, int delim=',', int quote='"')
 {
-    std::vector<absl::string_view> row;
+    std::vector<StringPiece> row;
     int pos = 0;
     while (!line.empty()) {
-        absl::string_view field;
+        StringPiece field;
         int n = parseNextColumn(line, field, delim, quote);
         row.push_back(field);
         if (n < 0) {
@@ -52,8 +54,8 @@ static std::vector<absl::string_view> parseLineToRows(absl::string_view line, in
     return row;
 }
 
-static std::vector<absl::string_view> splitContentToLines(absl::string_view content) {
-    std::vector<absl::string_view> lines;
+static std::vector<StringPiece> splitContentToLines(StringPiece content) {
+    std::vector<StringPiece> lines;
     size_t pos = 0;
     // UTF8-BOM
     if (content.size() >= 3 && content[0] == '\xEF' && content[1] == '\xBB' && content[2] == '\xBF') {
@@ -69,8 +71,8 @@ static std::vector<absl::string_view> splitContentToLines(absl::string_view cont
             end--;
         }
         pos = end + 1;
-        absl::string_view line = content.substr(begin, end - begin);
-        line = absl::StripAsciiWhitespace(line);
+        StringPiece line = content.subpiece(begin, end - begin);
+        line = trimWhitespace(line);
         if (!line.empty()) {
             lines.push_back(line);
         }
@@ -81,7 +83,7 @@ static std::vector<absl::string_view> splitContentToLines(absl::string_view cont
 int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
 {
     std::ifstream infile(filename.c_str());
-    std::vector<absl::string_view> header;
+    std::vector<StringPiece> header;
     std::string line;
     while (std::getline(infile, line)) {
         auto row = parseLineToRows(line);
@@ -92,8 +94,8 @@ int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
         Record record;
         for (size_t i = 0; i < row.size(); i++ )
         {
-            const std::string& key = std::string(header[i]);
-            record[key] = std::string(row[i]);
+            const std::string& key = header[i].str();
+            record[key] = row[i].str();
         }
         out.push_back(record);
     }

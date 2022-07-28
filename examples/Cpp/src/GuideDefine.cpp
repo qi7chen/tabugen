@@ -5,7 +5,8 @@
 #include <assert.h>
 #include <memory>
 #include <fstream>
-#include "common/Conv.h"
+#include "Conv.h"
+#include "StringUtil.h"
 
 using namespace std;
 
@@ -20,31 +21,35 @@ namespace config {
 int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = to<std::string>(record["Name"]);
-    ptr->Type = to<std::string>(record["Type"]);
-    ptr->Target = to<std::string>(record["Target"]);
+    ptr->Name = record["Name"];
+    ptr->Type = record["Type"];
+    ptr->Target = record["Target"];
     {
-        const std::vector<absl::string_view>& array = absl::StrSplit(record["Accomplishment"], "|");
-        for (size_t i = 0; i < array.size(); i++)
+        const auto& arr = SplitString(record["Accomplishment"], "|");
+        for (size_t i = 0; i < arr.size(); i++)
         {
-            ptr->Accomplishment.push_back(to<int16_t>(array[i]));
+            if (!arr[i].empty()) {
+                const auto& val = to<int16_t>(arr[i]);
+                ptr->Accomplishment.emplace_back(val);
+            }
         }
     }
     {
-        const std::vector<absl::string_view>& vec = absl::StrSplit(record["Goods"], "|");
-        for (size_t i = 0; i < vec.size(); i++)
+        const auto& kvs = SplitString(record["Goods"], "|");
+        for (size_t i = 0; i < kvs.size(); i++)
         {
-            const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], "=");
+            const auto& kv = SplitString(kvs[i], "=");
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
                 const auto& key = to<std::string>(kv[0]);
+                const auto& val = to<uint32_t>(kv[1]);
                 ASSERT(ptr->Goods.count(key) == 0);
-                ptr->Goods[key] = to<uint32_t>(kv[1]);
+                ptr->Goods.emplace(std::make_pair(key, val));
             }
         }
     }
-    ptr->Description = to<std::string>(record["Description"]);
+    ptr->Description = record["Description"];
     return 0;
 }
 

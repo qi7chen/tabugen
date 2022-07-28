@@ -5,7 +5,8 @@
 #include <assert.h>
 #include <memory>
 #include <fstream>
-#include "common/Conv.h"
+#include "Conv.h"
+#include "StringUtil.h"
 
 using namespace std;
 
@@ -20,14 +21,15 @@ namespace config {
 int BoxProbabilityDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->ID = to<std::string>(record["ID"]);
+    ptr->ID = record["ID"];
     ptr->Total = to<int>(record["Total"]);
     ptr->Time = to<int>(record["Time"]);
     ptr->Repeat = to<bool>(record["Repeat"]);
+    ptr->ProbabilityGoods.reserve(3);
     for (int i = 1; i <= 3; i++)
     {
         BoxProbabilityDefine::ProbabilityGoodsDefine val;
-        val.GoodsID = to<std::string>(record[to<std::string>("GoodsID", i)]);
+        val.GoodsID = record[to<std::string>("GoodsID", i)];
         val.Num = to<uint32_t>(record[to<std::string>("Num", i)]);
         val.Probability = to<uint32_t>(record[to<std::string>("Probability", i)]);
         ptr->ProbabilityGoods.push_back(val);

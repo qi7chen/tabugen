@@ -2,10 +2,11 @@
 #include <assert.h>
 #include <type_traits>
 #include <iostream>
-
+#include "Range.h"
+#include "Conv.h"
+#include "StringUtil.h"
+#include "CsvUtil.h"
 #include <unordered_map>
-#include <absl/strings/str_format.h>
-#include "common/Utils.h"
 #include "SoldierDefine.h"
 #include "GuideDefine.h"
 #include "GlobalDefine.h"
@@ -26,7 +27,7 @@ static std::string resPath = "../../datasheet/res";
 template <typename T>
 static void LoadCsvToConfig(const char* filename, vector<T>& data)
 {
-    std::string filepath = absl::StrFormat("%s/%s", resPath.c_str(), filename);
+    std::string filepath = stringPrintf("%s/%s", resPath.c_str(), filename);
     std::vector<Record> records;
     ReadCsvRecord(filepath, records);
     for (size_t i = 0; i < records.size(); i++)
@@ -69,7 +70,7 @@ static void testSoldierConfig()
 {
     vector<config::SoldierPropertyDefine> data;
     LoadCsvToConfig("soldier_property_define.csv", data);
-    cout << absl::StrFormat("%d soldier config loaded.\n", (int)data.size());
+    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const SoldierPropertyDefine& item : data)
     {
         printSoldierProperty(item);
@@ -106,7 +107,7 @@ static void testNewbieGuideConfig()
 {
     vector<config::NewbieGuideDefine> data;
     LoadCsvToConfig("newbie_guide_define.csv", data);
-    cout << absl::StrFormat("%d soldier config loaded.\n", (int)data.size());
+    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const config::NewbieGuideDefine& item : data)
     {
         printNewbieGuide(item);
@@ -146,7 +147,7 @@ static void printGlobalProperty(const GlobalPropertyDefine& inst)
 
 static void testGlobalConfig()
 {
-    std::string filename = absl::StrFormat("%s/%s", resPath.c_str(), "global_property_define.csv");
+    std::string filename = stringPrintf("%s/%s", resPath.c_str(), "global_property_define.csv");
     std::vector<Record> records;
     ReadCsvRecord(filename, records);
     Record kvMap;
@@ -186,7 +187,7 @@ static void testBoxConfig()
 {
     vector<config::BoxProbabilityDefine> data;
     LoadCsvToConfig("box_probability_define.csv", data);
-    cout << absl::StrFormat("%d box config loaded.\n", (int)data.size());
+    cout << stringPrintf("%d box config loaded.\n", (int)data.size());
     for (const BoxProbabilityDefine& item : data)
     {
         printBoxProbability(item);

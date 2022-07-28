@@ -5,7 +5,8 @@
 #include <assert.h>
 #include <memory>
 #include <fstream>
-#include "common/Conv.h"
+#include "Conv.h"
+#include "StringUtil.h"
 
 using namespace std;
 
@@ -31,37 +32,42 @@ int GlobalPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>
     ptr->CancelBuildReturnPercent = to<uint16_t>(fields["CancelBuildReturnPercent"]);
     ptr->EnableSearch = to<bool>(fields["EnableSearch"]);
     {
-        const std::vector<absl::string_view>& array = absl::StrSplit(fields["SpawnLevelLimit"], "|");
-        for (size_t i = 0; i < array.size(); i++)
+        const auto& arr = SplitString(fields["SpawnLevelLimit"], "|");
+        for (size_t i = 0; i < arr.size(); i++)
         {
-            ptr->SpawnLevelLimit.push_back(to<int>(array[i]));
-        }
-    }
-    {
-        const std::vector<absl::string_view>& vec = absl::StrSplit(fields["FirstRechargeReward"], "|");
-        for (size_t i = 0; i < vec.size(); i++)
-        {
-            const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], "=");
-            ASSERT(kv.size() == 2);
-            if(kv.size() == 2)
-            {
-                const auto& key = to<std::string>(kv[0]);
-                ASSERT(ptr->FirstRechargeReward.count(key) == 0);
-                ptr->FirstRechargeReward[key] = to<int>(kv[1]);
+            if (!arr[i].empty()) {
+                const auto& val = to<int>(arr[i]);
+                ptr->SpawnLevelLimit.emplace_back(val);
             }
         }
     }
     {
-        const std::vector<absl::string_view>& vec = absl::StrSplit(fields["VIPItemReward"], "|");
-        for (size_t i = 0; i < vec.size(); i++)
+        const auto& kvs = SplitString(fields["FirstRechargeReward"], "|");
+        for (size_t i = 0; i < kvs.size(); i++)
         {
-            const std::vector<absl::string_view>& kv = absl::StrSplit(vec[i], "=");
+            const auto& kv = SplitString(kvs[i], "=");
+            ASSERT(kv.size() == 2);
+            if(kv.size() == 2)
+            {
+                const auto& key = to<std::string>(kv[0]);
+                const auto& val = to<int>(kv[1]);
+                ASSERT(ptr->FirstRechargeReward.count(key) == 0);
+                ptr->FirstRechargeReward.emplace(std::make_pair(key, val));
+            }
+        }
+    }
+    {
+        const auto& kvs = SplitString(fields["VIPItemReward"], "|");
+        for (size_t i = 0; i < kvs.size(); i++)
+        {
+            const auto& kv = SplitString(kvs[i], "=");
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
                 const auto& key = to<int>(kv[0]);
+                const auto& val = to<int>(kv[1]);
                 ASSERT(ptr->VIPItemReward.count(key) == 0);
-                ptr->VIPItemReward[key] = to<int>(kv[1]);
+                ptr->VIPItemReward.emplace(std::make_pair(key, val));
             }
         }
     }

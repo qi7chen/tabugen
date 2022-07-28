@@ -5,7 +5,8 @@
 #include <assert.h>
 #include <memory>
 #include <fstream>
-#include "common/Conv.h"
+#include "Conv.h"
+#include "StringUtil.h"
 
 using namespace std;
 
@@ -20,18 +21,18 @@ namespace config {
 int SoldierPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = to<std::string>(record["Name"]);
+    ptr->Name = record["Name"];
     ptr->Level = to<int>(record["Level"]);
-    ptr->NameID = to<std::string>(record["NameID"]);
-    ptr->Description = to<std::string>(record["Description"]);
-    ptr->BuildingName = to<std::string>(record["BuildingName"]);
+    ptr->NameID = record["NameID"];
+    ptr->Description = record["Description"];
+    ptr->BuildingName = record["BuildingName"];
     ptr->BuildingLevel = to<uint32_t>(record["BuildingLevel"]);
     ptr->RequireSpace = to<uint32_t>(record["RequireSpace"]);
     ptr->Volume = to<uint32_t>(record["Volume"]);
     ptr->UpgradeTime = to<uint32_t>(record["UpgradeTime"]);
-    ptr->UpgradeMaterialID = to<std::string>(record["UpgradeMaterialID"]);
+    ptr->UpgradeMaterialID = record["UpgradeMaterialID"];
     ptr->UpgradeMaterialNum = to<int64_t>(record["UpgradeMaterialNum"]);
-    ptr->ConsumeMaterial = to<std::string>(record["ConsumeMaterial"]);
+    ptr->ConsumeMaterial = record["ConsumeMaterial"];
     ptr->ConsumeMaterialNum = to<int>(record["ConsumeMaterialNum"]);
     ptr->ConsumeTime = to<int>(record["ConsumeTime"]);
     ptr->Act = to<int>(record["Act"]);

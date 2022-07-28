@@ -35,9 +35,13 @@ if (WIN32)
 endif()
 
 set(ALL_SRC_FILES
-    ${PROJECT_ROOT_DIR}/src/common/Conv.h
-    ${PROJECT_ROOT_DIR}/src/common/Utils.h
-    ${PROJECT_ROOT_DIR}/src/common/Utils.cpp
+    ${PROJECT_ROOT_DIR}/src/Conv.h
+    ${PROJECT_ROOT_DIR}/src/Conv.cpp
+    ${PROJECT_ROOT_DIR}/src/Range.h
+    ${PROJECT_ROOT_DIR}/src/StringUtil.h
+    ${PROJECT_ROOT_DIR}/src/StringUtil.cpp
+    ${PROJECT_ROOT_DIR}/src/CsvUtil.h
+    ${PROJECT_ROOT_DIR}/src/CsvUtil.cpp
     ${PROJECT_ROOT_DIR}/src/main.cpp
     ${PROJECT_ROOT_DIR}/src/BoxDefine.h
     ${PROJECT_ROOT_DIR}/src/BoxDefine.cpp
