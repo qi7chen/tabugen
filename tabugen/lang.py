@@ -53,7 +53,7 @@ def is_cpp_pod_type(typ: str) -> bool:
 
 
 # C++为类型加上默认值
-def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num) -> str:
+def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
     name = field['name']
     if remove_suffix_num:
@@ -198,18 +198,21 @@ def map_cs_type(typ: str) -> str:
 
 
 # C#默认值
-def name_with_default_cs_value(field: Mapping, typename: str) -> str:
+def name_with_default_cs_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
+    name = field['name']
+    if remove_suffix_num:
+        name = strutil.remove_suffix_number(name)
     if typename == 'bool':
-        return '%s = false;' % field['name']
+        return '%s = false;' % name
     elif typename == 'string':
-        return '%s = "";' % field['name']
+        return '%s = "";' % name
     elif types.is_integer_type(field['type_name']):
-        return '%s = 0;' % field['name']
+        return '%s = 0;' % name
     elif types.is_floating_type(field['type_name']):
-        return '%s = 0.0f;' % field['name']
+        return '%s = 0.0f;' % name
     else:
-        return '%s = null;' % field['name']
+        return '%s = null;' % name
 
 
 # java装箱类型
@@ -263,23 +266,26 @@ def map_java_type(typ: str) -> str:
 
 
 # java默认值
-def name_with_default_java_value(field: Mapping, typename: str) -> str:
+def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
     # print(typename)
+    name = field['name']
+    if remove_suffix_num:
+        name = strutil.remove_suffix_number(name)
     if typename == 'boolean':
-        return '%s = false;' % field['name']
+        return '%s = false;' % name
     elif typename == 'String':
-        return '%s = "";' % field['name']
+        return '%s = "";' % name
     elif types.is_integer_type(field['type_name']):
-        return '%s = 0;' % field['name']
+        return '%s = 0;' % name
     elif types.is_floating_type(field['type_name']):
-        return '%s = 0.0f;' % field['name']
+        return '%s = 0.0f;' % name
     elif typename.startswith("List"):
-        return '%s = new ArrayList<>();' % field['name']
+        return '%s = new ArrayList<>();' % name
     elif typename.startswith('Map'):
-        return '%s = new HashMap<>();' % field['name']
+        return '%s = new HashMap<>();' % name
     else:
-        return '%s = null;' % field['name']
+        return '%s = null;' % name
 
 
 def is_java_primitive_type(typ: str) -> bool:
