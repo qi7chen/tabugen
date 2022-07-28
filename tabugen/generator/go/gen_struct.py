@@ -30,8 +30,7 @@ class GoStructGenerator:
             self.load_gen = GoCsvLoadGenerator()
 
     # Go代码生成器
-    @staticmethod
-    def gen_field_define(field, json_tag: bool, snake_case: bool, remove_suffix_num: bool) -> str:
+    def gen_field_define(self, field, json_tag: bool, snake_case: bool, remove_suffix_num: bool) -> str:
         text = ''
         typename = lang.map_go_type(field['original_type_name'])
         assert typename != "", field['original_type_name']
@@ -50,8 +49,7 @@ class GoStructGenerator:
             text += '    %s %s // %s\n' % (name, typename, field['comment'])
         return text
 
-    @staticmethod
-    def gen_inner_field_define(struct, json_tag: bool, snake_case: bool) -> str:
+    def gen_inner_fields(self, struct, json_tag: bool, snake_case: bool) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         assert len(inner_field_name) > 0
@@ -65,8 +63,7 @@ class GoStructGenerator:
         return text
 
     # 生成内嵌字段
-    @staticmethod
-    def gen_inner_type(struct, args):
+    def gen_inner_type(self, struct, args):
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
         step = inner_fields['step']
@@ -76,7 +73,7 @@ class GoStructGenerator:
         col = start
         while col < start + step:
             field = struct['fields'][col]
-            text = GoStructGenerator.gen_field_define(field, args.go_json_tag, args.json_snake_case, True)
+            text = self.gen_field_define(field, args.go_json_tag, args.json_snake_case, True)
             content += text
             col += 1
         content += '\n}\n'
@@ -85,26 +82,28 @@ class GoStructGenerator:
     # 生成struct定义
     def gen_go_struct(self, struct, args):
         content = ''
+
         inner_start_col = -1
         inner_end_col = -1
+        inner_field_done = False
         if 'inner_fields' in struct:
             inner_start_col = struct['inner_fields']['start']
             inner_end_col = struct['inner_fields']['end']
             content += self.gen_inner_type(struct, args)
             content += '\n'
 
-        fields = struct['fields']
-        inner_field_done = False
         content += '// %s %s\n' % (struct['comment'], struct['file'])
         content += 'type %s struct {\n' % struct['camel_case_name']
+
+        fields = struct['fields']
         for col, field in enumerate(fields):
             text = ''
             if inner_start_col <= col < inner_end_col:
                 if not inner_field_done:
-                    text = GoStructGenerator.gen_inner_field_define(struct, args.go_json_tag, args.json_snake_case)
+                    text = self.gen_inner_fields(struct, args.go_json_tag, args.json_snake_case)
                     inner_field_done = True
             else:
-                text = GoStructGenerator.gen_field_define(field, args.go_json_tag, args.json_snake_case, False)
+                text = self.gen_field_define(field, args.go_json_tag, args.json_snake_case, False)
             content += text
         content += '\n}\n'
         return content
