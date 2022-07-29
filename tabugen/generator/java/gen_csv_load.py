@@ -8,7 +8,6 @@ import tabugen.lang as lang
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
 import tabugen.util.structutil as structutil
-import tabugen.generator.java.template as java_template
 
 
 # java加载CSV代码生成器

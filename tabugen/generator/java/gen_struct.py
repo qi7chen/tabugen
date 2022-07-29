@@ -9,7 +9,6 @@ import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
 import tabugen.util.structutil as structutil
-import tabugen.generator.java.template as java_template
 from tabugen.generator.java.gen_csv_load import JavaCsvLoadGenerator
 
 

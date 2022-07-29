@@ -63,7 +63,7 @@ class GoStructGenerator:
         return text
 
     # 生成内嵌字段
-    def gen_inner_type(self, struct, args):
+    def gen_inner_type(self, struct, args) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
         step = inner_fields['step']
@@ -80,7 +80,7 @@ class GoStructGenerator:
         return content
 
     # 生成struct定义
-    def gen_go_struct(self, struct, args):
+    def gen_go_struct(self, struct, args) -> str:
         content = ''
 
         inner_start_col = -1
@@ -108,7 +108,7 @@ class GoStructGenerator:
         content += '\n}\n'
         return content
 
-    def generate(self, struct, args):
+    def generate(self, struct, args) -> str:
         content = ''
         content += self.gen_go_struct(struct, args)
         content += '\n\n'

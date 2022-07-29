@@ -7,7 +7,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.util.strutil as strutil
 import tabugen.util.structutil as structutil
-import tabugen.generator.csharp.template as csharp_template
 
 
 # 生成C#加载CSV文件数据代码

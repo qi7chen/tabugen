@@ -75,6 +75,33 @@ class GoCsvLoadGenerator:
             content += '%s%s%s = %s(%s)\n' % (space, prefix, name, lang.map_go_parse_fn(typename), valuetext)
         return content
 
+
+    # 生成内部class的赋值方法
+    def gen_inner_fields_assign(self, struct, prefix, rec_name):
+        inner_fields = struct['inner_fields']
+        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
+        inner_var_name = struct["options"][predef.PredefInnerFieldName]
+        assert len(inner_class_type) > 0 and len(inner_var_name) > 0
+
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
+        assert start > 0 and end > 0 and step > 1
+
+        col = start
+        content = '\tfor i := 1; i <= %d; i++ {\n' % ((end - start) / step)
+        content += '\t\tvar off = strconv.Itoa(i)\n'
+        content += '\t\tvar val %s\n' % inner_class_type
+        for i in range(step):
+            field = struct['fields'][col + i]
+            origin_typename = field['original_type_name']
+            field_name = strutil.remove_suffix_number(field['camel_case_name'])
+            valuetext = '%s["%s" + off]' % (rec_name, field_name)
+            content += self.gen_field_assign('val.', origin_typename, field_name, valuetext, 2)
+        content += '%s%s = append(%s%s, val)\n' % (prefix, inner_var_name, prefix, inner_var_name)
+        content += '\t}\n'
+        return content
+
     # KV模式的ParseFromRow方法
     def gen_kv_parse_method(self, struct):
         content = ''
@@ -109,7 +136,7 @@ class GoCsvLoadGenerator:
         for col, field in enumerate(struct['fields']):
             if inner_start_col <= col < inner_end_col:
                 if not inner_field_done:
-                    content += self.gen_inner_class_parse(struct, 'p.', 'record')
+                    content += self.gen_inner_fields_assign(struct, 'p.', 'record')
                     inner_field_done = True
             else:
                 origin_typename = field['original_type_name']
@@ -120,31 +147,6 @@ class GoCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-    # 生成内部class的赋值方法
-    def gen_inner_class_parse(self, struct, prefix, rec_name):
-        inner_fields = struct['inner_fields']
-        inner_class_type = struct["options"][predef.PredefInnerTypeClass]
-        inner_var_name = struct["options"][predef.PredefInnerFieldName]
-        assert len(inner_class_type) > 0 and len(inner_var_name) > 0
-
-        start = inner_fields['start']
-        end = inner_fields['end']
-        step = inner_fields['step']
-        assert start > 0 and end > 0 and step > 1
-
-        col = start
-        content = '\tfor i := 1; i <= %d; i++ {\n' % ((end - start) / step)
-        content += '\t\tvar off = strconv.Itoa(i)\n'
-        content += '\t\tvar val %s\n' % inner_class_type
-        for i in range(step):
-            field = struct['fields'][col + i]
-            origin_typename = field['original_type_name']
-            field_name = strutil.remove_suffix_number(field['camel_case_name'])
-            valuetext = '%s["%s" + off]' % (rec_name, field_name)
-            content += self.gen_field_assign('val.', origin_typename, field_name, valuetext, 2)
-        content += '%s%s = append(%s%s, val)\n' % (prefix, inner_var_name, prefix, inner_var_name)
-        content += '\t}\n'
-        return content
 
     # 生成Load方法
     def generate(self, struct):

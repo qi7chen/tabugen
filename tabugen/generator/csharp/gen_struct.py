@@ -31,6 +31,52 @@ class CSharpStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
+    def gen_field_define(self, field, max_name_len: int, max_type_len: int, remove_suffix_num: bool, tabs: int) -> str:
+        typename = lang.map_cs_type(field['original_type_name'])
+        assert typename != "", field['original_type_name']
+        typename = strutil.pad_spaces(typename, max_type_len + 1)
+        name = lang.name_with_default_cs_value(field, typename, remove_suffix_num)
+        name = strutil.pad_spaces(name, max_name_len + 8)
+        space = self.TAB_SPACE * tabs
+        text = '%spublic %s %s // %s\n' % (space, typename.strip(), name, field['comment'])
+        return text
+
+    def gen_inner_type(self, struct) -> str:
+        inner_fields = struct['inner_fields']
+        start = inner_fields['start']
+        step = inner_fields['step']
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        assert len(type_class_name) > 0
+        content = 'type %s struct {\n' % type_class_name
+        col = start
+        while col < start + step:
+            field = struct['fields'][col]
+            text = self.gen_field_define(field, True, 1)
+            content += text
+            col += 1
+        content += '\n}\n'
+        return content
+
+    # 生成嵌套内部类定义
+    def gen_inner_field(self, struct) -> str:
+        content = ''
+        class_name = struct["options"][predef.PredefInnerTypeClass]
+        inner_fields = structutil.get_inner_class_struct_fields(struct)
+        content += 'public class %s \n' % class_name
+        content += '{\n'
+        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
+        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
+        for field in inner_fields:
+            typename = lang.map_cs_type(field['original_type_name'])
+            assert typename != "", field['original_type_name']
+            typename = strutil.pad_spaces(typename, max_type_len + 1)
+            name = lang.name_with_default_cs_value(field, typename)
+            name = strutil.pad_spaces(name, max_name_len + 8)
+            content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
+        content += '};\n\n'
+        return content
+
+
     # 生成结构体定义
     def gen_cs_struct(self, struct):
         content = ''
@@ -86,32 +132,34 @@ class CSharpStructGenerator:
             content += text
         return content
 
-    # 生成嵌套内部类定义
-    @staticmethod
-    def gen_cs_inner_class(struct):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        content += 'public class %s \n' % class_name
-        content += '{\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_cs_type)
-        for field in inner_fields:
-            typename = lang.map_cs_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cs_value(field, typename)
-            name = strutil.pad_spaces(name, max_name_len + 8)
-            content += '    public %s %s // %s\n' % (typename.strip(), name, field['comment'])
-        content += '};\n\n'
-        return content
 
-    def generate_class(self, struct, args):
-        content = '\n'
-        content += self.gen_cs_struct(struct)
-        if self.load_gen is not None:
-            content += self.load_gen.gen_source_method(struct)
-        content += '}\n\n'
+
+
+
+    def generate(self, struct, args):
+        content = ''
+        inner_start_col = -1
+        inner_end_col = -1
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
+            content += self.gen_inner_type(struct)
+            content += '\n'
+
+        fields = struct['fields']
+        inner_field_done = False
+        content += '// %s %s\n' % (struct['comment'], struct['file'])
+        content += 'type %s struct {\n' % struct['camel_case_name']
+        for col, field in enumerate(fields):
+            text = ''
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    text = self.gen_inner_field_define(struct, args.go_json_tag, args.json_snake_case)
+                    inner_field_done = True
+            else:
+                text = self.gen_field_define(field, args.go_json_tag, args.json_snake_case, False)
+            content += text
+        content += '\n}\n'
         return content
 
     def run(self, descriptors, filepath, args):
@@ -122,15 +170,8 @@ class CSharpStructGenerator:
         if args.package is not None:
             content += '\nnamespace %s\n{\n' % args.package
 
-        if self.load_gen is not None:
-            (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims, args.config_manager_class)
-
         for struct in descriptors:
-            content += self.generate_class(struct, args)
-
-        if self.load_gen is not None:
-            content += self.load_gen.gen_global_class(descriptors, args)
+            content += self.generate(struct, args)
 
         if args.package is not None:
             content += '\n}\n'  # namespace
@@ -139,11 +180,3 @@ class CSharpStructGenerator:
         strutil.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote C# source file to', filename)
 
-
-def unit_test():
-    codegen = CSharpStructGenerator()
-    codegen.setup('csv')
-
-
-if __name__ == '__main__':
-    unit_test()

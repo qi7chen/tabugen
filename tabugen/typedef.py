@@ -110,6 +110,10 @@ def is_defined_type(name: str) -> bool:
     return get_type_by_name(name) != Type.Unknown
 
 
+def is_bool_type(typename: str) -> bool:
+    return typename == 'bool'
+
+
 # is integer type
 def is_integer_type(typename: str) -> bool:
     return typename in integer_types

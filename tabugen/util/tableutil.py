@@ -5,10 +5,10 @@ See accompanying files LICENSE.
 """
 
 import sys
-import typing
 
 import tabugen.predef as predef
 import tabugen.typedef as types
+import tabugen.util.strutil as strutil
 
 
 # 删除首部和尾部连续的空列
@@ -89,7 +89,9 @@ def validate_unique_column(struct, rows):
     return rows
 
 
-# 如果配置的类型是整数，但实际有浮点，需要转换成整数
+# 处理一下数据
+# 1，配置的数值类型如果为空，默认填充0
+# 2，如果配置的类型是整数，但实际有浮点，需要转换成整数
 def convert_table_data(struct, table):
     fields = struct['fields']
     data = table[predef.PredefDataStartRow:]
@@ -98,10 +100,23 @@ def convert_table_data(struct, table):
         if types.is_integer_type(typename):
             for row in data:
                 val = row[col]
-                if len(val) > 0 and val.find('.') >= 0:
+                if len(val) == 0:
+                    row[col] = '0'  # 填充0
+                elif val.find('.') >= 0:
                     num = int(round(float(val)))  # 这里是四舍五入
                     print('round integer', val, '-->', num)
                     row[col] = str(num)
+        elif types.is_floating_type(typename):
+            for row in data:
+                if len(row[col]) == 0:
+                    row[col] = '0'  # 填充0
+        elif types.is_bool_type(typename):
+            for row in data:
+                b = strutil.parse_bool(row[col])
+                if b:
+                    row[col] = '1'
+                else:
+                    row[col] = '0'
     return table
 
 
