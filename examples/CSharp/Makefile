@@ -5,7 +5,7 @@
 CURRENT_DIR = $(shell pwd)
 ROOT_DIR = $(shell realpath ../../)
 DATASHEET_DIR = $(shell realpath ../datasheet)
-OUT_DATA_DIR = $(CURRENT_DIR)/res
+OUT_DATA_DIR = $(DATASHEET_DIR)/res
 
 export PYTHONPATH=$(ROOT_DIR)
 

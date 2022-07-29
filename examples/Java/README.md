@@ -29,12 +29,11 @@
 
 在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
 
-* `class_name`  生成的class名称
-* `class_comment`   生成的class注释
-* `inner_type_class` 嵌入类型的class名称
-* `inner_type_name` 嵌入类型的成员变量名
-* `unique_columns` 对于这些列，导出的时候会检查每行的数据值是否有重复
-* `ignored_fields` 在enable_skip_fields选项开启的时候忽略这些字段
+* `ClassName`  生成的class名称
+* `ClassComment`   生成的class注释
+* `InnerTypeClass` 嵌入类型的class名称
+* `InnerFieldName` 嵌入类型的成员变量名
+* `UniqueFields` 对于这些字段，导出的时候会检查每行的数据值是否有重复
 
 
 ### 相关命令行参数
@@ -45,5 +44,6 @@
 * `--package` 指定Java包名
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
 * `--config_manager_class` 指定管理配置的class名称，默认为AutogenConfigManager
-* `--enable_gen_csv_parse` 是否包含CSV数据加载代码
+* `--enable_csv_parse` 是否包含CSV数据加载代码
+
 

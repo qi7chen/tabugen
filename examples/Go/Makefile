@@ -12,33 +12,33 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
+CLI_GEN_FLAGS = --go_json_tag --json_snake_case --enable_csv_parse --package=config --go_fmt
+CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+
 all: output-csv output-json build run clean
 
 generate:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --go_json_tag --json_snake_case --enable_csv_parse --package=config \
-		--go_out=$(OUT_SRC_DIR)/soldier_define.go --go_fmt
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_GEN_FLAGS) --go_out=$(OUT_SRC_DIR)/soldier_define.go
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx --go_json_tag --json_snake_case --enable_csv_parse --package=config \
-		--go_out=$(OUT_SRC_DIR)/guide_define.go --go_fmt
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_GEN_FLAGS) --go_out=$(OUT_SRC_DIR)/guide_define.go
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx --go_json_tag --json_snake_case --enable_csv_parse --package=config \
-		--go_out=$(OUT_SRC_DIR)/global_define.go --go_fmt
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_GEN_FLAGS) --go_out=$(OUT_SRC_DIR)/global_define.go
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx --go_json_tag  --json_snake_case --enable_csv_parse --package=config \
-		--go_out=$(OUT_SRC_DIR)/box_define.go --go_fmt
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_GEN_FLAGS) --go_out=$(OUT_SRC_DIR)/box_define.go
 
 output:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx	--out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_OUT_CSV_FLAGS)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_OUT_JSON_FLAGS)
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx	--out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_OUT_CSV_FLAGS)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_OUT_JSON_FLAGS)
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx	--out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_OUT_CSV_FLAGS)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_OUT_JSON_FLAGS)
 
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx	--out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx	--out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_OUT_CSV_FLAGS)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_OUT_JSON_FLAGS)
 
 run:
 	GO111MODULE=off
