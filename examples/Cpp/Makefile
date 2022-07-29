@@ -18,6 +18,9 @@ export VCPKG_LIB_DIR=$(VCPKG_LIB_DIR_)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
+CLI_GEN_FLAGS = --enable_csv_parse --package=config --source_file_encoding=utf_8_sig
+CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+
 all: output build
 
 install_vcpkg:
@@ -29,14 +32,14 @@ clean:
 	rm -rf build
 
 generate:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/SoldierDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GuideDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/GlobalDefine
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx --enable_csv_parse --package=config --cpp_out=$(OUT_SRC_DIR)/BoxDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_GEN_FLAGS) --cpp_out=$(OUT_SRC_DIR)/SoldierDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_GEN_FLAGS) --cpp_out=$(OUT_SRC_DIR)/GuideDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_GEN_FLAGS) --cpp_out=$(OUT_SRC_DIR)/GlobalDefine
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_GEN_FLAGS) --cpp_out=$(OUT_SRC_DIR)/BoxDefine
 
 output:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_OUT_CSV_FLAGS)
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_OUT_CSV_FLAGS)
 	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 

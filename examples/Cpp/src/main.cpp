@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string>
 #include <type_traits>
 #include <iostream>
-#include "Range.h"
+#include <fstream>
+#include <unordered_map>
 #include "Conv.h"
 #include "StringUtil.h"
-#include "CsvUtil.h"
 #include <unordered_map>
 #include "SoldierDefine.h"
 #include "GuideDefine.h"
@@ -21,6 +22,101 @@
 using namespace std;
 using namespace config;
 
+// Read csv file to key-value records
+typedef std::unordered_map<std::string, std::string> Record;
+
+static int parseNextColumn(StringPiece& line, StringPiece& field, int delim, int quote)
+{
+    bool in_quote = false;
+    size_t start = 0;
+    if (line[start] == quote) {
+        in_quote = true;
+        start++;
+    }
+    size_t pos = start;
+    for (; pos < line.size(); pos++) {
+        if (in_quote && line[pos] == quote) {
+            if (pos + 1 < line.size() && line[pos + 1] == delim) {
+                field = line.substr(start, pos - start);
+                line.remove_prefix(pos - start + 2);
+            }
+            else { // end of line
+                field = line.substr(start, pos - start);
+                line.remove_prefix(pos - start + 1);
+            }
+            return (int)pos;
+        }
+        if (!in_quote && line[pos] == delim) {
+            field = line.substr(start, pos - start);
+            line.remove_prefix(pos - start + 1);
+            return (int)pos;
+        }
+    }
+    field = line.substr(start, pos);
+    return -1;
+}
+
+static std::vector<StringPiece> lineToRow(StringPiece line, int delim = ',', int quote = '"')
+{
+    std::vector<StringPiece> row;
+    int pos = 0;
+    while (!line.empty()) {
+        StringPiece field;
+        int n = parseNextColumn(line, field, delim, quote);
+        row.push_back(field);
+        if (n < 0) {
+            break;
+        }
+    }
+    return row;
+}
+
+static std::vector<StringPiece> readToLines(StringPiece content) {
+    std::vector<StringPiece> lines;
+    size_t pos = 0;
+    // UTF8-BOM
+    if (content.size() >= 3 && content[0] == '\xEF' && content[1] == '\xBB' && content[2] == '\xBF') {
+        pos = 3;
+    }
+    while (pos < content.size()) {
+        size_t begin = pos;
+        while (content[pos] != '\n') {
+            pos++;
+        }
+        size_t end = pos;
+        if (end > begin && content[end - 1] == '\r') {
+            end--;
+        }
+        pos = end + 1;
+        StringPiece line = content.substr(begin, end - begin);
+        line = StripWhitespace(line);
+        if (!line.empty()) {
+            lines.push_back(line);
+        }
+    }
+    return lines;
+}
+
+int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
+{
+    std::ifstream infile(filename.c_str());
+    std::vector<StringPiece> header;
+    std::string line;
+    while (std::getline(infile, line)) {
+        auto row = lineToRow(line);
+        if (header.empty())
+        {
+            header = row;
+        }
+        Record record;
+        for (size_t i = 0; i < row.size(); i++)
+        {
+            const std::string& key = header[i].as_string();
+            record[key] = row[i].as_string();
+        }
+        out.push_back(record);
+    }
+}
 
 static std::string resPath = "../../datasheet/res";
 

@@ -17,8 +17,6 @@ include_directories(${PROJECT_ROOT_DIR}/src)
 message("include", $ENV{VCPKG_INCLUDE_DIR})
 message("lib", $ENV{VCPKG_LIB_DIR})
 
-find_package(absl CONFIG REQUIRED)
-
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -53,6 +51,5 @@ set(ALL_SRC_FILES
     ${PROJECT_ROOT_DIR}/src/GuideDefine.cpp
     )
 
-add_executable(Examples ${ALL_SRC_FILES})
+add_executable(CppExample ${ALL_SRC_FILES})
 
-target_link_libraries(Examples PRIVATE absl::any absl::base absl::bits absl::city)
