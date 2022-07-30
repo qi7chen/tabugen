@@ -49,7 +49,7 @@ def map_cpp_type(typ: str) -> str:
 # POD类型
 def is_cpp_pod_type(typ: str) -> bool:
     assert len(typ.strip()) > 0
-    return not typ.startswith('std::')  # std::string, std::vector, std::map
+    return not typ.startswith('std::')  # std::string, std::vector, std::unordered_map
 
 
 # C++为类型加上默认值
@@ -66,6 +66,28 @@ def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num
         return '%s = 0.0;' % name
     else:
         return '%s;' % name
+
+
+def map_cpp_parse_fn(typ: str) -> str:
+    mapping = {
+        'bool': 'ParseBool',
+        'int8': 'ParseInt8',
+        'uint8': 'ParseUInt8',
+        'int16': 'ParseInt16',
+        'uint16': 'ParseUInt16',
+        'int': 'ParseInt32',
+        'uint': 'ParseUInt32',
+        'int32': 'ParseInt32',
+        'uint32': 'ParseUInt32',
+        'int64': 'ParseInt64',
+        'uint64': 'ParseUInt64',
+        'float': 'ParseFloat',
+        'float32': 'ParseFloat',
+        'float64': 'ParseDouble',
+        'enum': 'ParseInt32',
+        'string': 'StripWhitespace',
+    }
+    return mapping[typ]
 
 
 # C++默认值

@@ -95,3 +95,7 @@ def main():
     args = parser.parse_args()
     verify_args(args)
     run(args)
+
+
+if __name__ == '__main__':
+    main()
