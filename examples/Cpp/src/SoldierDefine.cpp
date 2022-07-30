@@ -17,35 +17,35 @@ using namespace std;
 
 namespace config {
 
-// parse data object from an csv row
+// parse SoldierPropertyDefine from string fields
 int SoldierPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
     ptr->Name = record["Name"];
-    ptr->Level = to<int>(record["Level"]);
+    ptr->Level = ParseInt32(record["Level"]);
     ptr->NameID = record["NameID"];
     ptr->Description = record["Description"];
     ptr->BuildingName = record["BuildingName"];
-    ptr->BuildingLevel = to<uint32_t>(record["BuildingLevel"]);
-    ptr->RequireSpace = to<uint32_t>(record["RequireSpace"]);
-    ptr->Volume = to<uint32_t>(record["Volume"]);
-    ptr->UpgradeTime = to<uint32_t>(record["UpgradeTime"]);
+    ptr->BuildingLevel = ParseUInt32(record["BuildingLevel"]);
+    ptr->RequireSpace = ParseUInt32(record["RequireSpace"]);
+    ptr->Volume = ParseUInt32(record["Volume"]);
+    ptr->UpgradeTime = ParseUInt32(record["UpgradeTime"]);
     ptr->UpgradeMaterialID = record["UpgradeMaterialID"];
-    ptr->UpgradeMaterialNum = to<int64_t>(record["UpgradeMaterialNum"]);
+    ptr->UpgradeMaterialNum = ParseInt64(record["UpgradeMaterialNum"]);
     ptr->ConsumeMaterial = record["ConsumeMaterial"];
-    ptr->ConsumeMaterialNum = to<int>(record["ConsumeMaterialNum"]);
-    ptr->ConsumeTime = to<int>(record["ConsumeTime"]);
-    ptr->Act = to<int>(record["Act"]);
-    ptr->Hp = to<int>(record["Hp"]);
-    ptr->BombLoad = to<int16_t>(record["BombLoad"]);
-    ptr->Hurt = to<uint32_t>(record["Hurt"]);
-    ptr->Duration = to<float>(record["Duration"]);
-    ptr->TriggerInterval = to<float>(record["TriggerInterval"]);
-    ptr->SearchScope = to<int16_t>(record["SearchScope"]);
-    ptr->AtkFrequency = to<float>(record["AtkFrequency"]);
-    ptr->AtkRange = to<double>(record["AtkRange"]);
-    ptr->MovingSpeed = to<double>(record["MovingSpeed"]);
-    ptr->EnableBurn = to<bool>(record["EnableBurn"]);
+    ptr->ConsumeMaterialNum = ParseInt32(record["ConsumeMaterialNum"]);
+    ptr->ConsumeTime = ParseInt32(record["ConsumeTime"]);
+    ptr->Act = ParseInt32(record["Act"]);
+    ptr->Hp = ParseInt32(record["Hp"]);
+    ptr->BombLoad = ParseInt16(record["BombLoad"]);
+    ptr->Hurt = ParseUInt32(record["Hurt"]);
+    ptr->Duration = ParseFloat(record["Duration"]);
+    ptr->TriggerInterval = ParseFloat(record["TriggerInterval"]);
+    ptr->SearchScope = ParseInt16(record["SearchScope"]);
+    ptr->AtkFrequency = ParseFloat(record["AtkFrequency"]);
+    ptr->AtkRange = ParseDouble(record["AtkRange"]);
+    ptr->MovingSpeed = ParseDouble(record["MovingSpeed"]);
+    ptr->EnableBurn = ParseBool(record["EnableBurn"]);
     return 0;
 }
 

@@ -17,21 +17,22 @@ using namespace std;
 
 namespace config {
 
-// parse data object from an csv row
+// parse BoxProbabilityDefine from string fields
 int BoxProbabilityDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
 {
     ASSERT(ptr != nullptr);
     ptr->ID = record["ID"];
-    ptr->Total = to<int>(record["Total"]);
-    ptr->Time = to<int>(record["Time"]);
-    ptr->Repeat = to<bool>(record["Repeat"]);
+    ptr->Total = ParseInt32(record["Total"]);
+    ptr->Time = ParseInt32(record["Time"]);
+    ptr->Repeat = ParseBool(record["Repeat"]);
     ptr->ProbabilityGoods.reserve(3);
     for (int i = 1; i <= 3; i++)
     {
         BoxProbabilityDefine::ProbabilityGoodsDefine val;
-        val.GoodsID = record[to<std::string>("GoodsID", i)];
-        val.Num = to<uint32_t>(record[to<std::string>("Num", i)]);
-        val.Probability = to<uint32_t>(record[to<std::string>("Probability", i)]);
+        std::string key;
+        val.GoodsID = record[StringPrintf("GoodsID%d", i)];
+        val.Num = ParseUInt32(record[StringPrintf("Num%d", i)]);
+        val.Probability = ParseUInt32(record[StringPrintf("Probability%d", i)]);
         ptr->ProbabilityGoods.push_back(val);
     }
     return 0;

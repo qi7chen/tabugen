@@ -24,7 +24,7 @@
 1. 需要安装[vcpkg](https://github.com/microsoft/vcpkg) 和[CMake](https://cmake.org/download)
 2. 项目依赖了[abseil](https://github.com/abseil/abseil-cpp) 库，需要通过vcpkg配置对应的环境
 3. 执行`make genearate`，即可导出默认选项的C++代码
-4. 执行`make build`，即可生成和编译对应的C++项目
+4. 执行`make run`，即可编译和运行对应的C++项目
 
 
 ## 配置详解
@@ -57,7 +57,7 @@
 ### 基础代码库
 
 * 目前解析array和map依赖`SplitString`函数，定义在`StringUtil.h`里
-* 数字和字符串之间的转换依赖`to<Type>(value)`模板函数，定义在`Conv.h`里
+* 数字和字符串之间的转换依赖`parseType(value)`函数，定义在`Conv.h`里
 
 通过`--extra_cpp_include`参数传入你自己的头文件，可以覆盖默认的代码实现；
 

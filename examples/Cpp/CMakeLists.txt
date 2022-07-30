@@ -2,20 +2,14 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.0)
 
 PROJECT(TabugenCppExample)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-include_directories($ENV{VCPKG_INCLUDE_DIR})
-link_directories($ENV{VCPKG_LIB_DIR})
-
 include_directories(${PROJECT_ROOT_DIR}/src)
-
-message("include", $ENV{VCPKG_INCLUDE_DIR})
-message("lib", $ENV{VCPKG_LIB_DIR})
 
 
 if(MSVC)
@@ -34,12 +28,10 @@ endif()
 
 set(ALL_SRC_FILES
     ${PROJECT_ROOT_DIR}/src/Conv.h
-    ${PROJECT_ROOT_DIR}/src/Conv.cpp
-    ${PROJECT_ROOT_DIR}/src/Range.h
+    ${PROJECT_ROOT_DIR}/src/StringPiece.h
+    ${PROJECT_ROOT_DIR}/src/StringPiece.cpp
     ${PROJECT_ROOT_DIR}/src/StringUtil.h
     ${PROJECT_ROOT_DIR}/src/StringUtil.cpp
-    ${PROJECT_ROOT_DIR}/src/CsvUtil.h
-    ${PROJECT_ROOT_DIR}/src/CsvUtil.cpp
     ${PROJECT_ROOT_DIR}/src/main.cpp
     ${PROJECT_ROOT_DIR}/src/BoxDefine.h
     ${PROJECT_ROOT_DIR}/src/BoxDefine.cpp

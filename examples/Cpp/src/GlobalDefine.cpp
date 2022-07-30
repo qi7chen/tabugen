@@ -17,55 +17,55 @@ using namespace std;
 
 namespace config {
 
-// parse data object from record
+// parse GlobalPropertyDefine from string fields
 int GlobalPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->GoldExchangeTimeFactor1 = to<double>(fields["GoldExchangeTimeFactor1"]);
-    ptr->GoldExchangeTimeFactor2 = to<double>(fields["GoldExchangeTimeFactor2"]);
-    ptr->GoldExchangeTimeFactor3 = to<double>(fields["GoldExchangeTimeFactor3"]);
-    ptr->GoldExchangeResource1Price = to<uint16_t>(fields["GoldExchangeResource1Price"]);
-    ptr->GoldExchangeResource2Price = to<uint16_t>(fields["GoldExchangeResource2Price"]);
-    ptr->GoldExchangeResource3Price = to<uint16_t>(fields["GoldExchangeResource3Price"]);
-    ptr->GoldExchangeResource4Price = to<uint16_t>(fields["GoldExchangeResource4Price"]);
-    ptr->FreeCompleteSeconds = to<uint16_t>(fields["FreeCompleteSeconds"]);
-    ptr->CancelBuildReturnPercent = to<uint16_t>(fields["CancelBuildReturnPercent"]);
-    ptr->EnableSearch = to<bool>(fields["EnableSearch"]);
+    ptr->GoldExchangeTimeFactor1 = ParseDouble(fields["GoldExchangeTimeFactor1"]);
+    ptr->GoldExchangeTimeFactor2 = ParseDouble(fields["GoldExchangeTimeFactor2"]);
+    ptr->GoldExchangeTimeFactor3 = ParseDouble(fields["GoldExchangeTimeFactor3"]);
+    ptr->GoldExchangeResource1Price = ParseUInt16(fields["GoldExchangeResource1Price"]);
+    ptr->GoldExchangeResource2Price = ParseUInt16(fields["GoldExchangeResource2Price"]);
+    ptr->GoldExchangeResource3Price = ParseUInt16(fields["GoldExchangeResource3Price"]);
+    ptr->GoldExchangeResource4Price = ParseUInt16(fields["GoldExchangeResource4Price"]);
+    ptr->FreeCompleteSeconds = ParseUInt16(fields["FreeCompleteSeconds"]);
+    ptr->CancelBuildReturnPercent = ParseUInt16(fields["CancelBuildReturnPercent"]);
+    ptr->EnableSearch = ParseBool(fields["EnableSearch"]);
     {
-        const auto& arr = SplitString(fields["SpawnLevelLimit"], "|");
+        auto arr = SplitString(fields["SpawnLevelLimit"], "|");
         for (size_t i = 0; i < arr.size(); i++)
         {
             if (!arr[i].empty()) {
-                const auto& val = to<int>(arr[i]);
+                auto val = ParseInt32(arr[i]);
                 ptr->SpawnLevelLimit.emplace_back(val);
             }
         }
     }
     {
-        const auto& kvs = SplitString(fields["FirstRechargeReward"], "|");
+        auto kvs = SplitString(fields["FirstRechargeReward"], "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
-            const auto& kv = SplitString(kvs[i], "=");
+            auto kv = SplitString(kvs[i], "=");
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
-                const auto& key = to<std::string>(kv[0]);
-                const auto& val = to<int>(kv[1]);
+                auto key = StripWhitespace(kv[0]);
+                auto val = ParseInt32(kv[1]);
                 ASSERT(ptr->FirstRechargeReward.count(key) == 0);
                 ptr->FirstRechargeReward.emplace(std::make_pair(key, val));
             }
         }
     }
     {
-        const auto& kvs = SplitString(fields["VIPItemReward"], "|");
+        auto kvs = SplitString(fields["VIPItemReward"], "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
-            const auto& kv = SplitString(kvs[i], "=");
+            auto kv = SplitString(kvs[i], "=");
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
-                const auto& key = to<int>(kv[0]);
-                const auto& val = to<int>(kv[1]);
+                auto key = ParseInt32(kv[0]);
+                auto val = ParseInt32(kv[1]);
                 ASSERT(ptr->VIPItemReward.count(key) == 0);
                 ptr->VIPItemReward.emplace(std::make_pair(key, val));
             }

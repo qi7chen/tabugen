@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include "Conv.h"
 #include "StringUtil.h"
-#include <unordered_map>
 #include "SoldierDefine.h"
 #include "GuideDefine.h"
 #include "GlobalDefine.h"
@@ -97,33 +96,51 @@ static std::vector<StringPiece> readToLines(StringPiece content) {
     return lines;
 }
 
-int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
+static int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
 {
     std::ifstream infile(filename.c_str());
-    std::vector<StringPiece> header;
+    if (!infile.good()) {
+        return -1;
+    }
+    std::vector<std::string> header;
     std::string line;
     while (std::getline(infile, line)) {
         auto row = lineToRow(line);
         if (header.empty())
         {
-            header = row;
+            for (size_t i = 0; i < row.size(); i++)
+            {
+                header.push_back(row[i].as_string());
+            }
+            continue;
         }
         Record record;
         for (size_t i = 0; i < row.size(); i++)
         {
-            const std::string& key = header[i].as_string();
-            record[key] = row[i].as_string();
+            const std::string& key = header[i];
+            const std::string& val = row[i].as_string();
+            record.emplace(key, val);
         }
         out.push_back(record);
     }
+    return 0;
 }
 
-static std::string resPath = "../../datasheet/res";
+static void RecordToKVMap(const std::vector<Record>& records, Record& out)
+{
+    for (size_t i = 0; i < records.size(); i++)
+    {
+        auto record = records[i];
+        out[record["Key"]] = record["Value"];
+    }
+}
+
+static std::string resPath = "../datasheet/res";
 
 template <typename T>
 static void LoadCsvToConfig(const char* filename, vector<T>& data)
 {
-    std::string filepath = stringPrintf("%s/%s", resPath.c_str(), filename);
+    std::string filepath = StringPrintf("%s/%s", resPath.c_str(), filename);
     std::vector<Record> records;
     ReadCsvRecord(filepath, records);
     for (size_t i = 0; i < records.size(); i++)
@@ -166,7 +183,7 @@ static void testSoldierConfig()
 {
     vector<config::SoldierPropertyDefine> data;
     LoadCsvToConfig("soldier_property_define.csv", data);
-    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
+    cout << StringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const SoldierPropertyDefine& item : data)
     {
         printSoldierProperty(item);
@@ -203,7 +220,7 @@ static void testNewbieGuideConfig()
 {
     vector<config::NewbieGuideDefine> data;
     LoadCsvToConfig("newbie_guide_define.csv", data);
-    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
+    cout << StringPrintf("%d soldier config loaded.\n", (int)data.size());
     for (const config::NewbieGuideDefine& item : data)
     {
         printNewbieGuide(item);
@@ -243,7 +260,7 @@ static void printGlobalProperty(const GlobalPropertyDefine& inst)
 
 static void testGlobalConfig()
 {
-    std::string filename = stringPrintf("%s/%s", resPath.c_str(), "global_property_define.csv");
+    std::string filename = StringPrintf("%s/%s", resPath.c_str(), "global_property_define.csv");
     std::vector<Record> records;
     ReadCsvRecord(filename, records);
     Record kvMap;
@@ -283,7 +300,7 @@ static void testBoxConfig()
 {
     vector<config::BoxProbabilityDefine> data;
     LoadCsvToConfig("box_probability_define.csv", data);
-    cout << stringPrintf("%d box config loaded.\n", (int)data.size());
+    cout << StringPrintf("%d box config loaded.\n", (int)data.size());
     for (const BoxProbabilityDefine& item : data)
     {
         printBoxProbability(item);

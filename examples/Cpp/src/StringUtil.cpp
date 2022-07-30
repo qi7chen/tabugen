@@ -33,6 +33,7 @@
 
 #include "StringUtil.h"
 #include <errno.h>
+#include <stdarg.h> 
 #include <float.h>    // FLT_DIG and DBL_DIG
 #include <limits.h>
 #include <stdio.h>
@@ -77,6 +78,68 @@ inline bool isprint(char c) {
   return c >= 0x20 && c <= 0x7E;
 }
 
+
+void StringAppendV(std::string* dst, const char* format, va_list ap) {
+  // First try with a small fixed size buffer
+  static const int kSpaceLength = 1024;
+  char space[kSpaceLength];
+
+  // It's possible for methods that use a va_list to invalidate
+  // the data in it upon use.  The fix is to make a copy
+  // of the structure before using it and use that copy instead.
+  va_list backup_ap;
+  va_copy(backup_ap, ap);
+  int result = vsnprintf(space, kSpaceLength, format, backup_ap);
+  va_end(backup_ap);
+
+  if (result < kSpaceLength) {
+    if (result >= 0) {
+      // Normal case -- everything fit.
+      dst->append(space, result);
+      return;
+    }
+
+#ifdef _MSC_VER
+    {
+      // Error or MSVC running out of space.  MSVC 8.0 and higher
+      // can be asked about space needed with the special idiom below:
+      va_copy(backup_ap, ap);
+      result = vsnprintf(nullptr, 0, format, backup_ap);
+      va_end(backup_ap);
+    }
+#endif
+
+    if (result < 0) {
+      // Just an error.
+      return;
+    }
+  }
+
+  // Increase the buffer size to the size requested by vsnprintf,
+  // plus one for the closing \0.
+  int length = result+1;
+  std::unique_ptr<char> buf(new char[length]);
+
+  // Restore the va_list before we use it again
+  va_copy(backup_ap, ap);
+  result = vsnprintf(buf.get(), length, format, backup_ap);
+  va_end(backup_ap);
+
+  if (result >= 0 && result < length) {
+    // It fit
+    dst->append(buf.get(), result);
+  }
+}
+
+std::string StringPrintf(const char* format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    std::string result;
+    StringAppendV(&result, format, ap);
+    va_end(ap);
+    return result;
+}
+
 // ----------------------------------------------------------------------
 // ReplaceCharacters
 //    Replaces any occurrence of the character 'remove' (or the characters
@@ -92,32 +155,39 @@ void ReplaceCharacters(std::string *s, const char *remove, char replacewith) {
   }
 }
 
-void StripWhitespace(std::string *str) {
-  size_t str_length = str->length();
+inline bool ascii_isspace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
+        c == '\r';
+}
+
+
+std::string& StripWhitespace(std::string& str) {
+  size_t str_length = str.length();
 
   // Strip off leading whitespace.
   size_t first = 0;
-  while (first < str_length && ascii_isspace(str->at(first))) {
+  while (first < str_length && ascii_isspace(str.at(first))) {
     ++first;
   }
   // If entire string is white space.
   if (first == str_length) {
-    str->clear();
-    return;
+    str.clear();
+    return str;
   }
   if (first > 0) {
-    str->erase(0, first);
+    str.erase(0, first);
     str_length -= first;
   }
 
   // Strip off trailing whitespace.
   size_t last = str_length - 1;
-  while (last >= 0 && ascii_isspace(str->at(last))) {
+  while (last >= 0 && ascii_isspace(str.at(last))) {
     --last;
   }
   if (last != (str_length - 1) && last >= 0) {
-    str->erase(last + 1, std::string::npos);
+    str.erase(last + 1, std::string::npos);
   }
+  return str;
 }
 
 StringPiece StripWhitespace(StringPiece s)
@@ -290,7 +360,7 @@ static void JoinStringsIterator(const ITERATOR &start, const ITERATOR &end,
                                 const char *delim, std::string *result) {
   // GOOGLE_CHECK(result != nullptr);
   result->clear();
-  int delim_length = strlen(delim);
+  size_t delim_length = strlen(delim);
 
   // Precompute resulting length so we can reserve() memory in one shot.
   size_t length = 0;
@@ -985,7 +1055,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // of a double.  This long double may have extra bits that make it compare
   // unequal to "value" even though it would be exactly equal if it were
   // truncated to a double.
-  volatile double parsed_value = internal::NoLocaleStrtod(buffer, nullptr);
+  volatile double parsed_value = strtod(buffer, nullptr);
   if (parsed_value != value) {
     snprintf_result =
         snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG + 2, value);
@@ -998,78 +1068,11 @@ char* DoubleToBuffer(double value, char* buffer) {
   return buffer;
 }
 
-static int memcasecmp(const char *s1, const char *s2, size_t len) {
-  const unsigned char *us1 = reinterpret_cast<const unsigned char *>(s1);
-  const unsigned char *us2 = reinterpret_cast<const unsigned char *>(s2);
-
-  for (size_t i = 0; i < len; i++) {
-    const int diff =
-      static_cast<int>(static_cast<unsigned char>(ascii_tolower(us1[i]))) -
-      static_cast<int>(static_cast<unsigned char>(ascii_tolower(us2[i])));
-    if (diff != 0) return diff;
-  }
-  return 0;
-}
-
-inline bool CaseEqual(StringPiece s1, StringPiece s2) {
-  if (s1.size() != s2.size()) return false;
-  return memcasecmp(s1.data(), s2.data(), s1.size()) == 0;
-}
-
-bool safe_strtob(StringPiece str, bool* value) {
-  // GOOGLE_CHECK(value != nullptr) << "nullptr output boolean given.";
-  if (CaseEqual(str, "true") || CaseEqual(str, "t") ||
-      CaseEqual(str, "yes") || CaseEqual(str, "y") ||
-      CaseEqual(str, "1")) {
-    *value = true;
-    return true;
-  }
-  if (CaseEqual(str, "false") || CaseEqual(str, "f") ||
-      CaseEqual(str, "no") || CaseEqual(str, "n") ||
-      CaseEqual(str, "0")) {
-    *value = false;
-    return true;
-  }
-  return false;
-}
-
 bool safe_strtof(const char* str, float* value) {
-  char* endptr;
-  errno = 0;  // errno only gets set on errors
-#if defined(_WIN32) || defined (__hpux)  // has no strtof()
-  *value = float(internal::NoLocaleStrtod(str, &endptr));
-#else
-  *value = strtof(str, &endptr);
-#endif
-  return *str != 0 && *endptr == 0 && errno == 0;
-}
-
-bool safe_strtod(const char* str, double* value) {
-  char* endptr;
-  *value = internal::NoLocaleStrtod(str, &endptr);
-  if (endptr != str) {
-    while (ascii_isspace(*endptr)) ++endptr;
-  }
-  // Ignore range errors from strtod.  The values it
-  // returns on underflow and overflow are the right
-  // fallback in a robust setting.
-  return *str != '\0' && *endptr == '\0';
-}
-
-bool safe_strto32(const std::string &str, int32_t *value) {
-  return safe_int_internal(str, value);
-}
-
-bool safe_strtou32(const std::string &str, uint32_t *value) {
-  return safe_uint_internal(str, value);
-}
-
-bool safe_strto64(const std::string &str, int64_t *value) {
-  return safe_int_internal(str, value);
-}
-
-bool safe_strtou64(const std::string &str, uint64_t *value) {
-  return safe_uint_internal(str, value);
+    char* endptr;
+    errno = 0;  // errno only gets set on errors
+    *value = strtof(str, &endptr);
+    return *str != 0 && *endptr == 0 && errno == 0;
 }
 
 char* FloatToBuffer(float value, char* buffer) {
@@ -1277,13 +1280,6 @@ std::string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
   return result;
 }
 
-// It's possible to call StrAppend with a char * pointer that is partway into
-// the string we're appending to.  However the results of this are random.
-// Therefore, check for this in debug mode.  Use unsigned math so we only have
-// to do one comparison.
-#define GOOGLE_DCHECK_NO_OVERLAP(dest, src) \
-    GOOGLE_DCHECK_GT(uintptr_t((src).data() - (dest).data()), \
-                     uintptr_t((dest).size()))
 
 void StrAppend(std::string *result, const AlphaNum &a) {
   //GOOGLE_DCHECK_NO_OVERLAP(*result, a);
@@ -1538,75 +1534,3 @@ void CleanStringLineEndings(std::string *str, bool auto_end_last_line) {
     str->resize(output_pos);
   }
 }
-
-
-namespace internal {
-
-// ----------------------------------------------------------------------
-// NoLocaleStrtod()
-//   This code will make you cry.
-// ----------------------------------------------------------------------
-
-namespace {
-
-    // Returns a string identical to *input except that the character pointed to
-    // by radix_pos (which should be '.') is replaced with the locale-specific
-    // radix character.
-    std::string LocalizeRadix(const char* input, const char* radix_pos) {
-        // Determine the locale-specific radix character by calling sprintf() to
-        // print the number 1.5, then stripping off the digits.  As far as I can
-        // tell, this is the only portable, thread-safe way to get the C library
-        // to divuldge the locale's radix character.  No, localeconv() is NOT
-        // thread-safe.
-        char temp[16];
-        int size = snprintf(temp, sizeof(temp), "%.1f", 1.5);
-        //GOOGLE_CHECK_EQ(temp[0], '1');
-        //GOOGLE_CHECK_EQ(temp[size - 1], '5');
-        //GOOGLE_CHECK_LE(size, 6);
-
-        // Now replace the '.' in the input with it.
-        std::string result;
-        result.reserve(strlen(input) + size - 3);
-        result.append(input, radix_pos);
-        result.append(temp + 1, size - 2);
-        result.append(radix_pos + 1);
-        return result;
-    }
-
-}  // namespace
-
-double NoLocaleStrtod(const char* str, char** endptr) {
-    // We cannot simply set the locale to "C" temporarily with setlocale()
-    // as this is not thread-safe.  Instead, we try to parse in the current
-    // locale first.  If parsing stops at a '.' character, then this is a
-    // pretty good hint that we're actually in some other locale in which
-    // '.' is not the radix character.
-
-    char* temp_endptr;
-    double result = strtod(str, &temp_endptr);
-    if (endptr != NULL) *endptr = temp_endptr;
-    if (*temp_endptr != '.') return result;
-
-    // Parsing halted on a '.'.  Perhaps we're in a different locale?  Let's
-    // try to replace the '.' with a locale-specific radix character and
-    // try again.
-    std::string localized = LocalizeRadix(str, temp_endptr);
-    const char* localized_cstr = localized.c_str();
-    char* localized_endptr;
-    result = strtod(localized_cstr, &localized_endptr);
-    if ((localized_endptr - localized_cstr) > (temp_endptr - str)) {
-        // This attempt got further, so replacing the decimal must have helped.
-        // Update endptr to point at the right location.
-        if (endptr != NULL) {
-            // size_diff is non-zero if the localized radix has multiple bytes.
-            size_t size_diff = localized.size() - strlen(str);
-            // const_cast is necessary to match the strtod() interface.
-            *endptr = const_cast<char*>(
-                str + (localized_endptr - localized_cstr - size_diff));
-        }
-    }
-
-    return result;
-}
-
-}  // namespace internal

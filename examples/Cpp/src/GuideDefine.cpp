@@ -17,7 +17,7 @@ using namespace std;
 
 namespace config {
 
-// parse data object from an csv row
+// parse NewbieGuideDefine from string fields
 int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
 {
     ASSERT(ptr != nullptr);
@@ -25,25 +25,25 @@ int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& r
     ptr->Type = record["Type"];
     ptr->Target = record["Target"];
     {
-        const auto& arr = SplitString(record["Accomplishment"], "|");
+        auto arr = SplitString(record["Accomplishment"], "|");
         for (size_t i = 0; i < arr.size(); i++)
         {
             if (!arr[i].empty()) {
-                const auto& val = to<int16_t>(arr[i]);
+                auto val = ParseInt16(arr[i]);
                 ptr->Accomplishment.emplace_back(val);
             }
         }
     }
     {
-        const auto& kvs = SplitString(record["Goods"], "|");
+        auto kvs = SplitString(record["Goods"], "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
-            const auto& kv = SplitString(kvs[i], "=");
+            auto kv = SplitString(kvs[i], "=");
             ASSERT(kv.size() == 2);
             if(kv.size() == 2)
             {
-                const auto& key = to<std::string>(kv[0]);
-                const auto& val = to<uint32_t>(kv[1]);
+                auto key = StripWhitespace(kv[0]);
+                auto val = ParseUInt32(kv[1]);
                 ASSERT(ptr->Goods.count(key) == 0);
                 ptr->Goods.emplace(std::make_pair(key, val));
             }

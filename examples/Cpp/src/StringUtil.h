@@ -38,66 +38,7 @@
 #include "StringPiece.h"
 
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
-#define strtoll  _strtoi64
-#define strtoull _strtoui64
-#elif defined(__DECCXX) && defined(__osf__)
-// HP C++ on Tru64 does not have strtoll, but strtol is already 64-bit.
-#define strtoll strtol
-#define strtoull strtoul
-#endif
-
-// ----------------------------------------------------------------------
-// ascii_isalnum()
-//    Check if an ASCII character is alphanumeric.  We can't use ctype's
-//    isalnum() because it is affected by locale.  This function is applied
-//    to identifiers in the protocol buffer language, not to natural-language
-//    strings, so locale should not be taken into account.
-// ascii_isdigit()
-//    Like above, but only accepts digits.
-// ascii_isspace()
-//    Check if the character is a space character.
-// ----------------------------------------------------------------------
-
-inline bool ascii_isalnum(char c) {
-  return ('a' <= c && c <= 'z') ||
-         ('A' <= c && c <= 'Z') ||
-         ('0' <= c && c <= '9');
-}
-
-inline bool ascii_isdigit(char c) {
-  return ('0' <= c && c <= '9');
-}
-
-inline bool ascii_isspace(char c) {
-  return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
-      c == '\r';
-}
-
-inline bool ascii_isupper(char c) {
-  return c >= 'A' && c <= 'Z';
-}
-
-inline bool ascii_islower(char c) {
-  return c >= 'a' && c <= 'z';
-}
-
-inline char ascii_toupper(char c) {
-  return ascii_islower(c) ? c - ('a' - 'A') : c;
-}
-
-inline char ascii_tolower(char c) {
-  return ascii_isupper(c) ? c + ('a' - 'A') : c;
-}
-
-inline int hex_digit_to_int(char c) {
-  /* Assume ASCII. */
-  int x = static_cast<unsigned char>(c);
-  if (x > '9') {
-    x += 9;
-  }
-  return x & 0xf;
-}
+std::string StringPrintf(const char* format, ...);
 
 // ----------------------------------------------------------------------
 // HasPrefixString()
@@ -156,7 +97,7 @@ inline std::string StripSuffixString(const std::string& str,
 void ReplaceCharacters(std::string* s, const char* remove, char replacewith);
                                        
 
-void StripWhitespace(std::string* s);
+std::string& StripWhitespace(std::string& s);
 StringPiece StripWhitespace(StringPiece s);
 
 // ----------------------------------------------------------------------
@@ -230,7 +171,7 @@ void SplitStringAllowEmpty(StringPiece full, const char* delim,
 // Split()
 //    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline std::vector<std::string> Split(StringPiece full, const char* delim,
+inline std::vector<std::string> SplitString(StringPiece full, const char* delim,
                                       bool skip_empty = true) {
   std::vector<std::string> result;
   if (skip_empty) {
@@ -259,105 +200,6 @@ inline std::string JoinStrings(const std::vector<std::string>& components,
   return result;
 }
 
-
-// ----------------------------------------------------------------------
-// strto32()
-// strtou32()
-// strto64()
-// strtou64()
-//    Architecture-neutral plug compatible replacements for strtol() and
-//    strtoul().  Long's have different lengths on ILP-32 and LP-64
-//    platforms, so using these is safer, from the point of view of
-//    overflow behavior, than using the standard libc functions.
-// ----------------------------------------------------------------------
-int32_t strto32_adaptor(const char* nptr, char** endptr,
-                                        int base);
-uint32_t strtou32_adaptor(const char* nptr, char** endptr,
-                                          int base);
-
-inline int32_t strto32(const char *nptr, char **endptr, int base) {
-  if (sizeof(int32_t) == sizeof(long))
-    return strtol(nptr, endptr, base);
-  else
-    return strto32_adaptor(nptr, endptr, base);
-}
-
-inline uint32_t strtou32(const char *nptr, char **endptr, int base) {
-  if (sizeof(uint32_t) == sizeof(unsigned long))
-    return strtoul(nptr, endptr, base);
-  else
-    return strtou32_adaptor(nptr, endptr, base);
-}
-
-// For now, long long is 64-bit on all the platforms we care about, so these
-// functions can simply pass the call to strto[u]ll.
-inline int64_t strto64(const char *nptr, char **endptr, int base) {
-  static_assert(sizeof(int64_t) == sizeof(long long),
-                "sizeof int64_t is not sizeof long long");
-  return strtoll(nptr, endptr, base);
-}
-
-inline uint64_t strtou64(const char *nptr, char **endptr, int base) {
-  static_assert(sizeof(uint64_t) == sizeof(unsigned long long),
-                "sizeof uint64_t is not sizeof unsigned long long");
-  return strtoull(nptr, endptr, base);
-}
-
-// ----------------------------------------------------------------------
-// safe_strtob()
-// safe_strto32()
-// safe_strtou32()
-// safe_strto64()
-// safe_strtou64()
-// safe_strtof()
-// safe_strtod()
-// ----------------------------------------------------------------------
-bool safe_strtob(StringPiece str, bool* value);
-
-bool safe_strto32(const std::string& str, int32_t* value);
-bool safe_strtou32(const std::string& str, uint32_t* value);
-inline bool safe_strto32(const char* str, int32_t* value) {
-  return safe_strto32(std::string(str), value);
-}
-inline bool safe_strto32(StringPiece str, int32_t* value) {
-  return safe_strto32(str.ToString(), value);
-}
-inline bool safe_strtou32(const char* str, uint32_t* value) {
-  return safe_strtou32(std::string(str), value);
-}
-inline bool safe_strtou32(StringPiece str, uint32_t* value) {
-  return safe_strtou32(str.ToString(), value);
-}
-
-bool safe_strto64(const std::string& str, int64_t* value);
-bool safe_strtou64(const std::string& str, uint64_t* value);
-inline bool safe_strto64(const char* str, int64_t* value) {
-  return safe_strto64(std::string(str), value);
-}
-inline bool safe_strto64(StringPiece str, int64_t* value) {
-  return safe_strto64(str.ToString(), value);
-}
-inline bool safe_strtou64(const char* str, uint64_t* value) {
-  return safe_strtou64(std::string(str), value);
-}
-inline bool safe_strtou64(StringPiece str, uint64_t* value) {
-  return safe_strtou64(str.ToString(), value);
-}
-
-bool safe_strtof(const char* str, float* value);
-bool safe_strtod(const char* str, double* value);
-inline bool safe_strtof(const std::string& str, float* value) {
-  return safe_strtof(str.c_str(), value);
-}
-inline bool safe_strtod(const std::string& str, double* value) {
-  return safe_strtod(str.c_str(), value);
-}
-inline bool safe_strtof(StringPiece str, float* value) {
-  return safe_strtof(str.ToString(), value);
-}
-inline bool safe_strtod(StringPiece str, double* value) {
-  return safe_strtod(str.ToString(), value);
-}
 
 // ----------------------------------------------------------------------
 // FastIntToBuffer()

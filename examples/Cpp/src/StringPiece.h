@@ -138,7 +138,7 @@
 // (3) A null StringPiece is empty.
 //     An empty StringPiece may or may not be a null StringPiece.
 
-
+#pragma once
 
 #include <assert.h>
 #include <stddef.h>

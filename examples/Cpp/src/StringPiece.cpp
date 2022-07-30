@@ -35,6 +35,13 @@
 #include <string>
 #include <ostream>
 
+void StringPiece::LogFatalSizeTooBig(size_t size, const char* details) {
+    std::string msg = "size too big: ";
+    msg += std::to_string(size);
+    msg += " details: ";
+    msg += details;
+    throw std::runtime_error(msg);
+}
 
 std::ostream& operator<<(std::ostream& o, StringPiece piece) {
   o.write(piece.data(), piece.size());
