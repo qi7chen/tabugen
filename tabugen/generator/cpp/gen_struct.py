@@ -14,6 +14,7 @@ from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
 # C++代码生成器
 class CppStructGenerator:
+    TAB_SPACE = '    '
 
     @staticmethod
     def name():
@@ -36,22 +37,24 @@ class CppStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-    def gen_field_define(self, field, max_type_len: int, max_name_len: int) -> str:
+    def gen_field_define(self, field, max_type_len: int, max_name_len: int, tabs: int) -> str:
         typename = lang.map_cpp_type(field['original_type_name'])
         assert typename != "", field['original_type_name']
         typename = strutil.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cpp_value(field, typename, False)
         name = strutil.pad_spaces(name, max_name_len + 8)
-        return '    %s %s // %s\n' % (typename, name, field['comment'])
+        space = self.TAB_SPACE * tabs
+        return '%s%s %s // %s\n' % (space, typename, name, field['comment'])
 
-    def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int) -> str:
+    def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, tabs: int) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         type_name = 'std::vector<%s>' % type_class_name
         type_name = strutil.pad_spaces(type_name, max_type_len + 1)
         inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
-        return '    %s %s;    // \n\n' % (type_name, inner_field_name)
+        space = self.TAB_SPACE * tabs
+        return '%s%s %s;    // \n' % (space, type_name, inner_field_name)
 
     # 内部class定义
     def gen_inner_struct_define(self, struct):
@@ -89,19 +92,19 @@ class CppStructGenerator:
         return content
 
     # 生成class定义结构，不包含结尾的'}'符号
-    def gen_cpp_struct_define(self, struct):
+    def gen_struct_define(self, struct):
         content = '// %s\n' % struct['comment']
         content += 'struct %s \n{\n' % struct['camel_case_name']
 
         inner_start_col = -1
         inner_end_col = -1
+        inner_field_done = False
         if 'inner_fields' in struct:
             inner_start_col = struct['inner_fields']['start']
             inner_end_col = struct['inner_fields']['end']
             content += self.gen_inner_struct_define(struct)
             content += '\n'
 
-        inner_field_done = False
         fields = struct['fields']
         max_name_len = strutil.max_field_length(fields, 'name', None)
         max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
@@ -115,17 +118,17 @@ class CppStructGenerator:
             text = ''
             if inner_start_col <= col < inner_end_col:
                 if not inner_field_done:
-                    text = self.gen_inner_field_define(struct, max_type_len, max_name_len)
+                    text = self.gen_inner_field_define(struct, max_type_len, max_name_len, 1)
                     inner_field_done = True
             else:
-                text = self.gen_field_define(field, max_type_len, max_name_len)
+                text = self.gen_field_define(field, max_type_len, max_name_len, 1)
             content += text
         return content
 
     # 生成头文件声明
-    def gen_cpp_header(self, struct):
+    def gen_header(self, struct):
         content = ''
-        content += self.gen_cpp_struct_define(struct)
+        content += self.gen_struct_define(struct)
         if self.load_gen is not None:
             content += '\n'
             content += self.load_gen.gen_struct_method_declare(struct)
@@ -133,7 +136,7 @@ class CppStructGenerator:
         return content
 
     # 生成.h头文件内容
-    def generate_header(self, descriptors, args):
+    def generate(self, descriptors, args):
         h_include_headers = [
             '#include <stdint.h>',
             '#include <string>',
@@ -150,7 +153,7 @@ class CppStructGenerator:
 
         for struct in descriptors:
             print(strutil.current_time(), 'start generate', struct['source'])
-            header_content += self.gen_cpp_header(struct)
+            header_content += self.gen_header(struct)
 
         if args.package is not None:
             header_content += '} // namespace %s\n' % args.package
@@ -165,7 +168,7 @@ class CppStructGenerator:
             filename = outname + '.h'
             cpp_content = self.load_gen.generate(descriptors, args, filename)
 
-        header_content = self.generate_header(descriptors, args)
+        header_content = self.generate(descriptors, args)
 
         header_filepath = filepath + '.h'
         filename = os.path.abspath(header_filepath)

@@ -19,7 +19,7 @@ def run(args):
     pairs = [
         (args.cpp_out, 'cpp'),
         (args.go_out, 'go'),
-        (args.csharp_out, 'csharp'),
+        (args.cs_out, 'csharp'),
         (args.java_out, 'java'),
     ]
     code_generators = []
@@ -45,7 +45,7 @@ def run(args):
         for pair in code_generators:
             codegen = pair[0]
             filepath = pair[1]
-            if args.enable_csv_parse:
+            if args.with_csv_parse:
                 codegen.enable_gen_parse('csv')
             codegen.run(descriptors, filepath, args)
 
@@ -73,10 +73,10 @@ def main():
 
     # source code options
     parser.add_argument("--config_manager_class", default='', help="name of auto-generated config manager class")
-    parser.add_argument("--enable_csv_parse", action='store_true', help="also generator csv parse method code")
+    parser.add_argument("--with_csv_parse", action='store_true', help="also generator csv parse method code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
-    parser.add_argument("--csharp_out", help="file path of generate C# class source code")
+    parser.add_argument("--cs_out", help="file path of generate C# class source code")
     parser.add_argument("--java_out", help="file path of generate Java class source code")
     parser.add_argument("--package", default="config", help="name of generated source language package")
     parser.add_argument("--cpp_pch", help="C++ precompiled header file to include in source file")

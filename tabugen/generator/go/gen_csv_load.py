@@ -89,7 +89,7 @@ class GoCsvLoadGenerator:
         assert start > 0 and end > 0 and step > 1
 
         col = start
-        content = '\tfor i := 1; i <= %d; i++ {\n' % ((end - start) / step)
+        content = '\tfor i := 1; i > 0; i++ {\n'
         content += '\t\tvar off = strconv.Itoa(i)\n'
         content += '\t\tvar val %s\n' % inner_class_type
         for i in range(step):
@@ -110,7 +110,7 @@ class GoCsvLoadGenerator:
         keyidx = predef.PredefKeyColumn
         typeidx = predef.PredefValueTypeColumn
 
-        content += 'func (p *%s) ParseFields(fields map[string]string) error {\n' % struct['camel_case_name']
+        content += 'func (p *%s) ParseFrom(fields map[string]string) error {\n' % struct['camel_case_name']
         for row in rows:
             text = ''
             name = row[keyidx].strip()
