@@ -30,53 +30,73 @@ class GoStructGenerator:
             self.load_gen = GoCsvLoadGenerator()
 
     # Go代码生成器
-    def gen_field_define(self, field, json_tag: bool, snake_case: bool, remove_suffix_num: bool) -> str:
+    def gen_field_define(self, field, max_type_len: int, max_name_len: int,  json_tag: bool, snake_case: bool,
+                         remove_suffix_num: bool, tabs: int) -> str:
         text = ''
         typename = lang.map_go_type(field['original_type_name'])
         assert typename != "", field['original_type_name']
         name = field['camel_case_name']
+        space = self.TAB_SPACE * tabs
         if remove_suffix_num:
             name = strutil.remove_suffix_number(name)
+
+        name = strutil.pad_spaces(name, max_name_len + 4)
+        typename = strutil.pad_spaces(typename, max_type_len + 4)
         if json_tag:
             tag_name = field['name']
             if remove_suffix_num:
                 tag_name = strutil.remove_suffix_number(tag_name)
             if snake_case:
                 tag_name = strutil.camel_to_snake(tag_name)
-            text += '    %s %s `json:"%s"` // %s\n' % (name, typename,
-                                                       tag_name, field['comment'])
+            text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field['comment'])
         else:
-            text += '    %s %s // %s\n' % (name, typename, field['comment'])
+            text += '%s%s %s // %s\n' % (space, name, typename, field['comment'])
         return text
 
-    def gen_inner_fields(self, struct, json_tag: bool, snake_case: bool) -> str:
+    def gen_inner_fields(self, struct, max_type_len: int, max_name_len: int, json_tag: bool, snake_case: bool, tabs: int) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         assert len(inner_field_name) > 0
+        space = self.TAB_SPACE * tabs
+        type_class_name = strutil.pad_spaces(type_class_name, max_type_len + 4)
+        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 4)
         if json_tag:
             tag_name = type_class_name
             if snake_case:
                 tag_name = strutil.camel_to_snake(type_class_name)
-            text = '\t%s []%s `json:"%s"` // \n' % (inner_field_name, type_class_name, tag_name)
+            text = '%s%s []%s `json:"%s"` // \n' % (space, inner_field_name, type_class_name, tag_name)
         else:
-            text = '\t%s []%s \n' % (inner_field_name, type_class_name)
+            text = '%s%s []%s \n' % (space, inner_field_name, type_class_name)
         return text
 
     # 生成内嵌字段
     def gen_inner_type(self, struct, args) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
+        end = inner_fields['end']
         step = inner_fields['step']
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         assert len(type_class_name) > 0
+
+        max_name_len = 0
+        max_type_len = 0
+        for col in range(start, end):
+            field = struct['fields'][col]
+            name_len = len(field['name'])
+            type_len = len(lang.map_cpp_type(field['original_type_name']))
+            if name_len > max_name_len:
+                max_name_len = name_len
+            if type_len > max_type_len:
+                max_type_len = type_len
+
         content = 'type %s struct {\n' % type_class_name
         col = start
         while col < start + step:
             field = struct['fields'][col]
-            text = self.gen_field_define(field, args.go_json_tag, args.json_snake_case, True)
+            text = self.gen_field_define(field, max_type_len, max_name_len, args.go_json_tag, args.json_snake_case, True, 1)
             content += text
             col += 1
-        content += '\n}\n'
+        content += '}\n'
         return content
 
     # 生成struct定义
@@ -96,16 +116,19 @@ class GoStructGenerator:
         content += 'type %s struct {\n' % struct['camel_case_name']
 
         fields = struct['fields']
+        max_name_len = strutil.max_field_length(fields, 'name', None)
+        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_go_type)
+
         for col, field in enumerate(fields):
             text = ''
             if inner_start_col <= col < inner_end_col:
                 if not inner_field_done:
-                    text = self.gen_inner_fields(struct, args.go_json_tag, args.json_snake_case)
+                    text = self.gen_inner_fields(struct, max_type_len, max_name_len, args.go_json_tag, args.json_snake_case, 1)
                     inner_field_done = True
             else:
-                text = self.gen_field_define(field, args.go_json_tag, args.json_snake_case, False)
+                text = self.gen_field_define(field, max_type_len, max_name_len, args.go_json_tag, args.json_snake_case, False, 1)
             content += text
-        content += '\n}\n'
+        content += '}\n'
         return content
 
     def generate(self, struct, args) -> str:
