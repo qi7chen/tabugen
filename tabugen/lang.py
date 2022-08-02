@@ -68,7 +68,8 @@ def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num
         return '%s;' % name
 
 
-def map_cpp_parse_fn(typ: str) -> str:
+# C++解析
+def map_cpp_parse_expr(typ: str, param: str) -> str:
     mapping = {
         'bool': 'ParseBool',
         'int8': 'ParseInt8',
@@ -87,7 +88,7 @@ def map_cpp_parse_fn(typ: str) -> str:
         'enum': 'ParseInt32',
         'string': 'StripWhitespace',
     }
-    return mapping[typ]
+    return '%s(%s)' % (mapping[typ], param)
 
 
 # C++默认值
@@ -160,7 +161,8 @@ def map_go_raw_type(typ: str) -> str:
     return go_type_mapping[typ]
 
 
-def map_go_parse_fn(typ: str) -> str:
+# Go解析函数
+def map_go_parse_expr(typ: str, param: str) -> str:
     mapping = {
         'bool': 'parseBool',
         'int8': 'parseI8',
@@ -179,7 +181,7 @@ def map_go_parse_fn(typ: str) -> str:
         'enum': 'parseI32',
         'string': 'strings.TrimSpace',
     }
-    return mapping[typ]
+    return '%s(%s)' % (mapping[typ], param)
 
 
 # C#类型映射
@@ -217,6 +219,31 @@ def map_cs_type(typ: str) -> str:
         return 'Dictionary<%s, %s>' % (key_type, value_type)
     # print(typ)
     assert False, typ
+
+
+# C#解析函数
+def map_cs_parse_expr(typ: str, param: str) -> str:
+    if typ == 'string':
+        return param + '.Trim()'
+
+    mapping = {
+        'bool': 'bool.Parse',
+        'int8': 'sbyte.Parse',
+        'uint8': 'byte.Parse',
+        'int16': 'short.Parse',
+        'uint16': 'ushort.Parse',
+        'int': 'int.Parse',
+        'uint': 'uint.Parse',
+        'int32': 'int.Parse',
+        'uint32': 'uint.Parse',
+        'int64': 'long.Parse',
+        'uint64': 'ulong.Parse',
+        'float': 'float.Parse',
+        'float32': 'float.Parse',
+        'float64': 'float.Parse',
+        'enum': 'int.Parse',
+    }
+    return '%s(%s)' % (mapping[typ], param)
 
 
 # C#默认值

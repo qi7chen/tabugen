@@ -17,19 +17,18 @@ import tabugen.generator.go.template as go_template
 class GoCsvLoadGenerator:
 
     def __init__(self):
-        pass
+        TAB_SPACE = '\t'
 
     # 生成array赋值
     def gen_array_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         content = ''
         elem_type = types.array_element_type(typename)
-        elem_type = lang.map_go_type(elem_type)
-
-        content += '%svar strArr = strings.Split(%s, TABUGEN_SEP_DELIM1)\n' % (space, valuetext)
+        content += '%svar strArr = strings.Split(%s, "%s")\n' % (space, valuetext, predef.PredefDelim1)
         content += '%svar arr = make([]%s, 0, len(strArr))\n' % (space, elem_type)
         content += '%sfor _, s := range strArr {\n' % space
-        content += '%s    var val = %s(s)\n' % (space, lang.map_go_parse_fn(elem_type))
+        expr = lang.map_go_parse_expr(elem_type, 's')
+        content += '%s    var val = %s\n' % (space, expr)
         content += '%s    arr = append(arr, val)\n' % space
         content += '%s}\n' % space
         content += '%s%s%s = arr\n' % (space, prefix, name)
@@ -38,18 +37,15 @@ class GoCsvLoadGenerator:
     # 生成map赋值
     def gen_map_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
-        k, v = types.map_key_value_types(typename)
-        key_type = lang.map_go_type(k)
-        val_type = lang.map_go_type(v)
-
+        key_type, val_type = types.map_key_value_types(typename)
         content = ''
-        content += '%svar kvList = strings.Split(%s, TABUGEN_SEP_DELIM1)\n' % (space, valuetext)
-        content += '%svar dict = make(map[%s]%s, len(kvList))\n' % (space, key_type, val_type)
+        content += '%svar kvList = strings.Split(%s, "%s")\n' % (space, valuetext, predef.PredefDelim1)
+        content += '%svar dict = make(map[%s]%s, len(kvList))\n' % (space, lang.map_go_type(key_type), lang.map_go_type(val_type))
         content += '%sfor _, kv := range kvList {\n' % space
         content += '%s    if kv != "" {\n' % space
-        content += '%s    var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)\n' % space
-        content += '%s    var key = %s(pair[0])\n' % (space, lang.map_go_parse_fn(key_type))
-        content += '%s    var val = %s(pair[1])\n' % (space, lang.map_go_parse_fn(val_type))
+        content += '%s    var pair = strings.Split(kv, "%s")\n' % (space, predef.PredefDelim2)
+        content += '%s    var key = %s\n' % (space, lang.map_go_parse_expr(key_type, 'pair[0]'))
+        content += '%s    var val = %s\n' % (space, lang.map_go_parse_expr(val_type, 'pair[1]'))
         content += '%s    dict[key] = val\n' % space
         content += '%s    }\n' % space
         content += '%s}\n' % space
@@ -72,12 +68,11 @@ class GoCsvLoadGenerator:
             content += '%s%s%s = strings.TrimSpace(%s)\n' % (space, prefix, name, valuetext)
         else:
             typename = lang.map_go_type(origin_typename)
-            content += '%s%s%s = %s(%s)\n' % (space, prefix, name, lang.map_go_parse_fn(typename), valuetext)
+            content += '%s%s%s = %s\n' % (space, prefix, name, lang.map_go_parse_expr(typename, valuetext))
         return content
 
-
     # 生成内部class的赋值方法
-    def gen_inner_fields_assign(self, struct, prefix, rec_name):
+    def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerFieldName]
@@ -106,7 +101,7 @@ class GoCsvLoadGenerator:
         return content
 
     # KV模式的ParseFromRow方法
-    def gen_kv_parse_method(self, struct):
+    def gen_kv_parse_method(self, struct) -> str:
         content = ''
         rows = struct['data_rows']
 
@@ -126,7 +121,7 @@ class GoCsvLoadGenerator:
         return content
 
     # 生成ParseFromRow方法
-    def gen_parse_method(self, struct):
+    def gen_parse_method(self, struct) -> str:
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False
@@ -150,19 +145,17 @@ class GoCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-
     # 生成Load方法
-    def generate(self, struct):
+    def generate(self, struct) -> str:
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)
         else:
             return self.gen_parse_method(struct)
 
     # 生成helper.go文件
-    def gen_helper_file(self, main_filepath, ver, args):
-        const_def = go_template.GO_CONST_TEMPLATE % (predef.PredefDelim1, predef.PredefDelim2)
+    def gen_helper_file(self, main_filepath: str, ver: str, args):
         filepath = os.path.abspath(os.path.dirname(main_filepath))
         filename = filepath + os.path.sep + 'helper.go'
         content = go_template.GO_HELP_FILE_HEAD_TEMPLATE % (ver, args.package)
-        content += go_template.GO_HELP_FILE_TEMPLATE + const_def
+        content += go_template.GO_HELP_FILE_TEMPLATE
         strutil.save_content_if_not_same(filename, content, 'utf-8')

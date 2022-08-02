@@ -57,7 +57,7 @@ class CppStructGenerator:
         return '%s%s %s;    // \n' % (space, type_name, inner_field_name)
 
     # 内部class定义
-    def gen_inner_struct_define(self, struct):
+    def gen_inner_struct_define(self, struct) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
         end = inner_fields['end']
@@ -92,7 +92,7 @@ class CppStructGenerator:
         return content
 
     # 生成class定义结构，不包含结尾的'}'符号
-    def gen_struct_define(self, struct):
+    def gen_struct_define(self, struct) -> str:
         content = '// %s\n' % struct['comment']
         content += 'struct %s \n{\n' % struct['camel_case_name']
 
@@ -126,7 +126,7 @@ class CppStructGenerator:
         return content
 
     # 生成头文件声明
-    def gen_header(self, struct):
+    def gen_header(self, struct) -> str:
         content = ''
         content += self.gen_struct_define(struct)
         if self.load_gen is not None:

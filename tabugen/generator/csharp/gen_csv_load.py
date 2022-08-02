@@ -14,232 +14,154 @@ class CSharpCsvLoadGenerator:
     TAB_SPACE = '    '
 
     def __init__(self):
-        self.array_delim = ','
-        self.map_delims = [',', '=']
-        self.config_manager_name = ''
+        pass
 
     # 初始化array, map分隔符
-    def setup(self, array_delim, map_delims, name):
-        self.array_delim = array_delim
-        self.map_delims = map_delims
-        self.config_manager_name = name
-
-    @staticmethod
-    def get_data_member_name(self, name):
-        return name + 'Data'
-
-    # 字段比较
-    @staticmethod
-    def gen_equal_stmt(prefix, struct, key):
-        keys = structutil.get_struct_keys(struct, key, lang.map_cs_type)
-        args = []
-        for tpl in keys:
-            args.append('%s%s == %s' % (prefix, tpl[1], tpl[1]))
-        return ' && '.join(args)
-
-    # 生成赋值方法
-    def gen_field_assign_stmt(self, name, typename, valuetext, tabs):
-        content = ''
-        space = self.TAB_SPACE * tabs
-        if typename.lower() == 'string':
-            content += '%s%s = %s.Trim();\n' % (space, name, valuetext)
-        elif typename.lower().find('bool') >= 0:
-            content += '%s%s = bool.Parse(%s);\n' % (space, name, valuetext)
-        else:
-            content += '%s%s = %s.Parse(%s);\n' % (space, name, typename, valuetext)
-        return content
+    def setup(self, name):
+        pass
 
     # 生成array赋值
-    def gen_field_array_assign_stmt(self, prefix, typename, name, row_name, tabs):
-        assert len(self.array_delim) == 1
-
+    def gen_array_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
         elem_type = types.array_element_type(typename)
-        elem_type = lang.map_cs_type(elem_type)
-        content += "%svar items = %s.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, row_name, self.array_delim[0])
-        content += '%s%s%s = new %s[items.Length];\n' % (space, prefix, name, elem_type)
-        content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
-        content += "%s{\n" % space
-        content += self.gen_field_assign_stmt('var value', elem_type, 'items[i]', tabs + 1)
-        content += '%s    %s%s[i] = value;\n' % (space, prefix, name)
+        content += '%s{\n' % space
+        content += '%s    var listVal = new List<%s>();\n' % (space, lang.map_cs_type(elem_type))
+        content += '%s    var strArr = %s.Split("%s", StringSplitOptions.RemoveEmptyEntries);\n' % (
+            space, value_text, predef.PredefDelim1)
+        content += "%s    for(int i = 0; i < strArr.Length; i++) \n" % space
+        content += '%s    {\n' % space
+        expr = lang.map_cs_parse_expr(elem_type, 'strArr[i]')
+        content += '%s        listVal.Add(%s);\n' % (space, expr)
+        content += '%s    }\n' % space
+        content += '%s    %s%s = listVal.ToArray();\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
 
     # 生成map赋值
-    def gen_field_map_assign_stmt(self, prefix, typename, name, row_name, tabs):
-        assert len(self.map_delims) == 2
-
+    def gen_map_field_assign(self, prefix: str, typename: str, name: str, row_name: str, tabs: int) -> str:
         space = self.TAB_SPACE * tabs
-        k, v = types.map_key_value_types(typename)
-        key_type = lang.map_cs_type(k)
-        val_type = lang.map_cs_type(v)
+        key_type, val_type = types.map_key_value_types(typename)
 
-        content = "%svar items = %s.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, row_name, self.map_delims[0])
-        content += '%s%s%s = new Dictionary<%s,%s>();\n' % (space, prefix, name, key_type, val_type)
-        content += "%sfor(int i = 0; i < items.Length; i++) \n" % space
-        content += '%s{\n' % space
-        content += '%s    string text = items[i];\n' % space
-        content += '%s    if (text.Length == 0) {\n' % space
-        content += '%s        continue;\n' % space
+        content = '%s{\n' % space
+        content += '%s    var mapVal = new Dictionary<%s, %s>();\n' % (space, lang.map_cs_type(key_type), lang.map_cs_type(val_type))
+        content += '%s    var kvList = %s.Split("%s", StringSplitOptions.RemoveEmptyEntries);\n' % (
+            space, row_name, predef.PredefDelim1)
+        content += "%s    for(int i = 0; i < kvList.Length; i++) \n" % space
+        content += '%s    {\n' % space
+        content += '%s        var pair = kvList[i].Split("%s", StringSplitOptions.RemoveEmptyEntries);\n' % (space, predef.PredefDelim2)
+        content += '%s        if (pair.Length == 2) {\n' % space
+        content += '%s            var key = %s;\n' % (space, lang.map_cs_parse_expr(key_type, 'pair[0]'))
+        content += '%s            var val = %s;\n' % (space, lang.map_cs_parse_expr(val_type, 'pair[1]'))
+        content += '%s            mapVal[key] = val;\n' % space
+        content += '%s        }\n' % space
         content += '%s    }\n' % space
-        content += "%s    var item = text.Split(\"%s\", StringSplitOptions.RemoveEmptyEntries);\n" % (
-            space, self.map_delims[1])
-        content += '%s    if (items.Length == 2) {\n' % space
-        content += self.gen_field_assign_stmt('var key', key_type, 'item[0]', tabs+1)
-        content += self.gen_field_assign_stmt('var value', val_type, 'item[1]', tabs + 1)
-        content += '%s    %s%s[key] = value;\n' % (self.TAB_SPACE * (tabs + 1), prefix, name)
-        content += '%s    }\n' % space
+        content += '%s    %s%s = mapVal;\n' % (space, prefix, name)
         content += '%s}\n' % space
         return content
 
-    # 生成KV模式的Parse方法
-    def gen_kv_parse_method(self, struct):
-        rows = struct['data_rows']
-        keycol = struct['options'][predef.PredefKeyColumn]
-        valcol = struct['options'][predef.PredefValueColumn]
-        typcol = int(struct['options'][predef.PredefValueTypeColumn])
-        assert keycol > 0 and valcol > 0 and typcol > 0
-
-        keyidx = keycol - 1
-        validx = valcol - 1
-        typeidx = typcol - 1
-
-        content = '\n'
-        content += '%s// parse object fields from text rows\n' % self.TAB_SPACE
-        content += '%spublic void ParseFromRows(List<List<string>> rows)\n' % self.TAB_SPACE
-        content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (rows.Count < %d) {\n' % (self.TAB_SPACE*2, len(rows))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length out of index, {0} < %d", rows.Count));\n' % (
-            self.TAB_SPACE*3, struct['name'], len(rows))
-        content += '%s}\n' % (self.TAB_SPACE*2)
-
-        idx = 0
-        prefix = 'this.'
-        for row in rows:
-            name = rows[idx][keyidx].strip()
-            name = strutil.camel_case(name)
-            origin_typename = rows[idx][typeidx].strip()
-            typename = lang.map_cs_type(origin_typename)
-            valuetext = 'rows[%d][%d]' % (idx, validx)
-            text = ''
-            # print('kv', name, origin_typename, valuetext)
-            if origin_typename.startswith('array'):
-                text += '%s{\n' % (self.TAB_SPACE * 2)
-                text += self.gen_field_array_assign_stmt(prefix, origin_typename, name, valuetext, 3)
-                text += '%s}\n' % (self.TAB_SPACE * 2)
-            elif origin_typename.startswith('map'):
-                text += '%s{\n' % (self.TAB_SPACE * 2)
-                text += self.gen_field_map_assign_stmt(prefix, origin_typename, name, valuetext, 3)
-                text += '%s}\n' % (self.TAB_SPACE * 2)
-            else:
-                text += '%sif (rows[%d][%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx, validx)
-                text += self.gen_field_assign_stmt(prefix + name, typename, valuetext, 3)
-                text += '%s}\n' % (self.TAB_SPACE*2)
-            content += text
-            idx += 1
-        content += '%s}\n' % self.TAB_SPACE
-        return content
-
-    # 生成ParseFromRow方法
-    def gen_parse_method(self, struct):
+    # 字段比较
+    def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
-        if struct['options'][predef.PredefParseKVMode]:
-            return self.gen_kv_parse_method(struct)
-
-        vec_idx = 0
-        vec_names, vec_name = structutil.get_vec_field_range(struct)
-        fields = structutil.enabled_fields(struct)
-
-        inner_class_done = False
-        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
-
-        content += '\n'
-        content += '%s// parse object fields from a text row\n' % self.TAB_SPACE
-        content += '%spublic void ParseFromRow(List<string> row)\n' % self.TAB_SPACE
-        content += '%s{\n' % self.TAB_SPACE
-        content += '%sif (row.Count < %d) {\n' % (self.TAB_SPACE*2, len(fields))
-        content += '%sthrow new ArgumentException(string.Format("%s: row length too short {0}", row.Count));\n' % (
-            self.TAB_SPACE * 3, struct['name'])
-        content += '%s}\n' % (self.TAB_SPACE*2)
-
-        idx = 0
-        prefix = 'this.'
-        for field in struct['fields']:
-            if not field['enable']:
-                continue
-            text = ''
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    inner_class_done = True
-                    text += self.gen_cs_inner_class_assign(struct, prefix)
-            else:
-                origin_type_name = field['original_type_name']
-                typename = lang.map_cs_type(origin_type_name)
-                valuetext = 'row[%d]' % idx
-                if origin_type_name.startswith('array'):
-                    text += '%s{\n' % (self.TAB_SPACE * 2)
-                    text += self.gen_field_array_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
-                    text += '%s}\n' % (self.TAB_SPACE * 2)
-                elif origin_type_name.startswith('map'):
-                    text += '%s{\n' % (self.TAB_SPACE * 2)
-                    text += self.gen_field_map_assign_stmt(prefix, origin_type_name, field_name, valuetext, 3)
-                    text += '%s}\n' % (self.TAB_SPACE * 2)
-                else:
-                    text += '%sif (row[%d].Length > 0) {\n' % (self.TAB_SPACE * 2, idx)
-                    if field_name in vec_names:
-                        name = '%s[%d]' % (vec_name, vec_idx)
-                        text += self.gen_field_assign_stmt(prefix+name, typename, valuetext, 3)
-                        vec_idx += 1
-                    else:
-                        text += self.gen_field_assign_stmt(prefix+field_name, typename, valuetext, 3)
-                    text += '%s}\n' % (self.TAB_SPACE*2)
-            idx += 1
-            content += text
-        content += '%s}\n' % self.TAB_SPACE
+        space = self.TAB_SPACE * tabs
+        if origin_typename.startswith('array'):
+            content += self.gen_array_field_assign(prefix, origin_typename, name, value_text, tabs)
+        elif origin_typename.startswith('map'):
+            content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
+        elif origin_typename == 'string':
+            content += '%s%s%s = %s.Trim();\n' % (space, prefix, name, value_text)
+        else:
+            expr = lang.map_cs_parse_expr(origin_typename, value_text)
+            content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
         return content
 
     # 生成内部类的parse
-    def gen_cs_inner_class_assign(self, struct, prefix):
-        content = ''
+    def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
+        inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
-        inner_var_name = struct["options"][predef.PredefInnerTypeName]
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        start, end, step = structutil.get_inner_class_range(struct)
+        inner_var_name = struct["options"][predef.PredefInnerFieldName]
+        assert len(inner_class_type) > 0 and len(inner_var_name) > 0
+
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
         assert start > 0 and end > 0 and step > 1
-        content += '        %s%s = new %s[%d];\n' % (prefix, inner_var_name, inner_class_type, (end-start)/step)
-        content += '        for (int i = %s, j = 0; i < %s; i += %s, j++) \n' % (start, end, step)
-        content += '        {\n'
-        content += '            %s item = new %s();\n' % (inner_class_type, inner_class_type)
-        for n in range(step):
-            field = inner_fields[n]
-            origin_type = field['original_type_name']
-            typename = lang.map_cs_type(origin_type)
-            valuetext = 'row[i + %d]' % n
-            content += '            if (row[i + %d].Length > 0) \n' % n
-            content += '            {\n'
-            content += self.gen_field_assign_stmt("item." + field['name'], typename, valuetext, 4)
-            content += '            }\n'
-        content += '            %s%s[j] = item;\n' % (prefix, inner_var_name)
-        content += '        }\n'
+
+        space = self.TAB_SPACE * tabs
+        col = start
+        content = '%s{\n' % space
+        content += '%s    var listVal = new List<%s>();\n' % (space, inner_class_type)
+        content += '%s    for (int i = 1; i < %s.Count; i++)\n' % (space, rec_name)
+        content += '%s    {\n' % space
+        content += '%s        var val = new %s();\n' % (space, inner_class_type)
+        content += '%s        string strVal = "";\n' % space
+        for i in range(step):
+            field = struct['fields'][col + i]
+            origin_typename = field['original_type_name']
+            field_name = strutil.remove_suffix_number(field['camel_case_name'])
+            text = '%s        if (%s.TryGetValue($"%s{i}", out strVal)) {\n' % (space, rec_name, field_name)
+            text += self.gen_field_assign('val.', origin_typename, field_name, 'strVal', tabs+3)
+            text += '%s        } else {\n' % space
+            text += '%s            break; \n' % space
+            text += '%s        }\n' % space
+            content += text
+        content += '%s        listVal.Add(val);\n' % space
+        content += '%s    }\n' % space
+        content += '%s    %s%s = listVal.ToArray();\n' % (space, prefix, inner_var_name)
+        content += '%s}\n' % space
         return content
 
+    # 生成ParseFrom方法
+    def gen_parse_method(self, struct, tabs: int):
+        inner_start_col = -1
+        inner_end_col = -1
+        inner_field_done = False
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
 
-    # 生成manager类型
-    def gen_global_class(self, descriptors, args):
+        space = self.TAB_SPACE * tabs
         content = ''
+        content += '%spublic void ParseFrom(Dictionary<string, string> record) \n' % space
+        content += '%s{\n' % space
+        for col, field in enumerate(struct['fields']):
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    content += self.gen_inner_fields_assign(struct, 'this.', 'record', tabs+1)
+                    inner_field_done = True
+            else:
+                origin_typename = field['original_type_name']
+                valuetext = 'record["%s"]' % field['name']
+                content += self.gen_field_assign('this.', origin_typename, field['name'], valuetext, tabs+1)
 
-        if self.config_manager_name != '':
-            content += csharp_template.CSHARP_MANAGER_TEMPLATE % (self.config_manager_name, args.out_csv_delim,
-                                                              self.array_delim, self.map_delims[0], self.map_delims[1])
-            content += '}\n\n'
+        content += '%s}\n\n' % space
         return content
 
-    #
-    def gen_source_method(self, struct):
+    # 生成KV模式的Parse方法
+    def gen_kv_parse_method(self, struct, tabs: int):
+        keyidx = predef.PredefKeyColumn
+        validx = predef.PredefValueColumn
+        typeidx = predef.PredefValueTypeColumn
+        assert keyidx >= 0 and validx >= 0 and typeidx >= 0
+
+        rows = struct['data_rows']
+        space = self.TAB_SPACE * tabs
+
         content = ''
-        content += self.gen_parse_method(struct)
+        content += '%s// parse %s from string fields\n' % (space, struct['name'])
+        content += '%spublic void ParseFrom(Dictionary<string, string> fields)\n' % space
+        content += '%s{\n' % space
+        for row in rows:
+            name = row[keyidx].strip()
+            origin_typename = row[typeidx].strip()
+            value_text = 'fields["%s"]' % name
+            content += self.gen_field_assign('this.', origin_typename, name, value_text, tabs + 1)
+        content += '%s}\n\n' % space
         return content
+
+    # 生成加载函数
+    def generate(self, struct):
+        if struct['options'][predef.PredefParseKVMode]:
+            return self.gen_kv_parse_method(struct, 1)
+        else:
+            return self.gen_parse_method(struct, 1)

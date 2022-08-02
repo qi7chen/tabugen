@@ -53,7 +53,7 @@ class CSharpStructGenerator:
         inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
-        return '%spublic %s %s;    // \n' % (space, type_name, inner_field_name)
+        return '%spublic %s %s = null; \n' % (space, type_name, inner_field_name)
 
     def gen_inner_type(self, struct, tabs: int) -> str:
         inner_fields = struct['inner_fields']
@@ -75,7 +75,7 @@ class CSharpStructGenerator:
                 max_type_len = type_len
 
         space = self.TAB_SPACE * tabs
-        content = '%sstruct %s \n' % (space, type_class_name)
+        content = '%spublic struct %s \n' % (space, type_class_name)
         content += '%s{\n' % space
         col = start
         space2 = self.TAB_SPACE * (tabs + 1)
@@ -88,13 +88,18 @@ class CSharpStructGenerator:
             name = strutil.pad_spaces(name, max_name_len + 8)
             content += '%spublic %s %s // %s\n' % (space2, typename, name, field['comment'])
             col += 1
+
+        content += '\n%s    // default constructor\n' % space
+        content += '%s    public %s() { \n' % (space, type_class_name)
+        content += '%s    }\n' % space
+
         content += '%s}\n' % space
         return content
 
     # 生成结构体定义
     def gen_struct(self, struct, args):
         content = '// %s %s\n' % (struct['comment'], struct['file'])
-        content += 'struct %s \n' % struct['camel_case_name']
+        content += 'public struct %s \n' % struct['camel_case_name']
         content += '{\n'
 
         inner_start_col = -1
@@ -124,7 +129,12 @@ class CSharpStructGenerator:
             else:
                 text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, 1)
             content += text
-        content += '}\n'
+
+        content += '\n    // default constructor\n'
+        content += '    public %s() { \n' % struct['camel_case_name']
+        content += '    }\n'
+
+        # 这里留着后续生成 `}`
         return content
 
     def generate(self, struct, args):
@@ -132,7 +142,8 @@ class CSharpStructGenerator:
         content += self.gen_struct(struct, args)
         if self.load_gen is not None:
             content += '\n'
-            content += self.load_gen.gen_struct_method_declare(struct)
+            content += self.load_gen.generate(struct)
+        content += '}\n'
         return content
 
     def run(self, descriptors, filepath: str, args):
