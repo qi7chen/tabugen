@@ -69,7 +69,7 @@ class GoCsvLoadGenerator:
             content += self.gen_map_field_assign(prefix, origin_typename, name, 'text', tabs)
             content += '\t}\n'
         elif origin_typename == 'string':
-            content += '%s%s%s = %s\n' % (space, prefix, name, valuetext)
+            content += '%s%s%s = strings.TrimSpace(%s)\n' % (space, prefix, name, valuetext)
         else:
             typename = lang.map_go_type(origin_typename)
             content += '%s%s%s = %s(%s)\n' % (space, prefix, name, lang.map_go_parse_fn(typename), valuetext)
@@ -89,7 +89,7 @@ class GoCsvLoadGenerator:
         assert start > 0 and end > 0 and step > 1
 
         col = start
-        content = '\tfor i := 1; i > 0; i++ {\n'
+        content = '\tfor i := 1; i < len(%s); i++ {\n' % rec_name
         content += '\t\tvar off = strconv.Itoa(i)\n'
         content += '\t\tvar val %s\n' % inner_class_type
         for i in range(step):
@@ -97,7 +97,10 @@ class GoCsvLoadGenerator:
             origin_typename = field['original_type_name']
             field_name = strutil.remove_suffix_number(field['camel_case_name'])
             valuetext = '%s["%s" + off]' % (rec_name, field_name)
-            content += self.gen_field_assign('val.', origin_typename, field_name, valuetext, 2)
+            text = 'if str, found := %s["%s" + off]; found {\n' % (rec_name, field_name)
+            text += self.gen_field_assign('val.', origin_typename, field_name, 'str', 2)
+            text += '} else {\n \tbreak \n }\n'
+            content += text
         content += '%s%s = append(%s%s, val)\n' % (prefix, inner_var_name, prefix, inner_var_name)
         content += '\t}\n'
         return content

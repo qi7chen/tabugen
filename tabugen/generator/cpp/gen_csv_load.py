@@ -82,7 +82,7 @@ class CppCsvLoadGenerator:
         elif origin_typename.startswith('map'):
             content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
         elif origin_typename == 'string':
-            content += '%s%s%s = %s;\n' % (space, prefix, name, value_text)
+            content += '%s%s%s = StripWhitespace(%s);\n' % (space, prefix, name, value_text)
         else:
             fn = lang.map_cpp_parse_fn(origin_typename)
             content += '%s%s%s = %s(%s);\n' % (space, prefix, name, fn, value_text)
@@ -103,19 +103,27 @@ class CppCsvLoadGenerator:
 
         space = self.TAB_SPACE * tabs
         col = start
-        content = '%s%s%s.reserve(%d);\n' % (space, prefix, inner_var_name, count)
-        content += '%sfor (int i = 1; i <= %d; i++)\n' % (space, count)
+        content = ''
+        content += '%sfor (size_t i = 1; i <= %s.size(); i++)\n' % (space, rec_name)
         content += '%s{\n' % space
         content += '%s    %s::%s val;\n' % (space, struct['camel_case_name'], inner_class_type)
-        content += '%s    std::string key;\n' % space
         for i in range(step):
             field = struct['fields'][col + i]
             origin_typename = field['original_type_name']
             field_name = strutil.remove_suffix_number(field['camel_case_name'])
-            valuetext = '%s[StringPrintf("%s%%d", i)]' % (rec_name, field_name)
-            content += self.gen_field_assign('val.', origin_typename, field_name, valuetext, tabs + 1)
+            text = '%s    {\n' % space
+            text += '%s        auto key = StringPrintf("%s%%d", i);\n' % (space, field_name)
+            text += '%s        auto iter = %s.find(key);\n' % (space, rec_name)
+            text += '%s        if (iter != %s.end()) {\n' % (space, rec_name)
+            text += self.gen_field_assign('val.', origin_typename, field_name, 'iter->second', tabs + 3)
+            text += '%s        } else {\n' % space
+            text += '%s            break;\n' % space
+            text += '%s        }\n' % space
+            text += '%s    }\n' % space
+            content += text
         content += '        %s%s.push_back(val);\n' % (prefix, inner_var_name)
         content += '%s}\n' % space
+        content += '%s%s%s.shrink_to_fit();\n' % (space, prefix, inner_var_name)
         return content
 
     # 生成KV模式的Parse方法
