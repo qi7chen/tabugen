@@ -11,17 +11,17 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
-CLI_GEN_FLAGS =   --package=Config
+CLI_GEN_FLAGS =  --with_csv_parse --package=Config --json_snake_case
 CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
+CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --json_snake_case --out_data_path=$(OUT_DATA_DIR)
 
 all: output run
 
 generate:
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx  $(CLI_GEN_FLAGS) --csharp_out=$(CURRENT_DIR)/src/SoldierDefine.cs
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_GEN_FLAGS) --csharp_out=$(CURRENT_DIR)/src/GuideDefine.cs
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_GEN_FLAGS) --csharp_out=$(CURRENT_DIR)/src/GlobalDefine.cs
-	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_GEN_FLAGS) --csharp_out=$(CURRENT_DIR)/src/BoxDefine.cs
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx  $(CLI_GEN_FLAGS) --cs_out=$(CURRENT_DIR)/src/SoldierDefine.cs
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/新手任务.xlsx $(CLI_GEN_FLAGS) --cs_out=$(CURRENT_DIR)/src/GuideDefine.cs
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/全局变量表.xlsx $(CLI_GEN_FLAGS) --cs_out=$(CURRENT_DIR)/src/GlobalDefine.cs
+	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/随机宝箱.xlsx $(CLI_GEN_FLAGS) --cs_out=$(CURRENT_DIR)/src/BoxDefine.cs
 
 output:
 	$(TABUGEN_CLI) --asset_path=$(DATASHEET_DIR)/兵种.xlsx $(CLI_OUT_CSV_FLAGS)
