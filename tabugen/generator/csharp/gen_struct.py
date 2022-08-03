@@ -32,7 +32,10 @@ class CSharpStructGenerator:
                 sys.exit(1)
 
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, snake_case: bool,  tabs: int) -> str:
-        typename = lang.map_cs_type(field['original_type_name'])
+        origin_type = field['original_type_name']
+        typename = lang.map_cs_type(origin_type)
+        if origin_type.startswith('array') or origin_type.startswith('map'):
+            typename += '?'
         assert typename != "", field['original_type_name']
         typename = strutil.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cs_value(field, typename, False)
@@ -53,7 +56,7 @@ class CSharpStructGenerator:
         inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
-        return '%spublic %s %s = null; \n' % (space, type_name, inner_field_name)
+        return '%spublic %s %s { get; set; } \n' % (space, type_name, inner_field_name)
 
     def gen_inner_type(self, struct, tabs: int) -> str:
         inner_fields = struct['inner_fields']
@@ -89,9 +92,9 @@ class CSharpStructGenerator:
             content += '%spublic %s %s // %s\n' % (space2, typename, name, field['comment'])
             col += 1
 
-        content += '\n%s    // default constructor\n' % space
-        content += '%s    public %s() { \n' % (space, type_class_name)
-        content += '%s    }\n' % space
+        # content += '\n%s    // default constructor\n' % space
+        # content += '%s    public %s() { \n' % (space, type_class_name)
+        # content += '%s    }\n' % space
 
         content += '%s}\n' % space
         return content
@@ -130,9 +133,9 @@ class CSharpStructGenerator:
                 text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, 1)
             content += text
 
-        content += '\n    // default constructor\n'
-        content += '    public %s() { \n' % struct['camel_case_name']
-        content += '    }\n'
+        # content += '\n    // default constructor\n'
+        # content += '    public %s() { \n' % struct['camel_case_name']
+        # content += '    }\n'
 
         # 这里留着后续生成 `}`
         return content

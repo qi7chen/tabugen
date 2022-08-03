@@ -252,16 +252,7 @@ def name_with_default_cs_value(field: Mapping, typename: str, remove_suffix_num:
     name = field['name']
     if remove_suffix_num:
         name = strutil.remove_suffix_number(name)
-    if typename == 'bool':
-        return '%s = false;' % name
-    elif typename == 'string':
-        return '%s = "";' % name
-    elif types.is_integer_type(field['type_name']):
-        return '%s = 0;' % name
-    elif types.is_floating_type(field['type_name']):
-        return '%s = 0.0f;' % name
-    else:
-        return '%s = null;' % name
+    return '%s { get; set; }' % name
 
 
 # java装箱类型
