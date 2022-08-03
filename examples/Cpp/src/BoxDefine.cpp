@@ -21,20 +21,43 @@ namespace config {
 int BoxProbabilityDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->ID = record["ID"];
+    ptr->ID = StripWhitespace(record["ID"]);
     ptr->Total = ParseInt32(record["Total"]);
     ptr->Time = ParseInt32(record["Time"]);
     ptr->Repeat = ParseBool(record["Repeat"]);
-    ptr->ProbabilityGoods.reserve(3);
-    for (int i = 1; i <= 3; i++)
+    for (size_t i = 1; i <= record.size(); i++)
     {
         BoxProbabilityDefine::ProbabilityGoodsDefine val;
-        std::string key;
-        val.GoodsID = record[StringPrintf("GoodsID%d", i)];
-        val.Num = ParseUInt32(record[StringPrintf("Num%d", i)]);
-        val.Probability = ParseUInt32(record[StringPrintf("Probability%d", i)]);
+        {
+            auto key = StringPrintf("GoodsID%d", i);
+            auto iter = record.find(key);
+            if (iter != record.end()) {
+                val.GoodsID = StripWhitespace(iter->second);
+            } else {
+                break;
+            }
+        }
+        {
+            auto key = StringPrintf("Num%d", i);
+            auto iter = record.find(key);
+            if (iter != record.end()) {
+                val.Num = ParseUInt32(iter->second);
+            } else {
+                break;
+            }
+        }
+        {
+            auto key = StringPrintf("Probability%d", i);
+            auto iter = record.find(key);
+            if (iter != record.end()) {
+                val.Probability = ParseUInt32(iter->second);
+            } else {
+                break;
+            }
+        }
         ptr->ProbabilityGoods.push_back(val);
     }
+    ptr->ProbabilityGoods.shrink_to_fit();
     return 0;
 }
 

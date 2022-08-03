@@ -50,7 +50,7 @@
 * `--cpp_out` 输出的C++代码文件名称
 * `--package` 指定C++命名空间
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
-* `--enable_csv_parse` 是否包含CSV数据加载代码
+* `--with_csv_parse` 是否包含CSV数据加载代码
 * `--cpp_pch` 包含的预编译头文件
 * `--extra_cpp_include` 额外包含的C++头文件
 

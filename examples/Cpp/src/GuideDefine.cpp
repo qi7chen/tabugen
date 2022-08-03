@@ -21,9 +21,9 @@ namespace config {
 int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = record["Name"];
-    ptr->Type = record["Type"];
-    ptr->Target = record["Target"];
+    ptr->Name = StripWhitespace(record["Name"]);
+    ptr->Type = StripWhitespace(record["Type"]);
+    ptr->Target = StripWhitespace(record["Target"]);
     {
         auto arr = SplitString(record["Accomplishment"], "|");
         for (size_t i = 0; i < arr.size(); i++)
@@ -49,7 +49,7 @@ int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& r
             }
         }
     }
-    ptr->Description = record["Description"];
+    ptr->Description = StripWhitespace(record["Description"]);
     return 0;
 }
 

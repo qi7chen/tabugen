@@ -13,7 +13,7 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
-CLI_GEN_FLAGS = --enable_csv_parse --package=config --source_file_encoding=utf_8_sig
+CLI_GEN_FLAGS = --with_csv_parse --package=config --source_file_encoding=utf_8_sig
 CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
 
 all: output build

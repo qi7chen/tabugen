@@ -21,18 +21,18 @@ namespace config {
 int SoldierPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = record["Name"];
+    ptr->Name = StripWhitespace(record["Name"]);
     ptr->Level = ParseInt32(record["Level"]);
-    ptr->NameID = record["NameID"];
-    ptr->Description = record["Description"];
-    ptr->BuildingName = record["BuildingName"];
+    ptr->NameID = StripWhitespace(record["NameID"]);
+    ptr->Description = StripWhitespace(record["Description"]);
+    ptr->BuildingName = StripWhitespace(record["BuildingName"]);
     ptr->BuildingLevel = ParseUInt32(record["BuildingLevel"]);
     ptr->RequireSpace = ParseUInt32(record["RequireSpace"]);
     ptr->Volume = ParseUInt32(record["Volume"]);
     ptr->UpgradeTime = ParseUInt32(record["UpgradeTime"]);
-    ptr->UpgradeMaterialID = record["UpgradeMaterialID"];
+    ptr->UpgradeMaterialID = StripWhitespace(record["UpgradeMaterialID"]);
     ptr->UpgradeMaterialNum = ParseInt64(record["UpgradeMaterialNum"]);
-    ptr->ConsumeMaterial = record["ConsumeMaterial"];
+    ptr->ConsumeMaterial = StripWhitespace(record["ConsumeMaterial"]);
     ptr->ConsumeMaterialNum = ParseInt32(record["ConsumeMaterialNum"]);
     ptr->ConsumeTime = ParseInt32(record["ConsumeTime"]);
     ptr->Act = ParseInt32(record["Act"]);
