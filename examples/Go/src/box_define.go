@@ -17,7 +17,6 @@ type ProbabilityGoodsDefine struct {
 	GoodsID     string `json:"goods_id"`    // 物品1id
 	Num         uint32 `json:"num"`         // 物品1数量
 	Probability uint32 `json:"probability"` // 物品1概率
-
 }
 
 //  随机宝箱.xlsx
@@ -27,20 +26,31 @@ type BoxProbabilityDefine struct {
 	Time             int                      `json:"time"`                     // 冷却时间
 	Repeat           bool                     `json:"repeat"`                   // 是否可重复
 	ProbabilityGoods []ProbabilityGoodsDefine `json:"probability_goods_define"` //
-
 }
 
 func (p *BoxProbabilityDefine) ParseFrom(record map[string]string) error {
-	p.ID = record["ID"]
+	p.ID = strings.TrimSpace(record["ID"])
 	p.Total = parseInt(record["Total"])
 	p.Time = parseInt(record["Time"])
 	p.Repeat = parseBool(record["Repeat"])
-	for i := 1; i <= 3; i++ {
+	for i := 1; i < len(record); i++ {
 		var off = strconv.Itoa(i)
 		var val ProbabilityGoodsDefine
-		val.GoodsID = record["GoodsID"+off]
-		val.Num = parseU32(record["Num"+off])
-		val.Probability = parseU32(record["Probability"+off])
+		if str, found := record["GoodsID"+off]; found {
+			val.GoodsID = strings.TrimSpace(str)
+		} else {
+			break
+		}
+		if str, found := record["Num"+off]; found {
+			val.Num = parseU32(str)
+		} else {
+			break
+		}
+		if str, found := record["Probability"+off]; found {
+			val.Probability = parseU32(str)
+		} else {
+			break
+		}
 		p.ProbabilityGoods = append(p.ProbabilityGoods, val)
 	}
 	return nil

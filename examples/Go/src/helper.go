@@ -189,10 +189,3 @@ func RecordsToKVMap(records []map[string]string) map[string]string {
 	return fields
 }
 
-
-
-const (
-	TABUGEN_SEP_DELIM1  = `|` // map item delimiter
-	TABUGEN_SEP_DELIM2  = `=` // map key-value delimiter
-)
-

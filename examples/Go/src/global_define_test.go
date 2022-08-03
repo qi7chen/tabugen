@@ -18,7 +18,7 @@ func TestGlobalAutogenCsvConfig(t *testing.T) {
 	}
 	var fields = RecordsToKVMap(records)
 	var conf GlobalPropertyDefine
-	conf.ParseFields(fields)
+	conf.ParseFrom(fields)
 	t.Logf("%v\n", conf)
 }
 

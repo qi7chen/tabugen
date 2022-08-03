@@ -28,10 +28,9 @@ type GlobalPropertyDefine struct {
 	SpawnLevelLimit            []int          `json:"spawn_level_limit"`             // 最大刷新个数显示
 	FirstRechargeReward        map[string]int `json:"first_recharge_reward"`         // 首充奖励
 	VIPItemReward              map[int]int    `json:"vip_item_reward"`               // VIP奖励
-
 }
 
-func (p *GlobalPropertyDefine) ParseFields(fields map[string]string) error {
+func (p *GlobalPropertyDefine) ParseFrom(fields map[string]string) error {
 	p.GoldExchangeTimeFactor1 = parseF64(fields["GoldExchangeTimeFactor1"])
 	p.GoldExchangeTimeFactor2 = parseF64(fields["GoldExchangeTimeFactor2"])
 	p.GoldExchangeTimeFactor3 = parseF64(fields["GoldExchangeTimeFactor3"])
@@ -43,7 +42,7 @@ func (p *GlobalPropertyDefine) ParseFields(fields map[string]string) error {
 	p.CancelBuildReturnPercent = parseU16(fields["CancelBuildReturnPercent"])
 	p.EnableSearch = parseBool(fields["EnableSearch"])
 	if text := fields["SpawnLevelLimit"]; text != "" {
-		var strArr = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var strArr = strings.Split(text, "|")
 		var arr = make([]int, 0, len(strArr))
 		for _, s := range strArr {
 			var val = parseInt(s)
@@ -52,11 +51,11 @@ func (p *GlobalPropertyDefine) ParseFields(fields map[string]string) error {
 		p.SpawnLevelLimit = arr
 	}
 	if text := fields["FirstRechargeReward"]; text != "" {
-		var kvList = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var kvList = strings.Split(text, "|")
 		var dict = make(map[string]int, len(kvList))
 		for _, kv := range kvList {
 			if kv != "" {
-				var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)
+				var pair = strings.Split(kv, "=")
 				var key = strings.TrimSpace(pair[0])
 				var val = parseInt(pair[1])
 				dict[key] = val
@@ -65,11 +64,11 @@ func (p *GlobalPropertyDefine) ParseFields(fields map[string]string) error {
 		p.FirstRechargeReward = dict
 	}
 	if text := fields["VIPItemReward"]; text != "" {
-		var kvList = strings.Split(text, TABUGEN_SEP_DELIM1)
+		var kvList = strings.Split(text, "|")
 		var dict = make(map[int]int, len(kvList))
 		for _, kv := range kvList {
 			if kv != "" {
-				var pair = strings.Split(kv, TABUGEN_SEP_DELIM2)
+				var pair = strings.Split(kv, "=")
 				var key = parseInt(pair[0])
 				var val = parseInt(pair[1])
 				dict[key] = val

@@ -40,22 +40,21 @@ type SoldierPropertyDefine struct {
 	AtkRange           float64 `json:"atk_range"`            // 攻击距离
 	MovingSpeed        float64 `json:"moving_speed"`         // 移动速度
 	EnableBurn         bool    `json:"enable_burn"`          // 燃烧特效
-
 }
 
 func (p *SoldierPropertyDefine) ParseFrom(record map[string]string) error {
-	p.Name = record["Name"]
+	p.Name = strings.TrimSpace(record["Name"])
 	p.Level = parseInt(record["Level"])
-	p.NameID = record["NameID"]
-	p.Description = record["Description"]
-	p.BuildingName = record["BuildingName"]
+	p.NameID = strings.TrimSpace(record["NameID"])
+	p.Description = strings.TrimSpace(record["Description"])
+	p.BuildingName = strings.TrimSpace(record["BuildingName"])
 	p.BuildingLevel = parseU32(record["BuildingLevel"])
 	p.RequireSpace = parseU32(record["RequireSpace"])
 	p.Volume = parseU32(record["Volume"])
 	p.UpgradeTime = parseU32(record["UpgradeTime"])
-	p.UpgradeMaterialID = record["UpgradeMaterialID"]
+	p.UpgradeMaterialID = strings.TrimSpace(record["UpgradeMaterialID"])
 	p.UpgradeMaterialNum = parseI64(record["UpgradeMaterialNum"])
-	p.ConsumeMaterial = record["ConsumeMaterial"]
+	p.ConsumeMaterial = strings.TrimSpace(record["ConsumeMaterial"])
 	p.ConsumeMaterialNum = parseInt(record["ConsumeMaterialNum"])
 	p.ConsumeTime = parseInt(record["ConsumeTime"])
 	p.Act = parseInt(record["Act"])
