@@ -72,11 +72,10 @@ def random_word(length: int) -> str:
 
 
 # 解析bool
-def parse_bool(text: str) -> bool:
+def str2bool(text: str) -> bool:
     if len(text) == 0:
         return False
-    truth = ['1', 'OK', 'ok', 'ON', 'on', 'YES', 'yes', 'True', 'TRUE']
-    return text in truth
+    return text.lower() in ['1', 't', 'ok', 'on', 'yes', 'true']
 
 
 # a=1,b=2 => {a:1,b:2}

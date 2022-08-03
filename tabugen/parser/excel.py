@@ -147,7 +147,6 @@ class ExcelStructParser:
         if self.with_data:
             data = table[predef.PredefDataStartRow:]
             data = strutil.pad_data_rows(struct['fields'], data)
-            data = tableutil.convert_table_data(struct, data)
             struct["data_rows"] = data
         return struct
 
@@ -170,7 +169,7 @@ class ExcelStructParser:
         data_table = tableutil.remove_empty_columns(data_table)
         if predef.PredefParseKVMode in meta:
             text = meta[predef.PredefParseKVMode]
-            meta[predef.PredefParseKVMode] = strutil.parse_bool(text)
+            meta[predef.PredefParseKVMode] = strutil.str2bool(text)
         else:
             meta[predef.PredefParseKVMode] = False
 

@@ -10,8 +10,7 @@ import filecmp
 import shutil
 import tabugen.predef as predef
 import tabugen.util.strutil as strutil
-import tabugen.util.tableutil as rowutil
-
+import tabugen.util.tableutil as tableutil
 
 # 写入csv文件
 class CsvDataWriter:
@@ -53,16 +52,19 @@ class CsvDataWriter:
     def parse_kv_table(self, struct):
         table = [['Key', 'Value']]
         data_rows = struct['data_rows']
-        for row in data_rows:
+        for col, row in enumerate(data_rows):
+            field = struct['fields'][col]
             name = row[predef.PredefKeyColumn]
             value = row[predef.PredefValueColumn]
+            value = tableutil.convert_data(field['type_name'], value)
             table.append([name, value])
         return table
 
     #
     def parse_table(self, struct):
         data = struct["data_rows"]
-        data = rowutil.validate_unique_column(struct, data)
+        data = tableutil.validate_unique_column(struct, data)
+        data = tableutil.convert_table_data(struct, data)
         header = CsvDataWriter.header_row(struct)
         return [header] + data
 

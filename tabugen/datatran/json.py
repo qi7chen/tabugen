@@ -4,12 +4,10 @@
 
 import os
 import json
-import codecs
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
-import tabugen.util.tableutil as rowutil
+import tabugen.util.tableutil as tableutil
 
 
 # 写入json文件
@@ -130,7 +128,7 @@ class JsonDataWriter:
     # 解析数据行
     def parse_row(self, struct):
         rows = struct["data_rows"]
-        rows = rowutil.validate_unique_column(struct, rows)
+        rows = tableutil.validate_unique_column(struct, rows)
 
         # 嵌套类
         inner_fields = {'start': -1, 'end': -1, 'step': 0}

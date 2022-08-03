@@ -92,9 +92,8 @@ def validate_unique_column(struct, rows):
 # 处理一下数据
 # 1，配置的数值类型如果为空，默认填充0
 # 2，如果配置的类型是整数，但实际有浮点，需要转换成整数
-def convert_table_data(struct, table):
+def convert_table_data(struct, data):
     fields = struct['fields']
-    data = table[predef.PredefDataStartRow:]
     for col, field in enumerate(fields):
         typename = field['type_name']
         if types.is_integer_type(typename):
@@ -112,12 +111,32 @@ def convert_table_data(struct, table):
                     row[col] = '0'  # 填充0
         elif types.is_bool_type(typename):
             for row in data:
-                b = strutil.parse_bool(row[col])
+                b = strutil.str2bool(row[col])
                 if b:
-                    row[col] = '1'
+                    row[col] = 'true'
                 else:
-                    row[col] = '0'
-    return table
+                    row[col] = 'false'
+    return data
+
+
+def convert_data(typename: str, val: str) -> str:
+    if types.is_integer_type(typename):
+        if len(val) == 0:
+            val = '0'
+        elif val.find('.') >= 0:
+            num = int(round(float(val)))  # 这里是四舍五入
+            print('round integer', val, '-->', num)
+            val = str(num)
+    elif types.is_floating_type(typename):
+        if len(val) == 0:
+            val = '0.0'
+    elif types.is_bool_type(typename):
+        b = strutil.str2bool(val)
+        if b:
+            val = 'true'
+        else:
+            val = 'false'
+    return val
 
 
 # # 把KV模式的不必要显示内容置空（类型和注释）

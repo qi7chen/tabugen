@@ -80,7 +80,6 @@ def main():
     parser.add_argument("--java_out", help="file path of generate Java class source code")
     parser.add_argument("--package", default="config", help="name of generated source language package")
     parser.add_argument("--cpp_pch", help="C++ precompiled header file to include in source file")
-    parser.add_argument("--go_json_tag", action="store_true", help="generate JSON tag for Go struct")
     parser.add_argument("--go_fmt", action="store_true", help="run go fmt on generated source file")
 
     # output options
