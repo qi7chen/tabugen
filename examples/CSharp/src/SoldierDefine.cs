@@ -9,55 +9,30 @@ namespace Config
 //  兵种.xlsx
 public struct SoldierPropertyDefine 
 {
-    [JsonPropertyName("name")]
     public string Name { get; set; }         // 士兵ID
-    [JsonPropertyName("level")]
     public int Level { get; set; }        // 士兵等级
-    [JsonPropertyName("name_id")]
     public string NameID { get; set; }       // 名字
-    [JsonPropertyName("description")]
     public string Description { get; set; }  // 描述
-    [JsonPropertyName("building_name")]
     public string BuildingName { get; set; } // 所属建筑
-    [JsonPropertyName("building_level")]
     public uint BuildingLevel { get; set; } // 建筑等级
-    [JsonPropertyName("require_space")]
     public uint RequireSpace { get; set; } // 登陆艇占用空间
-    [JsonPropertyName("volume")]
     public uint Volume { get; set; }       // 体积
-    [JsonPropertyName("upgrade_time")]
     public uint UpgradeTime { get; set; }  // 升级消耗的时间(秒）
-    [JsonPropertyName("upgrade_material_id")]
     public string UpgradeMaterialID { get; set; } // 升级消耗的材料
-    [JsonPropertyName("upgrade_material_num")]
     public long UpgradeMaterialNum { get; set; } // 升级消耗的数量
-    [JsonPropertyName("consume_material")]
     public string ConsumeMaterial { get; set; } // 生产消耗的材料
-    [JsonPropertyName("consume_material_num")]
     public int ConsumeMaterialNum { get; set; } // 生产消耗的数量
-    [JsonPropertyName("consume_time")]
     public int ConsumeTime { get; set; }  // 生产消耗的时间（秒/个）
-    [JsonPropertyName("act")]
     public int Act { get; set; }          // 攻击
-    [JsonPropertyName("hp")]
     public int Hp { get; set; }           // 血量
-    [JsonPropertyName("bomb_load")]
     public short BombLoad { get; set; }     // 载弹量
-    [JsonPropertyName("hurt")]
     public uint Hurt { get; set; }         // buff伤害
-    [JsonPropertyName("duration")]
     public float Duration { get; set; }     // 持续时间
-    [JsonPropertyName("trigger_interval")]
     public float TriggerInterval { get; set; } // 触发间隔
-    [JsonPropertyName("search_scope")]
     public short SearchScope { get; set; }  // 搜索范围
-    [JsonPropertyName("atk_frequency")]
     public float AtkFrequency { get; set; } // 攻击间隔
-    [JsonPropertyName("atk_range")]
     public double AtkRange { get; set; }     // 攻击距离
-    [JsonPropertyName("moving_speed")]
     public double MovingSpeed { get; set; }  // 移动速度
-    [JsonPropertyName("enable_burn")]
     public bool EnableBurn { get; set; }   // 燃烧特效
 
     public void ParseFrom(Dictionary<string, string> record) 
@@ -86,7 +61,7 @@ public struct SoldierPropertyDefine
         this.AtkFrequency = float.Parse(record["AtkFrequency"]);
         this.AtkRange = float.Parse(record["AtkRange"]);
         this.MovingSpeed = float.Parse(record["MovingSpeed"]);
-        this.EnableBurn = Convert.ToBoolean(record["EnableBurn"]);
+        this.EnableBurn = bool.Parse(record["EnableBurn"]);
     }
 
 }

@@ -9,17 +9,11 @@ namespace Config
 //  新手任务.xlsx
 public struct NewbieGuideDefine 
 {
-    [JsonPropertyName("name")]
     public string Name { get; set; }     // ID
-    [JsonPropertyName("type")]
     public string Type { get; set; }     // 任务类型
-    [JsonPropertyName("target")]
     public string Target { get; set; }   // 目标
-    [JsonPropertyName("accomplishment")]
     public short[]? Accomplishment { get; set; } // 完成步骤
-    [JsonPropertyName("goods")]
     public Dictionary<string, uint>? Goods { get; set; }    // 物品
-    [JsonPropertyName("description")]
     public string Description { get; set; } // 描述
 
     public void ParseFrom(Dictionary<string, string> record) 

@@ -9,31 +9,18 @@ namespace Config
 //  全局变量表.xlsx
 public struct GlobalPropertyDefine 
 {
-    [JsonPropertyName("gold_exchange_time_factor1")]
     public double GoldExchangeTimeFactor1 { get; set; } // 金币兑换时间参数1
-    [JsonPropertyName("gold_exchange_time_factor2")]
     public double GoldExchangeTimeFactor2 { get; set; } // 金币兑换时间参数2
-    [JsonPropertyName("gold_exchange_time_factor3")]
     public double GoldExchangeTimeFactor3 { get; set; } // 金币兑换时间参数3
-    [JsonPropertyName("gold_exchange_resource1_price")]
     public ushort GoldExchangeResource1Price { get; set; } // 金币兑换资源1价格
-    [JsonPropertyName("gold_exchange_resource2_price")]
     public ushort GoldExchangeResource2Price { get; set; } // 金币兑换资源2价格
-    [JsonPropertyName("gold_exchange_resource3_price")]
     public ushort GoldExchangeResource3Price { get; set; } // 金币兑换资源3价格
-    [JsonPropertyName("gold_exchange_resource4_price")]
     public ushort GoldExchangeResource4Price { get; set; } // 金币兑换资源4价格
-    [JsonPropertyName("free_complete_seconds")]
     public ushort FreeCompleteSeconds { get; set; }  // 免费立即完成时间
-    [JsonPropertyName("cancel_build_return_percent")]
     public ushort CancelBuildReturnPercent { get; set; } // 取消建造后返还资源比例
-    [JsonPropertyName("enable_search")]
     public bool EnableSearch { get; set; }         // 开启搜索
-    [JsonPropertyName("spawn_level_limit")]
     public int[]? SpawnLevelLimit { get; set; }      // 最大刷新个数显示
-    [JsonPropertyName("first_recharge_reward")]
     public Dictionary<string, int>? FirstRechargeReward { get; set; }  // 首充奖励
-    [JsonPropertyName("vip_item_reward")]
     public Dictionary<int, int>? VIPItemReward { get; set; }        // VIP奖励
 
     // parse GlobalPropertyDefine from string fields

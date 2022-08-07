@@ -28,7 +28,7 @@ struct GlobalPropertyDefine
     std::unordered_map<std::string, int>  FirstRechargeReward;               // 首充奖励
     std::unordered_map<int, int>          VIPItemReward;                     // VIP奖励
 
-    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr);
+    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr);
 };
 
 } // namespace config

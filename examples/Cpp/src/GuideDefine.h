@@ -21,7 +21,7 @@ struct NewbieGuideDefine
     std::unordered_map<std::string, uint32_t>  Goods;                 // 物品
     std::string                                Description;           // 描述
 
-    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, NewbieGuideDefine* ptr);
+    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, NewbieGuideDefine* ptr);
 };
 
 } // namespace config

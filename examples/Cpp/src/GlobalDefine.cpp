@@ -18,31 +18,62 @@ using namespace std;
 namespace config {
 
 // parse GlobalPropertyDefine from string fields
-int GlobalPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr)
+int GlobalPropertyDefine::ParseFrom(const std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->GoldExchangeTimeFactor1 = ParseDouble(fields["GoldExchangeTimeFactor1"]);
-    ptr->GoldExchangeTimeFactor2 = ParseDouble(fields["GoldExchangeTimeFactor2"]);
-    ptr->GoldExchangeTimeFactor3 = ParseDouble(fields["GoldExchangeTimeFactor3"]);
-    ptr->GoldExchangeResource1Price = ParseUInt16(fields["GoldExchangeResource1Price"]);
-    ptr->GoldExchangeResource2Price = ParseUInt16(fields["GoldExchangeResource2Price"]);
-    ptr->GoldExchangeResource3Price = ParseUInt16(fields["GoldExchangeResource3Price"]);
-    ptr->GoldExchangeResource4Price = ParseUInt16(fields["GoldExchangeResource4Price"]);
-    ptr->FreeCompleteSeconds = ParseUInt16(fields["FreeCompleteSeconds"]);
-    ptr->CancelBuildReturnPercent = ParseUInt16(fields["CancelBuildReturnPercent"]);
-    ptr->EnableSearch = ParseBool(fields["EnableSearch"]);
-    {
-        auto arr = SplitString(fields["SpawnLevelLimit"], "|");
+    std::unordered_map<std::string, std::string>::const_iterator iter;
+    iter = fields.find("GoldExchangeTimeFactor1");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeTimeFactor1 = ParseDouble(iter->second);
+    }
+    iter = fields.find("GoldExchangeTimeFactor2");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeTimeFactor2 = ParseDouble(iter->second);
+    }
+    iter = fields.find("GoldExchangeTimeFactor3");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeTimeFactor3 = ParseDouble(iter->second);
+    }
+    iter = fields.find("GoldExchangeResource1Price");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeResource1Price = ParseUInt16(iter->second);
+    }
+    iter = fields.find("GoldExchangeResource2Price");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeResource2Price = ParseUInt16(iter->second);
+    }
+    iter = fields.find("GoldExchangeResource3Price");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeResource3Price = ParseUInt16(iter->second);
+    }
+    iter = fields.find("GoldExchangeResource4Price");
+    if (iter != fields.end()) {
+        ptr->GoldExchangeResource4Price = ParseUInt16(iter->second);
+    }
+    iter = fields.find("FreeCompleteSeconds");
+    if (iter != fields.end()) {
+        ptr->FreeCompleteSeconds = ParseUInt16(iter->second);
+    }
+    iter = fields.find("CancelBuildReturnPercent");
+    if (iter != fields.end()) {
+        ptr->CancelBuildReturnPercent = ParseUInt16(iter->second);
+    }
+    iter = fields.find("EnableSearch");
+    if (iter != fields.end()) {
+        ptr->EnableSearch = ParseBool(iter->second);
+    }
+    iter = fields.find("SpawnLevelLimit");
+    if (iter != fields.end()) {
+        auto arr = SplitString(iter->second, "|");
         for (size_t i = 0; i < arr.size(); i++)
         {
-            if (!arr[i].empty()) {
-                auto val = ParseInt32(arr[i]);
-                ptr->SpawnLevelLimit.emplace_back(val);
-            }
+            auto val = ParseInt32(arr[i]);
+            ptr->SpawnLevelLimit.emplace_back(val);
         }
     }
-    {
-        auto kvs = SplitString(fields["FirstRechargeReward"], "|");
+    iter = fields.find("FirstRechargeReward");
+    if (iter != fields.end()) {
+        auto kvs = SplitString(iter->second, "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
             auto kv = SplitString(kvs[i], "=");
@@ -56,8 +87,9 @@ int GlobalPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>
             }
         }
     }
-    {
-        auto kvs = SplitString(fields["VIPItemReward"], "|");
+    iter = fields.find("VIPItemReward");
+    if (iter != fields.end()) {
+        auto kvs = SplitString(iter->second, "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
             auto kv = SplitString(kvs[i], "=");

@@ -18,34 +18,110 @@ using namespace std;
 namespace config {
 
 // parse SoldierPropertyDefine from string fields
-int SoldierPropertyDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
+int SoldierPropertyDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = StripWhitespace(record["Name"]);
-    ptr->Level = ParseInt32(record["Level"]);
-    ptr->NameID = StripWhitespace(record["NameID"]);
-    ptr->Description = StripWhitespace(record["Description"]);
-    ptr->BuildingName = StripWhitespace(record["BuildingName"]);
-    ptr->BuildingLevel = ParseUInt32(record["BuildingLevel"]);
-    ptr->RequireSpace = ParseUInt32(record["RequireSpace"]);
-    ptr->Volume = ParseUInt32(record["Volume"]);
-    ptr->UpgradeTime = ParseUInt32(record["UpgradeTime"]);
-    ptr->UpgradeMaterialID = StripWhitespace(record["UpgradeMaterialID"]);
-    ptr->UpgradeMaterialNum = ParseInt64(record["UpgradeMaterialNum"]);
-    ptr->ConsumeMaterial = StripWhitespace(record["ConsumeMaterial"]);
-    ptr->ConsumeMaterialNum = ParseInt32(record["ConsumeMaterialNum"]);
-    ptr->ConsumeTime = ParseInt32(record["ConsumeTime"]);
-    ptr->Act = ParseInt32(record["Act"]);
-    ptr->Hp = ParseInt32(record["Hp"]);
-    ptr->BombLoad = ParseInt16(record["BombLoad"]);
-    ptr->Hurt = ParseUInt32(record["Hurt"]);
-    ptr->Duration = ParseFloat(record["Duration"]);
-    ptr->TriggerInterval = ParseFloat(record["TriggerInterval"]);
-    ptr->SearchScope = ParseInt16(record["SearchScope"]);
-    ptr->AtkFrequency = ParseFloat(record["AtkFrequency"]);
-    ptr->AtkRange = ParseDouble(record["AtkRange"]);
-    ptr->MovingSpeed = ParseDouble(record["MovingSpeed"]);
-    ptr->EnableBurn = ParseBool(record["EnableBurn"]);
+    std::unordered_map<std::string, std::string>::const_iterator iter;
+    iter = record.find("Name");
+    if (iter != record.end()) {
+        ptr->Name = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Level");
+    if (iter != record.end()) {
+        ptr->Level = ParseInt32(iter->second);
+    }
+    iter = record.find("NameID");
+    if (iter != record.end()) {
+        ptr->NameID = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Description");
+    if (iter != record.end()) {
+        ptr->Description = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("BuildingName");
+    if (iter != record.end()) {
+        ptr->BuildingName = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("BuildingLevel");
+    if (iter != record.end()) {
+        ptr->BuildingLevel = ParseUInt32(iter->second);
+    }
+    iter = record.find("RequireSpace");
+    if (iter != record.end()) {
+        ptr->RequireSpace = ParseUInt32(iter->second);
+    }
+    iter = record.find("Volume");
+    if (iter != record.end()) {
+        ptr->Volume = ParseUInt32(iter->second);
+    }
+    iter = record.find("UpgradeTime");
+    if (iter != record.end()) {
+        ptr->UpgradeTime = ParseUInt32(iter->second);
+    }
+    iter = record.find("UpgradeMaterialID");
+    if (iter != record.end()) {
+        ptr->UpgradeMaterialID = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("UpgradeMaterialNum");
+    if (iter != record.end()) {
+        ptr->UpgradeMaterialNum = ParseInt64(iter->second);
+    }
+    iter = record.find("ConsumeMaterial");
+    if (iter != record.end()) {
+        ptr->ConsumeMaterial = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("ConsumeMaterialNum");
+    if (iter != record.end()) {
+        ptr->ConsumeMaterialNum = ParseInt32(iter->second);
+    }
+    iter = record.find("ConsumeTime");
+    if (iter != record.end()) {
+        ptr->ConsumeTime = ParseInt32(iter->second);
+    }
+    iter = record.find("Act");
+    if (iter != record.end()) {
+        ptr->Act = ParseInt32(iter->second);
+    }
+    iter = record.find("Hp");
+    if (iter != record.end()) {
+        ptr->Hp = ParseInt32(iter->second);
+    }
+    iter = record.find("BombLoad");
+    if (iter != record.end()) {
+        ptr->BombLoad = ParseInt16(iter->second);
+    }
+    iter = record.find("Hurt");
+    if (iter != record.end()) {
+        ptr->Hurt = ParseUInt32(iter->second);
+    }
+    iter = record.find("Duration");
+    if (iter != record.end()) {
+        ptr->Duration = ParseFloat(iter->second);
+    }
+    iter = record.find("TriggerInterval");
+    if (iter != record.end()) {
+        ptr->TriggerInterval = ParseFloat(iter->second);
+    }
+    iter = record.find("SearchScope");
+    if (iter != record.end()) {
+        ptr->SearchScope = ParseInt16(iter->second);
+    }
+    iter = record.find("AtkFrequency");
+    if (iter != record.end()) {
+        ptr->AtkFrequency = ParseFloat(iter->second);
+    }
+    iter = record.find("AtkRange");
+    if (iter != record.end()) {
+        ptr->AtkRange = ParseDouble(iter->second);
+    }
+    iter = record.find("MovingSpeed");
+    if (iter != record.end()) {
+        ptr->MovingSpeed = ParseDouble(iter->second);
+    }
+    iter = record.find("EnableBurn");
+    if (iter != record.end()) {
+        ptr->EnableBurn = ParseBool(iter->second);
+    }
     return 0;
 }
 

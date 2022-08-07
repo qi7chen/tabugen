@@ -3,60 +3,63 @@
 // See accompanying files LICENSE.
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+
 import com.alibaba.fastjson.JSON;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.csv.*;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVFormat;
 import com.pdfun.config.*;
 
-public class Sample
-{
-
-    // read file to with CF lines
-    public static String readFileContent(String filepath) {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-                sb.append("\n"); // line break
+public class Sample {
+    public static ArrayList<Map<String, String>> ReadCSVRecords(String filename) throws IOException {
+        ArrayList<Map<String, String>> records = new ArrayList<>();
+        File file = new File(toFilePath(filename));
+        List<String> header = null;
+        CSVParser parser = CSVParser.parse(file, StandardCharsets.UTF_8, CSVFormat.EXCEL);
+        for (CSVRecord record : parser) {
+            List<String> row = record.toList();
+            if (header == null) {
+                header = row;
+            } else {
+                Map<String, String> rec = new HashMap<>();
+                for (int i = 0; i < row.size(); i++)
+                {
+                    rec.put(header.get(i), row.get(i));
+                }
+                records.add(rec);
             }
-        } catch(IOException ex) {
-            System.err.println(ex.getMessage());
-            ex.printStackTrace();
         }
-        return sb.toString();
+        return records;
     }
 
-    public static String readCsvFile(String key) {
-        String filepath = String.format("src/main/resources/%s", key);
-        return readFileContent(filepath);
+    public static Map<String, String> RecordsToDict(ArrayList<Map<String, String>> records) {
+        Map<String, String> dict = new HashMap<>();
+        for (Map<String, String> record : records) {
+            dict.put(record.get("Key"), record.get("Value"));
+        }
+        return dict;
+    }
+
+    private static String toFilePath(String filename) {
+        return String.format("../datasheet/res/%s", filename);
     }
 
     private static void testGuideCsvConfig() throws IOException {
-        String content = readCsvFile("newbie_guide_define.csv");
-        List<NewbieGuideDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            NewbieGuideDefine item = new NewbieGuideDefine();
-            item.parseFrom(record);
-            data.add(item);
+        ArrayList<Map<String, String>> records = ReadCSVRecords("newbie_guide_define.csv");
+        for (Map<String, String> record : records) {
+            NewbieGuideDefine val = new NewbieGuideDefine();
+            val.parseFrom(record);
+            String content = JSON.toJSONString(val);
+            System.out.println(content);
         }
-
-        System.out.printf("load %d box\n", data.size());
-        data.forEach((item)->{
-            System.out.println(JSON.toJSONString(item));
-        });
+        System.out.printf("load %d box\n", records.size());
     }
 
-    private static void testGuideJsonConfig() {
-        String filename = "src/main/resources/newbie_guide_define.json";
-        String content = readFileContent(filename);
+    private static void testGuideJsonConfig() throws IOException {
+        File file = new File(toFilePath("newbie_guide_define.json"));
+        String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         List<NewbieGuideDefine> conflist = JSON.parseArray(content, NewbieGuideDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
             NewbieGuideDefine item = conflist.get(i);
@@ -65,27 +68,19 @@ public class Sample
     }
 
     private static void testSoldierCsvConfig() throws IOException {
-        String content = readCsvFile("soldier_property_define.csv");
-        List<SoldierPropertyDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            SoldierPropertyDefine item = new SoldierPropertyDefine();
-            item.parseFrom(record);
-            data.add(item);
+        ArrayList<Map<String, String>> records = ReadCSVRecords("soldier_property_define.csv");
+        for (Map<String, String> record : records) {
+            SoldierPropertyDefine val = new SoldierPropertyDefine();
+            val.parseFrom(record);
+            String content = JSON.toJSONString(val);
+            System.out.println(content);
         }
-
-        System.out.printf("load %d soldier\n", data.size());
-        data.forEach((item)->{
-            System.out.println(JSON.toJSONString(item));
-        });
+        System.out.printf("load %d soldier\n", records.size());
     }
 
-    private static void testSoldierJsonConfig() {
-        String filename = "src/main/resources/soldier_property_define.json";
-        String content = readFileContent(filename);
+    private static void testSoldierJsonConfig() throws IOException {
+        File file = new File(toFilePath("soldier_property_define.json"));
+        String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         List<SoldierPropertyDefine> conflist = JSON.parseArray(content, SoldierPropertyDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
             SoldierPropertyDefine item = conflist.get(i);
@@ -94,51 +89,41 @@ public class Sample
     }
 
     private static void testGlobalCsvConfig() throws IOException {
-        String content = readCsvFile("global_property_define.csv");
-        List<CSVRecord> records = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            records.add(record);
-        }
+        ArrayList<Map<String, String>> records = ReadCSVRecords("global_property_define.csv");
+        Map<String, String> dict = RecordsToDict(records);
         GlobalPropertyDefine instance = new GlobalPropertyDefine();
-        instance.parseFrom(records);
-
-        System.out.println(JSON.toJSONString(instance));
+        instance.parseFrom(dict);
+        String content = JSON.toJSONString(instance);
+        System.out.println(content);
     }
 
-    private static void testGlobalJsonConfig() {
-        String filename = "src/main/resources/global_property_define.json";
-        String content = readFileContent(filename);
+    private static void testGlobalJsonConfig() throws IOException {
+        File file = new File(toFilePath("global_property_define.json"));
+        String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         GlobalPropertyDefine obj = JSON.parseObject(content, GlobalPropertyDefine.class);
-        System.out.println(JSON.toJSONString(obj));
+        String text = JSON.toJSONString(obj);
+        System.out.println(text);
     }
 
     private static void testBoxCsvConfig() throws IOException {
-        String content = readCsvFile("box_probability_define.csv");
-        List<BoxProbabilityDefine> data = new ArrayList<>();
-        CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
-        for (CSVRecord record : parser)
-        {
-            if (record.size() == 0)
-                continue;
-            BoxProbabilityDefine item = new BoxProbabilityDefine();
-            item.parseFrom(record);
-            data.add(item);
+        ArrayList<Map<String, String>> records = ReadCSVRecords("box_probability_define.csv");
+        for (Map<String, String> record : records) {
+            SoldierPropertyDefine val = new SoldierPropertyDefine();
+            val.parseFrom(record);
+            String content = JSON.toJSONString(val);
+            System.out.println(content);
         }
-        System.out.printf("load %d box\n", data.size());
-        data.forEach((item)->{
-            System.out.println(JSON.toJSONString(item));
-        });
+        System.out.printf("load %d box_probability\n", records.size());
     }
 
-    private static void testBoxJsonConfig() {
-        String filename = "src/main/resources/box_probability_define.json";
-        String content = readFileContent(filename);
+    private static void testBoxJsonConfig() throws IOException {
+        File file = new File(toFilePath("box_probability_define.json"));
+        String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         List<BoxProbabilityDefine> conflist = JSON.parseArray(content, BoxProbabilityDefine.class);
         for (int i = 0; i < conflist.size(); i++) {
             BoxProbabilityDefine item = conflist.get(i);
-            System.out.println(JSON.toJSONString(item));
+            String text = JSON.toJSONString(item);
+            System.out.println(text);
         }
     }
 
@@ -159,8 +144,7 @@ public class Sample
             testSoldierJsonConfig();
             testGlobalJsonConfig();
             testBoxJsonConfig();
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

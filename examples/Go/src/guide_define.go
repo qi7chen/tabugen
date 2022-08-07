@@ -15,12 +15,12 @@ var (
 
 //  新手任务.xlsx
 type NewbieGuideDefine struct {
-	Name           string            `json:"name"`           // ID
-	Type           string            `json:"type"`           // 任务类型
-	Target         string            `json:"target"`         // 目标
-	Accomplishment []int16           `json:"accomplishment"` // 完成步骤
-	Goods          map[string]uint32 `json:"goods"`          // 物品
-	Description    string            `json:"description"`    // 描述
+	Name           string            // ID
+	Type           string            // 任务类型
+	Target         string            // 目标
+	Accomplishment []int16           // 完成步骤
+	Goods          map[string]uint32 // 物品
+	Description    string            // 描述
 }
 
 func (p *NewbieGuideDefine) ParseFrom(record map[string]string) error {

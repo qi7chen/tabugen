@@ -40,7 +40,7 @@ struct SoldierPropertyDefine
     double       MovingSpeed = 0.0;         // 移动速度
     bool         EnableBurn = false;        // 燃烧特效
 
-    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, SoldierPropertyDefine* ptr);
+    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, SoldierPropertyDefine* ptr);
 };
 
 } // namespace config

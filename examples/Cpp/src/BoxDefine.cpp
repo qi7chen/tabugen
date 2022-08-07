@@ -18,13 +18,26 @@ using namespace std;
 namespace config {
 
 // parse BoxProbabilityDefine from string fields
-int BoxProbabilityDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
+int BoxProbabilityDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->ID = StripWhitespace(record["ID"]);
-    ptr->Total = ParseInt32(record["Total"]);
-    ptr->Time = ParseInt32(record["Time"]);
-    ptr->Repeat = ParseBool(record["Repeat"]);
+    std::unordered_map<std::string, std::string>::const_iterator iter;
+    iter = record.find("ID");
+    if (iter != record.end()) {
+        ptr->ID = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Total");
+    if (iter != record.end()) {
+        ptr->Total = ParseInt32(iter->second);
+    }
+    iter = record.find("Time");
+    if (iter != record.end()) {
+        ptr->Time = ParseInt32(iter->second);
+    }
+    iter = record.find("Repeat");
+    if (iter != record.end()) {
+        ptr->Repeat = ParseBool(iter->second);
+    }
     for (size_t i = 1; i <= record.size(); i++)
     {
         BoxProbabilityDefine::ProbabilityGoodsDefine val;
@@ -32,7 +45,7 @@ int BoxProbabilityDefine::ParseFrom(std::unordered_map<std::string, std::string>
             auto key = StringPrintf("GoodsID%d", i);
             auto iter = record.find(key);
             if (iter != record.end()) {
-                val.GoodsID = StripWhitespace(iter->second);
+                val.GoodsID = StripWhitespace(iter->second).as_string();
             } else {
                 break;
             }

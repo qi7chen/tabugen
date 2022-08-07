@@ -14,18 +14,18 @@ var (
 )
 
 type ProbabilityGoodsDefine struct {
-	GoodsID     string `json:"goods_id"`    // 物品1id
-	Num         uint32 `json:"num"`         // 物品1数量
-	Probability uint32 `json:"probability"` // 物品1概率
+	GoodsID     string // 物品1id
+	Num         uint32 // 物品1数量
+	Probability uint32 // 物品1概率
 }
 
 //  随机宝箱.xlsx
 type BoxProbabilityDefine struct {
-	ID               string                   `json:"id"`                       // ID
-	Total            int                      `json:"total"`                    // 奖励总数
-	Time             int                      `json:"time"`                     // 冷却时间
-	Repeat           bool                     `json:"repeat"`                   // 是否可重复
-	ProbabilityGoods []ProbabilityGoodsDefine `json:"probability_goods_define"` //
+	ID               string // ID
+	Total            int    // 奖励总数
+	Time             int    // 冷却时间
+	Repeat           bool   // 是否可重复
+	ProbabilityGoods []ProbabilityGoodsDefine
 }
 
 func (p *BoxProbabilityDefine) ParseFrom(record map[string]string) error {

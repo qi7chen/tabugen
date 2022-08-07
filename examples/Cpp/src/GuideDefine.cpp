@@ -18,24 +18,34 @@ using namespace std;
 namespace config {
 
 // parse NewbieGuideDefine from string fields
-int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
+int NewbieGuideDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    ptr->Name = StripWhitespace(record["Name"]);
-    ptr->Type = StripWhitespace(record["Type"]);
-    ptr->Target = StripWhitespace(record["Target"]);
-    {
-        auto arr = SplitString(record["Accomplishment"], "|");
+    std::unordered_map<std::string, std::string>::const_iterator iter;
+    iter = record.find("Name");
+    if (iter != record.end()) {
+        ptr->Name = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Type");
+    if (iter != record.end()) {
+        ptr->Type = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Target");
+    if (iter != record.end()) {
+        ptr->Target = StripWhitespace(iter->second).as_string();
+    }
+    iter = record.find("Accomplishment");
+    if (iter != record.end()) {
+        auto arr = SplitString(iter->second, "|");
         for (size_t i = 0; i < arr.size(); i++)
         {
-            if (!arr[i].empty()) {
-                auto val = ParseInt16(arr[i]);
-                ptr->Accomplishment.emplace_back(val);
-            }
+            auto val = ParseInt16(arr[i]);
+            ptr->Accomplishment.emplace_back(val);
         }
     }
-    {
-        auto kvs = SplitString(record["Goods"], "|");
+    iter = record.find("Goods");
+    if (iter != record.end()) {
+        auto kvs = SplitString(iter->second, "|");
         for (size_t i = 0; i < kvs.size(); i++)
         {
             auto kv = SplitString(kvs[i], "=");
@@ -49,7 +59,10 @@ int NewbieGuideDefine::ParseFrom(std::unordered_map<std::string, std::string>& r
             }
         }
     }
-    ptr->Description = StripWhitespace(record["Description"]);
+    iter = record.find("Description");
+    if (iter != record.end()) {
+        ptr->Description = StripWhitespace(iter->second).as_string();
+    }
     return 0;
 }
 

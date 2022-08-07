@@ -12,9 +12,9 @@ export PYTHONPATH=$(ROOT_DIR)
 
 TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
-CLI_GEN_FLAGS = --go_json_tag --json_snake_case --enable_csv_parse --package=config --go_fmt
+CLI_GEN_FLAGS = --with_csv_parse --package=config --go_fmt
 CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --json_snake_case  --out_data_path=$(OUT_DATA_DIR)
+CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
 
 all: output-csv output-json build run clean
 

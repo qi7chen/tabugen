@@ -27,7 +27,7 @@ struct BoxProbabilityDefine
     bool                                 Repeat = false;      // 是否可重复
     std::vector<ProbabilityGoodsDefine>  ProbabilityGoods;    // 
 
-    static int ParseFrom(std::unordered_map<std::string, std::string>& fields, BoxProbabilityDefine* ptr);
+    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, BoxProbabilityDefine* ptr);
 };
 
 } // namespace config

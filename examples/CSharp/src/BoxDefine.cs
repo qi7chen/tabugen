@@ -16,15 +16,10 @@ public struct BoxProbabilityDefine
         public uint    Probability { get; set; } // 物品1概率
     }
 
-    [JsonPropertyName("id")]
     public string ID { get; set; }     // ID
-    [JsonPropertyName("total")]
     public int Total { get; set; }  // 奖励总数
-    [JsonPropertyName("time")]
     public int Time { get; set; }   // 冷却时间
-    [JsonPropertyName("repeat")]
     public bool Repeat { get; set; } // 是否可重复
-    [JsonPropertyName("probability_goods")]
     public ProbabilityGoodsDefine[]  ProbabilityGoods { get; set; } 
 
     public void ParseFrom(Dictionary<string, string> record) 

@@ -13,7 +13,7 @@ TABUGEN_CLI = python $(ROOT_DIR)/tabugen/__main__.py
 
 CLI_GEN_FLAGS =  --with_csv_parse --package=Config --json_snake_case
 CLI_OUT_CSV_FLAGS = --out_data_format=csv --out_data_path=$(OUT_DATA_DIR)
-CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --json_snake_case --out_data_path=$(OUT_DATA_DIR)
+CLI_OUT_JSON_FLAGS = --out_data_format=json --json_indent --out_data_path=$(OUT_DATA_DIR)
 
 all: output run
 
