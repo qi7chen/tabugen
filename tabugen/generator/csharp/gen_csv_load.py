@@ -6,7 +6,6 @@ import tabugen.typedef as types
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
 
 
 # 生成C#加载CSV文件数据代码
@@ -16,11 +15,10 @@ class CSharpCsvLoadGenerator:
     def __init__(self):
         pass
 
-    # 初始化array, map分隔符
     def setup(self, name):
         pass
 
-    # 生成array赋值
+    # 生成array类型的赋值代码
     def gen_array_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
@@ -38,7 +36,7 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n' % space
         return content
 
-    # 生成map赋值
+    # 生成map类型的赋值代码
     def gen_map_field_assign(self, prefix: str, typename: str, name: str, row_name: str, tabs: int) -> str:
         space = self.TAB_SPACE * tabs
         key_type, val_type = types.map_key_value_types(typename)
@@ -60,7 +58,7 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n' % space
         return content
 
-    # 字段比较
+    # 生成字段加载代码
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
@@ -75,7 +73,7 @@ class CSharpCsvLoadGenerator:
             content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
         return content
 
-    # 生成内部类的parse
+    # 生成嵌入类型的字段加载代码
     def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
@@ -111,7 +109,7 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n' % space
         return content
 
-    # 生成ParseFrom方法
+    # 生成`ParseFrom`方法
     def gen_parse_method(self, struct, tabs: int):
         inner_start_col = -1
         inner_end_col = -1
@@ -137,7 +135,7 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n\n' % space
         return content
 
-    # 生成KV模式的Parse方法
+    # 生成KV模式的`ParseFrom`方法
     def gen_kv_parse_method(self, struct, tabs: int):
         keyidx = predef.PredefKeyColumn
         validx = predef.PredefValueColumn
@@ -159,7 +157,6 @@ class CSharpCsvLoadGenerator:
         content += '%s}\n\n' % space
         return content
 
-    # 生成加载函数
     def generate(self, struct):
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct, 1)

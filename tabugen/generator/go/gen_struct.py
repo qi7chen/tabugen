@@ -14,6 +14,7 @@ import tabugen.generator.go.template as go_template
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
 
+# Go代码生成器
 class GoStructGenerator:
     TAB_SPACE = '\t'
 
@@ -29,7 +30,7 @@ class GoStructGenerator:
         if name == 'csv':
             self.load_gen = GoCsvLoadGenerator()
 
-    # Go代码生成器
+    # 生成字段定义
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool, remove_suffix_num: bool, tabs: int) -> str:
         text = ''
         typename = lang.map_go_type(field['original_type_name'])
@@ -51,6 +52,7 @@ class GoStructGenerator:
             text += '%s%s %s // %s\n' % (space, name, typename, field['comment'])
         return text
 
+    # 生成嵌入类型的字段定义
     def gen_inner_fields(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
@@ -65,7 +67,7 @@ class GoStructGenerator:
             text = '%s%s []%s \n' % (space, inner_field_name, type_class_name)
         return text
 
-    # 生成内嵌字段
+    # 生成嵌入类型定义
     def gen_inner_type(self, struct, args) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
@@ -95,7 +97,7 @@ class GoStructGenerator:
         content += '}\n'
         return content
 
-    # 生成struct定义
+    # 生成struct
     def gen_go_struct(self, struct, args) -> str:
         content = ''
 

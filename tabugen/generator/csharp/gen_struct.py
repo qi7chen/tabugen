@@ -8,7 +8,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
 from tabugen.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
 
@@ -31,6 +30,7 @@ class CSharpStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
+    # 生成字段类型定义
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool,  tabs: int) -> str:
         origin_type = field['original_type_name']
         typename = lang.map_cs_type(origin_type)
@@ -42,13 +42,10 @@ class CSharpStructGenerator:
         name = lang.name_with_default_cs_value(field, typename, False)
         name = strutil.pad_spaces(name, max_name_len + 8)
         space = self.TAB_SPACE * tabs
-        text = ''
-        if json_snake_case:
-            tag_name = strutil.camel_to_snake(field['name'])
-            text += '%s[JsonPropertyName("%s")]\n' % (space, tag_name)
-        text += '%spublic %s %s // %s\n' % (space, typename, name, field['comment'])
+        text = '%spublic %s %s // %s\n' % (space, typename, name, field['comment'])
         return text
 
+    # 生成嵌入类型的字段定义
     def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
@@ -57,13 +54,10 @@ class CSharpStructGenerator:
         inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
-        text = ''
-        if json_snake_case:
-            tag_name = strutil.camel_to_snake(inner_field_name)
-            text += '%s[JsonPropertyName("%s")]\n' % (space, tag_name)
-        text += '%spublic %s %s { get; set; } \n' % (space, type_name, inner_field_name)
+        text = '%spublic %s %s { get; set; } \n' % (space, type_name, inner_field_name)
         return text
 
+    # 生成嵌入类型
     def gen_inner_type(self, struct, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']

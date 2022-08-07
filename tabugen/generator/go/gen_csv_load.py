@@ -19,7 +19,7 @@ class GoCsvLoadGenerator:
     def __init__(self):
         self.TAB_SPACE = '\t'
 
-    # 生成array赋值
+    # 生成array类型的赋值代码
     def gen_array_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         content = ''
@@ -34,7 +34,7 @@ class GoCsvLoadGenerator:
         content += '%s%s%s = arr\n' % (space, prefix, name)
         return content
 
-    # 生成map赋值
+    # 生成map类型的赋值代码
     def gen_map_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         key_type, val_type = types.map_key_value_types(typename)
@@ -52,7 +52,7 @@ class GoCsvLoadGenerator:
         content += '%s%s%s = dict\n' % (space, prefix, name)
         return content
 
-    # 生成赋值方法
+    # 生成字段的赋值代码
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         content = ''
@@ -71,7 +71,7 @@ class GoCsvLoadGenerator:
             content += '%s%s%s = %s\n' % (space, prefix, name, lang.map_go_parse_expr(typename, valuetext))
         return content
 
-    # 生成内部class的赋值方法
+    # 生成嵌入类型的字段加载代码
     def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
@@ -102,7 +102,7 @@ class GoCsvLoadGenerator:
         content += '%s}\n' % space
         return content
 
-    # KV模式的ParseFromRow方法
+    # KV模式生成`ParseFrom`方法
     def gen_kv_parse_method(self, struct) -> str:
         content = ''
         rows = struct['data_rows']
@@ -122,7 +122,7 @@ class GoCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-    # 生成ParseFromRow方法
+    # 生成`ParseFrom`方法
     def gen_parse_method(self, struct) -> str:
         inner_start_col = -1
         inner_end_col = -1
@@ -147,7 +147,6 @@ class GoCsvLoadGenerator:
         content += '}\n'
         return content
 
-    # 生成Load方法
     def generate(self, struct) -> str:
         if struct['options'][predef.PredefParseKVMode]:
             return self.gen_kv_parse_method(struct)

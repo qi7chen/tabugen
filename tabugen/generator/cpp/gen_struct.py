@@ -8,7 +8,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
 from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
 
@@ -24,12 +23,6 @@ class CppStructGenerator:
         self.load_gen = None
 
     def enable_gen_parse(self, name):
-        """
-            :param name: loader需要满足2个接口
-                gen_struct_method_declare()
-                gen_global_class()
-                gen_source_method()
-        """
         if name is not None:
             if name == 'csv':
                 self.load_gen = CppCsvLoadGenerator()
@@ -37,6 +30,7 @@ class CppStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
+    # 生成字段定义
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, tabs: int) -> str:
         typename = lang.map_cpp_type(field['original_type_name'])
         assert typename != "", field['original_type_name']
@@ -46,6 +40,7 @@ class CppStructGenerator:
         space = self.TAB_SPACE * tabs
         return '%s%s %s // %s\n' % (space, typename, name, field['comment'])
 
+    # 生成嵌入类型的字段定义
     def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, tabs: int) -> str:
         type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
@@ -56,7 +51,7 @@ class CppStructGenerator:
         space = self.TAB_SPACE * tabs
         return '%s%s %s;    // \n' % (space, type_name, inner_field_name)
 
-    # 内部class定义
+    # 生成嵌入类型定义
     def gen_inner_struct_define(self, struct) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
@@ -91,7 +86,7 @@ class CppStructGenerator:
         content += '    };\n'
         return content
 
-    # 生成class定义结构，不包含结尾的'}'符号
+    # 生成class的结构定义
     def gen_struct_define(self, struct) -> str:
         content = '// %s\n' % struct['comment']
         content += 'struct %s \n{\n' % struct['camel_case_name']

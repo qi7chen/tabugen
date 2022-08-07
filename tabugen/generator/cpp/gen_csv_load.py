@@ -8,8 +8,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
-import tabugen.generator.cpp.template as cpp_template
 
 
 # 生成C++加载CSV文件数据代码
@@ -17,13 +15,12 @@ class CppCsvLoadGenerator:
     TAB_SPACE = '    '
 
     def __init__(self):
-        self.config_manager_name = ''
+        pass
 
-    # 初始化
     def setup(self, name):
-        self.config_manager_name = name
+        pass
 
-    # array赋值
+    # 生成array字段的赋值语句
     def gen_array_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
         space = self.TAB_SPACE * (tabs + 1)
         content = '%s{\n' % (self.TAB_SPACE * tabs)
@@ -37,7 +34,7 @@ class CppCsvLoadGenerator:
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
 
-    # map赋值
+    # 生成map字段的赋值语句
     def gen_map_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
         key_type, val_type = types.map_key_value_types(typename)
         space = self.TAB_SPACE * (tabs + 1)
@@ -58,6 +55,7 @@ class CppCsvLoadGenerator:
         content += '%s}\n' % (self.TAB_SPACE * tabs)
         return content
 
+    # 生成字段赋值语句
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
@@ -72,7 +70,7 @@ class CppCsvLoadGenerator:
             content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
         return content
 
-    # 内部class赋值
+    # 内部嵌入class的赋值
     def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
@@ -109,7 +107,7 @@ class CppCsvLoadGenerator:
         content += '%s%s%s.shrink_to_fit();\n' % (space, prefix, inner_var_name)
         return content
 
-    # 生成ParseFrom方法
+    # 生成`ParseFrom`方法
     def gen_parse_method(self, struct) -> str:
         content = ''
         inner_start_col = -1
@@ -138,7 +136,7 @@ class CppCsvLoadGenerator:
         content += '}\n\n'
         return content
 
-    # 生成KV模式的Parse方法
+    # 生成KV模式的`ParseFrom`方法
     def gen_kv_parse_method(self, struct):
         keyidx = predef.PredefKeyColumn
         validx = predef.PredefValueColumn
