@@ -46,7 +46,7 @@ def map_cpp_type(typ: str) -> str:
     assert False, typ
 
 
-# POD类型
+# C++ POD类型
 def is_cpp_pod_type(typ: str) -> bool:
     assert len(typ.strip()) > 0
     return not typ.startswith('std::')  # std::string, std::vector, std::unordered_map
@@ -68,7 +68,7 @@ def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num
         return '%s;' % name
 
 
-# C++解析
+# C++字符串解析
 def map_cpp_parse_expr(typ: str, param: str) -> str:
     mapping = {
         'bool': 'ParseBool',
@@ -91,7 +91,7 @@ def map_cpp_parse_expr(typ: str, param: str) -> str:
     return '%s(%s)' % (mapping[typ], param)
 
 
-# C++默认值
+# C++类型默认值
 def default_value_by_cpp_type(typename: str) -> str:
     if typename == 'bool':
         return 'false'
@@ -161,7 +161,7 @@ def map_go_raw_type(typ: str) -> str:
     return go_type_mapping[typ]
 
 
-# Go解析函数
+# Go字符串解析
 def map_go_parse_expr(typ: str, param: str) -> str:
     mapping = {
         'bool': 'parseBool',
@@ -221,7 +221,7 @@ def map_cs_type(typ: str) -> str:
     assert False, typ
 
 
-# C#解析函数
+# C#字符串解析
 def map_cs_parse_expr(typ: str, param: str) -> str:
     if typ == 'string':
         return param + '.Trim()'
@@ -246,7 +246,7 @@ def map_cs_parse_expr(typ: str, param: str) -> str:
     return '%s(%s)' % (mapping[typ], param)
 
 
-# C#默认值
+# C#类型默认值
 def name_with_default_cs_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
     name = field['name']
@@ -270,7 +270,7 @@ def java_box_type(typ: str) -> str:
     return table[typ]
 
 
-# java类型
+# java类型映射
 def map_java_type(typ: str) -> str:
     type_mapping = {
         'bool': 'boolean',
@@ -305,14 +305,14 @@ def map_java_type(typ: str) -> str:
     assert False, typ
 
 
-# java默认值
+# java类型默认值
 def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
     # print(typename)
     name = field['name']
     if remove_suffix_num:
         name = strutil.remove_suffix_number(name)
-    if typename == 'boolean':
+    if typename.startswith('bool'):
         return '%s = false;' % name
     elif typename == 'String':
         return '%s = "";' % name
@@ -320,10 +320,6 @@ def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_nu
         return '%s = 0;' % name
     elif types.is_floating_type(field['type_name']):
         return '%s = 0.0f;' % name
-    elif typename.startswith("List"):
-        return '%s = new ArrayList<>();' % name
-    elif typename.startswith('Map'):
-        return '%s = new HashMap<>();' % name
     else:
         return '%s = null;' % name
 
@@ -331,3 +327,29 @@ def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_nu
 def is_java_primitive_type(typ: str) -> bool:
     table = ['boolean', 'byte', 'short', 'int', 'long', 'float', 'double', 'decimal']
     return typ in table
+
+
+# java字符串解析
+def map_java_parse_expr(typ: str, param: str) -> str:
+    if typ == 'string':
+        return param + '.trim()'
+
+    mapping = {
+        'bool': 'Boolean.parseBoolean',
+        'int8': 'Byte.parseByte',
+        'uint8': 'Byte.parseByte',
+        'int16': 'Short.parseShort',
+        'uint16': 'Short.parseShort',
+        'int': 'Integer.parseInt',
+        'uint': 'Integer.parseInt',
+        'int32': 'Integer.parseInt',
+        'uint32': 'Integer.parseInt',
+        'int64': 'Long.parseLong',
+        'uint64': 'Long.parseLong',
+        'float': 'Float.parseFloat',
+        'float32': 'Float.parseFloat',
+        'float64': 'Double.parseDouble',
+        'enum': 'Integer.parseInt',
+    }
+    return '%s(%s)' % (mapping[typ], param)
+

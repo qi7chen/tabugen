@@ -8,7 +8,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
-import tabugen.util.structutil as structutil
 from tabugen.generator.java.gen_csv_load import JavaCsvLoadGenerator
 
 
@@ -31,89 +30,105 @@ class JavaStructGenerator:
                 print('content loader of name %s not implemented' % name)
                 sys.exit(1)
 
-    # 合并嵌套类
-    @staticmethod
-    def gen_java_inner_class(struct):
-        content = ''
-        class_name = struct["options"][predef.PredefInnerTypeClass]
-        inner_fields = structutil.get_inner_class_struct_fields(struct)
-        content += '    public static class %s \n' % class_name
-        content += '    {\n'
-        max_name_len = strutil.max_field_length(inner_fields, 'name', None)
-        max_type_len = strutil.max_field_length(inner_fields, 'original_type_name', lang.map_java_type)
-        for field in inner_fields:
+    def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool,  tabs: int) -> str:
+        origin_type = field['original_type_name']
+        typename = lang.map_java_type(origin_type)
+        assert typename != "", field['original_type_name']
+        if not json_snake_case:
+            typename = strutil.pad_spaces(typename, max_type_len + 1)
+        name = lang.name_with_default_java_value(field, typename, False)
+        name = strutil.pad_spaces(name, max_name_len + 8)
+        space = self.TAB_SPACE * tabs
+        text = '%spublic %s %s // %s\n' % (space, typename, name, field['comment'])
+        return text
+
+    def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        inner_field_name = struct["options"][predef.PredefInnerFieldName]
+        type_name = '%s[]' % type_class_name
+        type_name = strutil.pad_spaces(type_name, max_type_len + 1)
+        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
+        assert len(inner_field_name) > 0
+        space = self.TAB_SPACE * tabs
+        text = '%spublic %s %s; \n' % (space, type_name, inner_field_name)
+        return text
+
+    def gen_inner_type(self, struct, tabs: int) -> str:
+        inner_fields = struct['inner_fields']
+        start = inner_fields['start']
+        end = inner_fields['end']
+        step = inner_fields['step']
+        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        assert len(type_class_name) > 0
+
+        max_name_len = 0
+        max_type_len = 0
+        for col in range(start, end):
+            field = struct['fields'][col]
+            name_len = len(field['name'])
+            type_len = len(lang.map_java_type(field['original_type_name']))
+            if name_len > max_name_len:
+                max_name_len = name_len
+            if type_len > max_type_len:
+                max_type_len = type_len
+        space = self.TAB_SPACE * tabs
+        content = '%spublic static class %s \n' % (space, type_class_name)
+        content += '%s{\n' % space
+        col = start
+        space2 = self.TAB_SPACE * (tabs + 1)
+        while col < start + step:
+            field = struct['fields'][col]
             typename = lang.map_java_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
             typename = strutil.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_java_value(field, typename)
+            name = lang.name_with_default_java_value(field, typename, True)
             name = strutil.pad_spaces(name, max_name_len + 8)
-            content += '        public %s %s // %s\n' % (typename.strip(), name, field['comment'])
-        content += '    }\n\n'
+            content += '%spublic %s %s // %s\n' % (space2, typename, name, field['comment'])
+            col += 1
+        content += '%s}\n' % space
         return content
 
-    # 生成java类型
-    def gen_java_class(self, struct):
-        content = ''
+    def gen_class(self, struct, args) -> str:
+        content = '// %s %s\n' % (struct['comment'], struct['file'])
+        content += 'public class %s \n' % struct['camel_case_name']
+        content += '{\n'
+
+        inner_start_col = -1
+        inner_end_col = -1
+        inner_field_done = False
+        if 'inner_fields' in struct:
+            inner_start_col = struct['inner_fields']['start']
+            inner_end_col = struct['inner_fields']['end']
+            content += self.gen_inner_type(struct, 1)
+            content += '\n'
 
         fields = struct['fields']
-        if struct['options'][predef.PredefParseKVMode]:
-            fields = structutil.get_struct_kv_fields(struct)
-
-        content += '// %s, %s\n' % (struct['comment'], struct['file'])
-        content += 'public class %s\n{\n' % struct['name']
-
-        inner_class_done = False
-        inner_typename = ''
-        inner_var_name = ''
-        inner_type_class = ''
-        inner_field_names, inner_fields = structutil.get_inner_class_mapped_fields(struct)
-        if len(inner_fields) > 0:
-            content += self.gen_java_inner_class(struct)
-            inner_type_class = struct["options"][predef.PredefInnerTypeClass]
-            inner_var_name = struct["options"][predef.PredefInnerTypeName]
-
-        vec_done = False
-        vec_names, vec_name = structutil.get_vec_field_range(struct)
-
         max_name_len = strutil.max_field_length(fields, 'name', None)
         max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_java_type)
-        if len(inner_typename) > max_type_len:
-            max_type_len = len(inner_typename)
+        if inner_start_col >= 0:
+            type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+            field_name = '%s[]' % type_class_name
+            if len(field_name) > max_type_len:
+                max_type_len = len(field_name)
 
-        for field in fields:
-            if not field['enable']:
-                continue
+        for col, field in enumerate(fields):
             text = ''
-            field_name = field['name']
-            if field_name in inner_field_names:
-                if not inner_class_done:
-                    typename = "ArrayList<>();"
-                    text += '    public List<%s> %s = new %s \n' % (inner_type_class, inner_var_name, typename)
-                    inner_class_done = True
+            if inner_start_col <= col < inner_end_col:
+                if not inner_field_done:
+                    text = self.gen_inner_field_define(struct, max_type_len, max_name_len, args.json_snake_case, 1)
+                    inner_field_done = True
             else:
-                typename = lang.map_java_type(field['original_type_name'])
-                assert typename != "", field['original_type_name']
-                typename = strutil.pad_spaces(typename, max_type_len + 1)
-                if field['name'] not in vec_names:
-                    name = lang.name_with_default_java_value(field, typename)
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    text += '    public %s %s // %s\n' % (typename, name, field['comment'])
-                elif not vec_done:
-                    name = '%s = new %s[%d];' % (vec_name, typename.strip(), len(vec_names))
-                    name = strutil.pad_spaces(name, max_name_len + 8)
-                    text += '    public %s[] %s // %s\n' % (typename.strip(), name, field['comment'])
-                    vec_done = True
+                text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, 1)
             content += text
-
         return content
 
     # 生成对象及方法
-    def generate_class(self, struct, args):
+    def generate(self, struct, args) -> str:
         content = '\n'
-        content += self.gen_java_class(struct)
+        content += self.gen_class(struct, args)
         if self.load_gen is not None:
             content += '\n'
-            content += self.load_gen.gen_parse_method(struct)
+            content += self.load_gen.generate(struct)
         content += '}\n'
         return content
 
@@ -143,27 +158,16 @@ class JavaStructGenerator:
             except OSError as e:
                 pass
 
-        if self.load_gen:
-            (array_delim, map_delims) = strutil.to_sep_delimiters(args.array_delim, args.map_delims)
-            self.load_gen.setup(array_delim, map_delims, args.config_manager_class)
-            sep_delim = strutil.escape_delimiter(args.out_csv_delim)
-            quote_delim = strutil.escape_delimiter('"')
-            if args.config_manager_class != "":
-                mgr_content += java_template.JAVA_MGR_CLASS_TEMPLATE % (args.config_manager_class, sep_delim, quote_delim,
-                                                                    array_delim, map_delims[0], map_delims[1])
-
         class_dict = {}
 
         pkg_imports = [
             'import java.util.*;',
         ]
-
         if self.load_gen is not None:
-            csv_imports = [
-                'import java.io.IOException;',
-                'import org.apache.commons.csv.*;',
+            util_imports = [
+                'import org.apache.commons.lang3.StringUtils;',
             ]
-            pkg_imports += csv_imports
+            pkg_imports += util_imports
 
         for struct in descriptors:
             content = '// This file is auto-generated by Tabugen v%s, DO NOT EDIT!\n\n' % version.VER_STRING
@@ -174,7 +178,7 @@ class JavaStructGenerator:
                 content += 'package %s;\n\n' % args.package
             content += '\n'.join(pkg_imports)
             content += '\n'
-            content += self.generate_class(struct, args)
+            content += self.generate(struct, args)
             class_dict[filename] = content
 
         mgr_content += '}\n'
