@@ -126,7 +126,7 @@ class CppStructGenerator:
         content += self.gen_struct_define(struct)
         if self.load_gen is not None:
             content += '\n'
-            content += self.load_gen.gen_struct_method_declare(struct)
+            content += self.load_gen.generate_method_declare(struct)
         content += '};\n\n'
         return content
 

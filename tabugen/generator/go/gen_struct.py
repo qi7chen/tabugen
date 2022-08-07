@@ -91,7 +91,7 @@ class GoStructGenerator:
         col = start
         while col < start + step:
             field = struct['fields'][col]
-            text = self.gen_field_define(field, max_type_len, max_name_len, args.go_json_tag, args.json_snake_case, True, 1)
+            text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, True, 1)
             content += text
             col += 1
         content += '}\n'
