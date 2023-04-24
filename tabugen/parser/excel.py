@@ -21,13 +21,15 @@ class ExcelStructParser:
         self.skip_names = ''
         self.with_data = True
         self.filenames = []
-
+        self.project_kind = ''
+        
     @staticmethod
     def name():
         return "excel"
 
     def init(self, args):
         self.filedir = args.asset_path
+        self.project_kind = args.project_kind
         if args.without_data:
             self.with_data = False
         if args.skip_files is not None:
@@ -100,9 +102,12 @@ class ExcelStructParser:
 
         fields_names = {}
         prev_field = None
+        ignore_col = struct["project_kind_ignore_col"]
         for col, name in enumerate(name_row):
             # skip empty column
             if name == '' or name.startswith('#') or name.startswith('//') or type_row[col] == "":
+                continue
+            if col in ignore_col:
                 continue
             field_type = types.get_type_by_name(type_row[col])
 
@@ -131,13 +136,35 @@ class ExcelStructParser:
             assert field["type_name"] != ""
 
             struct['fields'].append(field)
-
+        
+    # 对应项目忽略对应字段
+    # 返回忽略字段索引列表
+    def get_project_kind_ignore_col(self, table):
+        if self.project_kind == predef.PredefProjectKindNone:
+            return []
+        ignore_defind_row = -1
+        if self.project_kind == predef.PredefProjectKindServer:
+            ignore_defind_row = predef.PredefServerIgnoreRow 
+        if self.project_kind == predef.PredefProjectKindClient:
+            ignore_defind_row = predef.PredefClientIgnoreRow
+        if self.project_kind == predef.PredefProjectKindManager:
+            ignore_defind_row = predef.PredefManagerIgnoreRow
+        if ignore_defind_row == -1:
+            return []
+        ignore_row = table[ignore_defind_row]
+        cols = []
+        for col, val in enumerate(ignore_row):
+            if val != "":
+                cols.append(col)
+        return cols
+    
     # 解析数据列
     def parse_data_sheet(self, meta, table):
         struct = {
             'fields': [],
             'options': meta,
             'comment': meta.get(predef.PredefClassComment, ""),
+            'project_kind_ignore_col': self.get_project_kind_ignore_col(table),
         }
         if meta[predef.PredefParseKVMode]:  # 全局KV模式
             self.parse_kv_table(table, struct)
@@ -180,4 +207,3 @@ class ExcelStructParser:
         if predef.PredefInnerTypeClass in meta:
             struct['inner_fields'] = structutil.parse_inner_fields(struct)
         return struct
-
