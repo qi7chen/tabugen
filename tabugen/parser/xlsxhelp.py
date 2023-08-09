@@ -60,6 +60,8 @@ def read_workbook_data(filename: str):
         return {}, meta
 
     table = read_sheet(workbook, sheet_names[0])   # first sheet
+    assert len(table) >= predef.PredefDataStartRow
+    table = tableutil.table_remove_empty(table, predef.PredefFieldNameRow)
     meta = {}
     if predef.PredefMetaSheet in sheet_names:
         meta_table = read_sheet(workbook, predef.PredefMetaSheet)
@@ -78,18 +80,18 @@ def read_workbook_data(filename: str):
 def __xlrd_read_workbook_sheet(workbook, sheet_name: str):
     sheet = workbook.sheet_by_name(sheet_name)
     table = []
+    assert sheet is not None, sheet_name
     for rx in range(sheet.nrows):
         cell_row = sheet.row(rx)
         row = []
-        empty_row = True
+        is_empty_row = True  # 是否一行全部是空字符串
         for cell in cell_row:
             text = str(cell.value).strip()
             if len(text) > 0:
-                empty_row = False
+                is_empty_row = False
             row.append(text)
-        if not empty_row:
+        if not is_empty_row:
             table.append(row)
-    table = tableutil.trim_empty_columns(table)
     return table
 
 
@@ -100,15 +102,14 @@ def __openpyxl_read_workbook_sheet(workbook, sheet_name: str):
     assert sheet is not None, sheet_name
     for i, sheet_row in enumerate(sheet.rows):
         row = []
-        row_empty = True
+        is_empty_row = True   # 是否一行全部是空字符串
         for j, cell in enumerate(sheet_row):
             text = ''
             if cell.value is not None:
                 text = str(cell.value).strip()
             if len(text) > 0:
-                row_empty = False
+                is_empty_row = False
             row.append(text.strip())
-        if not row_empty:
+        if not is_empty_row:
             table.append(row)
-    table = tableutil.trim_empty_columns(table)
     return table

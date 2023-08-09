@@ -11,9 +11,32 @@ import tabugen.typedef as types
 import tabugen.util.strutil as strutil
 
 
+# 删除table的某一列
+def remove_table_column(table, column: int):
+    for col in range(len(table)):
+        row = table[col]
+        if column < len(row):
+            row = row[:column] + row[column + 1:]
+            table[col] = row
+    return table
+
+
+# 删除空白列(在中间的列）
+def remove_table_empty_columns(table, field_row: int):
+    header = table[field_row]
+    col = len(header)
+    while col > 0:
+        col -= 1
+        field = header[col]
+        # header为空白的列需要删除，以#或者//开头的列表示注释，也需要删除
+        if len(field) == 0 or field.startswith('#') or field.startswith('//'):
+            table = remove_table_column(table, col)
+    return table
+
+
 # 删除首部和尾部连续的空列
-def trim_empty_columns(table):
-    header = table[0]   # 第一行为头部
+def trim_empty_columns(table, field_row: int):
+    header = table[field_row]
     end = len(header)
     start = 0
     while start < end:
@@ -31,6 +54,45 @@ def trim_empty_columns(table):
         for i in range(len(table)):
             table[i] = table[i][start:end]
     return table
+
+
+# 删除全部空白的行和列
+def table_remove_empty(table, field_row: int):
+    table = trim_empty_columns(table, field_row)
+
+    # 删除header中的注释和空白
+    header = table[field_row]
+    for col, filed in enumerate(header):
+        field = filed.strip()
+        idx = field.find('\n')
+        if idx > 0:
+            field = field[:idx]
+        header[col] = field
+
+    # 根据header，删除被忽略和空白的列
+    return remove_table_empty_columns(table, field_row)
+
+
+# 解析格式：A_XXX
+def parse_head_field(text):
+    i = text.find('_')
+    if i > 0:
+        text = text[i]
+    return text
+
+
+# 检查字段名是否有重复
+def check_duplicate_header_fields(table):
+    header = table[0]  # 第一行是头部
+    keys = {}
+    for text in header:
+        name = parse_head_field(text)
+        idx = name.find('\n')
+        if idx > 0:
+            name = name[:idx]
+        if name in keys:
+            raise RuntimeError('duplicate key %s ' % name)
+        keys[name] = True
 
 
 # 删除table的某一列
@@ -157,3 +219,5 @@ def parse_meta(table):
             if len(key) > 0 and len(value) > 0:
                 meta[key] = value
     return meta
+
+

@@ -5,7 +5,7 @@ See accompanying files LICENSE.
 """
 
 _major = 0
-_minor = 9
-_patch = 1
+_minor = 10
+_patch = 0
 
 VER_STRING = '%d.%d.%d' % (_major, _minor, _patch)

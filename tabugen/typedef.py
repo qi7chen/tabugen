@@ -62,6 +62,17 @@ type_names = {
     Type.Any: "any",
 }
 
+
+def name_of_type():
+    d = {}
+    for k in type_names:
+        v = type_names[k]
+        d[v] = k
+    return d
+
+
+name_types = name_of_type()
+
 # non-primitive type names
 abstract_type_names = {
     "array": Type.Array,
@@ -78,38 +89,6 @@ def get_name_of_type(t: Type) -> str:
     return type_names[t]
 
 
-# 基础类型
-def is_primitive_type(name: str) -> bool:
-    found = False
-    for k, v in type_names.items():
-        if v == name:
-            found = True
-            break
-
-    if not found:
-        return False
-
-    for s in abstract_type_names:
-        if s == name:
-            return False
-    return True
-
-
-# get type by name
-def get_type_by_name(name: str) -> Type:
-    for k, v in abstract_type_names.items():
-        if name.find(k) >= 0:
-            return v
-    for k, v in type_names.items():
-        if v == name:
-            return k
-    return Type.Unknown
-
-
-def is_defined_type(name: str) -> bool:
-    return get_type_by_name(name) != Type.Unknown
-
-
 def is_bool_type(typename: str) -> bool:
     return typename == 'bool'
 
@@ -124,52 +103,107 @@ def is_floating_type(typename: str) -> bool:
     return typename in floating_types
 
 
+# 基础类型
+def is_primitive_type(name: str) -> bool:
+    if is_integer_type(name) or is_floating_type(name):
+        return True
+    return name in ['bool', 'string']
+
+
+# get type by name
+def get_type_by_name(name: str) -> Type:
+    typ = name_types.get(name, Type.Unknown)
+    if typ != Type.Unknown:
+        return typ
+    for k, v in abstract_type_names.items():
+        if name.find(k) >= 0:
+            return v
+    return Type.Unknown
+
+
+def is_defined_type(name: str) -> bool:
+    return get_type_by_name(name) != Type.Unknown
+
+
 # 是否抽象类型, map, array
 def is_abstract_type(typename: str) -> str:
-    if typename.startswith('map<'):
+    if typename.startswith('<') and typename.endswith('>'):
         return 'map'
-    elif typename.startswith('array<'):
+    elif typename.endswith('[]'):
         return 'array'
     return ''
 
 
 # array<int> --> int
 def array_element_type(typename: str) -> str:
-    assert typename.startswith('array<'), typename
-    return typename[6:-1]
+    assert typename.endswith('[]'), typename
+    return typename[:-2]
 
 
 # map<int, string> --> int, string
 def map_key_value_types(typename: str) -> Tuple:
-    keytype = ''
-    valtype = ''
-    assert typename.startswith('map<'), typename
-    typename = typename[4:]
-    for v in type_names.values():
-        if typename.startswith(v):
-            keytype = v
-            break
-    typename = typename[len(keytype) + 1:]
-    for v in type_names.values():
-        if typename.startswith(v):
-            valtype = v
-            break
-
-    assert len(keytype) > 0 and len(valtype) > 0
-    return keytype, valtype
+    assert typename.startswith('<') and typename.endswith('>'), typename
+    parts = typename[1:-1].split(',')
+    assert len(parts) == 2, typename
+    key_type = parts[0].strip()
+    val_type = parts[1].strip()
+    assert key_type in name_types, typename
+    assert val_type in name_types, typename
+    return key_type, val_type
 
 
 class TestTypes(unittest.TestCase):
 
-    def test_primitive_type(self):
-        test_data = [
-            ('int', True),
-            ('map', False),
+    def test_is_primitive_type(self):
+        test_cases = [
             ('', False),
+            ('int', True),
+            ('int8', True),
+            ('float', True),
+            ('float64', True),
+            ('bool', True),
+            ('string', True),
+            ('map', False),
+            ('array', False),
+            ('nil', False),
         ]
-        for pair in test_data:
-            out = is_primitive_type(pair[0])
-            print(out)
+        for tc in test_cases:
+            output = is_primitive_type(tc[0])
+            self.assertEqual(output, tc[1])
+
+    def test_get_type_by_name(self):
+        test_cases = [
+            ('', Type.Unknown),
+            ('none', Type.Unknown),
+            ('int', Type.Int),
+            ('int8', Type.Int8),
+            ('nil', Type.Nil),
+        ]
+        for tc in test_cases:
+            output = get_type_by_name(tc[0])
+            self.assertEqual(output, tc[1])
+
+    def test_array_element_type(self):
+        test_cases = [
+            ('int[]', 'int'),
+            ('float[]', 'float'),
+            ('bool[]', 'bool'),
+            ('string[]', 'string'),
+        ]
+        for tc in test_cases:
+            output = get_type_by_name(tc[0])
+            self.assertEqual(output, tc[1])
+
+    def test_map_key_value_types(self):
+        test_cases = [
+            ('<int,int>', 'int', 'int'),
+            ('<int, string>', 'int', 'string'),
+            ('<double, bool>', 'double', 'bool'),
+        ]
+        for tc in test_cases:
+            output1, output2 = map_key_value_types(tc[0])
+            self.assertEqual(output1, tc[1])
+            self.assertEqual(output2, tc[2])
 
 
 if __name__ == '__main__':
