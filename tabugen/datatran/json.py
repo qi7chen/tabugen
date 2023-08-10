@@ -72,10 +72,13 @@ class JsonDataWriter:
     def parse_kv_rows(self, struct, params):
         rows = struct["data_rows"]
         obj = {}
+        keyidx = struct['options']['key_column']
+        typeidx = struct['options']['type_column']
+        valueidx = struct['options']['value_column']
         for row in rows:
-            key = row[predef.PredefKeyColumn].strip()
-            typename = row[predef.PredefValueTypeColumn].strip()
-            valuetext = row[predef.PredefValueColumn].strip()
+            key = row[keyidx].strip()
+            typename = row[typeidx].strip()
+            valuetext = row[valueidx].strip()
             # print(typename, valuetext)
             value = self.parse_value(typename, valuetext)
             if self.use_snake_case:

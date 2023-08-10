@@ -68,14 +68,22 @@ class ExcelStructParser:
                 self.filenames.append(filename)
 
     def parse_kv_table(self, table, struct):
+        key_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVKeyName)
+        type_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVTypeName)
+        val_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVValueName)
+        comment_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVCommentName)
+        struct['options']['key_column'] = key_col
+        struct['options']['type_column'] = type_col
+        struct['options']['value_column'] = val_col
+        struct['options']['comment_column'] = comment_col
         data_rows = table[predef.PredefDataStartRow:]
         for row in data_rows:
-            name = row[predef.PredefKeyColumn]
-            type_name = row[predef.PredefValueTypeColumn]
+            name = row[key_col]
+            type_name = row[type_col]
             field_type = types.get_type_by_name(type_name)
             comment = ''
-            if len(row) >= predef.PredefCommentColumn:
-                comment = row[predef.PredefCommentColumn]
+            if comment_col >= 0:
+                comment = row[comment_col]
             field = {
                 "name": name,
                 "camel_case_name": strutil.camel_case(name),

@@ -275,3 +275,9 @@ def remove_field_suffix(name: str) -> str:
     if len(name) > 3 and name[-1] == ']' or name[-3] == '[':
         return name[:-3]
 
+
+def find_col_by_name(row, name: str) -> int:
+    for col, val in enumerate(row):
+        if name == val:
+            return col
+    return -1

@@ -53,10 +53,12 @@ class CsvDataWriter:
     def parse_kv_table(self, struct):
         table = [['Key', 'Value']]
         data_rows = struct['data_rows']
+        keyidx = struct['options']['key_column']
+        valueidx = struct['options']['value_column']
         for col, row in enumerate(data_rows):
             field = struct['fields'][col]
-            name = row[predef.PredefKeyColumn]
-            value = row[predef.PredefValueColumn]
+            name = row[keyidx]
+            value = row[valueidx]
             value = tableutil.convert_data(field['type_name'], value)
             table.append([name, value])
         return table

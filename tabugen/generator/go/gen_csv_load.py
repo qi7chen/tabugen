@@ -10,6 +10,7 @@ import tabugen.lang as lang
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
+import tabugen.util.tableutil as tableutil
 import tabugen.generator.go.template as go_template
 
 
@@ -56,11 +57,11 @@ class GoCsvLoadGenerator:
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         content = ''
-        if origin_typename.startswith('array'):
+        if types.is_array_type(origin_typename):
             content += '%sif text := %s; text != "" {\n' % (space, valuetext)
             content += self.gen_array_field_assign(prefix, origin_typename, name, 'text', tabs + 1)
             content += '%s}\n' % space
-        elif origin_typename.startswith('map'):
+        elif types.is_map_type(origin_typename):
             content += '%sif text := %s; text != "" {\n' % (space, valuetext)
             content += self.gen_map_field_assign(prefix, origin_typename, name, 'text', tabs + 1)
             content += '%s}\n' % space
@@ -81,18 +82,18 @@ class GoCsvLoadGenerator:
         start = inner_fields['start']
         end = inner_fields['end']
         step = inner_fields['step']
+        count = (start - end + 1) // step
         assert start > 0 and end > 0 and step > 1
 
         space = self.TAB_SPACE * tabs
         col = start
-        content = '%sfor i := 1; i < len(%s); i++ {\n' % (space, rec_name)
-        content += '%s\tvar off = strconv.Itoa(i)\n' % space
+        content = '%sfor i := 0; i < %d; i++ {\n' % (space, count)
         content += '%s\tvar val %s\n' % (space, inner_class_type)
         for i in range(step):
             field = struct['fields'][col + i]
             origin_typename = field['original_type_name']
-            field_name = strutil.remove_suffix_number(field['camel_case_name'])
-            text = '%s\tif str, found := %s["%s" + off]; found {\n' % (space, rec_name, field_name)
+            field_name = tableutil.remove_field_suffix(field['camel_case_name'])
+            text = '%s\tif str, found := %s[fmt.Sprintf("%s[%%d]", i)]; found {\n' % (space, rec_name, field_name)
             text += self.gen_field_assign('val.', origin_typename, field_name, 'str', tabs + 2)
             text += '%s\t} else {\n ' % space
             text += '%s\t\tbreak\n' % space
@@ -107,8 +108,8 @@ class GoCsvLoadGenerator:
         content = ''
         rows = struct['data_rows']
 
-        keyidx = predef.PredefKeyColumn
-        typeidx = predef.PredefValueTypeColumn
+        keyidx = struct['options']['key_column']
+        typeidx = struct['options']['type_column']
 
         content += 'func (p *%s) ParseFrom(fields map[string]string) error {\n' % struct['camel_case_name']
         for row in rows:
@@ -134,7 +135,7 @@ class GoCsvLoadGenerator:
         content = ''
         content += 'func (p *%s) ParseFrom(record map[string]string) error {\n' % struct['camel_case_name']
         for col, field in enumerate(struct['fields']):
-            if inner_start_col <= col < inner_end_col:
+            if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     content += self.gen_inner_fields_assign(struct, 'p.', 'record', 1)
                     inner_field_done = True

@@ -110,14 +110,31 @@ def is_primitive_type(name: str) -> bool:
     return name in ['bool', 'string']
 
 
+def is_array_type(name: str) -> bool:
+    if len(name) >= 5 and name.endswith('[]'):
+        return is_primitive_type(name[:-2])
+    return False
+
+
+def is_map_type(name: str) -> bool:
+    if len(name) >= 5 and name.startswith('<') and name.endswith('>'):
+        parts = name[1:-1].split(',')
+        if len(parts) == 2:
+            key_type = parts[0].strip()
+            val_type = parts[1].strip()
+            return is_primitive_type(key_type) and is_primitive_type(val_type)
+    return False
+
+
 # get type by name
 def get_type_by_name(name: str) -> Type:
     typ = name_types.get(name, Type.Unknown)
     if typ != Type.Unknown:
         return typ
-    for k, v in abstract_type_names.items():
-        if name.find(k) >= 0:
-            return v
+    if is_map_type(name):
+        return Type.Map
+    elif is_array_type(name):
+        return Type.Array
     return Type.Unknown
 
 
@@ -127,28 +144,25 @@ def is_defined_type(name: str) -> bool:
 
 # 是否抽象类型, map, array
 def is_abstract_type(typename: str) -> str:
-    if typename.startswith('<') and typename.endswith('>'):
+    if is_map_type(typename):
         return 'map'
-    elif typename.endswith('[]'):
+    elif is_array_type(typename):
         return 'array'
     return ''
 
 
 # array<int> --> int
 def array_element_type(typename: str) -> str:
-    assert typename.endswith('[]'), typename
+    assert is_array_type(typename), typename
     return typename[:-2]
 
 
 # map<int, string> --> int, string
 def map_key_value_types(typename: str) -> Tuple:
-    assert typename.startswith('<') and typename.endswith('>'), typename
+    assert is_map_type(typename), typename
     parts = typename[1:-1].split(',')
-    assert len(parts) == 2, typename
     key_type = parts[0].strip()
     val_type = parts[1].strip()
-    assert key_type in name_types, typename
-    assert val_type in name_types, typename
     return key_type, val_type
 
 

@@ -17,11 +17,12 @@ PredefMetaSheet = "@meta"            # meta sheet默认名称
 PredefClassName = "ClassName"        # meta sheet里指定生成的class名
 PredefClassComment = "ClassComment"  # meta sheet里指定生成的class注释
 
-PredefParseKVMode = "KVMode"   # 是否是KV模式
-PredefKeyColumn = 0             # KV模式中的key所在列
-PredefValueTypeColumn = 1       # KV模式中的value类型所在列
-PredefValueColumn = 2           # KV模式中的value所在列
-PredefCommentColumn = 3         # KV模式中的注释所在列
+PredefParseKVMode = "KVMode"    # 是否是KV模式
+PredefKVKeyName = 'Key'         # KV模式中的key所在列
+PredefKVTypeName = 'Type'       # KV模式中的类型所在列
+PredefKVValueName = 'Value'     # KV模式中的value所在列
+PredefKVCommentName = 'Description'     # KV模式中的注释列
+
 
 PredefInnerTypeClass = "InnerTypeClass"
 PredefInnerFieldName = "InnerFieldName"

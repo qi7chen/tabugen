@@ -7,7 +7,6 @@ See accompanying files LICENSE.
 from typing import Mapping
 
 import tabugen.typedef as types
-import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as tableutil
 
 
