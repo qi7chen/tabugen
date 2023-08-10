@@ -1,6 +1,4 @@
 # Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
-# Distributed under the terms and conditions of the Apache License.
-# See accompanying files LICENSE.
 
 cmake_minimum_required(VERSION 3.0)
 
