@@ -5,7 +5,7 @@
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.typedef as types
-import tabugen.util.strutil as strutil
+import tabugen.util.tableutil as tableutil
 
 
 # java加载CSV代码生成器
@@ -61,9 +61,9 @@ class JavaCsvLoadGenerator:
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
-        if origin_typename.startswith('array'):
+        if types.is_array_type(origin_typename):
             content += self.gen_array_field_assign(prefix, origin_typename, name, value_text, tabs)
-        elif origin_typename.startswith('map'):
+        elif types.is_map_type(origin_typename):
             content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
         elif origin_typename == 'string':
             content += '%s%s%s = StringUtils.strip(%s);\n' % (space, prefix, name, value_text)
@@ -95,7 +95,7 @@ class JavaCsvLoadGenerator:
         for i in range(step):
             field = struct['fields'][col + i]
             origin_typename = field['original_type_name']
-            field_name = strutil.remove_suffix_number(field['camel_case_name'])
+            field_name = tableutil.remove_field_suffix(field['camel_case_name'])
             text = '%s        if ((strVal = %s.get("%s" + i)) != null) {\n' % (space, rec_name, field_name)
             text += self.gen_field_assign('val.', origin_typename, field_name, 'strVal', tabs+3)
             text += '%s        } else {\n' % space
@@ -126,7 +126,7 @@ class JavaCsvLoadGenerator:
         content += '%s{\n' % space
         content += '%s    String strTmp;\n' % space
         for col, field in enumerate(struct['fields']):
-            if inner_start_col <= col < inner_end_col:
+            if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     content += self.gen_inner_fields_assign(struct, 'this.', 'record', tabs+1)
                     inner_field_done = True
@@ -142,9 +142,9 @@ class JavaCsvLoadGenerator:
 
     # 生成KV模式的Parse方法
     def gen_kv_parse_method(self, struct, tabs: int):
-        keyidx = predef.PredefKeyColumn
-        validx = predef.PredefValueColumn
-        typeidx = predef.PredefValueTypeColumn
+        keyidx = struct['options']['key_column']
+        validx = struct['options']['value_column']
+        typeidx = struct['options']['type_column']
         assert keyidx >= 0 and validx >= 0 and typeidx >= 0
 
         rows = struct['data_rows']
