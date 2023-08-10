@@ -1,122 +1,114 @@
 [
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       3
     ],
-    "description": "建造1个引擎控制室",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_01",
-    "target": "BigSupplyDepot",
-    "type": "eAT_CreateBuilding"
+    "Name": "Guide_01",
+    "Target": "BigSupplyDepot",
+    "Type": "eAT_CreateBuilding"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       4
     ],
-    "description": "建造1个太空温室",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_02",
-    "target": "CrystalRefinery",
-    "type": "eAT_CreateBuilding"
+    "Name": "Guide_02",
+    "Target": "CrystalRefinery",
+    "Type": "eAT_CreateBuilding"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       5
     ],
-    "description": "将大力神登陆艇升至2级",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_03",
-    "target": "SoldierLandingship",
-    "type": "eAT_ReachLevel"
+    "Name": "Guide_03",
+    "Target": "SoldierLandingship",
+    "Type": "eAT_ReachLevel"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       6
     ],
-    "description": "解放1个太空殖民地",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_04",
-    "target": "NPC",
-    "type": "eAT_DefeatNpc"
+    "Name": "Guide_04",
+    "Target": "NPC",
+    "Type": "eAT_DefeatNpc"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       7
     ],
-    "description": "建造1个保险库",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_05",
-    "target": "Vault",
-    "type": "eAT_CreateBuilding"
+    "Name": "Guide_05",
+    "Target": "Vault",
+    "Type": "eAT_CreateBuilding"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       8
     ],
-    "description": "建造1个幽灵哨塔",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_06",
-    "target": "GhostTower",
-    "type": "eAT_CreateBuilding"
+    "Name": "Guide_06",
+    "Target": "GhostTower",
+    "Type": "eAT_CreateBuilding"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       9
     ],
-    "description": "将章北海等级提升至2级",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_07",
-    "target": "ColonelZhang",
-    "type": "eAT_UpgradeHero"
+    "Name": "Guide_07",
+    "Target": "ColonelZhang",
+    "Type": "eAT_UpgradeHero"
   },
   {
-    "accomplishment": [
+    "Accomplishment": [
       1,
       2,
       10
     ],
-    "description": "将陆战队等级提升至2级",
-    "goods": {
+    "Goods": {
       "Food": 10,
       "Gas": 100
     },
-    "name": "Guide_08",
-    "target": "Marine",
-    "type": "eAT_UpgradeSoldier"
+    "Name": "Guide_08",
+    "Target": "Marine",
+    "Type": "eAT_UpgradeSoldier"
   }
 ]
