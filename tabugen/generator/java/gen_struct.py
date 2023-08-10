@@ -8,6 +8,7 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
+import tabugen.util.tableutil as tableutil
 from tabugen.generator.java.gen_csv_load import JavaCsvLoadGenerator
 
 
@@ -71,6 +72,7 @@ class JavaStructGenerator:
                 max_name_len = name_len
             if type_len > max_type_len:
                 max_type_len = type_len
+
         space = self.TAB_SPACE * tabs
         content = '%spublic static class %s \n' % (space, type_class_name)
         content += '%s{\n' % space
@@ -113,7 +115,7 @@ class JavaStructGenerator:
 
         for col, field in enumerate(fields):
             text = ''
-            if inner_start_col <= col < inner_end_col:
+            if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     text = self.gen_inner_field_define(struct, max_type_len, max_name_len, args.json_snake_case, 1)
                     inner_field_done = True

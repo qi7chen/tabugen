@@ -12,6 +12,7 @@ import tabugen.predef as predef
 import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as tableutil
 
+
 # 写入csv文件
 class CsvDataWriter:
     def __init__(self):

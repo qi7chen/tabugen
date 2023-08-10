@@ -8,6 +8,7 @@ from typing import Mapping
 
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
+import tabugen.util.tableutil as tableutil
 
 
 # C++类型映射
@@ -57,7 +58,7 @@ def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num
     typename = typename.strip()
     name = field['name']
     if remove_suffix_num:
-        name = strutil.remove_suffix_number(name)
+        name = tableutil.remove_field_suffix(name)
     if typename == 'bool':
         return '%s = false;' % name
     elif types.is_integer_type(field['type_name']):
@@ -251,7 +252,7 @@ def name_with_default_cs_value(field: Mapping, typename: str, remove_suffix_num:
     typename = typename.strip()
     name = field['name']
     if remove_suffix_num:
-        name = strutil.remove_suffix_number(name)
+        name = tableutil.remove_field_suffix(name)
     return '%s { get; set; }' % name
 
 
@@ -311,7 +312,7 @@ def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_nu
     # print(typename)
     name = field['name']
     if remove_suffix_num:
-        name = strutil.remove_suffix_number(name)
+        name = tableutil.remove_field_suffix(name)
     if typename.startswith('bool'):
         return '%s = false;' % name
     elif typename == 'String':

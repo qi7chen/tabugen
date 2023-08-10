@@ -77,13 +77,13 @@ def table_remove_empty(table, field_row: int):
 def parse_head_field(text):
     i = text.find('_')
     if i > 0:
-        text = text[i]
+        text = text[i+1:]
     return text
 
 
 # 检查字段名是否有重复
 def check_duplicate_header_fields(table):
-    header = table[0]  # 第一行是头部
+    header = table[predef.PredefFieldNameRow]  # 第一行是头部
     keys = {}
     for text in header:
         name = parse_head_field(text)
@@ -107,7 +107,7 @@ def remove_one_column(table, column: int):
 
 # 删除空白列(在中间的列）
 def remove_empty_columns(table):
-    header = table[0]
+    header = table[predef.PredefFieldNameRow]
     col = len(header)
     while col > 0:
         col -= 1
@@ -141,9 +141,8 @@ def validate_unique_column(struct, rows):
     names = struct['options'][predef.OptionUniqueColumns]
     if len(names) == 0:
         return rows
-    for field in struct['fields']:
+    for col, field in enumerate(struct['fields']):
         if field['name'] in names:
-            col = field['column_index']
             (is_unique, row_line, exist_line) = is_all_row_field_value_unique(rows, col)
             if not is_unique:
                 print('duplicate field %s value found, row %d and row %d' % (field['name'], exist_line, row_line))
@@ -195,9 +194,9 @@ def convert_data(typename: str, val: str) -> str:
     elif types.is_bool_type(typename):
         b = strutil.str2bool(val)
         if b:
-            val = 'true'
+            val = '1'
         else:
-            val = 'false'
+            val = '0'
     return val
 
 
@@ -220,4 +219,59 @@ def parse_meta(table):
                 meta[key] = value
     return meta
 
+
+# 解析出内嵌字段， 如：foo[0], bar[0], foo[1], bar[1]
+def parse_inner_fields(struct):
+    fields = struct['fields']
+    start = 0
+    end = 0
+    gap = 0
+    for i, field in enumerate(fields):
+        if field['name'].endswith('[0]'):
+            start = i
+            break
+
+    for i in range(start, len(fields)):
+        field_name = fields[i]['name']
+        if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
+            return {}
+        if field_name.endswith('[1]') and field_name[:-3] == fields[start]['name'][:-3]:
+            gap = i - start
+            end = i
+            break
+
+    while end + 1 < len(fields):
+        field_name = fields[end+1]['name']
+        if len(field_name) > 3 and field_name[-1] == ']' or field_name[-3] == '[':
+            end += 1
+
+    for s in range(gap):
+        loop = (end - start + 1) // gap
+        idx = -1
+        name = ''
+        for n in range(loop):
+            field_name = fields[start + n*gap+s]['name']
+            if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
+                return {}
+            i = int(field_name[-2])
+            if i - idx != 1:
+                return {}
+            idx = i
+            if name == '':
+                name = field_name[:-3]
+            elif field_name[:-3] != name:
+                return {}
+
+    if 0 < start < end and gap > 0:
+        return {
+            'start': start,
+            'end': end,
+            'step': gap,
+        }
+    return {}
+
+
+def remove_field_suffix(name: str) -> str:
+    if len(name) > 3 and name[-1] == ']' or name[-3] == '[':
+        return name[:-3]
 

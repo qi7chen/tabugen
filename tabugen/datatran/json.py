@@ -109,7 +109,7 @@ class JsonDataWriter:
         obj = {}
         inner_class_done = False
         for col, field in enumerate(struct['fields']):
-            if inner_fields['start'] <= col <  inner_fields['end']:
+            if inner_fields['start'] <= col < inner_fields['end']:
                 if not inner_class_done:
                     inner_class_done = True
                     inner_var_name = struct['options'][predef.PredefInnerFieldName]

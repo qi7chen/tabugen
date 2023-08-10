@@ -9,6 +9,7 @@ import os
 import tabugen.lang as lang
 import tabugen.predef as predef
 import tabugen.util.strutil as strutil
+import tabugen.util.tableutil as tableutil
 import tabugen.version as version
 import tabugen.generator.go.template as go_template
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
@@ -38,14 +39,14 @@ class GoStructGenerator:
         name = field['camel_case_name']
         space = self.TAB_SPACE * tabs
         if remove_suffix_num:
-            name = strutil.remove_suffix_number(name)
+            name = tableutil.remove_field_suffix(name)
 
         name = strutil.pad_spaces(name, max_name_len + 4)
         typename = strutil.pad_spaces(typename, max_type_len + 4)
         if json_snake_case:
             tag_name = field['name']
             if remove_suffix_num:
-                tag_name = strutil.remove_suffix_number(tag_name)
+                tag_name = tableutil.remove_field_suffix(tag_name)
             tag_name = strutil.camel_to_snake(tag_name)
             text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field['comment'])
         else:
@@ -119,7 +120,7 @@ class GoStructGenerator:
 
         for col, field in enumerate(fields):
             text = ''
-            if inner_start_col <= col < inner_end_col:
+            if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     text = self.gen_inner_fields(struct, max_type_len, max_name_len,  args.json_snake_case, 1)
                     inner_field_done = True
@@ -132,7 +133,7 @@ class GoStructGenerator:
     def generate(self, struct, args) -> str:
         content = ''
         content += self.gen_go_struct(struct, args)
-        content += '\n\n'
+        content += '\n'
         if self.load_gen is not None:
             content += self.load_gen.generate(struct)
         return content

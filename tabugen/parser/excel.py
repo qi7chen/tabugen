@@ -9,7 +9,6 @@ import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as tableutil
-import tabugen.util.structutil as structutil
 import tabugen.parser.xlsxhelp as xlsxhelp
 
 
@@ -117,9 +116,7 @@ class ExcelStructParser:
             if not self.is_match_project_kind(name):
                 continue
 
-            idx = name.find('_')
-            if idx > 0:
-                name = name[idx+1:]
+            name = tableutil.parse_head_field(name)
             field_type = types.get_type_by_name(type_row[col])
 
             assert name not in fields_names, name
@@ -131,7 +128,6 @@ class ExcelStructParser:
                 "original_type_name": type_row[col],
                 "type": field_type,
                 "type_name": types.get_name_of_type(field_type),
-                "column_index": col,
                 "comment": comment_row[col],
             }
 
@@ -193,5 +189,5 @@ class ExcelStructParser:
         struct['camel_case_name'] = strutil.camel_case(struct['name'])
         struct['file'] = os.path.basename(filename)
         if predef.PredefInnerTypeClass in meta:
-            struct['inner_fields'] = structutil.parse_inner_fields(struct)
+            struct['inner_fields'] = tableutil.parse_inner_fields(struct)
         return struct

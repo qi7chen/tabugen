@@ -125,7 +125,7 @@ class CSharpStructGenerator:
 
         for col, field in enumerate(fields):
             text = ''
-            if inner_start_col <= col < inner_end_col:
+            if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     text = self.gen_inner_field_define(struct, max_type_len, max_name_len, args.json_snake_case, 1)
                     inner_field_done = True
