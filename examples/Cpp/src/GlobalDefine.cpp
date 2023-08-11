@@ -19,17 +19,17 @@ int GlobalPropertyDefine::ParseFrom(const unordered_map<string, string>& fields,
     ASSERT(ptr != nullptr);
     ptr->GoldExchangeTimeFactor1 = parseField<double>(fields, "GoldExchangeTimeFactor1");
     ptr->GoldExchangeTimeFactor2 = parseField<double>(fields, "GoldExchangeTimeFactor2");
-    ptr->GoldExchangeResource1Price = parseField<int>(fields, "GoldExchangeResource1Price");
-    ptr->GoldExchangeResource2Price = parseField<int>(fields, "GoldExchangeResource2Price");
-    ptr->GoldExchangeResource3Price = parseField<int>(fields, "GoldExchangeResource3Price");
-    ptr->GoldExchangeResource4Price = parseField<int>(fields, "GoldExchangeResource4Price");
-    ptr->FreeCompleteSeconds = parseField<int64_t>(fields, "FreeCompleteSeconds");
+    ptr->GoldExchangeTimeFactor3 = parseField<double>(fields, "GoldExchangeTimeFactor3");
+    ptr->GoldExchangeResource1Price = parseField<uint16_t>(fields, "GoldExchangeResource1Price");
+    ptr->GoldExchangeResource2Price = parseField<uint16_t>(fields, "GoldExchangeResource2Price");
+    ptr->GoldExchangeResource3Price = parseField<uint16_t>(fields, "GoldExchangeResource3Price");
+    ptr->GoldExchangeResource4Price = parseField<uint16_t>(fields, "GoldExchangeResource4Price");
+    ptr->FreeCompleteSeconds = parseField<uint16_t>(fields, "FreeCompleteSeconds");
     ptr->CancelBuildReturnPercent = parseField<uint16_t>(fields, "CancelBuildReturnPercent");
     ptr->EnableSearch = parseField<bool>(fields, "EnableSearch");
     ptr->SpawnLevelLimit = parseArrayField<int>(fields, "SpawnLevelLimit");
     ptr->FirstRechargeReward = parseMapField<std::string,int>(fields, "FirstRechargeReward");
     ptr->VIPItemReward = parseMapField<int,int>(fields, "VIPItemReward");
-    ptr->NickNamePrefix = parseField<std::string>(fields, "NickNamePrefix");
     return 0;
 }
 
