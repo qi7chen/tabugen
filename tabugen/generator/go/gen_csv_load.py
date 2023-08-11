@@ -82,12 +82,11 @@ class GoCsvLoadGenerator:
         start = inner_fields['start']
         end = inner_fields['end']
         step = inner_fields['step']
-        count = (start - end + 1) // step
         assert start > 0 and end > 0 and step > 1
 
         space = self.TAB_SPACE * tabs
         col = start
-        content = '%sfor i := 0; i < %d; i++ {\n' % (space, count)
+        content = '%sfor i := 0; i < len(%s); i++ {\n' % (space, rec_name)
         content += '%s\tvar val %s\n' % (space, inner_class_type)
         for i in range(step):
             field = struct['fields'][col + i]

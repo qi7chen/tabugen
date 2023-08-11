@@ -7,7 +7,6 @@ import tabugen.typedef as types
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
-import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as tableutil
 
 
@@ -21,52 +20,23 @@ class CppCsvLoadGenerator:
     def setup(self, name):
         pass
 
-    # 生成array字段的赋值语句
-    def gen_array_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
-        space = self.TAB_SPACE * tabs
-        content = ''
-        content += '%sauto arr = SplitString(%s, "%s");\n' % (space, value_text, predef.PredefDelim1)
-        content += '%sfor (size_t i = 0; i < arr.size(); i++)\n' % space
-        content += '%s{\n' % space
-        expr = lang.map_cpp_parse_expr(types.array_element_type(typename), 'arr[i]')
-        content += '%s    auto val = %s;\n' % (space, expr)
-        content += '%s    %s%s.emplace_back(val);\n' % (space, prefix, name)
-        content += '%s}\n' % space
-        return content
-
-    # 生成map字段的赋值语句
-    def gen_map_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
-        key_type, val_type = types.map_key_value_types(typename)
-        space = self.TAB_SPACE * tabs
-        content = ''
-        content += '%sauto kvs = SplitString(%s, "%s");\n' % (space, value_text, predef.PredefDelim1)
-        content += '%sfor (size_t i = 0; i < kvs.size(); i++)\n' % space
-        content += '%s{\n' % space
-        content += '%s    auto kv = SplitString(kvs[i], "%s");\n' % (space, predef.PredefDelim2)
-        content += '%s    ASSERT(kv.size() == 2);\n' % space
-        content += '%s    if(kv.size() == 2)\n' % space
-        content += '%s    {\n' % space
-        content += '%s        auto key = %s;\n' % (space, lang.map_cpp_parse_expr(key_type, 'kv[0]'))
-        content += '%s        auto val = %s;\n' % (space, lang.map_cpp_parse_expr(val_type, 'kv[1]'))
-        content += '%s        ASSERT(%s%s.count(key) == 0);\n' % (space, prefix, name)
-        content += '%s        %s%s.emplace(std::make_pair(key, val));\n' % (space, prefix, name)
-        content += '%s    }\n' % space
-        content += '%s}\n' % space
-        return content
-
     # 生成字段赋值语句
-    def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
+    def gen_field_assign(self, prefix: str, origin_typename: str, field_name: str, rec_name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
         if types.is_array_type(origin_typename):
-            content += self.gen_array_field_assign(prefix, origin_typename, name, value_text, tabs)
+            cpp_type = lang.map_cpp_type(types.array_element_type(origin_typename))
+            content += '%s%s%s = parseArrayField<%s>(%s, "%s");\n' % (space, prefix, field_name, cpp_type, rec_name, value_text)
         elif types.is_map_type(origin_typename):
-            content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
-        elif origin_typename == 'string':
-            content += '%s%s%s = StripWhitespace(%s).as_string();\n' % (space, prefix, name, value_text)
+            (key_type, val_type) = types.map_key_value_types(origin_typename)
+            cpp_type1 = lang.map_cpp_type(key_type)
+            cpp_type2 = lang.map_cpp_type(val_type)
+            content += '%s%s%s = parseMapField<%s,%s>(%s, "%s");\n' % (space, prefix, field_name, cpp_type1, cpp_type2, rec_name, value_text)
         else:
-            expr = lang.map_cpp_parse_expr(origin_typename, value_text)
-            content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
+            cpp_type = lang.map_cpp_type(origin_typename)
+            if value_text == field_name:
+                value_text = '"%s"' % value_text
+            content += '%s%s%s = parseField<%s>(%s, %s);\n' % (space, prefix, field_name, cpp_type, rec_name, value_text)
         return content
 
     # 内部嵌入class的赋值
@@ -84,7 +54,7 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         col = start
         content = ''
-        content += '%sfor (size_t i = 1; i <= %s.size(); i++)\n' % (space, rec_name)
+        content += '%sfor (size_t i = 0; i < %s.size(); i++)\n' % (space, rec_name)
         content += '%s{\n' % space
         content += '%s    %s::%s val;\n' % (space, struct['camel_case_name'], inner_class_type)
         for i in range(step):
@@ -92,13 +62,13 @@ class CppCsvLoadGenerator:
             origin_typename = field['original_type_name']
             field_name = tableutil.remove_field_suffix(field['camel_case_name'])
             text = '%s    {\n' % space
-            text += '%s        auto key = StringPrintf("%s%%d", i);\n' % (space, field_name)
-            text += '%s        auto iter = %s.find(key);\n' % (space, rec_name)
-            text += '%s        if (iter != %s.end()) {\n' % (space, rec_name)
-            text += self.gen_field_assign('val.', origin_typename, field_name, 'iter->second', tabs + 3)
-            text += '%s        } else {\n' % space
-            text += '%s            break;\n' % space
-            text += '%s        }\n' % space
+            text += '%s        auto key = stringPrintf("%s[%%d]", i);\n' % (space, field_name)
+            if i == 0:
+                text += '%s        auto iter = %s.find(key);\n' % (space, rec_name)
+                text += '%s        if (iter == %s.end()) {\n' % (space, rec_name)
+                text += '%s            break;\n' % space
+                text += '%s        }\n' % space
+            text += self.gen_field_assign('val.', origin_typename, field_name, rec_name, "key", tabs + 2)
             text += '%s    }\n' % space
             content += text
         content += '        %s%s.push_back(val);\n' % (prefix, inner_var_name)
@@ -117,10 +87,9 @@ class CppCsvLoadGenerator:
             inner_end_col = struct['inner_fields']['end']
 
         content += '// parse %s from string fields\n' % struct['name']
-        content += 'int %s::ParseFrom(const std::unordered_map<std::string, std::string>& record, %s* ptr)\n' % (struct['name'], struct['name'])
+        content += 'int %s::ParseFrom(const unordered_map<string, string>& record, %s* ptr)\n' % (struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(ptr != nullptr);\n'
-        content += '    std::unordered_map<std::string, std::string>::const_iterator iter;\n'
         for col, field in enumerate(struct['fields']):
             if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
@@ -128,10 +97,7 @@ class CppCsvLoadGenerator:
                     content += self.gen_inner_fields_assign(struct, 'ptr->', 'record', 1)
             else:
                 origin_typename = field['original_type_name']
-                content += '    iter = record.find("%s");\n' % field['name']
-                content += '    if (iter != record.end()) {\n'
-                content += self.gen_field_assign('ptr->', origin_typename, field['name'], 'iter->second', 2)
-                content += '    }\n'
+                content += self.gen_field_assign('ptr->', origin_typename, field['name'], 'record', field['name'], 1)
 
         content += '    return 0;\n'
         content += '}\n\n'
@@ -147,18 +113,14 @@ class CppCsvLoadGenerator:
         rows = struct['data_rows']
         content = ''
         content += '// parse %s from string fields\n' % struct['name']
-        content += 'int %s::ParseFrom(const std::unordered_map<std::string, std::string>& fields, %s* ptr)\n' % (
+        content += 'int %s::ParseFrom(const unordered_map<string, string>& fields, %s* ptr)\n' % (
             struct['name'], struct['name'])
         content += '{\n'
         content += '    ASSERT(ptr != nullptr);\n'
-        content += '    std::unordered_map<std::string, std::string>::const_iterator iter;\n'
         for row in rows:
             name = row[keyidx].strip()
             origin_typename = row[typeidx].strip()
-            content += '    iter = fields.find("%s");\n' % name
-            content += '    if (iter != fields.end()) {\n'
-            content += self.gen_field_assign('ptr->', origin_typename, name, 'iter->second', 2)
-            content += '    }\n'
+            content += self.gen_field_assign('ptr->', origin_typename, name, 'fields', name, 1)
         content += '    return 0;\n'
         content += '}\n\n'
         return content
@@ -183,14 +145,12 @@ class CppCsvLoadGenerator:
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
-            '#include <assert.h>',
-            '#include <memory>',
-            '#include <fstream>',
         ]
-        extra_headers = args.extra_cpp_includes.split(',')
-        for header in extra_headers:
-            text = '#include "%s"' % header
-            cpp_include_headers.append(text)
+        if len(args.extra_cpp_includes) > 0:
+            extra_headers = args.extra_cpp_includes.split(',')
+            for header in extra_headers:
+                text = '#include "%s"' % header
+                cpp_include_headers.append(text)
 
         cpp_content = '// This file is auto-generated by Tabular v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         if args.cpp_pch is not None:

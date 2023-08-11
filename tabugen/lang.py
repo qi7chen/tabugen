@@ -68,29 +68,6 @@ def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num
         return '%s;' % name
 
 
-# C++字符串解析
-def map_cpp_parse_expr(typ: str, param: str) -> str:
-    mapping = {
-        'bool': 'ParseBool',
-        'int8': 'ParseInt8',
-        'uint8': 'ParseUInt8',
-        'int16': 'ParseInt16',
-        'uint16': 'ParseUInt16',
-        'int': 'ParseInt32',
-        'uint': 'ParseUInt32',
-        'int32': 'ParseInt32',
-        'uint32': 'ParseUInt32',
-        'int64': 'ParseInt64',
-        'uint64': 'ParseUInt64',
-        'float32': 'ParseFloat',
-        'float64': 'ParseDouble',
-        'float': 'ParseDouble',
-        'enum': 'ParseInt32',
-        'string': 'StripWhitespace',
-    }
-    return '%s(%s)' % (mapping[typ], param)
-
-
 # C++类型默认值
 def default_value_by_cpp_type(typename: str) -> str:
     if typename == 'bool':

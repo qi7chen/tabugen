@@ -174,9 +174,9 @@ def convert_table_data(struct, data):
             for row in data:
                 b = strutil.str2bool(row[col])
                 if b:
-                    row[col] = 'true'
+                    row[col] = '1'
                 else:
-                    row[col] = 'false'
+                    row[col] = '0'
     return data
 
 
