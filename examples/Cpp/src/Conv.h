@@ -4,174 +4,131 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstdlib>
+#include <stdarg.h>
+#include <assert.h>
+#include <memory>
+#include <vector>
 #include <string>
-#include <algorithm>
-#include <type_traits>
-#include "StringPiece.h"
+#include <unordered_map>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
-#define strtoll  _strtoi64
-#define strtoull _strtoui64
-#elif defined(__DECCXX) && defined(__osf__)
-// HP C++ on Tru64 does not have strtoll, but strtol is already 64-bit.
-#define strtoll strtol
-#define strtoull strtoul
+template <typename T>
+T parseField(const std::unordered_map<std::string, std::string>& fields, const std::string& name)
+{
+    auto iter = fields.find(name);
+    if (iter != fields.end()) {
+        return boost::lexical_cast<T>(iter->second);
+    }
+    return T();
+}
+
+template <typename T>
+std::vector<T> parseArrayField(const std::unordered_map<std::string, std::string>& fields, const std::string& name)
+{
+    std::vector<T> result;
+    auto iter = fields.find(name);
+    if (iter == fields.end()) {
+        return result;
+    }
+    std::vector<std::string> parts;
+    boost::split(parts, iter->second, boost::is_any_of("|"));
+    for (size_t i = 0; i < parts.size(); i++)
+    {
+        auto val = boost::lexical_cast<T>(parts[i]);
+        result.push_back(val);
+    }
+    result.shrink_to_fit();
+    return result;
+}
+
+template <typename K, typename V>
+std::unordered_map<K, V> parseMapField(const std::unordered_map<std::string, std::string>& fields, const std::string& name)
+{
+    std::unordered_map<K, V> result;
+    auto iter = fields.find(name);
+    if (iter == fields.end()) {
+        return result;
+    }
+    std::vector<std::string> parts;
+    boost::split(parts, iter->second, boost::is_any_of("|"));
+    for (size_t i = 0; i < parts.size(); i++)
+    {
+        std::vector<std::string> kv;
+        boost::split(kv, parts[i], boost::is_any_of("="));
+        assert(kv.size() == 2);
+        if (kv.size() == 2)
+        {
+            auto key = boost::lexical_cast<K>(kv[0]);
+            auto val = boost::lexical_cast<V>(kv[1]);
+            assert(result.count(key) == 0);
+            result.insert(std::make_pair(key, val));
+        }
+    }
+    return result;
+}
+
+
+inline void stringAppendV(std::string* dst, const char* format, va_list ap) {
+    // First try with a small fixed size buffer
+    static const int kSpaceLength = 1024;
+    char space[kSpaceLength];
+
+    // It's possible for methods that use a va_list to invalidate
+    // the data in it upon use.  The fix is to make a copy
+    // of the structure before using it and use that copy instead.
+    va_list backup_ap;
+    va_copy(backup_ap, ap);
+    int result = vsnprintf(space, kSpaceLength, format, backup_ap);
+    va_end(backup_ap);
+
+    if (result < kSpaceLength) {
+        if (result >= 0) {
+            // Normal case -- everything fit.
+            dst->append(space, result);
+            return;
+        }
+
+#ifdef _MSC_VER
+        {
+            // Error or MSVC running out of space.  MSVC 8.0 and higher
+            // can be asked about space needed with the special idiom below:
+            va_copy(backup_ap, ap);
+            result = vsnprintf(nullptr, 0, format, backup_ap);
+            va_end(backup_ap);
+        }
 #endif
 
-
-
-#define FB_STRINGIZE(x)     #x
-
-#define FOLLY_RANGE_CHECK(condition, message, src)          \
-  ((condition) ? (void)0 : throw std::range_error(          \
-    (std::string(FB_STRINGIZE(__FILE__) "(" FB_STRINGIZE(__LINE__) "): ") \
-     + (message) + ": '" + (src) + "'").c_str()))
-
-
-inline bool ascii_isupper(char c) {
-  return c >= 'A' && c <= 'Z';
-}
-
-inline bool ascii_islower(char c) {
-  return c >= 'a' && c <= 'z';
-}
-
-inline char ascii_toupper(char c) {
-  return ascii_islower(c) ? c - ('a' - 'A') : c;
-}
-
-inline char ascii_tolower(char c) {
-  return ascii_isupper(c) ? c + ('a' - 'A') : c;
-}
-
-
-static int memcasecmp(const char *s1, const char *s2, size_t len) {
-    const unsigned char *us1 = reinterpret_cast<const unsigned char *>(s1);
-    const unsigned char *us2 = reinterpret_cast<const unsigned char *>(s2);
-
-    for (size_t i = 0; i < len; i++) {
-        const int diff =
-            static_cast<int>(static_cast<unsigned char>(ascii_tolower(us1[i]))) -
-            static_cast<int>(static_cast<unsigned char>(ascii_tolower(us2[i])));
-        if (diff != 0) return diff;
+        if (result < 0) {
+            // Just an error.
+            return;
+        }
     }
-    return 0;
-}
 
-inline bool CaseEqual(StringPiece s1, StringPiece s2) {
-    if (s1.size() != s2.size()) return false;
-    return memcasecmp(s1.data(), s2.data(), s1.size()) == 0;
-}
+    // Increase the buffer size to the size requested by vsnprintf,
+    // plus one for the closing \0.
+    int length = result + 1;
+    std::unique_ptr<char> buf(new char[length]);
 
-inline bool ParseBool(StringPiece str)
-{
-    if (CaseEqual(str, "true") || CaseEqual(str, "t") ||
-        CaseEqual(str, "yes") || CaseEqual(str, "y") ||
-        CaseEqual(str, "on") || CaseEqual(str, "1")) {
-        return true;
+    // Restore the va_list before we use it again
+    va_copy(backup_ap, ap);
+    result = vsnprintf(buf.get(), length, format, backup_ap);
+    va_end(backup_ap);
+
+    if (result >= 0 && result < length) {
+        // It fit
+        dst->append(buf.get(), result);
     }
-    return false;
 }
 
-inline float ParseFloat(StringPiece str)
+inline std::string stringPrintf(const char* format, ...)
 {
-    errno = 0;  // errno only gets set on errors
-    float value = strtof(str.data(), nullptr);
-    if (errno == ERANGE || errno == EINVAL)
-    {
-        return 0;
-    }
-    return value;
-}
-
-inline double ParseDouble(StringPiece str)
-{
-    errno = 0;  // errno only gets set on errors
-    double value = strtod(str.data(), nullptr);
-    if (errno == ERANGE || errno == EINVAL)
-    {
-        return 0;
-    }
-    return value;
-}
-
-
-inline int64_t ParseInt64(StringPiece str)
-{
-    errno = 0;  // errno only gets set on errors
-    int64_t value = strtoll(str.data(), nullptr, 10);
-    if (errno == ERANGE || errno == EINVAL)
-    {
-        return 0;
-    }
-    return value;
-}
-
-inline uint64_t ParseUInt64(StringPiece str)
-{
-    errno = 0;  // errno only gets set on errors
-    uint64_t value = strtoull(str.data(), nullptr, 10);
-    if (errno == ERANGE || errno == EINVAL)
-    {
-        return 0;
-    }
-    return value;
-}
-
-inline int32_t ParseInt32(StringPiece str)
-{
-    int64_t value = ParseInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<int32_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<int32_t>(value);
-}
-
-inline uint32_t ParseUInt32(StringPiece str)
-{
-    uint64_t value = ParseUInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<uint32_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<uint32_t>(value);
-}
-
-
-inline int16_t ParseInt16(StringPiece str)
-{
-    int64_t value = ParseInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<int16_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<int16_t>(value);
-}
-
-inline uint16_t ParseUInt16(StringPiece str)
-{
-    uint64_t value = ParseUInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<uint16_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<uint16_t>(value);
-}
-
-inline uint8_t ParseUInt8(StringPiece str)
-{
-    int64_t value = ParseInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<uint8_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<uint8_t>(value);
-}
-
-inline int8_t ParseInt8(StringPiece str)
-{
-    uint64_t value = ParseUInt64(str);
-    FOLLY_RANGE_CHECK(
-        value <= std::numeric_limits<int8_t>::max(),
-        "Overflow", std::to_string(value));
-    return static_cast<int8_t>(value);
+    va_list ap;
+    va_start(ap, format);
+    std::string result;
+    stringAppendV(&result, format, ap);
+    va_end(ap);
+    return result;
 }

@@ -20,8 +20,8 @@ Function tabucli {
 Function Generate {
 	tabucli 兵种.xlsx SoldierDefine
     tabucli 新手任务.xlsx GuideDefine
-    tabucli 随机宝箱.xlsx GlobalDefine
-    tabucli 全局变量表.xlsx BoxDefine
+    tabucli 随机宝箱.xlsx BoxDefine
+    tabucli 全局变量表.xlsx GlobalDefine
 }
 
 Function RunTest {

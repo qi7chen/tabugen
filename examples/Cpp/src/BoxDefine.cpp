@@ -2,11 +2,7 @@
 
 #include "BoxDefine.h"
 #include <stddef.h>
-#include <assert.h>
-#include <memory>
-#include <fstream>
 #include "Conv.h"
-#include "StringUtil.h"
 
 using namespace std;
 
@@ -17,92 +13,36 @@ using namespace std;
 
 namespace config {
 
-// parse GlobalPropertyDefine from string fields
-int GlobalPropertyDefine::ParseFrom(const std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr)
+// parse BoxProbabilityDefine from string fields
+int BoxProbabilityDefine::ParseFrom(const unordered_map<string, string>& record, BoxProbabilityDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    std::unordered_map<std::string, std::string>::const_iterator iter;
-    iter = fields.find("GoldExchangeTimeFactor1");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeTimeFactor1 = ParseDouble(iter->second);
-    }
-    iter = fields.find("GoldExchangeTimeFactor2");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeTimeFactor2 = ParseDouble(iter->second);
-    }
-    iter = fields.find("GoldExchangeTimeFactor3");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeTimeFactor3 = ParseDouble(iter->second);
-    }
-    iter = fields.find("GoldExchangeResource1Price");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeResource1Price = ParseUInt16(iter->second);
-    }
-    iter = fields.find("GoldExchangeResource2Price");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeResource2Price = ParseUInt16(iter->second);
-    }
-    iter = fields.find("GoldExchangeResource3Price");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeResource3Price = ParseUInt16(iter->second);
-    }
-    iter = fields.find("GoldExchangeResource4Price");
-    if (iter != fields.end()) {
-        ptr->GoldExchangeResource4Price = ParseUInt16(iter->second);
-    }
-    iter = fields.find("FreeCompleteSeconds");
-    if (iter != fields.end()) {
-        ptr->FreeCompleteSeconds = ParseUInt16(iter->second);
-    }
-    iter = fields.find("CancelBuildReturnPercent");
-    if (iter != fields.end()) {
-        ptr->CancelBuildReturnPercent = ParseUInt16(iter->second);
-    }
-    iter = fields.find("EnableSearch");
-    if (iter != fields.end()) {
-        ptr->EnableSearch = ParseBool(iter->second);
-    }
-    iter = fields.find("SpawnLevelLimit");
-    if (iter != fields.end()) {
-        auto arr = SplitString(iter->second, "|");
-        for (size_t i = 0; i < arr.size(); i++)
+    ptr->ID = parseField<std::string>(record, "ID");
+    ptr->Total = parseField<int>(record, "Total");
+    ptr->Time = parseField<int>(record, "Time");
+    ptr->Repeat = parseField<bool>(record, "Repeat");
+    for (size_t i = 0; i < record.size(); i++)
+    {
+        BoxProbabilityDefine::ProbabilityGoodsDefine val;
         {
-            auto val = ParseInt32(arr[i]);
-            ptr->SpawnLevelLimit.emplace_back(val);
-        }
-    }
-    iter = fields.find("FirstRechargeReward");
-    if (iter != fields.end()) {
-        auto kvs = SplitString(iter->second, "|");
-        for (size_t i = 0; i < kvs.size(); i++)
-        {
-            auto kv = SplitString(kvs[i], "=");
-            ASSERT(kv.size() == 2);
-            if(kv.size() == 2)
-            {
-                auto key = StripWhitespace(kv[0]);
-                auto val = ParseInt32(kv[1]);
-                ASSERT(ptr->FirstRechargeReward.count(key) == 0);
-                ptr->FirstRechargeReward.emplace(std::make_pair(key, val));
+            auto key = stringPrintf("GoodsID[%d]", i);
+            auto iter = record.find(key);
+            if (iter == record.end()) {
+                break;
             }
+            val.GoodsID = parseField<std::string>(record, key);
         }
-    }
-    iter = fields.find("VIPItemReward");
-    if (iter != fields.end()) {
-        auto kvs = SplitString(iter->second, "|");
-        for (size_t i = 0; i < kvs.size(); i++)
         {
-            auto kv = SplitString(kvs[i], "=");
-            ASSERT(kv.size() == 2);
-            if(kv.size() == 2)
-            {
-                auto key = ParseInt32(kv[0]);
-                auto val = ParseInt32(kv[1]);
-                ASSERT(ptr->VIPItemReward.count(key) == 0);
-                ptr->VIPItemReward.emplace(std::make_pair(key, val));
-            }
+            auto key = stringPrintf("Num[%d]", i);
+            val.Num = parseField<uint32_t>(record, key);
         }
+        {
+            auto key = stringPrintf("Probability[%d]", i);
+            val.Probability = parseField<uint32_t>(record, key);
+        }
+        ptr->ProbabilityGoods.push_back(val);
     }
+    ptr->ProbabilityGoods.shrink_to_fit();
     return 0;
 }
 

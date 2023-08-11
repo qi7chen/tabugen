@@ -12,22 +12,23 @@
 namespace config {
 
 // 
-struct BoxProbabilityDefine 
+struct GlobalPropertyDefine 
 {
-    struct ProbabilityGoodsDefine 
-    {
-        std::string  GoodsID;               // 物品id
-        uint32_t     Num = 0;               // 物品数量
-        uint32_t     Probability = 0;       // 物品概率
-    };
+    double                                GoldExchangeTimeFactor1 = 0.0;     // 金币兑换时间参数1
+    double                                GoldExchangeTimeFactor2 = 0.0;     // 金币兑换时间参数2
+    int                                   GoldExchangeResource1Price = 0;    // 金币兑换资源1价格
+    int                                   GoldExchangeResource2Price = 0;    // 金币兑换资源2价格
+    int                                   GoldExchangeResource3Price = 0;    // 金币兑换资源3价格
+    int                                   GoldExchangeResource4Price = 0;    // 金币兑换资源4价格
+    int64_t                               FreeCompleteSeconds = 0;           // 免费立即完成时间
+    uint16_t                              CancelBuildReturnPercent = 0;      // 取消建造后返还资源比例
+    bool                                  EnableSearch = false;              // 开启搜索
+    std::vector<int>                      SpawnLevelLimit;                   // 最大刷新个数显示
+    std::unordered_map<std::string, int>  FirstRechargeReward;               // 首充奖励
+    std::unordered_map<int, int>          VIPItemReward;                     // VIP奖励
+    std::string                           NickNamePrefix;                    // 
 
-    std::string                          ID;                    // ID
-    int                                  Total = 0;             // 奖励总数
-    int                                  Time = 0;              // 冷却时间
-    bool                                 Repeat = false;        // 是否可重复
-    std::vector<ProbabilityGoodsDefine>  ProbabilityGoods;    // 
-
-    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, BoxProbabilityDefine* ptr);
+    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, GlobalPropertyDefine* ptr);
 };
 
 } // namespace config

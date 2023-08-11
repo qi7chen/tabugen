@@ -2,11 +2,7 @@
 
 #include "GlobalDefine.h"
 #include <stddef.h>
-#include <assert.h>
-#include <memory>
-#include <fstream>
 #include "Conv.h"
-#include "StringUtil.h"
 
 using namespace std;
 
@@ -17,60 +13,23 @@ using namespace std;
 
 namespace config {
 
-// parse BoxProbabilityDefine from string fields
-int BoxProbabilityDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, BoxProbabilityDefine* ptr)
+// parse GlobalPropertyDefine from string fields
+int GlobalPropertyDefine::ParseFrom(const unordered_map<string, string>& fields, GlobalPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    std::unordered_map<std::string, std::string>::const_iterator iter;
-    iter = record.find("ID");
-    if (iter != record.end()) {
-        ptr->ID = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("Total");
-    if (iter != record.end()) {
-        ptr->Total = ParseInt32(iter->second);
-    }
-    iter = record.find("Time");
-    if (iter != record.end()) {
-        ptr->Time = ParseInt32(iter->second);
-    }
-    iter = record.find("Repeat");
-    if (iter != record.end()) {
-        ptr->Repeat = ParseBool(iter->second);
-    }
-    for (size_t i = 1; i <= record.size(); i++)
-    {
-        BoxProbabilityDefine::ProbabilityGoodsDefine val;
-        {
-            auto key = StringPrintf("GoodsID%d", i);
-            auto iter = record.find(key);
-            if (iter != record.end()) {
-                val.GoodsID = StripWhitespace(iter->second).as_string();
-            } else {
-                break;
-            }
-        }
-        {
-            auto key = StringPrintf("Num%d", i);
-            auto iter = record.find(key);
-            if (iter != record.end()) {
-                val.Num = ParseUInt32(iter->second);
-            } else {
-                break;
-            }
-        }
-        {
-            auto key = StringPrintf("Probability%d", i);
-            auto iter = record.find(key);
-            if (iter != record.end()) {
-                val.Probability = ParseUInt32(iter->second);
-            } else {
-                break;
-            }
-        }
-        ptr->ProbabilityGoods.push_back(val);
-    }
-    ptr->ProbabilityGoods.shrink_to_fit();
+    ptr->GoldExchangeTimeFactor1 = parseField<double>(fields, "GoldExchangeTimeFactor1");
+    ptr->GoldExchangeTimeFactor2 = parseField<double>(fields, "GoldExchangeTimeFactor2");
+    ptr->GoldExchangeResource1Price = parseField<int>(fields, "GoldExchangeResource1Price");
+    ptr->GoldExchangeResource2Price = parseField<int>(fields, "GoldExchangeResource2Price");
+    ptr->GoldExchangeResource3Price = parseField<int>(fields, "GoldExchangeResource3Price");
+    ptr->GoldExchangeResource4Price = parseField<int>(fields, "GoldExchangeResource4Price");
+    ptr->FreeCompleteSeconds = parseField<int64_t>(fields, "FreeCompleteSeconds");
+    ptr->CancelBuildReturnPercent = parseField<uint16_t>(fields, "CancelBuildReturnPercent");
+    ptr->EnableSearch = parseField<bool>(fields, "EnableSearch");
+    ptr->SpawnLevelLimit = parseArrayField<int>(fields, "SpawnLevelLimit");
+    ptr->FirstRechargeReward = parseMapField<std::string,int>(fields, "FirstRechargeReward");
+    ptr->VIPItemReward = parseMapField<int,int>(fields, "VIPItemReward");
+    ptr->NickNamePrefix = parseField<std::string>(fields, "NickNamePrefix");
     return 0;
 }
 

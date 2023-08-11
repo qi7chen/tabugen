@@ -2,11 +2,7 @@
 
 #include "SoldierDefine.h"
 #include <stddef.h>
-#include <assert.h>
-#include <memory>
-#include <fstream>
 #include "Conv.h"
-#include "StringUtil.h"
 
 using namespace std;
 
@@ -18,106 +14,33 @@ using namespace std;
 namespace config {
 
 // parse SoldierPropertyDefine from string fields
-int SoldierPropertyDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, SoldierPropertyDefine* ptr)
+int SoldierPropertyDefine::ParseFrom(const unordered_map<string, string>& record, SoldierPropertyDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    std::unordered_map<std::string, std::string>::const_iterator iter;
-    iter = record.find("Name");
-    if (iter != record.end()) {
-        ptr->Name = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("Level");
-    if (iter != record.end()) {
-        ptr->Level = ParseInt32(iter->second);
-    }
-    iter = record.find("NameID");
-    if (iter != record.end()) {
-        ptr->NameID = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("BuildingName");
-    if (iter != record.end()) {
-        ptr->BuildingName = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("BuildingLevel");
-    if (iter != record.end()) {
-        ptr->BuildingLevel = ParseUInt32(iter->second);
-    }
-    iter = record.find("RequireSpace");
-    if (iter != record.end()) {
-        ptr->RequireSpace = ParseUInt32(iter->second);
-    }
-    iter = record.find("Volume");
-    if (iter != record.end()) {
-        ptr->Volume = ParseUInt32(iter->second);
-    }
-    iter = record.find("UpgradeTime");
-    if (iter != record.end()) {
-        ptr->UpgradeTime = ParseUInt32(iter->second);
-    }
-    iter = record.find("UpgradeMaterialID");
-    if (iter != record.end()) {
-        ptr->UpgradeMaterialID = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("UpgradeMaterialNum");
-    if (iter != record.end()) {
-        ptr->UpgradeMaterialNum = ParseInt64(iter->second);
-    }
-    iter = record.find("ConsumeMaterial");
-    if (iter != record.end()) {
-        ptr->ConsumeMaterial = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("ConsumeMaterialNum");
-    if (iter != record.end()) {
-        ptr->ConsumeMaterialNum = ParseInt32(iter->second);
-    }
-    iter = record.find("ConsumeTime");
-    if (iter != record.end()) {
-        ptr->ConsumeTime = ParseInt32(iter->second);
-    }
-    iter = record.find("Act");
-    if (iter != record.end()) {
-        ptr->Act = ParseInt32(iter->second);
-    }
-    iter = record.find("Hp");
-    if (iter != record.end()) {
-        ptr->Hp = ParseInt32(iter->second);
-    }
-    iter = record.find("BombLoad");
-    if (iter != record.end()) {
-        ptr->BombLoad = ParseInt16(iter->second);
-    }
-    iter = record.find("Hurt");
-    if (iter != record.end()) {
-        ptr->Hurt = ParseUInt32(iter->second);
-    }
-    iter = record.find("Duration");
-    if (iter != record.end()) {
-        ptr->Duration = ParseDouble(iter->second);
-    }
-    iter = record.find("TriggerInterval");
-    if (iter != record.end()) {
-        ptr->TriggerInterval = ParseDouble(iter->second);
-    }
-    iter = record.find("SearchScope");
-    if (iter != record.end()) {
-        ptr->SearchScope = ParseInt16(iter->second);
-    }
-    iter = record.find("AtkFrequency");
-    if (iter != record.end()) {
-        ptr->AtkFrequency = ParseDouble(iter->second);
-    }
-    iter = record.find("AtkRange");
-    if (iter != record.end()) {
-        ptr->AtkRange = ParseDouble(iter->second);
-    }
-    iter = record.find("MovingSpeed");
-    if (iter != record.end()) {
-        ptr->MovingSpeed = ParseDouble(iter->second);
-    }
-    iter = record.find("EnableBurn");
-    if (iter != record.end()) {
-        ptr->EnableBurn = ParseBool(iter->second);
-    }
+    ptr->Name = parseField<std::string>(record, "Name");
+    ptr->Level = parseField<int>(record, "Level");
+    ptr->NameID = parseField<std::string>(record, "NameID");
+    ptr->BuildingName = parseField<std::string>(record, "BuildingName");
+    ptr->BuildingLevel = parseField<uint32_t>(record, "BuildingLevel");
+    ptr->RequireSpace = parseField<uint32_t>(record, "RequireSpace");
+    ptr->Volume = parseField<uint32_t>(record, "Volume");
+    ptr->UpgradeTime = parseField<uint32_t>(record, "UpgradeTime");
+    ptr->UpgradeMaterialID = parseField<std::string>(record, "UpgradeMaterialID");
+    ptr->UpgradeMaterialNum = parseField<int64_t>(record, "UpgradeMaterialNum");
+    ptr->ConsumeMaterial = parseField<std::string>(record, "ConsumeMaterial");
+    ptr->ConsumeMaterialNum = parseField<int>(record, "ConsumeMaterialNum");
+    ptr->ConsumeTime = parseField<int>(record, "ConsumeTime");
+    ptr->Act = parseField<int>(record, "Act");
+    ptr->Hp = parseField<int>(record, "Hp");
+    ptr->BombLoad = parseField<int16_t>(record, "BombLoad");
+    ptr->Hurt = parseField<uint32_t>(record, "Hurt");
+    ptr->Duration = parseField<double>(record, "Duration");
+    ptr->TriggerInterval = parseField<double>(record, "TriggerInterval");
+    ptr->SearchScope = parseField<int16_t>(record, "SearchScope");
+    ptr->AtkFrequency = parseField<double>(record, "AtkFrequency");
+    ptr->AtkRange = parseField<double>(record, "AtkRange");
+    ptr->MovingSpeed = parseField<double>(record, "MovingSpeed");
+    ptr->EnableBurn = parseField<bool>(record, "EnableBurn");
     return 0;
 }
 

@@ -1,14 +1,13 @@
-# Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
+# learn you some cmake
+# https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/README_GitBook.html
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.8)
 
-PROJECT(TabugenCppExample)
+project(TabugenCpp LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-include_directories(${PROJECT_ROOT_DIR}/src)
-
+find_package(Boost REQUIRED)
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -24,13 +23,7 @@ if (WIN32)
     )
 endif()
 
-set(ALL_SRC_FILES
-    ${PROJECT_ROOT_DIR}/src/Conv.h
-    ${PROJECT_ROOT_DIR}/src/StringPiece.h
-    ${PROJECT_ROOT_DIR}/src/StringPiece.cpp
-    ${PROJECT_ROOT_DIR}/src/StringUtil.h
-    ${PROJECT_ROOT_DIR}/src/StringUtil.cpp
-    ${PROJECT_ROOT_DIR}/src/main.cpp
+set(ALL_LIB_FILES
     ${PROJECT_ROOT_DIR}/src/BoxDefine.h
     ${PROJECT_ROOT_DIR}/src/BoxDefine.cpp
     ${PROJECT_ROOT_DIR}/src/GlobalDefine.h
@@ -41,5 +34,10 @@ set(ALL_SRC_FILES
     ${PROJECT_ROOT_DIR}/src/GuideDefine.cpp
     )
 
-add_executable(CppExample ${ALL_SRC_FILES})
+add_library(conflib STATIC ${ALL_LIB_FILES})
+target_include_directories(conflib ${PROJECT_ROOT_DIR}/src)
+target_compile_features(conflib PUBLIC cxx_std_11)
+
+add_executable(tabugencpp ${PROJECT_ROOT_DIR}/src/main.cpp)
+target_link_libraries(tabugencpp PRIVATE conflib)
 

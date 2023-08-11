@@ -2,11 +2,7 @@
 
 #include "GuideDefine.h"
 #include <stddef.h>
-#include <assert.h>
-#include <memory>
-#include <fstream>
 #include "Conv.h"
-#include "StringUtil.h"
 
 using namespace std;
 
@@ -18,47 +14,14 @@ using namespace std;
 namespace config {
 
 // parse NewbieGuideDefine from string fields
-int NewbieGuideDefine::ParseFrom(const std::unordered_map<std::string, std::string>& record, NewbieGuideDefine* ptr)
+int NewbieGuideDefine::ParseFrom(const unordered_map<string, string>& record, NewbieGuideDefine* ptr)
 {
     ASSERT(ptr != nullptr);
-    std::unordered_map<std::string, std::string>::const_iterator iter;
-    iter = record.find("Name");
-    if (iter != record.end()) {
-        ptr->Name = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("Type");
-    if (iter != record.end()) {
-        ptr->Type = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("Target");
-    if (iter != record.end()) {
-        ptr->Target = StripWhitespace(iter->second).as_string();
-    }
-    iter = record.find("Accomplishment");
-    if (iter != record.end()) {
-        auto arr = SplitString(iter->second, "|");
-        for (size_t i = 0; i < arr.size(); i++)
-        {
-            auto val = ParseInt16(arr[i]);
-            ptr->Accomplishment.emplace_back(val);
-        }
-    }
-    iter = record.find("Goods");
-    if (iter != record.end()) {
-        auto kvs = SplitString(iter->second, "|");
-        for (size_t i = 0; i < kvs.size(); i++)
-        {
-            auto kv = SplitString(kvs[i], "=");
-            ASSERT(kv.size() == 2);
-            if(kv.size() == 2)
-            {
-                auto key = StripWhitespace(kv[0]);
-                auto val = ParseUInt32(kv[1]);
-                ASSERT(ptr->Goods.count(key) == 0);
-                ptr->Goods.emplace(std::make_pair(key, val));
-            }
-        }
-    }
+    ptr->Name = parseField<std::string>(record, "Name");
+    ptr->Type = parseField<std::string>(record, "Type");
+    ptr->Target = parseField<std::string>(record, "Target");
+    ptr->Accomplishment = parseArrayField<int16_t>(record, "Accomplishment");
+    ptr->Goods = parseMapField<std::string,uint32_t>(record, "Goods");
     return 0;
 }
 
