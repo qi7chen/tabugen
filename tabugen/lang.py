@@ -139,7 +139,7 @@ def map_go_raw_type(typ: str) -> str:
 
 
 # Go字符串解析
-def map_go_parse_expr(typ: str, param: str) -> str:
+def map_go_parse_func(typ: str) -> str:
     mapping = {
         'bool': 'parseBool',
         'int8': 'parseI8',
@@ -158,7 +158,7 @@ def map_go_parse_expr(typ: str, param: str) -> str:
         'enum': 'parseI32',
         'string': 'strings.TrimSpace',
     }
-    return '%s(%s)' % (mapping[typ], param)
+    return mapping[typ]
 
 
 # C#类型映射

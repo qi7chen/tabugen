@@ -145,6 +145,7 @@ class CppCsvLoadGenerator:
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
+            '#include "Conv.h"',
         ]
         if len(args.extra_cpp_includes) > 0:
             extra_headers = args.extra_cpp_includes.split(',')
@@ -166,13 +167,10 @@ class CppCsvLoadGenerator:
         if args.package is not None:
             cpp_content += '\nnamespace %s {\n\n' % args.package
 
-        static_var_content = ''
-
         class_content = ''
         for struct in descriptors:
             class_content += self.gen_cpp_source(struct)
 
-        cpp_content += static_var_content
         cpp_content += class_content
         if args.package is not None:
             cpp_content += '\n} // namespace %s \n' % args.package  # namespace

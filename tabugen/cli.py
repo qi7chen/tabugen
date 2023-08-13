@@ -84,7 +84,7 @@ def main():
     parser.add_argument("--go_fmt", action="store_true", help="run go fmt on generated source file")
 
     # output options
-    parser.add_argument("--extra_cpp_includes", default="Conv.h", help="extra include C++ header")
+    parser.add_argument("--extra_cpp_includes", default="", help="extra include C++ header")
     parser.add_argument("--source_file_encoding", default="utf8", help="encoding of generated source file")
     parser.add_argument("--data_file_encoding", default="utf8", help="encoding of output data file")
     parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")

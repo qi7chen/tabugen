@@ -20,56 +20,25 @@ class GoCsvLoadGenerator:
     def __init__(self):
         self.TAB_SPACE = '\t'
 
-    # 生成array类型的赋值代码
-    def gen_array_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
-        space = '\t' * tabs
-        content = ''
-        elem_type = types.array_element_type(typename)
-        content += '%svar strArr = strings.Split(%s, "%s")\n' % (space, valuetext, predef.PredefDelim1)
-        content += '%svar arr = make([]%s, 0, len(strArr))\n' % (space, elem_type)
-        content += '%sfor _, s := range strArr {\n' % space
-        expr = lang.map_go_parse_expr(elem_type, 's')
-        content += '%s    var val = %s\n' % (space, expr)
-        content += '%s    arr = append(arr, val)\n' % space
-        content += '%s}\n' % space
-        content += '%s%s%s = arr\n' % (space, prefix, name)
-        return content
-
-    # 生成map类型的赋值代码
-    def gen_map_field_assign(self, prefix: str, typename: str, name: str, valuetext: str, tabs: int) -> str:
-        space = '\t' * tabs
-        key_type, val_type = types.map_key_value_types(typename)
-        content = ''
-        content += '%svar kvList = strings.Split(%s, "%s")\n' % (space, valuetext, predef.PredefDelim1)
-        content += '%svar dict = make(map[%s]%s, len(kvList))\n' % (space, lang.map_go_type(key_type), lang.map_go_type(val_type))
-        content += '%sfor _, kv := range kvList {\n' % space
-        content += '%sif kv != "" {\n' % space
-        content += '%s\tvar pair = strings.Split(kv, "%s")\n' % (space, predef.PredefDelim2)
-        content += '%s\tvar key = %s\n' % (space, lang.map_go_parse_expr(key_type, 'pair[0]'))
-        content += '%s\tvar val = %s\n' % (space, lang.map_go_parse_expr(val_type, 'pair[1]'))
-        content += '%s\tdict[key] = val\n' % space
-        content += '%s\t}\n' % space
-        content += '%s}\n' % space
-        content += '%s%s%s = dict\n' % (space, prefix, name)
-        return content
-
     # 生成字段的赋值代码
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, valuetext: str, tabs: int) -> str:
         space = '\t' * tabs
         content = ''
         if types.is_array_type(origin_typename):
-            content += '%sif text := %s; text != "" {\n' % (space, valuetext)
-            content += self.gen_array_field_assign(prefix, origin_typename, name, 'text', tabs + 1)
-            content += '%s}\n' % space
+            elem_type = types.array_element_type(origin_typename)
+            pfname = lang.map_go_parse_func(elem_type)
+            content += '%s%s%s = parseArray(%s, %s)\n' % (space, prefix, name, valuetext, pfname)
         elif types.is_map_type(origin_typename):
-            content += '%sif text := %s; text != "" {\n' % (space, valuetext)
-            content += self.gen_map_field_assign(prefix, origin_typename, name, 'text', tabs + 1)
-            content += '%s}\n' % space
+            key_type, val_type = types.map_key_value_types(origin_typename)
+            pfname1 = lang.map_go_parse_func(key_type)
+            pfname2 = lang.map_go_parse_func(val_type)
+            content += '%s%s%s = parseMap(%s, %s, %s)\n' % (space, prefix, name, valuetext, pfname1, pfname2)
         elif origin_typename == 'string':
             content += '%s%s%s = strings.TrimSpace(%s)\n' % (space, prefix, name, valuetext)
         else:
             typename = lang.map_go_type(origin_typename)
-            content += '%s%s%s = %s\n' % (space, prefix, name, lang.map_go_parse_expr(typename, valuetext))
+            pfname = lang.map_go_parse_func(typename)
+            content += '%s%s%s = %s(%s)\n' % (space, prefix, name, pfname, valuetext)
         return content
 
     # 生成嵌入类型的字段加载代码

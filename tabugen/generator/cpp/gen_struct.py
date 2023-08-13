@@ -8,6 +8,7 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.strutil as strutil
+import tabugen.generator.cpp.template as cpp_template
 from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
 
@@ -179,3 +180,8 @@ class CppStructGenerator:
             else:
                 print('file content not modified', filename)
 
+        # 3rd party parse API
+        filename = os.path.join(os.path.split(filepath)[0], 'Conv.h')
+        modified = strutil.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
+        if modified:
+            print('wrote 3rd source file to', filename)
