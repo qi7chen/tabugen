@@ -3,7 +3,6 @@
 package com.pdfun.config;
 
 import java.util.*;
-import org.apache.commons.lang3.StringUtils;
 
 //  兵种.xlsx
 public class SoldierPropertyDefine 
@@ -35,103 +34,30 @@ public class SoldierPropertyDefine
 
     public void parseFrom(Map<String, String> record) 
     {
-        String strTmp;
-        strTmp = record.get("Name");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Name = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("Level");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Level = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("NameID");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.NameID = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("BuildingName");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.BuildingName = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("BuildingLevel");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.BuildingLevel = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("RequireSpace");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.RequireSpace = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Volume");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Volume = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("UpgradeTime");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.UpgradeTime = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("UpgradeMaterialID");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.UpgradeMaterialID = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("UpgradeMaterialNum");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.UpgradeMaterialNum = Long.parseLong(strTmp);
-        }
-        strTmp = record.get("ConsumeMaterial");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.ConsumeMaterial = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("ConsumeMaterialNum");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.ConsumeMaterialNum = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("ConsumeTime");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.ConsumeTime = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Act");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Act = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Hp");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Hp = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("BombLoad");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.BombLoad = Short.parseShort(strTmp);
-        }
-        strTmp = record.get("Hurt");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Hurt = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Duration");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Duration = Double.parseFloat(strTmp);
-        }
-        strTmp = record.get("TriggerInterval");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.TriggerInterval = Double.parseFloat(strTmp);
-        }
-        strTmp = record.get("SearchScope");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.SearchScope = Short.parseShort(strTmp);
-        }
-        strTmp = record.get("AtkFrequency");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.AtkFrequency = Double.parseFloat(strTmp);
-        }
-        strTmp = record.get("AtkRange");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.AtkRange = Double.parseDouble(strTmp);
-        }
-        strTmp = record.get("MovingSpeed");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.MovingSpeed = Double.parseDouble(strTmp);
-        }
-        strTmp = record.get("EnableBurn");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.EnableBurn = Boolean.parseBoolean(strTmp);
-        }
+        this.Name = record.get("Name");
+        this.Level = Utility.parseInt(record.get("Level"));
+        this.NameID = record.get("NameID");
+        this.BuildingName = record.get("BuildingName");
+        this.BuildingLevel = Utility.parseInt(record.get("BuildingLevel"));
+        this.RequireSpace = Utility.parseInt(record.get("RequireSpace"));
+        this.Volume = Utility.parseInt(record.get("Volume"));
+        this.UpgradeTime = Utility.parseInt(record.get("UpgradeTime"));
+        this.UpgradeMaterialID = record.get("UpgradeMaterialID");
+        this.UpgradeMaterialNum = Utility.parseLong(record.get("UpgradeMaterialNum"));
+        this.ConsumeMaterial = record.get("ConsumeMaterial");
+        this.ConsumeMaterialNum = Utility.parseInt(record.get("ConsumeMaterialNum"));
+        this.ConsumeTime = Utility.parseInt(record.get("ConsumeTime"));
+        this.Act = Utility.parseInt(record.get("Act"));
+        this.Hp = Utility.parseInt(record.get("Hp"));
+        this.BombLoad = Utility.parseShort(record.get("BombLoad"));
+        this.Hurt = Utility.parseInt(record.get("Hurt"));
+        this.Duration = Utility.parseDouble(record.get("Duration"));
+        this.TriggerInterval = Utility.parseDouble(record.get("TriggerInterval"));
+        this.SearchScope = Utility.parseShort(record.get("SearchScope"));
+        this.AtkFrequency = Utility.parseDouble(record.get("AtkFrequency"));
+        this.AtkRange = Utility.parseDouble(record.get("AtkRange"));
+        this.MovingSpeed = Utility.parseDouble(record.get("MovingSpeed"));
+        this.EnableBurn = Utility.parseBool(record.get("EnableBurn"));
     }
 
 }

@@ -3,7 +3,6 @@
 package com.pdfun.config;
 
 import java.util.*;
-import org.apache.commons.lang3.StringUtils;
 
 //  全局变量表.xlsx
 public class GlobalPropertyDefine 
@@ -25,86 +24,19 @@ public class GlobalPropertyDefine
     // parse GlobalPropertyDefine from string fields
     public void parseFrom(Map<String, String> fields)
     {
-        String strTmp;
-        strTmp = fields.get("GoldExchangeTimeFactor1");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeTimeFactor1 = Double.parseDouble(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeTimeFactor2");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeTimeFactor2 = Double.parseDouble(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeTimeFactor3");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeTimeFactor3 = Double.parseDouble(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeResource1Price");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeResource1Price = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeResource2Price");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeResource2Price = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeResource3Price");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeResource3Price = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("GoldExchangeResource4Price");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.GoldExchangeResource4Price = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("FreeCompleteSeconds");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.FreeCompleteSeconds = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("CancelBuildReturnPercent");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.CancelBuildReturnPercent = Short.parseShort(strTmp);
-        }
-        strTmp = fields.get("EnableSearch");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.EnableSearch = Boolean.parseBoolean(strTmp);
-        }
-        strTmp = fields.get("SpawnLevelLimit");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            String[] strArr = StringUtils.split(strTmp, "|");
-            this.SpawnLevelLimit = new int[strArr.length];
-            for(int i = 0; i < strArr.length; i++) 
-            {
-                this.SpawnLevelLimit[i] = Integer.parseInt(strArr[i]);
-            }
-        }
-        strTmp = fields.get("FirstRechargeReward");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            Map<String, Integer> mapVal = new HashMap<>();
-            String[] kvList = StringUtils.split(strTmp, "|");
-            for(int i = 0; i < kvList.length; i++) 
-            {
-                String[] pair = kvList[i].split("=");
-                if (pair.length == 2) {
-                    String key = pair[0].trim();
-                    Integer val = Integer.parseInt(pair[1]);
-                    mapVal.put(key, val);
-                }
-            }
-            this.FirstRechargeReward = mapVal;
-        }
-        strTmp = fields.get("VIPItemReward");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            Map<Integer, Integer> mapVal = new HashMap<>();
-            String[] kvList = StringUtils.split(strTmp, "|");
-            for(int i = 0; i < kvList.length; i++) 
-            {
-                String[] pair = kvList[i].split("=");
-                if (pair.length == 2) {
-                    Integer key = Integer.parseInt(pair[0]);
-                    Integer val = Integer.parseInt(pair[1]);
-                    mapVal.put(key, val);
-                }
-            }
-            this.VIPItemReward = mapVal;
-        }
+        this.GoldExchangeTimeFactor1 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor1"));
+        this.GoldExchangeTimeFactor2 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor2"));
+        this.GoldExchangeTimeFactor3 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor3"));
+        this.GoldExchangeResource1Price = Utility.parseShort(fields.get("GoldExchangeResource1Price"));
+        this.GoldExchangeResource2Price = Utility.parseShort(fields.get("GoldExchangeResource2Price"));
+        this.GoldExchangeResource3Price = Utility.parseShort(fields.get("GoldExchangeResource3Price"));
+        this.GoldExchangeResource4Price = Utility.parseShort(fields.get("GoldExchangeResource4Price"));
+        this.FreeCompleteSeconds = Utility.parseShort(fields.get("FreeCompleteSeconds"));
+        this.CancelBuildReturnPercent = Utility.parseShort(fields.get("CancelBuildReturnPercent"));
+        this.EnableSearch = Utility.parseBool(fields.get("EnableSearch"));
+        this.SpawnLevelLimit = Utility.parseIntArray(fields.get("SpawnLevelLimit"));
+        this.FirstRechargeReward = Utility.parseMap(fields.get("FirstRechargeReward"), String.class, Integer.class);
+        this.VIPItemReward = Utility.parseMap(fields.get("VIPItemReward"), Integer.class, Integer.class);
     }
 
 }

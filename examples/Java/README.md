@@ -3,11 +3,9 @@
 
 ## 示例说明
 
-需要安装[maven](https://maven.apache.org/)
+1. 需要安装[maven](https://maven.apache.org/)
+2. 使用powershell执行`Generate.ps1`，即可将excel导出为csv并且生成对应的Java加载解析代码
 
-* 执行`make generate`，即可导出默认选项的Java代码
-* 执行`make output`导出csv和json
-* 执行`make run`运行测试用例
 
 
 ## 配置详解

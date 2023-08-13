@@ -19,10 +19,10 @@ Function tabucli {
 }
 
 Function Generate {
-	tabucli å…µç§.xlsx
-    tabucli æ–°æ‰‹ä»»åŠ¡.xlsx
-    tabucli éšæœºå®ç®±.xlsx
-    tabucli å…¨å±€å˜é‡è¡¨.xlsx
+    tabucli ±øÖÖ.xlsx
+    tabucli ĞÂÊÖÈÎÎñ.xlsx
+    tabucli Ëæ»ú±¦Ïä.xlsx
+    tabucli È«¾Ö±äÁ¿±í.xlsx
 }
 
 Function RunTest {
@@ -31,21 +31,6 @@ Function RunTest {
     mvn clean
 }
 
-# install chocolatey to install cmake
-Function Install {
-    if (Get-Command mvn -errorAction SilentlyContinue) {
-        echo 'maven have installed'
-    } else {
-        if (Get-Command choco -errorAction SilentlyContinue) {
-            echo 'chocolatey have installed'
-        } else {
-            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        }
-        choco install maven
-    }
-}
-
-Install
 Generate
 RunTest
 

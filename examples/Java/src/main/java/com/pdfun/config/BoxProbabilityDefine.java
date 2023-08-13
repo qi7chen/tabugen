@@ -3,7 +3,6 @@
 package com.pdfun.config;
 
 import java.util.*;
-import org.apache.commons.lang3.StringUtils;
 
 //  随机宝箱.xlsx
 public class BoxProbabilityDefine 
@@ -23,49 +22,32 @@ public class BoxProbabilityDefine
 
     public void parseFrom(Map<String, String> record) 
     {
-        String strTmp;
-        strTmp = record.get("ID");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.ID = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("Total");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Total = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Time");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Time = Integer.parseInt(strTmp);
-        }
-        strTmp = record.get("Repeat");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Repeat = Boolean.parseBoolean(strTmp);
-        }
+        this.ID = record.get("ID");
+        this.Total = Utility.parseInt(record.get("Total"));
+        this.Time = Utility.parseInt(record.get("Time"));
+        this.Repeat = Utility.parseBool(record.get("Repeat"));
         {
-            ArrayList<ProbabilityGoodsDefine> listVal = new ArrayList<>();
-            for (int i = 1; i < record.size(); i++)
+            ArrayList<ProbabilityGoodsDefine> list = new ArrayList<>();
+            for (int i = 0; i < record.size(); i++)
             {
                 ProbabilityGoodsDefine val = new ProbabilityGoodsDefine();
                 String strVal = "";
-                if ((strVal = record.get("GoodsID" + i)) != null) {
-                    val.GoodsID = StringUtils.strip(strVal);
+                if ((strVal = record.get(String.format("GoodsID[%d]", i))) != null) {
+                    val.GoodsID = strVal;
                 } else {
                     break; 
                 }
-                if ((strVal = record.get("Num" + i)) != null) {
-                    val.Num = Integer.parseInt(strVal);
-                } else {
-                    break; 
-                }
-                if ((strVal = record.get("Probability" + i)) != null) {
-                    val.Probability = Integer.parseInt(strVal);
-                } else {
-                    break; 
-                }
-                listVal.add(val);
+                if ((strVal = record.get(String.format("Num[%d]", i))) != null) {
+                    val.Num = Utility.parseInt(strVal);
+                } 
+                if ((strVal = record.get(String.format("Probability[%d]", i))) != null) {
+                    val.Probability = Utility.parseInt(strVal);
+                } 
+                list.add(val);
             }
-            if (!listVal.isEmpty()) {
-                this.ProbabilityGoods = new ProbabilityGoodsDefine[listVal.size()];
-                this.ProbabilityGoods = listVal.toArray(this.ProbabilityGoods);
+            if (!list.isEmpty()) {
+                this.ProbabilityGoods = new ProbabilityGoodsDefine[list.size()];
+                this.ProbabilityGoods = list.toArray(this.ProbabilityGoods);
             }
         }
     }

@@ -3,7 +3,6 @@
 package com.pdfun.config;
 
 import java.util.*;
-import org.apache.commons.lang3.StringUtils;
 
 //  新手任务.xlsx
 public class NewbieGuideDefine 
@@ -16,43 +15,11 @@ public class NewbieGuideDefine
 
     public void parseFrom(Map<String, String> record) 
     {
-        String strTmp;
-        strTmp = record.get("Name");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Name = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("Type");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Type = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("Target");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            this.Target = StringUtils.strip(strTmp);
-        }
-        strTmp = record.get("Accomplishment");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            String[] strArr = StringUtils.split(strTmp, "|");
-            this.Accomplishment = new short[strArr.length];
-            for(int i = 0; i < strArr.length; i++) 
-            {
-                this.Accomplishment[i] = Short.parseShort(strArr[i]);
-            }
-        }
-        strTmp = record.get("Goods");
-        if (StringUtils.isNotEmpty(strTmp)) {
-            Map<String, Integer> mapVal = new HashMap<>();
-            String[] kvList = StringUtils.split(strTmp, "|");
-            for(int i = 0; i < kvList.length; i++) 
-            {
-                String[] pair = kvList[i].split("=");
-                if (pair.length == 2) {
-                    String key = pair[0].trim();
-                    Integer val = Integer.parseInt(pair[1]);
-                    mapVal.put(key, val);
-                }
-            }
-            this.Goods = mapVal;
-        }
+        this.Name = record.get("Name");
+        this.Type = record.get("Type");
+        this.Target = record.get("Target");
+        this.Accomplishment = Utility.parseShortArray(record.get("Accomplishment"));
+        this.Goods = Utility.parseMap(record.get("Goods"), String.class, Integer.class);
     }
 
 }
