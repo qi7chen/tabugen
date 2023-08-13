@@ -6,10 +6,18 @@
 ### 如何编译
 
 1. 需要安装[vcpkg](https://github.com/microsoft/vcpkg) 和[CMake](https://cmake.org/download)
-2. 项目依赖了[abseil](https://github.com/abseil/abseil-cpp) 库，需要通过vcpkg配置对应的环境
-3. 执行`make genearate`，即可导出默认选项的C++代码
-4. 执行`make output`导出csv和json
-5. 执行`make run`，即可编译和运行对应的C++项目
+2. 如果不更改默认实现，则还需要安装[boost](https://www.boost.org)
+3. 使用powershell执行`Generate.ps1`，即可将excel导出为csv并且生成对应的C++加载解析代码
+
+### 第三方库
+
+如果指定了生成解析代码，解析函数会需要用到3类函数
+
+* 将字符串转换为数值类型(int/float)的函数；
+* 根据格式拼接字符串的`sprintf`函数；
+* 根据分隔符分割字符串的`split`函数；
+
+这些细节都被实现在`Conv.h`里，默认使用boost的实现，如果不想引入boost，可以修改`Conv.h`里的代码；
 
 
 ## 配置详解
@@ -17,9 +25,9 @@
 
 ### meta表里的配置
 
-在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
+在excel文件的`@meta`表里可以定义一些配置来控制如何导入，如：
 
-在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
+在excel文件的`@meta`表里可以定义一些配置来控制如何导入，如：
 
 * `ClassName`  生成的class名称
 * `ClassComment`   生成的class注释
@@ -39,11 +47,6 @@
 * `--cpp_pch` 包含的预编译头文件
 * `--extra_cpp_include` 额外包含的C++头文件
 
-### 基础代码库
 
-* 目前解析array和map依赖`SplitString`函数，定义在`StringUtil.h`里
-* 数字和字符串之间的转换依赖`parseType(value)`函数，定义在`Conv.h`里
-
-通过`--extra_cpp_include`参数传入你自己的头文件，可以覆盖默认的代码实现；
 
 

@@ -7,7 +7,7 @@ project(TabugenCpp LANGUAGES CXX)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-find_package(Boost REQUIRED)
+# find_package(Boost REQUIRED)
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -35,7 +35,7 @@ set(ALL_LIB_FILES
     )
 
 add_library(conflib STATIC ${ALL_LIB_FILES})
-target_include_directories(conflib ${PROJECT_ROOT_DIR}/src)
+target_include_directories(conflib PUBLIC ${PROJECT_ROOT_DIR}/src)
 target_compile_features(conflib PUBLIC cxx_std_11)
 
 add_executable(tabugencpp ${PROJECT_ROOT_DIR}/src/main.cpp)

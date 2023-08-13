@@ -18,34 +18,24 @@ Function tabucli {
 }
 
 Function Generate {
-	tabucli å…µç§.xlsx SoldierDefine
-    tabucli æ–°æ‰‹ä»»åŠ¡.xlsx GuideDefine
-    tabucli éšæœºå®ç®±.xlsx BoxDefine
-    tabucli å…¨å±€å˜é‡è¡¨.xlsx GlobalDefine
+    tabucli ±øÖÖ.xlsx SoldierDefine
+    tabucli ĞÂÊÖÈÎÎñ.xlsx GuideDefine
+    tabucli Ëæ»ú±¦Ïä.xlsx BoxDefine
+    tabucli È«¾Ö±äÁ¿±í.xlsx GlobalDefine
 }
 
 Function RunTest {
-	md cmake-build -ea 0
-    cd cmake-build && cmake .. && cmake --build ..
+    rm cmake-build -r -fo
+    md cmake-build
+    cd cmake-build
+    
+    #cmake -B [build directory] -S . "-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake"
+    #cmake --build [build directory]
+    cmake ..
+    cmake --build .
     cmake-build/CppExample
-    Set-Location $CURRENT_DIR && rm cmake-build -r -fo
 }
 
-# install chocolatey to install cmake
-Function Install {
-    if (Get-Command choco -errorAction SilentlyContinue) {
-        echo 'cmake have installed'
-    } else {
-        if (Get-Command choco -errorAction SilentlyContinue) {
-            echo 'chocolatey have installed'
-        } else {
-            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        }
-        choco install cmake
-    }
-}
-
-Install
 Generate
 RunTest
 
