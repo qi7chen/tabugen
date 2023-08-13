@@ -21,7 +21,7 @@ type ProbabilityGoodsDefine struct {
 	Probability uint32 // 物品概率
 }
 
-//  随机宝箱.xlsx
+// 随机宝箱.xlsx
 type BoxProbabilityDefine struct {
 	ID               string // ID
 	Total            int    // 奖励总数

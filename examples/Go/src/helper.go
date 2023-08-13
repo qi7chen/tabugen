@@ -3,11 +3,13 @@ package config
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/csv"
 	"io"
 	"log"
 	"math"
 	"strconv"
+	"strings"
 )
 
 func parseBool(s string) bool {
@@ -149,7 +151,38 @@ func parseF64(s string) float64 {
 	return f
 }
 
-type StructuredConfig interface {
+func parseArray[T cmp.Ordered](text string, cvt func(string) T) []T {
+	if text == "" {
+		return nil
+	}
+	var parts = strings.Split(text, "|")
+	var a = make([]T, 0, len(parts))
+	for _, s := range parts {
+		if s != "" {
+			a = append(a, cvt(s))
+		}
+	}
+	return a
+}
+
+func parseMap[K, V cmp.Ordered](text string, cvtK func(string) K, cvtV func(string) V) map[K]V {
+	if text == "" {
+		return nil
+	}
+	var dict = make(map[K]V)
+	var parts = strings.Split(text, "|")
+	for _, s := range parts {
+		var pair = strings.Split(s, "=")
+		if len(pair) == 2 {
+			var key = cvtK(pair[0])
+			var val = cvtV(pair[1])
+			dict[key] = val
+		}
+	}
+	return dict
+}
+
+type IParseableConfig interface {
 	ParseFromRow(row []string) error
 }
 

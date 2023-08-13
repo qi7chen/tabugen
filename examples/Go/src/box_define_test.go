@@ -2,13 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestBoxAutogenCsvConfig(t *testing.T) {
 	filename := "../../datasheet/res/box_probability_define.csv"
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -28,7 +28,7 @@ func TestBoxAutogenCsvConfig(t *testing.T) {
 
 func TestBoxAutogenJsonConfig(t *testing.T) {
 	filename := "../../datasheet/res/box_probability_define.json"
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

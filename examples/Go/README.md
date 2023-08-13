@@ -3,9 +3,9 @@
 
 ## 示例
 
-* 执行`make generate`，即可生成默认的Go代码
-* 执行`make output`导出csv和json
-* 执行`make run`运行默认测试用例
+1. 需要安装[Go SDK 1.21+](https://go.dev/download)
+2. 使用powershell执行`Generate.ps1`，即可将excel导出为csv并且生成对应的Go加载解析代码
+
 
 
 ## 配置详解

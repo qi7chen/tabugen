@@ -15,7 +15,7 @@ var (
 	_ = fmt.Sprintf
 )
 
-//  新手任务.xlsx
+// 新手任务.xlsx
 type NewbieGuideDefine struct {
 	Name           string            // ID
 	Type           string            // 任务类型
@@ -28,27 +28,7 @@ func (p *NewbieGuideDefine) ParseFrom(record map[string]string) error {
 	p.Name = strings.TrimSpace(record["Name"])
 	p.Type = strings.TrimSpace(record["Type"])
 	p.Target = strings.TrimSpace(record["Target"])
-	if text := record["Accomplishment"]; text != "" {
-		var strArr = strings.Split(text, "|")
-		var arr = make([]int16, 0, len(strArr))
-		for _, s := range strArr {
-			var val = parseI16(s)
-			arr = append(arr, val)
-		}
-		p.Accomplishment = arr
-	}
-	if text := record["Goods"]; text != "" {
-		var kvList = strings.Split(text, "|")
-		var dict = make(map[string]uint32, len(kvList))
-		for _, kv := range kvList {
-			if kv != "" {
-				var pair = strings.Split(kv, "=")
-				var key = strings.TrimSpace(pair[0])
-				var val = parseU32(pair[1])
-				dict[key] = val
-			}
-		}
-		p.Goods = dict
-	}
+	p.Accomplishment = parseArray(record["Accomplishment"], parseI16)
+	p.Goods = parseMap(record["Goods"], strings.TrimSpace, parseU32)
 	return nil
 }

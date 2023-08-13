@@ -15,7 +15,7 @@ var (
 	_ = fmt.Sprintf
 )
 
-//  全局变量表.xlsx
+// 全局变量表.xlsx
 type GlobalPropertyDefine struct {
 	GoldExchangeTimeFactor1    float64        // 金币兑换时间参数1
 	GoldExchangeTimeFactor2    float64        // 金币兑换时间参数2
@@ -43,40 +43,8 @@ func (p *GlobalPropertyDefine) ParseFrom(fields map[string]string) error {
 	p.FreeCompleteSeconds = parseU16(fields["FreeCompleteSeconds"])
 	p.CancelBuildReturnPercent = parseU16(fields["CancelBuildReturnPercent"])
 	p.EnableSearch = parseBool(fields["EnableSearch"])
-	if text := fields["SpawnLevelLimit"]; text != "" {
-		var strArr = strings.Split(text, "|")
-		var arr = make([]int, 0, len(strArr))
-		for _, s := range strArr {
-			var val = parseInt(s)
-			arr = append(arr, val)
-		}
-		p.SpawnLevelLimit = arr
-	}
-	if text := fields["FirstRechargeReward"]; text != "" {
-		var kvList = strings.Split(text, "|")
-		var dict = make(map[string]int, len(kvList))
-		for _, kv := range kvList {
-			if kv != "" {
-				var pair = strings.Split(kv, "=")
-				var key = strings.TrimSpace(pair[0])
-				var val = parseInt(pair[1])
-				dict[key] = val
-			}
-		}
-		p.FirstRechargeReward = dict
-	}
-	if text := fields["VIPItemReward"]; text != "" {
-		var kvList = strings.Split(text, "|")
-		var dict = make(map[int]int, len(kvList))
-		for _, kv := range kvList {
-			if kv != "" {
-				var pair = strings.Split(kv, "=")
-				var key = parseInt(pair[0])
-				var val = parseInt(pair[1])
-				dict[key] = val
-			}
-		}
-		p.VIPItemReward = dict
-	}
+	p.SpawnLevelLimit = parseArray(fields["SpawnLevelLimit"], parseInt)
+	p.FirstRechargeReward = parseMap(fields["FirstRechargeReward"], strings.TrimSpace, parseInt)
+	p.VIPItemReward = parseMap(fields["VIPItemReward"], parseInt, parseInt)
 	return nil
 }

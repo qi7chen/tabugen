@@ -2,13 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
 func TestSoldierAutogenCsvConfig(t *testing.T) {
 	filename := "../../datasheet/res/soldier_property_define.csv"
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -28,7 +28,7 @@ func TestSoldierAutogenCsvConfig(t *testing.T) {
 
 func TestSoldierAutogenJsonConfig(t *testing.T) {
 	filename := "../../datasheet/res/soldier_property_define.json"
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
