@@ -15,7 +15,7 @@ var (
 	_ = fmt.Sprintf
 )
 
-// 兵种.xlsx
+//  兵种.xlsx
 type SoldierPropertyDefine struct {
 	Name               string  // 士兵ID
 	Level              int     // 士兵等级

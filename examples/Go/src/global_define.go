@@ -15,7 +15,7 @@ var (
 	_ = fmt.Sprintf
 )
 
-// 全局变量表.xlsx
+//  全局变量表.xlsx
 type GlobalPropertyDefine struct {
 	GoldExchangeTimeFactor1    float64        // 金币兑换时间参数1
 	GoldExchangeTimeFactor2    float64        // 金币兑换时间参数2

@@ -15,7 +15,7 @@ var (
 	_ = fmt.Sprintf
 )
 
-// 新手任务.xlsx
+//  新手任务.xlsx
 type NewbieGuideDefine struct {
 	Name           string            // ID
 	Type           string            // 任务类型

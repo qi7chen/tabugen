@@ -19,10 +19,10 @@ Function tabucli {
 }
 
 Function Generate {
-	#tabucli å…µç§.xlsx soldier_define.go
-    #tabucli æ–°æ‰‹ä»»åŠ¡.xlsx guide_define.go
-    tabucli éšæœºå®ç®±.xlsx box_define.go
-    #tabucli å…¨å±€å˜é‡è¡¨.xlsx global_define.go
+    tabucli ±øÖÖ.xlsx soldier_define.go
+    tabucli ĞÂÊÖÈÎÎñ.xlsx guide_define.go
+    tabucli Ëæ»ú±¦Ïä.xlsx box_define.go
+    tabucli È«¾Ö±äÁ¿±í.xlsx global_define.go
 }
 
 Function RunTest {

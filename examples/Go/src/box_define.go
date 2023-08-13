@@ -21,7 +21,7 @@ type ProbabilityGoodsDefine struct {
 	Probability uint32 // 物品概率
 }
 
-// 随机宝箱.xlsx
+//  随机宝箱.xlsx
 type BoxProbabilityDefine struct {
 	ID               string // ID
 	Total            int    // 奖励总数
@@ -35,7 +35,7 @@ func (p *BoxProbabilityDefine) ParseFrom(record map[string]string) error {
 	p.Total = parseInt(record["Total"])
 	p.Time = parseInt(record["Time"])
 	p.Repeat = parseBool(record["Repeat"])
-	for i := 0; i < -3; i++ {
+	for i := 0; i < len(record); i++ {
 		var val ProbabilityGoodsDefine
 		if str, found := record[fmt.Sprintf("GoodsID[%d]", i)]; found {
 			val.GoodsID = strings.TrimSpace(str)
