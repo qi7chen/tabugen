@@ -19,10 +19,10 @@ Function tabucli {
 }
 
 Function Generate {
-	tabucli å…µç§.xlsx SoldierDefine.cs
-    tabucli æ–°æ‰‹ä»»åŠ¡.xlsx GuideDefine.cs
-    tabucli éšæœºå®ç®±.xlsx GlobalDefine.cs
-    tabucli å…¨å±€å˜é‡è¡¨.xlsx BoxDefine.cs
+    tabucli ±øÖÖ.xlsx SoldierDefine.cs
+    tabucli ĞÂÊÖÈÎÎñ.xlsx GuideDefine.cs
+    tabucli Ëæ»ú±¦Ïä.xlsx BoxDefine.cs
+    tabucli È«¾Ö±äÁ¿±í.xlsx GlobalDefine.cs
 }
 
 Function RunTest {
@@ -30,21 +30,6 @@ Function RunTest {
     dotnet run
 }
 
-# install chocolatey to install .net core
-Function Install {
-    if (Get-Command dotnet -errorAction SilentlyContinue) {
-        echo 'dotnetcore have installed'
-    } else {
-        if (Get-Command choco -errorAction SilentlyContinue) {
-            echo 'chocolatey have installed'
-        } else {
-            Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        }
-        choco install choco install dotnetcore-sdk
-    }
-}
-
-Install
 Generate
 RunTest
 

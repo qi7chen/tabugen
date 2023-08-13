@@ -6,53 +6,39 @@ using System.Text.Json.Serialization;
 
 namespace Config
 {
-//  随机宝箱.xlsx
-public struct BoxProbabilityDefine 
+//  全局变量表.xlsx
+public struct GlobalPropertyDefine 
 {
-    public struct ProbabilityGoodsDefine 
-    {
-        public string  GoodsID { get; set; }  // 物品id
-        public uint    Num { get; set; }      // 物品数量
-        public uint    Probability { get; set; } // 物品概率
-    }
+    public double GoldExchangeTimeFactor1 { get; set; } // 金币兑换时间参数1
+    public double GoldExchangeTimeFactor2 { get; set; } // 金币兑换时间参数2
+    public double GoldExchangeTimeFactor3 { get; set; } // 金币兑换时间参数3
+    public ushort GoldExchangeResource1Price { get; set; } // 金币兑换资源1价格
+    public ushort GoldExchangeResource2Price { get; set; } // 金币兑换资源2价格
+    public ushort GoldExchangeResource3Price { get; set; } // 金币兑换资源3价格
+    public ushort GoldExchangeResource4Price { get; set; } // 金币兑换资源4价格
+    public ushort FreeCompleteSeconds { get; set; }  // 免费立即完成时间
+    public ushort CancelBuildReturnPercent { get; set; } // 取消建造后返还资源比例
+    public bool EnableSearch { get; set; }         // 开启搜索
+    public int[] SpawnLevelLimit { get; set; }      // 最大刷新个数显示
+    public Dictionary<string, int> FirstRechargeReward { get; set; }  // 首充奖励
+    public Dictionary<int, int> VIPItemReward { get; set; }        // VIP奖励
 
-    public string ID { get; set; }       // ID
-    public int Total { get; set; }    // 奖励总数
-    public int Time { get; set; }     // 冷却时间
-    public bool Repeat { get; set; }   // 是否可重复
-    public ProbabilityGoodsDefine[]  ProbabilityGoods { get; set; } 
-
-    public void ParseFrom(Dictionary<string, string> record) 
+    // parse GlobalPropertyDefine from string fields
+    public void ParseFrom(Dictionary<string, string> fields)
     {
-        this.ID = record["ID"].Trim();
-        this.Total = int.Parse(record["Total"]);
-        this.Time = int.Parse(record["Time"]);
-        this.Repeat = bool.Parse(record["Repeat"]);
-        {
-            var listVal = new List<ProbabilityGoodsDefine>();
-            for (int i = 1; i < record.Count; i++)
-            {
-                var val = new ProbabilityGoodsDefine();
-                string strVal = "";
-                if (record.TryGetValue($"GoodsID{i}", out strVal)) {
-                    val.GoodsID = strVal.Trim();
-                } else {
-                    break; 
-                }
-                if (record.TryGetValue($"Num{i}", out strVal)) {
-                    val.Num = uint.Parse(strVal);
-                } else {
-                    break; 
-                }
-                if (record.TryGetValue($"Probability{i}", out strVal)) {
-                    val.Probability = uint.Parse(strVal);
-                } else {
-                    break; 
-                }
-                listVal.Add(val);
-            }
-            this.ProbabilityGoods = listVal.ToArray();
-        }
+        this.GoldExchangeTimeFactor1 = Utility.ParseDouble(fields["GoldExchangeTimeFactor1"]);
+        this.GoldExchangeTimeFactor2 = Utility.ParseDouble(fields["GoldExchangeTimeFactor2"]);
+        this.GoldExchangeTimeFactor3 = Utility.ParseDouble(fields["GoldExchangeTimeFactor3"]);
+        this.GoldExchangeResource1Price = Utility.ParseUShort(fields["GoldExchangeResource1Price"]);
+        this.GoldExchangeResource2Price = Utility.ParseUShort(fields["GoldExchangeResource2Price"]);
+        this.GoldExchangeResource3Price = Utility.ParseUShort(fields["GoldExchangeResource3Price"]);
+        this.GoldExchangeResource4Price = Utility.ParseUShort(fields["GoldExchangeResource4Price"]);
+        this.FreeCompleteSeconds = Utility.ParseUShort(fields["FreeCompleteSeconds"]);
+        this.CancelBuildReturnPercent = Utility.ParseUShort(fields["CancelBuildReturnPercent"]);
+        this.EnableSearch = Utility.ParseBool(fields["EnableSearch"]);
+        this.SpawnLevelLimit = Utility.ParseArray<int>(fields["SpawnLevelLimit"]);
+        this.FirstRechargeReward = Utility.ParseMap<string, int>(fields["FirstRechargeReward"]);
+        this.VIPItemReward = Utility.ParseMap<int, int>(fields["VIPItemReward"]);
     }
 
 }

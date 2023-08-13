@@ -63,14 +63,18 @@ class CSharpCsvLoadGenerator:
         content = ''
         space = self.TAB_SPACE * tabs
         if types.is_array_type(origin_typename):
-            content += self.gen_array_field_assign(prefix, origin_typename, name, value_text, tabs)
+            elem_type = lang.map_cs_type(types.array_element_type(origin_typename))
+            content += '%s%s%s = Utility.ParseArray<%s>(%s);\n' % (space, prefix, name, elem_type, value_text)
         elif types.is_map_type(origin_typename):
-            content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
+            key_type, val_type = types.map_key_value_types(origin_typename)
+            key_type = lang.map_cs_type(key_type)
+            val_type = lang.map_cs_type(val_type)
+            content += '%s%s%s = Utility.ParseMap<%s, %s>(%s);\n' % (space, prefix, name, key_type, val_type, value_text)
         elif origin_typename == 'string':
             content += '%s%s%s = %s.Trim();\n' % (space, prefix, name, value_text)
         else:
-            expr = lang.map_cs_parse_expr(origin_typename, value_text)
-            content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
+            func_name = lang.map_cs_parse_func(origin_typename)
+            content += '%s%s%s = %s(%s);\n' % (space, prefix, name, func_name, value_text)
         return content
 
     # 生成嵌入类型的字段加载代码

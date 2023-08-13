@@ -20,29 +20,8 @@ public struct NewbieGuideDefine
         this.Name = record["Name"].Trim();
         this.Type = record["Type"].Trim();
         this.Target = record["Target"].Trim();
-        {
-            var listVal = new List<short>();
-            var strArr = record["Accomplishment"].Split("|", StringSplitOptions.RemoveEmptyEntries);
-            for(int i = 0; i < strArr.Length; i++) 
-            {
-                listVal.Add(short.Parse(strArr[i]));
-            }
-            this.Accomplishment = listVal.ToArray();
-        }
-        {
-            var mapVal = new Dictionary<string, uint>();
-            var kvList = record["Goods"].Split("|", StringSplitOptions.RemoveEmptyEntries);
-            for(int i = 0; i < kvList.Length; i++) 
-            {
-                var pair = kvList[i].Split("=", StringSplitOptions.RemoveEmptyEntries);
-                if (pair.Length == 2) {
-                    var key = pair[0].Trim();
-                    var val = uint.Parse(pair[1]);
-                    mapVal[key] = val;
-                }
-            }
-            this.Goods = mapVal;
-        }
+        this.Accomplishment = Utility.ParseArray<short>(record["Accomplishment"]);
+        this.Goods = Utility.ParseMap<string, uint>(record["Goods"]);
     }
 
 }

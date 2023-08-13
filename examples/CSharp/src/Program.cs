@@ -22,29 +22,29 @@ class Program
 
     static List<Dictionary<string, string>> ReadCSVRecords(string filename)
     {
-        var filepath = Path.GetFullPath(string.Format("{0}/{1}", resRootPath, filename));
-        var reader = new StreamReader(filepath);
-        var csv = new CsvReader(reader, null);
-        csv.GetRecord
-        var lines = ReadFileToLines(filepath);
-        var header = new List<string>();
+        //var filepath = Path.GetFullPath(string.Format("{0}/{1}", resRootPath, filename));
+        //var reader = new StreamReader(filepath);
+        //var csv = new CsvReader(reader, null);
+        
+        //var lines = ReadFileToLines(filepath);
+        //var header = new List<string>();
         var records = new List<Dictionary<string, string>>();
-        for (int i = 0; i < lines.Count; i++)
-        {
-            var line = lines[i];
-            var row = ReadRowFromLine(line);
-            if (i == 0)
-            {
-                header = row;
-                continue;
-            }
-            var record = new Dictionary<string, string>();
-            for (int j = 0; j < row.Count; j++)
-            {
-                record[header[j]] = row[j];
-            }
-            records.Add(record);
-        }
+        //for (int i = 0; i < lines.Count; i++)
+        //{
+        //    var line = lines[i];
+        //    var row = ReadRowFromLine(line);
+        //    if (i == 0)
+        //    {
+        //        header = row;
+        //        continue;
+        //    }
+        //    var record = new Dictionary<string, string>();
+        //    for (int j = 0; j < row.Count; j++)
+        //    {
+        //        record[header[j]] = row[j];
+        //    }
+        //    records.Add(record);
+        //}
         return records;
     }
 

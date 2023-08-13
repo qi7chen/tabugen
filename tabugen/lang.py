@@ -199,28 +199,25 @@ def map_cs_type(typ: str) -> str:
 
 
 # C#字符串解析
-def map_cs_parse_expr(typ: str, param: str) -> str:
-    if typ == 'string':
-        return param + '.Trim()'
-
+def map_cs_parse_func(typ: str) -> str:
     mapping = {
-        'bool': 'bool.Parse',
-        'int8': 'sbyte.Parse',
-        'uint8': 'byte.Parse',
-        'int16': 'short.Parse',
-        'uint16': 'ushort.Parse',
-        'int': 'int.Parse',
-        'uint': 'uint.Parse',
-        'int32': 'int.Parse',
-        'uint32': 'uint.Parse',
-        'int64': 'long.Parse',
-        'uint64': 'ulong.Parse',
-        'float32': 'float.Parse',
-        'float64': 'Double.Parse',
-        'float': 'Double.Parse',
-        'enum': 'int.Parse',
+        'bool': 'Utility.ParseBool',
+        'int8': 'Utility.ParseByte',
+        'uint8': 'Utility.ParseUByte',
+        'int16': 'Utility.ParseShort',
+        'uint16': 'Utility.ParseUShort',
+        'int': 'Utility.ParseInt',
+        'uint': 'Utility.ParseUInt',
+        'int32': 'Utility.ParseInt',
+        'uint32': 'Utility.ParseUInt',
+        'int64': 'Utility.ParseLong',
+        'uint64': 'Utility.ParseULong',
+        'float32': 'Utility.ParseFloat',
+        'float64': 'Utility.ParseDouble',
+        'float': 'Utility.ParseDouble',
+        'enum': 'Utility.ParseInt',
     }
-    return '%s(%s)' % (mapping[typ], param)
+    return mapping[typ]
 
 
 # C#类型默认值
