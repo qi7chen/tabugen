@@ -307,26 +307,35 @@ def is_java_primitive_type(typ: str) -> bool:
 
 
 # java字符串解析
-def map_java_parse_expr(typ: str, param: str) -> str:
-    if typ == 'string':
-        return param + '.trim()'
-
+def map_java_parse_func(typ: str) -> str:
     mapping = {
-        'bool': 'Boolean.parseBoolean',
-        'int8': 'Byte.parseByte',
-        'uint8': 'Byte.parseByte',
-        'int16': 'Short.parseShort',
-        'uint16': 'Short.parseShort',
-        'int': 'Integer.parseInt',
-        'uint': 'Integer.parseInt',
-        'int32': 'Integer.parseInt',
-        'uint32': 'Integer.parseInt',
-        'int64': 'Long.parseLong',
-        'uint64': 'Long.parseLong',
-        'float32': 'Float.parseFloat',
-        'float64': 'Double.parseDouble',
-        'float': 'Double.parseFloat',
-        'enum': 'Integer.parseInt',
+        'bool': 'Utility.parseBool',
+        'int8': 'Utility.parseByte',
+        'uint8': 'Utility.parseByte',
+        'int16': 'Utility.parseShort',
+        'uint16': 'Utility.parseShort',
+        'int': 'Utility.parseInt',
+        'uint': 'Utility.parseInt',
+        'int32': 'Utility.parseInt',
+        'uint32': 'Utility.parseInt',
+        'int64': 'Utility.parseLong',
+        'uint64': 'Utility.parseLong',
+        'float32': 'Utility.parseFloat',
+        'float64': 'Utility.parseDouble',
+        'float': 'Utility.parseDouble',
+        'enum': 'Utility.parseInt',
     }
-    return '%s(%s)' % (mapping[typ], param)
+    return mapping[typ]
 
+
+def map_java_parse_array_func(typ: str) -> str:
+    mapping = {
+        'bool': 'Utility.parseBoolArray',
+        'byte': 'Utility.parseByteArray',
+        'short': 'Utility.parseShortArray',
+        'int': 'Utility.parseIntArray',
+        'long': 'Utility.parseLongArray',
+        'float': 'Utility.parseFloatArray',
+        'double': 'Utility.parseDoubleArray',
+    }
+    return mapping[typ]

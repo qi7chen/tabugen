@@ -160,7 +160,7 @@ class CppStructGenerator:
 
         cpp_content = ''
         if self.load_gen is not None:
-            self.load_gen.setup(args.config_manager_class)
+            self.load_gen.setup('')
             filename = outname + '.h'
             cpp_content = self.load_gen.generate(descriptors, args, filename)
 

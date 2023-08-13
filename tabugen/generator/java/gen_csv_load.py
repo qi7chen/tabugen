@@ -18,58 +18,26 @@ class JavaCsvLoadGenerator:
     def setup(self, name):
         pass
 
-    # 生成array类型的赋值代码
-    def gen_array_field_assign(self, prefix: str, typename: str, name: str, value_text: str, tabs: int) -> str:
-        space = self.TAB_SPACE * tabs
-        elem_type = types.array_element_type(typename)
-        elem_java_type = lang.map_java_type(elem_type)
-        # box_elem_type = lang.java_box_type(elem_java_type)
-        content = ''
-        content += '%sString[] strArr = StringUtils.split(%s, "%s");\n' % (space, value_text, predef.PredefDelim1)
-        content += '%s%s%s = new %s[strArr.length];\n' % (space, prefix, name, elem_java_type)
-        content += "%sfor(int i = 0; i < strArr.length; i++) \n" % space
-        content += '%s{\n' % space
-        expr = lang.map_java_parse_expr(elem_type, 'strArr[i]')
-        content += '%s    %s%s[i] = %s;\n' % (space, prefix, name,  expr)
-        content += '%s}\n' % space
-        return content
-
-    # 生成map赋值
-    def gen_map_field_assign(self, prefix: str, typename: str, name: str, row_name: str, tabs: int) -> str:
-        space = self.TAB_SPACE * tabs
-        key_type, val_type = types.map_key_value_types(typename)
-        box_key_type = lang.java_box_type(lang.map_java_type(key_type))
-        box_val_type = lang.java_box_type(lang.map_java_type(val_type))
-
-        content = '%sMap<%s, %s> mapVal = new HashMap<>();\n' % (space, box_key_type, box_val_type)
-        content += '%sString[] kvList = StringUtils.split(%s, "%s");\n' % (space, row_name, predef.PredefDelim1)
-        content += "%sfor(int i = 0; i < kvList.length; i++) \n" % space
-        content += '%s{\n' % space
-        content += '%s    String[] pair = kvList[i].split("%s");\n' % (space, predef.PredefDelim2)
-        content += '%s    if (pair.length == 2) {\n' % space
-        key_parse = lang.map_java_parse_expr(key_type, 'pair[0]')
-        val_parse = lang.map_java_parse_expr(val_type, 'pair[1]')
-        content += '%s        %s key = %s;\n' % (space, box_key_type, key_parse)
-        content += '%s        %s val = %s;\n' % (space, box_val_type, val_parse)
-        content += '%s        mapVal.put(key, val);\n' % space
-        content += '%s    }\n' % space
-        content += '%s}\n' % space
-        content += '%s%s%s = mapVal;\n' % (space, prefix, name)
-        return content
-
     # 字段比较
     def gen_field_assign(self, prefix: str, origin_typename: str, name: str, value_text: str, tabs: int) -> str:
         content = ''
         space = self.TAB_SPACE * tabs
         if types.is_array_type(origin_typename):
-            content += self.gen_array_field_assign(prefix, origin_typename, name, value_text, tabs)
+            elem_type = types.array_element_type(origin_typename)
+            elem_java_type = lang.map_java_type(elem_type)
+            print('elem_java_type', elem_java_type)
+            func_name = lang.map_java_parse_array_func(elem_java_type)
+            content += '%s%s%s = %s(%s);\n' % (space, prefix, name, func_name, value_text)
         elif types.is_map_type(origin_typename):
-            content += self.gen_map_field_assign(prefix, origin_typename, name, value_text, tabs)
+            key_type, val_type = types.map_key_value_types(origin_typename)
+            box_key_type = lang.java_box_type(lang.map_java_type(key_type))
+            box_val_type = lang.java_box_type(lang.map_java_type(val_type))
+            content += '%s%s%s = Utility.parseMap(%s, %s.class, %s.class);\n' % (space, prefix, name, value_text, box_key_type, box_val_type)
         elif origin_typename == 'string':
-            content += '%s%s%s = StringUtils.strip(%s);\n' % (space, prefix, name, value_text)
+            content += '%s%s%s = %s;\n' % (space, prefix, name, value_text)
         else:
-            expr = lang.map_java_parse_expr(origin_typename, value_text)
-            content += '%s%s%s = %s;\n' % (space, prefix, name, expr)
+            func_name = lang.map_java_parse_func(origin_typename)
+            content += '%s%s%s = %s(%s);\n' % (space, prefix, name, func_name, value_text)
         return content
 
     # 生成内部类的parse
@@ -87,8 +55,8 @@ class JavaCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         col = start
         content = '%s{\n' % space
-        content += '%s    ArrayList<%s> listVal = new ArrayList<>();\n' % (space, inner_class_type)
-        content += '%s    for (int i = 1; i < %s.size(); i++)\n' % (space, rec_name)
+        content += '%s    ArrayList<%s> list = new ArrayList<>();\n' % (space, inner_class_type)
+        content += '%s    for (int i = 0; i < %s.size(); i++)\n' % (space, rec_name)
         content += '%s    {\n' % space
         content += '%s        %s val = new %s();\n' % (space, inner_class_type, inner_class_type)
         content += '%s        String strVal = "";\n' % space
@@ -96,17 +64,20 @@ class JavaCsvLoadGenerator:
             field = struct['fields'][col + i]
             origin_typename = field['original_type_name']
             field_name = tableutil.remove_field_suffix(field['camel_case_name'])
-            text = '%s        if ((strVal = %s.get("%s" + i)) != null) {\n' % (space, rec_name, field_name)
+            text = '%s        if ((strVal = %s.get(String.format("%s[%%d]", i))) != null) {\n' % (space, rec_name, field_name)
             text += self.gen_field_assign('val.', origin_typename, field_name, 'strVal', tabs+3)
-            text += '%s        } else {\n' % space
-            text += '%s            break; \n' % space
-            text += '%s        }\n' % space
+            if i == 0:
+                text += '%s        } else {\n' % space
+                text += '%s            break; \n' % space
+                text += '%s        }\n' % space
+            else:
+                text += '%s        } \n' % space
             content += text
-        content += '%s        listVal.add(val);\n' % space
+        content += '%s        list.add(val);\n' % space
         content += '%s    }\n' % space
-        content += '%s    if (!listVal.isEmpty()) {\n' % space
-        content += '%s        %s%s = new %s[listVal.size()];\n' % (space, prefix, inner_var_name, inner_class_type)
-        content += '%s        %s%s = listVal.toArray(%s%s);\n' % (space, prefix, inner_var_name, prefix, inner_var_name)
+        content += '%s    if (!list.isEmpty()) {\n' % space
+        content += '%s        %s%s = new %s[list.size()];\n' % (space, prefix, inner_var_name, inner_class_type)
+        content += '%s        %s%s = list.toArray(%s%s);\n' % (space, prefix, inner_var_name, prefix, inner_var_name)
         content += '%s    }\n' % space
         content += '%s}\n' % space
         return content
@@ -124,7 +95,6 @@ class JavaCsvLoadGenerator:
         content = ''
         content += '%spublic void parseFrom(Map<String, String> record) \n' % space
         content += '%s{\n' % space
-        content += '%s    String strTmp;\n' % space
         for col, field in enumerate(struct['fields']):
             if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
@@ -132,10 +102,8 @@ class JavaCsvLoadGenerator:
                     inner_field_done = True
             else:
                 origin_typename = field['original_type_name']
-                content += '%s    strTmp = record.get("%s");\n' % (space, field['name'])
-                content += '%s    if (StringUtils.isNotEmpty(strTmp)) {\n' % space
-                content += self.gen_field_assign('this.', origin_typename, field['name'], 'strTmp', tabs+2)
-                content += '%s    }\n' % space
+                key = 'record.get("%s")' % field['name']
+                content += self.gen_field_assign('this.', origin_typename, field['name'], key, tabs+1)
 
         content += '%s}\n\n' % space
         return content
@@ -154,14 +122,11 @@ class JavaCsvLoadGenerator:
         content += '%s// parse %s from string fields\n' % (space, struct['name'])
         content += '%spublic void parseFrom(Map<String, String> fields)\n' % space
         content += '%s{\n' % space
-        content += '%s    String strTmp;\n' % space
         for row in rows:
             name = row[keyidx].strip()
             origin_typename = row[typeidx].strip()
-            content += '%s    strTmp = fields.get("%s");\n' % (space, name)
-            content += '%s    if (StringUtils.isNotEmpty(strTmp)) {\n' % space
-            content += self.gen_field_assign('this.', origin_typename, name, 'strTmp', tabs + 2)
-            content += '%s    }\n' % space
+            key = 'fields.get("%s")' % name
+            content += self.gen_field_assign('this.', origin_typename, name, key, tabs + 1)
         content += '%s}\n\n' % space
         return content
 
