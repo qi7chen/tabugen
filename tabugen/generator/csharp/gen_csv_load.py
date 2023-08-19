@@ -64,12 +64,12 @@ class CSharpCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         if types.is_array_type(origin_typename):
             elem_type = lang.map_cs_type(types.array_element_type(origin_typename))
-            content += '%s%s%s = Utility.ParseArray<%s>(%s);\n' % (space, prefix, name, elem_type, value_text)
+            content += '%s%s%s = Conv.ParseArray<%s>(%s);\n' % (space, prefix, name, elem_type, value_text)
         elif types.is_map_type(origin_typename):
             key_type, val_type = types.map_key_value_types(origin_typename)
             key_type = lang.map_cs_type(key_type)
             val_type = lang.map_cs_type(val_type)
-            content += '%s%s%s = Utility.ParseMap<%s, %s>(%s);\n' % (space, prefix, name, key_type, val_type, value_text)
+            content += '%s%s%s = Conv.ParseMap<%s, %s>(%s);\n' % (space, prefix, name, key_type, val_type, value_text)
         elif origin_typename == 'string':
             content += '%s%s%s = %s.Trim();\n' % (space, prefix, name, value_text)
         else:

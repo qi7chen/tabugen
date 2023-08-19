@@ -177,3 +177,7 @@ class CSharpStructGenerator:
         filename = os.path.abspath(filepath)
         strutil.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote C# source file to', filename)
+
+        filename = os.path.join(os.path.split(filepath)[0], 'Conv.cs')
+        strutil.save_content_if_not_same(filename, util_content, 'utf-8')
+        print('wrote C# source file to', filename)

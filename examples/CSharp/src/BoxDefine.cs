@@ -25,9 +25,9 @@ public struct BoxProbabilityDefine
     public void ParseFrom(Dictionary<string, string> record) 
     {
         this.ID = record["ID"].Trim();
-        this.Total = Utility.ParseInt(record["Total"]);
-        this.Time = Utility.ParseInt(record["Time"]);
-        this.Repeat = Utility.ParseBool(record["Repeat"]);
+        this.Total = Conv.ParseInt(record["Total"]);
+        this.Time = Conv.ParseInt(record["Time"]);
+        this.Repeat = Conv.ParseBool(record["Repeat"]);
         {
             var listVal = new List<ProbabilityGoodsDefine>();
             for (int i = 1; i < record.Count; i++)
@@ -40,12 +40,12 @@ public struct BoxProbabilityDefine
                     break; 
                 }
                 if (record.TryGetValue($"Num{i}", out strVal)) {
-                    val.Num = Utility.ParseUInt(strVal);
+                    val.Num = Conv.ParseUInt(strVal);
                 } else {
                     break; 
                 }
                 if (record.TryGetValue($"Probability{i}", out strVal)) {
-                    val.Probability = Utility.ParseUInt(strVal);
+                    val.Probability = Conv.ParseUInt(strVal);
                 } else {
                     break; 
                 }

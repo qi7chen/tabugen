@@ -20,8 +20,8 @@ public struct NewbieGuideDefine
         this.Name = record["Name"].Trim();
         this.Type = record["Type"].Trim();
         this.Target = record["Target"].Trim();
-        this.Accomplishment = Utility.ParseArray<short>(record["Accomplishment"]);
-        this.Goods = Utility.ParseMap<string, uint>(record["Goods"]);
+        this.Accomplishment = Conv.ParseArray<short>(record["Accomplishment"]);
+        this.Goods = Conv.ParseMap<string, uint>(record["Goods"]);
     }
 
 }

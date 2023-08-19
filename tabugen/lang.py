@@ -201,21 +201,21 @@ def map_cs_type(typ: str) -> str:
 # C#字符串解析
 def map_cs_parse_func(typ: str) -> str:
     mapping = {
-        'bool': 'Utility.ParseBool',
-        'int8': 'Utility.ParseByte',
-        'uint8': 'Utility.ParseUByte',
-        'int16': 'Utility.ParseShort',
-        'uint16': 'Utility.ParseUShort',
-        'int': 'Utility.ParseInt',
-        'uint': 'Utility.ParseUInt',
-        'int32': 'Utility.ParseInt',
-        'uint32': 'Utility.ParseUInt',
-        'int64': 'Utility.ParseLong',
-        'uint64': 'Utility.ParseULong',
-        'float32': 'Utility.ParseFloat',
-        'float64': 'Utility.ParseDouble',
-        'float': 'Utility.ParseDouble',
-        'enum': 'Utility.ParseInt',
+        'bool': 'Conv.ParseBool',
+        'int8': 'Conv.ParseByte',
+        'uint8': 'Conv.ParseUByte',
+        'int16': 'Conv.ParseShort',
+        'uint16': 'Conv.ParseUShort',
+        'int': 'Conv.ParseInt',
+        'uint': 'Conv.ParseUInt',
+        'int32': 'Conv.ParseInt',
+        'uint32': 'Conv.ParseUInt',
+        'int64': 'Conv.ParseLong',
+        'uint64': 'Conv.ParseULong',
+        'float32': 'Conv.ParseFloat',
+        'float64': 'Conv.ParseDouble',
+        'float': 'Conv.ParseDouble',
+        'enum': 'Conv.ParseInt',
     }
     return mapping[typ]
 
@@ -306,33 +306,33 @@ def is_java_primitive_type(typ: str) -> bool:
 # java字符串解析
 def map_java_parse_func(typ: str) -> str:
     mapping = {
-        'bool': 'Utility.parseBool',
-        'int8': 'Utility.parseByte',
-        'uint8': 'Utility.parseByte',
-        'int16': 'Utility.parseShort',
-        'uint16': 'Utility.parseShort',
-        'int': 'Utility.parseInt',
-        'uint': 'Utility.parseInt',
-        'int32': 'Utility.parseInt',
-        'uint32': 'Utility.parseInt',
-        'int64': 'Utility.parseLong',
-        'uint64': 'Utility.parseLong',
-        'float32': 'Utility.parseFloat',
-        'float64': 'Utility.parseDouble',
-        'float': 'Utility.parseDouble',
-        'enum': 'Utility.parseInt',
+        'bool': 'Conv.parseBool',
+        'int8': 'Conv.parseByte',
+        'uint8': 'Conv.parseByte',
+        'int16': 'Conv.parseShort',
+        'uint16': 'Conv.parseShort',
+        'int': 'Conv.parseInt',
+        'uint': 'Conv.parseInt',
+        'int32': 'Conv.parseInt',
+        'uint32': 'Conv.parseInt',
+        'int64': 'Conv.parseLong',
+        'uint64': 'Conv.parseLong',
+        'float32': 'Conv.parseFloat',
+        'float64': 'Conv.parseDouble',
+        'float': 'Conv.parseDouble',
+        'enum': 'Conv.parseInt',
     }
     return mapping[typ]
 
 
 def map_java_parse_array_func(typ: str) -> str:
     mapping = {
-        'bool': 'Utility.parseBoolArray',
-        'byte': 'Utility.parseByteArray',
-        'short': 'Utility.parseShortArray',
-        'int': 'Utility.parseIntArray',
-        'long': 'Utility.parseLongArray',
-        'float': 'Utility.parseFloatArray',
-        'double': 'Utility.parseDoubleArray',
+        'bool': 'Conv.parseBoolArray',
+        'byte': 'Conv.parseByteArray',
+        'short': 'Conv.parseShortArray',
+        'int': 'Conv.parseIntArray',
+        'long': 'Conv.parseLongArray',
+        'float': 'Conv.parseFloatArray',
+        'double': 'Conv.parseDoubleArray',
     }
     return mapping[typ]

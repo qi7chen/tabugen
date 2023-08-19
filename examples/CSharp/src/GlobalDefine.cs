@@ -26,19 +26,19 @@ public struct GlobalPropertyDefine
     // parse GlobalPropertyDefine from string fields
     public void ParseFrom(Dictionary<string, string> fields)
     {
-        this.GoldExchangeTimeFactor1 = Utility.ParseDouble(fields["GoldExchangeTimeFactor1"]);
-        this.GoldExchangeTimeFactor2 = Utility.ParseDouble(fields["GoldExchangeTimeFactor2"]);
-        this.GoldExchangeTimeFactor3 = Utility.ParseDouble(fields["GoldExchangeTimeFactor3"]);
-        this.GoldExchangeResource1Price = Utility.ParseUShort(fields["GoldExchangeResource1Price"]);
-        this.GoldExchangeResource2Price = Utility.ParseUShort(fields["GoldExchangeResource2Price"]);
-        this.GoldExchangeResource3Price = Utility.ParseUShort(fields["GoldExchangeResource3Price"]);
-        this.GoldExchangeResource4Price = Utility.ParseUShort(fields["GoldExchangeResource4Price"]);
-        this.FreeCompleteSeconds = Utility.ParseUShort(fields["FreeCompleteSeconds"]);
-        this.CancelBuildReturnPercent = Utility.ParseUShort(fields["CancelBuildReturnPercent"]);
-        this.EnableSearch = Utility.ParseBool(fields["EnableSearch"]);
-        this.SpawnLevelLimit = Utility.ParseArray<int>(fields["SpawnLevelLimit"]);
-        this.FirstRechargeReward = Utility.ParseMap<string, int>(fields["FirstRechargeReward"]);
-        this.VIPItemReward = Utility.ParseMap<int, int>(fields["VIPItemReward"]);
+        this.GoldExchangeTimeFactor1 = Conv.ParseDouble(fields["GoldExchangeTimeFactor1"]);
+        this.GoldExchangeTimeFactor2 = Conv.ParseDouble(fields["GoldExchangeTimeFactor2"]);
+        this.GoldExchangeTimeFactor3 = Conv.ParseDouble(fields["GoldExchangeTimeFactor3"]);
+        this.GoldExchangeResource1Price = Conv.ParseUShort(fields["GoldExchangeResource1Price"]);
+        this.GoldExchangeResource2Price = Conv.ParseUShort(fields["GoldExchangeResource2Price"]);
+        this.GoldExchangeResource3Price = Conv.ParseUShort(fields["GoldExchangeResource3Price"]);
+        this.GoldExchangeResource4Price = Conv.ParseUShort(fields["GoldExchangeResource4Price"]);
+        this.FreeCompleteSeconds = Conv.ParseUShort(fields["FreeCompleteSeconds"]);
+        this.CancelBuildReturnPercent = Conv.ParseUShort(fields["CancelBuildReturnPercent"]);
+        this.EnableSearch = Conv.ParseBool(fields["EnableSearch"]);
+        this.SpawnLevelLimit = Conv.ParseArray<int>(fields["SpawnLevelLimit"]);
+        this.FirstRechargeReward = Conv.ParseMap<string, int>(fields["FirstRechargeReward"]);
+        this.VIPItemReward = Conv.ParseMap<int, int>(fields["VIPItemReward"]);
     }
 
 }

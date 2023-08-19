@@ -37,29 +37,29 @@ public struct SoldierPropertyDefine
     public void ParseFrom(Dictionary<string, string> record) 
     {
         this.Name = record["Name"].Trim();
-        this.Level = Utility.ParseInt(record["Level"]);
+        this.Level = Conv.ParseInt(record["Level"]);
         this.NameID = record["NameID"].Trim();
         this.BuildingName = record["BuildingName"].Trim();
-        this.BuildingLevel = Utility.ParseUInt(record["BuildingLevel"]);
-        this.RequireSpace = Utility.ParseUInt(record["RequireSpace"]);
-        this.Volume = Utility.ParseUInt(record["Volume"]);
-        this.UpgradeTime = Utility.ParseUInt(record["UpgradeTime"]);
+        this.BuildingLevel = Conv.ParseUInt(record["BuildingLevel"]);
+        this.RequireSpace = Conv.ParseUInt(record["RequireSpace"]);
+        this.Volume = Conv.ParseUInt(record["Volume"]);
+        this.UpgradeTime = Conv.ParseUInt(record["UpgradeTime"]);
         this.UpgradeMaterialID = record["UpgradeMaterialID"].Trim();
-        this.UpgradeMaterialNum = Utility.ParseLong(record["UpgradeMaterialNum"]);
+        this.UpgradeMaterialNum = Conv.ParseLong(record["UpgradeMaterialNum"]);
         this.ConsumeMaterial = record["ConsumeMaterial"].Trim();
-        this.ConsumeMaterialNum = Utility.ParseInt(record["ConsumeMaterialNum"]);
-        this.ConsumeTime = Utility.ParseInt(record["ConsumeTime"]);
-        this.Act = Utility.ParseInt(record["Act"]);
-        this.Hp = Utility.ParseInt(record["Hp"]);
-        this.BombLoad = Utility.ParseShort(record["BombLoad"]);
-        this.Hurt = Utility.ParseUInt(record["Hurt"]);
-        this.Duration = Utility.ParseDouble(record["Duration"]);
-        this.TriggerInterval = Utility.ParseDouble(record["TriggerInterval"]);
-        this.SearchScope = Utility.ParseShort(record["SearchScope"]);
-        this.AtkFrequency = Utility.ParseDouble(record["AtkFrequency"]);
-        this.AtkRange = Utility.ParseDouble(record["AtkRange"]);
-        this.MovingSpeed = Utility.ParseDouble(record["MovingSpeed"]);
-        this.EnableBurn = Utility.ParseBool(record["EnableBurn"]);
+        this.ConsumeMaterialNum = Conv.ParseInt(record["ConsumeMaterialNum"]);
+        this.ConsumeTime = Conv.ParseInt(record["ConsumeTime"]);
+        this.Act = Conv.ParseInt(record["Act"]);
+        this.Hp = Conv.ParseInt(record["Hp"]);
+        this.BombLoad = Conv.ParseShort(record["BombLoad"]);
+        this.Hurt = Conv.ParseUInt(record["Hurt"]);
+        this.Duration = Conv.ParseDouble(record["Duration"]);
+        this.TriggerInterval = Conv.ParseDouble(record["TriggerInterval"]);
+        this.SearchScope = Conv.ParseShort(record["SearchScope"]);
+        this.AtkFrequency = Conv.ParseDouble(record["AtkFrequency"]);
+        this.AtkRange = Conv.ParseDouble(record["AtkRange"]);
+        this.MovingSpeed = Conv.ParseDouble(record["MovingSpeed"]);
+        this.EnableBurn = Conv.ParseBool(record["EnableBurn"]);
     }
 
 }
