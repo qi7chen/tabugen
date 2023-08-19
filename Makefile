@@ -3,14 +3,7 @@
 # See accompanying files LICENSE.
 
 
-all: run install upload
-
-# run all examples
-run:
-	cd examples/Cpp && ${MAKE}
-	cd examples/CSharp && ${MAKE}
-	cd examples/Go && ${MAKE}
-	cd examples/Java && ${MAKE}
+all: install upload
 
 # build distribute binary
 install:
