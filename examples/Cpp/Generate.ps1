@@ -24,16 +24,15 @@ Function Generate {
     tabucli 全局变量表.xlsx GlobalDefine
 }
 
+# 需要先安装vcpkg，再通过vcpkg安装boost
 Function RunTest {
     rm cmake-build -r -fo
     md cmake-build
     cd cmake-build
     
-    #cmake -B [build directory] -S . "-DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake"
-    #cmake --build [build directory]
-    cmake ..
+    cmake -B .. -S . "-DCMAKE_TOOLCHAIN_FILE=D:/App/vcpkg/scripts/buildsystems/vcpkg.cmake"
     cmake --build .
-    cmake-build/CppExample
+    cmake-build/Debug/tabugencpp
 }
 
 Generate

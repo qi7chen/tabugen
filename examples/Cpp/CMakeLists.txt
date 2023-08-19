@@ -7,7 +7,20 @@ project(TabugenCpp LANGUAGES CXX)
 
 set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
-# find_package(Boost REQUIRED)
+set(Boost_USE_STATIC_LIBS ON)  # only find static libs
+set(Boost_USE_DEBUG_LIBS OFF)  # ignore debug libs and
+set(Boost_USE_RELEASE_LIBS ON)  # only find release libs
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME ON)  # link Boost Static libraries
+
+find_package(Boost REQUIRED)
+if (Boost_FOUND)
+    message(STATUS "include Boost dir ${Boost_INCLUDE_DIRS}")
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+else()
+    message(WARNING "Boost not found")
+endif()
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)

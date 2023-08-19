@@ -111,7 +111,7 @@ static void RecordToKVMap(const std::vector<Record>& records, Record& out)
     }
 }
 
-static std::string resPath = "../datasheet/res";
+static std::string resPath = "../../datasheet/res";
 
 template <typename T>
 static void LoadCsvToConfig(const char* filename, vector<T>& data)
