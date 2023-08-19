@@ -151,7 +151,7 @@ class GoStructGenerator:
         if not filepath.endswith('.go'):
             filepath += '.go'
         filename = os.path.abspath(filepath)
-        if self.load_gen is not None:
+        if self.load_gen is not None and args.with_conv:
             self.load_gen.gen_helper_file(filename, version.VER_STRING, args)
 
         strutil.save_content_if_not_same(filename, content, 'utf-8')

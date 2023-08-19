@@ -74,6 +74,7 @@ def main():
     # source code options
     parser.add_argument("--project_kind", default='', help="project kind: server, client, manager")
     parser.add_argument("--with_csv_parse", action='store_true', help="also generator csv parse method code")
+    parser.add_argument("--with_conv", action='store_true', help="also generator conv utility code")
     parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
     parser.add_argument("--go_out", help="file path of generate go struct source code")
     parser.add_argument("--cs_out", help="file path of generate C# class source code")

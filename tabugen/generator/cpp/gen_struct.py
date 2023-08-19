@@ -181,7 +181,8 @@ class CppStructGenerator:
                 print('file content not modified', filename)
 
         # 3rd party parse API
-        filename = os.path.join(os.path.split(filepath)[0], 'Conv.h')
-        modified = strutil.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
-        if modified:
-            print('wrote 3rd source file to', filename)
+        if args.with_conv and self.load_gen is not None:
+            filename = os.path.join(os.path.split(filepath)[0], 'Conv.h')
+            modified = strutil.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
+            if modified:
+                print('wrote 3rd source file to', filename)

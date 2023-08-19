@@ -13,7 +13,7 @@ $Env:PYTHONPATH=$ROOT_DIR
 Function tabucli {
     $excelPath = Join-Path $DATASHEET_DIR $args[0]
     $outSrcPath = Join-Path $OUT_SRC_DIR $args[1]
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cpp_out=$outSrcPath --with_csv_parse --package=config --source_file_encoding=utf_8_sig
+    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cpp_out=$outSrcPath --with_csv_parse --with_conv --package=config --source_file_encoding=utf_8_sig
     python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=csv --out_data_path=$OUT_DATA_DIR
 }
 
