@@ -3,12 +3,17 @@
 
 ## 示例
 
-1. 需要安装[Go SDK 1.21+](https://go.dev/download)
+### 如何执行
+
+1. 因为使用了泛型相关的API，需要安装[Go SDK 1.21+](https://go.dev/download)
 2. 使用powershell执行`Generate.ps1`，即可将excel导出为csv并且生成对应的Go加载解析代码
+3. 可选，安装IDE调试环境 [Jetbrains Goland](https://www.jetbrains.com/goland/)
 
 
+## 生成解析代码
 
-## 配置详解
+如果指定了生成解析代码，解析函数都被实现在`conv.go`里，在`--with-conv`选项开启的时候，会生成`conv.go`文件。
+如果想自己实现`conv.go`里API，用同名文件替换，并在导出的时候不指定`--with-conv`选项。
 
 
 ### meta表里的配置
@@ -30,4 +35,5 @@
 * `--package` 指定Go包名
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
 * `--with_csv_parse` 是否包含CSV数据加载代码
+* `--with-conv` 生成`conv.go`文件
 * `--go_fmt` 生成代码文件后，对文件执行go fmt格式化

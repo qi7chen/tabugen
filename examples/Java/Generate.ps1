@@ -27,8 +27,8 @@ Function Generate {
 
 Function RunTest {
     mvn compile
-    mvn exec:java -Dexec.mainClass="Sample"
-    mvn clean
+    #mvn exec:java -Dexec.mainClass="Sample"
+    #mvn clean
 }
 
 Generate
