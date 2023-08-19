@@ -32,7 +32,7 @@ class JavaCsvLoadGenerator:
             key_type, val_type = types.map_key_value_types(origin_typename)
             box_key_type = lang.java_box_type(lang.map_java_type(key_type))
             box_val_type = lang.java_box_type(lang.map_java_type(val_type))
-            content += '%s%s%s = Utility.parseMap(%s, %s.class, %s.class);\n' % (space, prefix, name, value_text, box_key_type, box_val_type)
+            content += '%s%s%s = Conv.parseMap(%s, %s.class, %s.class);\n' % (space, prefix, name, value_text, box_key_type, box_val_type)
         elif origin_typename == 'string':
             content += '%s%s%s = %s;\n' % (space, prefix, name, value_text)
         else:

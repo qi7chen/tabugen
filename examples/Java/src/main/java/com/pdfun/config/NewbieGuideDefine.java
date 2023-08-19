@@ -18,8 +18,8 @@ public class NewbieGuideDefine
         this.Name = record.get("Name");
         this.Type = record.get("Type");
         this.Target = record.get("Target");
-        this.Accomplishment = Utility.parseShortArray(record.get("Accomplishment"));
-        this.Goods = Utility.parseMap(record.get("Goods"), String.class, Integer.class);
+        this.Accomplishment = Conv.parseShortArray(record.get("Accomplishment"));
+        this.Goods = Conv.parseMap(record.get("Goods"), String.class, Integer.class);
     }
 
 }

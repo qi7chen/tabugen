@@ -23,9 +23,9 @@ public class BoxProbabilityDefine
     public void parseFrom(Map<String, String> record) 
     {
         this.ID = record.get("ID");
-        this.Total = Utility.parseInt(record.get("Total"));
-        this.Time = Utility.parseInt(record.get("Time"));
-        this.Repeat = Utility.parseBool(record.get("Repeat"));
+        this.Total = Conv.parseInt(record.get("Total"));
+        this.Time = Conv.parseInt(record.get("Time"));
+        this.Repeat = Conv.parseBool(record.get("Repeat"));
         {
             ArrayList<ProbabilityGoodsDefine> list = new ArrayList<>();
             for (int i = 0; i < record.size(); i++)
@@ -38,10 +38,10 @@ public class BoxProbabilityDefine
                     break; 
                 }
                 if ((strVal = record.get(String.format("Num[%d]", i))) != null) {
-                    val.Num = Utility.parseInt(strVal);
+                    val.Num = Conv.parseInt(strVal);
                 } 
                 if ((strVal = record.get(String.format("Probability[%d]", i))) != null) {
-                    val.Probability = Utility.parseInt(strVal);
+                    val.Probability = Conv.parseInt(strVal);
                 } 
                 list.add(val);
             }

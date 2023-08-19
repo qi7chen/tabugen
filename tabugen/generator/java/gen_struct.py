@@ -176,7 +176,7 @@ class JavaStructGenerator:
         mgr_content += '}\n'
 
         if self.load_gen is not None:
-            filename = '%s/%s' % (filepath, 'Utility.java')
+            filename = '%s/%s' % (filepath, 'Conv.java')
             util_content = java_template.JAVA_CONV_TEMPLATE % args.package
             class_dict[filename] = util_content
 

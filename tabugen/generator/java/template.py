@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class Utility {
+public class Conv {
     private static HashMap<Class<?>, Function<String,?>> parsers = new HashMap<>();
 
     static {

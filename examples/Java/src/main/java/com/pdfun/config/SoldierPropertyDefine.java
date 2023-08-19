@@ -35,29 +35,29 @@ public class SoldierPropertyDefine
     public void parseFrom(Map<String, String> record) 
     {
         this.Name = record.get("Name");
-        this.Level = Utility.parseInt(record.get("Level"));
+        this.Level = Conv.parseInt(record.get("Level"));
         this.NameID = record.get("NameID");
         this.BuildingName = record.get("BuildingName");
-        this.BuildingLevel = Utility.parseInt(record.get("BuildingLevel"));
-        this.RequireSpace = Utility.parseInt(record.get("RequireSpace"));
-        this.Volume = Utility.parseInt(record.get("Volume"));
-        this.UpgradeTime = Utility.parseInt(record.get("UpgradeTime"));
+        this.BuildingLevel = Conv.parseInt(record.get("BuildingLevel"));
+        this.RequireSpace = Conv.parseInt(record.get("RequireSpace"));
+        this.Volume = Conv.parseInt(record.get("Volume"));
+        this.UpgradeTime = Conv.parseInt(record.get("UpgradeTime"));
         this.UpgradeMaterialID = record.get("UpgradeMaterialID");
-        this.UpgradeMaterialNum = Utility.parseLong(record.get("UpgradeMaterialNum"));
+        this.UpgradeMaterialNum = Conv.parseLong(record.get("UpgradeMaterialNum"));
         this.ConsumeMaterial = record.get("ConsumeMaterial");
-        this.ConsumeMaterialNum = Utility.parseInt(record.get("ConsumeMaterialNum"));
-        this.ConsumeTime = Utility.parseInt(record.get("ConsumeTime"));
-        this.Act = Utility.parseInt(record.get("Act"));
-        this.Hp = Utility.parseInt(record.get("Hp"));
-        this.BombLoad = Utility.parseShort(record.get("BombLoad"));
-        this.Hurt = Utility.parseInt(record.get("Hurt"));
-        this.Duration = Utility.parseDouble(record.get("Duration"));
-        this.TriggerInterval = Utility.parseDouble(record.get("TriggerInterval"));
-        this.SearchScope = Utility.parseShort(record.get("SearchScope"));
-        this.AtkFrequency = Utility.parseDouble(record.get("AtkFrequency"));
-        this.AtkRange = Utility.parseDouble(record.get("AtkRange"));
-        this.MovingSpeed = Utility.parseDouble(record.get("MovingSpeed"));
-        this.EnableBurn = Utility.parseBool(record.get("EnableBurn"));
+        this.ConsumeMaterialNum = Conv.parseInt(record.get("ConsumeMaterialNum"));
+        this.ConsumeTime = Conv.parseInt(record.get("ConsumeTime"));
+        this.Act = Conv.parseInt(record.get("Act"));
+        this.Hp = Conv.parseInt(record.get("Hp"));
+        this.BombLoad = Conv.parseShort(record.get("BombLoad"));
+        this.Hurt = Conv.parseInt(record.get("Hurt"));
+        this.Duration = Conv.parseDouble(record.get("Duration"));
+        this.TriggerInterval = Conv.parseDouble(record.get("TriggerInterval"));
+        this.SearchScope = Conv.parseShort(record.get("SearchScope"));
+        this.AtkFrequency = Conv.parseDouble(record.get("AtkFrequency"));
+        this.AtkRange = Conv.parseDouble(record.get("AtkRange"));
+        this.MovingSpeed = Conv.parseDouble(record.get("MovingSpeed"));
+        this.EnableBurn = Conv.parseBool(record.get("EnableBurn"));
     }
 
 }

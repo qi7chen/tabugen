@@ -24,19 +24,19 @@ public class GlobalPropertyDefine
     // parse GlobalPropertyDefine from string fields
     public void parseFrom(Map<String, String> fields)
     {
-        this.GoldExchangeTimeFactor1 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor1"));
-        this.GoldExchangeTimeFactor2 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor2"));
-        this.GoldExchangeTimeFactor3 = Utility.parseDouble(fields.get("GoldExchangeTimeFactor3"));
-        this.GoldExchangeResource1Price = Utility.parseShort(fields.get("GoldExchangeResource1Price"));
-        this.GoldExchangeResource2Price = Utility.parseShort(fields.get("GoldExchangeResource2Price"));
-        this.GoldExchangeResource3Price = Utility.parseShort(fields.get("GoldExchangeResource3Price"));
-        this.GoldExchangeResource4Price = Utility.parseShort(fields.get("GoldExchangeResource4Price"));
-        this.FreeCompleteSeconds = Utility.parseShort(fields.get("FreeCompleteSeconds"));
-        this.CancelBuildReturnPercent = Utility.parseShort(fields.get("CancelBuildReturnPercent"));
-        this.EnableSearch = Utility.parseBool(fields.get("EnableSearch"));
-        this.SpawnLevelLimit = Utility.parseIntArray(fields.get("SpawnLevelLimit"));
-        this.FirstRechargeReward = Utility.parseMap(fields.get("FirstRechargeReward"), String.class, Integer.class);
-        this.VIPItemReward = Utility.parseMap(fields.get("VIPItemReward"), Integer.class, Integer.class);
+        this.GoldExchangeTimeFactor1 = Conv.parseDouble(fields.get("GoldExchangeTimeFactor1"));
+        this.GoldExchangeTimeFactor2 = Conv.parseDouble(fields.get("GoldExchangeTimeFactor2"));
+        this.GoldExchangeTimeFactor3 = Conv.parseDouble(fields.get("GoldExchangeTimeFactor3"));
+        this.GoldExchangeResource1Price = Conv.parseShort(fields.get("GoldExchangeResource1Price"));
+        this.GoldExchangeResource2Price = Conv.parseShort(fields.get("GoldExchangeResource2Price"));
+        this.GoldExchangeResource3Price = Conv.parseShort(fields.get("GoldExchangeResource3Price"));
+        this.GoldExchangeResource4Price = Conv.parseShort(fields.get("GoldExchangeResource4Price"));
+        this.FreeCompleteSeconds = Conv.parseShort(fields.get("FreeCompleteSeconds"));
+        this.CancelBuildReturnPercent = Conv.parseShort(fields.get("CancelBuildReturnPercent"));
+        this.EnableSearch = Conv.parseBool(fields.get("EnableSearch"));
+        this.SpawnLevelLimit = Conv.parseIntArray(fields.get("SpawnLevelLimit"));
+        this.FirstRechargeReward = Conv.parseMap(fields.get("FirstRechargeReward"), String.class, Integer.class);
+        this.VIPItemReward = Conv.parseMap(fields.get("VIPItemReward"), Integer.class, Integer.class);
     }
 
 }
