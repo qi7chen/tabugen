@@ -14,7 +14,7 @@ with open(os.path.join(this_directory, 'README.md'), 'r', encoding='utf-8') as f
 tabugen_version = '1.0.1'
 
 install_requires = [
-    'xlrd>=2.0.1'
+    'xlrd>=2.0.1',
     'openpyxl>=3.1.2',
 ]
 
