@@ -7,7 +7,8 @@ Tabugen导入Excel表格生成编程语言的结构体定义，导出CSV数据�
 
 ## Tabugen解决的几个痛点
 
-写一段代码来从excel表格导出csv和生成对应的业务代码并不难，但是要解决好日常使用中的几个痛点
+写一个从excel表格导出csv和生成对应的业务代码的工具并不难，但是要解决好日常使用中的几个痛点
+
 
 #### 解决痛点1 基本功能
 
@@ -45,9 +46,9 @@ Tabugen导入Excel表格生成编程语言的结构体定义，导出CSV数据�
 #### 解决痛点3 支持字段嵌套
 
  | 宝箱ID | 概率1       | 物品1       | 数量1        | 概率2       | 物品2       | 数量2
- |------|-----------|-----------|------------|-----------|-----------|----
+ |------|-----------|-----------|------------|-----------|-----------|-------------
  | ID   | Weight[0] | ItemID[0] | ItemNum[0] | Weight[1] | ItemID[1] | ItemNum[1]
- | int  | int    | int       | int        | int       | int       | int     |
+ | int  | int       | int       | int        | int       | int       | int     |
 
 
 如上表的配置格式，期望是配一个宝箱的掉落每个掉落有对应的概率和物品，这个表格期望生成的代码格式是：
@@ -79,8 +80,8 @@ Tabugen是支持这种配置格式的，字段名后面带数组索引的`ItemID
  | string | string | int               | string
  | Key1   | float  | 3.14              | 浮点数值
  | Key2   | string | SUCEE             | 显示文字
- | Key3   | bool | 0                 | 功能开关
- | Key4   |  int[] | 1 &#124; 2 &#124; 3 | 等级列表
+ | Key3   | bool   | 0                 | 功能开关
+ | Key4   | int[] | 1 &#124; 2 &#124; 3 | 等级列表
 
 
 会生成下面格式结构体
@@ -97,7 +98,7 @@ struct Global
 
 #### 解决痛点5，不同项目类型的区分导出
 
-这是一个常见的需求，比如，有一个excel表格，某些字段只有客户端需要，某些字段只有服务器需要
+这是一个常见的需求，比如有一个excel表格，某些字段只有客户端需要，某些字段只有服务器需要，
 Tabugen的做法是通过前缀来实现
 
  | 字段名    | 服务器字段 | 客户端字段
@@ -116,8 +117,10 @@ Tabugen的做法是通过前缀来实现
 
 ### 从pip导入
 
-`pip install tabugen`
-`tabugen --asset_path=example.xlsx --cpp_out=MyConfig --package=config  --with_csv_parse --with_conv --source_file_encoding=utf_8_sig`
+```
+pip install tabugen
+tabugen --asset_path=example.xlsx --cpp_out=MyConfig --package=config  --with_csv_parse --with_conv --source_file_encoding=utf_8_sig
+```
 
 这是推荐的方式，pip可以和项目的CI/CD更好的集成
 
@@ -129,12 +132,12 @@ Tabugen的做法是通过前缀来实现
 
 ## 几种主流强类型语言的示例
 
-请查看[examples]目录下的示例工程：
+请查看[examples](examples)目录下的示例工程：
 
-* C++的示例 [examples/Cpp] 演示如何配合C++使用;
-* C#的示例 [examples/CSharp] 演示如何配合C#(Unity)使用;
-* Golang的示例 [examples/Go] 演示如何配合Golang使用;
-* Java的示例 [examples/Java] 演示如何配合Java使用;
+* C++的示例 [examples/Cpp](examples/Cpp) 演示如何配合C++使用;
+* C#的示例 [examples/CSharp](examples/CSharp) 演示如何配合C#(Unity)使用;
+* Golang的示例 [examples/Go](examples/Go) 演示如何配合Golang使用;
+* Java的示例 [examples/Java](examples/Java) 演示如何配合Java使用;
 * 对于Python, JavaScript等动态语言，将Excel导出为json即可，指定选项`--out_data_format=json`
 
 == TO-DO
