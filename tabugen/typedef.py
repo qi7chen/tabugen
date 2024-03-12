@@ -12,81 +12,62 @@ from typing import Tuple
 # 类型定义枚举
 class Type(Enum):
     Unknown = 0
-    Nil = 1
-    Bool = 2
-    Int8 = 3
-    UInt8 = 4
-    Int16 = 5
-    UInt16 = 6
-    Int = 7
-    UInt = 8
-    Int32 = 9
-    UInt32 = 10
-    Int64 = 11
-    UInt64 = 12
-    Float = 13
+    Bool = 1
+    Int8 = 2
+    UInt8 = 3
+    Int16 = 4
+    UInt16 = 5
+    Int32 = 8
+    UInt32 = 9
+    Int64 = 10
+    UInt64 = 11
     Float32 = 14
     Float64 = 15
     String = 16
-    Enum2 = 17
-    Bytes = 18
-    Array = 19
-    DateTime = 20
-    Map = 21
-    Any = 22
+    Array = 17
+    Map = 18
 
 
 # text name of a type
-type_names = {
-    Type.Nil: "nil",
-    Type.Bool: "bool",
-    Type.Int8: "int8",
-    Type.UInt8: "uint8",
-    Type.Int16: "int16",
-    Type.UInt16: "uint16",
-    Type.Int: "int",
-    Type.UInt: "uint32",
-    Type.Int32: "int32",
-    Type.UInt32: "uint32",
-    Type.Int64: "int64",
-    Type.UInt64: "uint64",
-    Type.Float: "float",
-    Type.Float32: "float32",
-    Type.Float64: "float64",
-    Type.String: "string",
-    Type.Enum2: "enum",
-    Type.Bytes: "bytes",
-    Type.DateTime: "datetime",
-    Type.Array: "array",
-    Type.Map: "map",
-    Type.Any: "any",
-}
-
-
-def name_of_type():
-    d = {}
-    for k in type_names:
-        v = type_names[k]
-        d[v] = k
-    return d
-
-
-name_types = name_of_type()
-
-# non-primitive type names
-abstract_type_names = {
+name_types = {
+    "bool": Type.Bool,
+    "int8": Type.Int8,
+    "uint8": Type.UInt8,
+    "int16": Type.Int16,
+    "uint16": Type.UInt16,
+    "int": Type.Int32,
+    "uint": Type.UInt32,
+    "int32": Type.Int32,
+    "uint32": Type.UInt32,
+    "long": Type.Int64,
+    "int64": Type.Int64,
+    "uint64": Type.UInt64,
+    "float": Type.Float32,
+    "double": Type.Float64,
+    "float32": Type.Float32,
+    "float64": Type.Float64,
+    "string": Type.String,
     "array": Type.Array,
     "map": Type.Map,
-    "any": Type.Any,
 }
 
-integer_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'int64', 'uint64', 'enum']
-floating_types = ['float', 'float32', 'float64']
+
+# non-primitive type names
+composite_type_names = {
+    "array": Type.Array,
+    "map": Type.Map,
+}
+
+integer_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'long', 'int64', 'uint64']
+floating_types = ['float', 'double', 'float32', 'float64']
 
 
 # get name of an integer type
 def get_name_of_type(t: Type) -> str:
-    return type_names[t]
+    for k, v in name_types.items():
+        if v == t:
+            return k
+    return ''
 
 
 def is_bool_type(typename: str) -> bool:
@@ -143,7 +124,7 @@ def is_defined_type(name: str) -> bool:
 
 
 # 是否抽象类型, map, array
-def is_abstract_type(typename: str) -> str:
+def is_composite_type(typename: str) -> str:
     if is_map_type(typename):
         return 'map'
     elif is_array_type(typename):
@@ -179,7 +160,6 @@ class TestTypes(unittest.TestCase):
             ('string', True),
             ('map', False),
             ('array', False),
-            ('nil', False),
         ]
         for tc in test_cases:
             output = is_primitive_type(tc[0])
@@ -189,9 +169,8 @@ class TestTypes(unittest.TestCase):
         test_cases = [
             ('', Type.Unknown),
             ('none', Type.Unknown),
-            ('int', Type.Int),
+            ('int', Type.Int32),
             ('int8', Type.Int8),
-            ('nil', Type.Nil),
         ]
         for tc in test_cases:
             output = get_type_by_name(tc[0])
@@ -205,7 +184,7 @@ class TestTypes(unittest.TestCase):
             ('string[]', 'string'),
         ]
         for tc in test_cases:
-            output = get_type_by_name(tc[0])
+            output = array_element_type(tc[0])
             self.assertEqual(output, tc[1])
 
     def test_map_key_value_types(self):

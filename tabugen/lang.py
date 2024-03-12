@@ -22,15 +22,16 @@ def map_cpp_type(typ: str) -> str:
         'uint': 'uint32_t',
         'int32': 'int32_t',
         'uint32': 'uint32_t',
+        'long': 'int64_t',
         'int64': 'int64_t',
         'uint64': 'uint64_t',
         'float32': 'float',
         'float64': 'double',
-        'float': 'double',
-        'enum': 'enum',
+        'float': 'float',
+        'double': 'double',
         'string': 'std::string',
     }
-    abs_type = types.is_abstract_type(typ)
+    abs_type = types.is_composite_type(typ)
     if abs_type == '':
         return type_mapping[typ]
 
@@ -87,19 +88,20 @@ def map_go_type(typ: str) -> str:
         'uint8': 'uint8',
         'int16': 'int16',
         'uint16': 'uint16',
-        'int': 'int',
-        'uint': 'uint',
+        'int': 'int32',
+        'uint': 'uint32',
         'int32': 'int32',
         'uint32': 'uint32',
         'int64': 'int64',
+        'long': 'int64',
         'uint64': 'uint64',
         'float32': 'float32',
         'float64': 'float64',
-        'float': 'float64',
-        'enum': 'int',
+        'float': 'float32',
+        'double': 'float64',
         'string': 'string',
     }
-    abs_type = types.is_abstract_type(typ)
+    abs_type = types.is_composite_type(typ)
     if abs_type == '':
         return type_mapping[typ]
 
@@ -115,29 +117,6 @@ def map_go_type(typ: str) -> str:
     assert False, typ
 
 
-# Go类型
-def map_go_raw_type(typ: str) -> str:
-    go_type_mapping = {
-        'bool': 'bool',
-        'int8': 'int8',
-        'uint8': 'uint8',
-        'int16': 'int16',
-        'uint16': 'uint16',
-        'int': 'int',
-        'int32': 'int32',
-        'uint32': 'uint32',
-        'int64': 'int64',
-        'uint64': 'uint64',
-        'float32': 'float32',
-        'float64': 'float64',
-        'float': 'float64',
-        'string': 'string',
-        'bytes': '[]byte',
-        'datetime': 'time.Time',
-    }
-    return go_type_mapping[typ]
-
-
 # Go字符串解析
 def map_go_parse_func(typ: str) -> str:
     mapping = {
@@ -146,16 +125,17 @@ def map_go_parse_func(typ: str) -> str:
         'uint8': 'parseU8',
         'int16': 'parseI16',
         'uint16': 'parseU16',
-        'int': 'parseInt',
-        'uint': 'parseUint',
+        'int': 'parseI32',
+        'uint': 'parseU32',
         'int32': 'parseI32',
         'uint32': 'parseU32',
+        'long': 'parseI64',
         'int64': 'parseI64',
         'uint64': 'parseU64',
         'float32': 'parseF32',
         'float64': 'parseF64',
-        'float': 'parseF64',
-        'enum': 'parseI32',
+        'float': 'parseF32',
+        'double': 'parseF64',
         'string': 'strings.TrimSpace',
     }
     return mapping[typ]
@@ -173,15 +153,16 @@ def map_cs_type(typ: str) -> str:
         'uint': 'uint',
         'int32': 'int',
         'uint32': 'uint',
+        'long': 'long',
         'int64': 'long',
         'uint64': 'ulong',
         'float32': 'float',
         'float64': 'double',
-        'float': 'double',
-        'enum': 'int',
+        'float': 'float',
+        'double': 'double',
         'string': 'string',
     }
-    abs_type = types.is_abstract_type(typ)
+    abs_type = types.is_composite_type(typ)
     if abs_type == '':
         return type_mapping[typ]
 
@@ -210,12 +191,13 @@ def map_cs_parse_func(typ: str) -> str:
         'uint': 'Conv.ParseUInt',
         'int32': 'Conv.ParseInt',
         'uint32': 'Conv.ParseUInt',
+        'long': 'Conv.ParseLong',
         'int64': 'Conv.ParseLong',
         'uint64': 'Conv.ParseULong',
         'float32': 'Conv.ParseFloat',
         'float64': 'Conv.ParseDouble',
-        'float': 'Conv.ParseDouble',
-        'enum': 'Conv.ParseInt',
+        'float': 'Conv.ParseFloat',
+        'double': 'Conv.ParseDouble',
     }
     return mapping[typ]
 
@@ -256,15 +238,16 @@ def map_java_type(typ: str) -> str:
         'uint': 'int',
         'int32': 'int',
         'uint32': 'int',
+        'long': 'long',
         'int64': 'long',
         'uint64': 'long',
         'float32': 'float',
         'float64': 'double',
-        'float': 'double',
-        'enum': 'int',
+        'float': 'float',
+        'double': 'double',
         'string': 'String',
     }
-    abs_type = types.is_abstract_type(typ)
+    abs_type = types.is_composite_type(typ)
     if abs_type == '':
         return type_mapping[typ]
     if abs_type == 'array':
@@ -315,12 +298,13 @@ def map_java_parse_func(typ: str) -> str:
         'uint': 'Conv.parseInt',
         'int32': 'Conv.parseInt',
         'uint32': 'Conv.parseInt',
+        'long': 'Conv.parseLong',
         'int64': 'Conv.parseLong',
         'uint64': 'Conv.parseLong',
         'float32': 'Conv.parseFloat',
         'float64': 'Conv.parseDouble',
-        'float': 'Conv.parseDouble',
-        'enum': 'Conv.parseInt',
+        'float': 'Conv.parseFloat',
+        'double': 'Conv.parseDouble',
     }
     return mapping[typ]
 
