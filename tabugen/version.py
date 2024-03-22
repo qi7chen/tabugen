@@ -6,6 +6,6 @@ See accompanying files LICENSE.
 
 _major = 1
 _minor = 0
-_patch = 1
+_patch = 2
 
 VER_STRING = '%d.%d.%d' % (_major, _minor, _patch)

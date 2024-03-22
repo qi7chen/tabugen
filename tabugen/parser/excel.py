@@ -16,7 +16,7 @@ import tabugen.parser.xlsxhelp as xlsxhelp
 class ExcelStructParser:
 
     def __init__(self):
-        self.filedir = ''
+        self.file_dir = ''
         self.skip_names = ''
         self.with_data = True
         self.filenames = []
@@ -27,29 +27,29 @@ class ExcelStructParser:
         return "excel"
 
     def init(self, args):
-        self.filedir = args.asset_path
+        self.file_dir = args.asset_path
         self.project_kind = args.project_kind
         if args.without_data:
             self.with_data = False
         if args.skip_files is not None:
             self.skip_names = [x.strip() for x in args.skip_files.split(' ')]
-        self.enum_filenames(self.filedir)
+        self.enum_filenames(self.file_dir)
 
     # 跳过忽略的文件名
-    def enum_filenames(self, filedir: str):
+    def enum_filenames(self, file_dir: str):
         filenames = []
-        if not os.path.exists(filedir):
-            print('file path [%s] not exist' % filedir)
+        if not os.path.exists(file_dir):
+            print('file path [%s] not exist' % file_dir)
             return
 
         # filename is a directory
-        if os.path.isdir(filedir):
-            filedir = os.path.abspath(filedir)
-            print('parse files in directory:', filedir)
-            filenames = xlsxhelp.enum_excel_files(filedir)
+        if os.path.isdir(file_dir):
+            file_dir = os.path.abspath(file_dir)
+            print('parse files in directory:', file_dir)
+            filenames = xlsxhelp.enum_excel_files(file_dir)
         else:
-            assert os.path.isfile(filedir)
-            filename = os.path.abspath(filedir)
+            assert os.path.isfile(file_dir)
+            filename = os.path.abspath(file_dir)
             filenames.append(filename)
 
         if len(self.skip_names) == 0:
@@ -71,19 +71,18 @@ class ExcelStructParser:
         key_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVKeyName)
         type_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVTypeName)
         val_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVValueName)
-        comment_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVCommentName)
+
         struct['options']['key_column'] = key_col
         struct['options']['type_column'] = type_col
         struct['options']['value_column'] = val_col
-        struct['options']['comment_column'] = comment_col
+
         data_rows = table[predef.PredefDataStartRow:]
         for row in data_rows:
             name = row[key_col]
             type_name = row[type_col]
             field_type = types.get_type_by_name(type_name)
             comment = ''
-            if comment_col >= 0:
-                comment = row[comment_col]
+
             field = {
                 "name": name,
                 "camel_case_name": strutil.camel_case(name),

@@ -58,7 +58,7 @@ class JsonDataWriter:
 
     # 解析字符串为对象
     def parse_value(self, typename, text):
-        abs_type = types.is_abstract_type(typename)
+        abs_type = types.is_composite_type(typename)
         if abs_type == '':
             return self.parse_primary_value(typename, text)
 

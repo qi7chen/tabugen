@@ -59,7 +59,7 @@ def read_workbook_data(filename: str):
         meta = read_sheet(workbook, predef.PredefMetaSheet)
         return {}, meta
 
-    table = read_sheet(workbook, sheet_names[0])   # first sheet
+    table = read_sheet(workbook, sheet_names[0])   # data sheet is first
     assert len(table) >= predef.PredefDataStartRow
     table = tableutil.table_remove_empty(table, predef.PredefFieldNameRow)
     meta = {}
