@@ -5,10 +5,58 @@ See accompanying files LICENSE.
 """
 
 import sys
-
+import unittest
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
+
+
+# 这一行是否是类型定义
+def is_type_row(row):
+    for text in row:
+        if not types.is_valid_type_name(text):
+            return False
+    return len(row) > 0
+
+
+# 从名字中解析类型，int_Hp, string_Level, C_string_Name
+def field_type_from_name(name: str):
+    i = name.find('_')
+    if i > 0:
+        if types.is_primitive_type(name[:i]):
+            return name[:i]
+        j = name.find('_', i + 1)
+        if j > 0:
+            if types.is_primitive_type(name[i+1:j]):
+                return name[i+1:j]
+    return ''
+
+
+def parse_elem_type(arr):
+    try:
+        a = [int(x) for x in arr]
+        if len(a) > 0:
+            return 'int'
+    except ValueError:
+        try:
+            a = [float(x) for x in arr]
+            if len(a) > 0:
+                return 'float'
+        except ValueError:
+            pass
+    return 'string'
+
+
+# 根据内容解析字段类型
+def infer_field_type(table, start_row: int, col: int):
+    parsed = ''
+    for n in range(start_row, len(table)):
+        type_name = parse_elem_type(table[n][col])
+        if parsed == '':
+            parsed = type_name
+        if parsed != type_name:
+            return ''
+    return parsed
 
 
 # 删除table的某一列
@@ -22,8 +70,8 @@ def remove_table_column(table, column: int):
 
 
 # 删除空白列(在中间的列）
-def remove_table_empty_columns(table, field_row: int):
-    header = table[field_row]
+def remove_table_empty_columns(table):
+    header = table[predef.PredefFieldNameRow]
     col = len(header)
     while col > 0:
         col -= 1
@@ -35,8 +83,8 @@ def remove_table_empty_columns(table, field_row: int):
 
 
 # 删除首部和尾部连续的空列
-def trim_empty_columns(table, field_row: int):
-    header = table[field_row]
+def trim_empty_columns(table):
+    header = table[predef.PredefFieldNameRow]
     end = len(header)
     start = 0
     while start < end:
@@ -57,11 +105,11 @@ def trim_empty_columns(table, field_row: int):
 
 
 # 删除全部空白的行和列
-def table_remove_empty(table, field_row: int):
-    table = trim_empty_columns(table, field_row)
+def table_remove_empty(table):
+    table = trim_empty_columns(table)
 
     # 删除header中的注释和空白
-    header = table[field_row]
+    header = table[predef.PredefFieldNameRow]
     for col, filed in enumerate(header):
         field = filed.strip()
         idx = field.find('\n')
@@ -70,7 +118,7 @@ def table_remove_empty(table, field_row: int):
         header[col] = field
 
     # 根据header，删除被忽略和空白的列
-    return remove_table_empty_columns(table, field_row)
+    return remove_table_empty_columns(table)
 
 
 # 解析格式：A_XXX
@@ -133,7 +181,7 @@ def is_all_row_field_value_unique(rows, col: int):
 
 # 检查唯一主键
 def validate_unique_column(struct, rows):
-    if struct['options'][predef.PredefParseKVMode]:
+    if predef.PredefParseKVMode in struct['options']:
         return rows
 
     if predef.OptionUniqueColumns not in struct['options']:
@@ -200,26 +248,6 @@ def convert_data(typename: str, val: str) -> str:
     return val
 
 
-# # 把KV模式的不必要显示内容置空（类型和注释）
-def blanking_kv_columns(table):
-    for row in table:
-        row[predef.PredefValueTypeColumn] = ''
-        row[predef.PredefValueTypeColumn] = ''
-    return table
-
-
-# meta字段处理
-def parse_meta(table):
-    meta = {}
-    for row in table:
-        if len(row) >= 2:
-            key = row[0].strip()
-            value = row[1].strip()
-            if len(key) > 0 and len(value) > 0:
-                meta[key] = value
-    return meta
-
-
 # 解析出内嵌字段， 如：foo[0], bar[0], foo[1], bar[1]
 def parse_inner_fields(struct):
     fields = struct['fields']
@@ -281,3 +309,20 @@ def find_col_by_name(row, name: str) -> int:
         if name == val:
             return col
     return -1
+
+
+class TestTypes(unittest.TestCase):
+    def test_is_type_row(self):
+        self.assertTrue(is_type_row(['int', 'string', 'long']))
+        self.assertTrue(is_type_row(['int', 'str', 'float']))
+        self.assertTrue(is_type_row(['int', 'str', 'bool']))
+        self.assertFalse(is_type_row(['int', 'str', 'boolean']))
+
+    def test_field_type_from_name(self):
+        self.assertEqual(field_type_from_name('str_Name'), 'str')
+        self.assertEqual(field_type_from_name('int_Lv'), 'int')
+        self.assertEqual(field_type_from_name('A_bool_OK'), 'bool')
+
+
+if __name__ == '__main__':
+    unittest.main()

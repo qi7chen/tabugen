@@ -82,7 +82,7 @@ class CsvDataWriter:
                 pass
 
         for struct in descriptors:
-            if struct['options'][predef.PredefParseKVMode]:
+            if predef.PredefParseKVMode in struct['options']:
                 table = self.parse_kv_table(struct)
             else:
                 table = self.parse_table(struct)

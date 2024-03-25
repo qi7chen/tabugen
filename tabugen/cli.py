@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 
 import argparse
@@ -65,32 +64,32 @@ def verify_args(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="A configuration import/export and code generation tool")
+    parser = argparse.ArgumentParser(description="一个根据表格生成代码和配置转换的工具")
     parser.add_argument("-v", "--version", action='version', version='v' + VER_STRING)
-    parser.add_argument("--without_data", action="store_true", help="parse struct definition but no data rows")
-    parser.add_argument("--asset_path", help="filename or directory of excel files")
-    parser.add_argument("--skip_files", help="filenames to skip when parsing excel")
+    parser.add_argument("--without_data", action="store_true", help="只生成类型定义")
+    parser.add_argument("--asset_path", help="文件名或者文件夹路径")
+    parser.add_argument("--skip_files", help="需要跳过解析的文件名列表")
 
     # source code options
-    parser.add_argument("--project_kind", default='', help="project kind: server, client, manager")
-    parser.add_argument("--with_csv_parse", action='store_true', help="also generator csv parse method code")
-    parser.add_argument("--with_conv", action='store_true', help="also generator conv utility code")
-    parser.add_argument("--cpp_out", help="file path of generate C++ class source code")
-    parser.add_argument("--go_out", help="file path of generate go struct source code")
-    parser.add_argument("--cs_out", help="file path of generate C# class source code")
-    parser.add_argument("--java_out", help="file path of generate Java class source code")
-    parser.add_argument("--package", default="config", help="name of generated source language package")
-    parser.add_argument("--cpp_pch", help="C++ precompiled header file to include in source file")
-    parser.add_argument("--go_fmt", action="store_true", help="run go fmt on generated source file")
+    parser.add_argument("--project_kind", default='', help="指定包含此前缀的名称才纳入解析")
+    parser.add_argument("--with_csv_parse", action='store_true', help="生成csv读取代码")
+    parser.add_argument("--with_conv", action='store_true', help="生成用于解析字符串的工具代码")
+    parser.add_argument("--cpp_out", help="指定生成C++代码的路径")
+    parser.add_argument("--go_out", help="指定生成Go代码的路径")
+    parser.add_argument("--cs_out", help="指定生成C#代码的路径")
+    parser.add_argument("--java_out", help="指定生成Java代码的路径")
+    parser.add_argument("--package", default="config", help="指定命名空间或者包名")
+    parser.add_argument("--cpp_pch", help="指定C++包含的预编译头")
+    parser.add_argument("--extra_cpp_includes", default="", help="额外包含的C++头文件")
+    parser.add_argument("--go_fmt", action="store_true", help="生成Go代码后执行go fmt")
 
     # output options
-    parser.add_argument("--extra_cpp_includes", default="", help="extra include C++ header")
-    parser.add_argument("--source_file_encoding", default="utf8", help="encoding of generated source file")
-    parser.add_argument("--data_file_encoding", default="utf8", help="encoding of output data file")
-    parser.add_argument("--out_data_format", help="output data file format(CSV, JSON, XML etc")
-    parser.add_argument("--out_data_path", default=".", help="output file path")
-    parser.add_argument("--json_indent", action="store_true", help="enable JSON indent for output data")
-    parser.add_argument("--json_snake_case", action="store_true", help="enable JSON field to be snake case")
+    parser.add_argument("--source_file_encoding", default="utf8", help="生成代码的文件编码格式")
+    parser.add_argument("--data_file_encoding", default="utf8", help="导出数据的文件编码格式")
+    parser.add_argument("--out_data_format", help="导出数据的格式(csv,json)")
+    parser.add_argument("--out_data_path", default=".", help="导出数据文件的路径")
+    parser.add_argument("--json_indent", action="store_true", help="导出的JSON使用缩进格式")
+    parser.add_argument("--json_snake_case", action="store_true", help="导出的JSON使用snake_case")
 
     args = parser.parse_args()
     verify_args(args)

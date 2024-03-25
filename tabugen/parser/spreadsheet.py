@@ -1,19 +1,17 @@
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 import os
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.strutil as strutil
 import tabugen.util.tableutil as tableutil
-import tabugen.parser.xlsxhelp as xlsxhelp
+import tabugen.parser.helper as helper
 
 
 # 使用excel解析结构描述
-class ExcelStructParser:
+class SpreadSheetFileParser:
 
     def __init__(self):
         self.file_dir = ''
@@ -46,11 +44,12 @@ class ExcelStructParser:
         if os.path.isdir(file_dir):
             file_dir = os.path.abspath(file_dir)
             print('parse files in directory:', file_dir)
-            filenames = xlsxhelp.enum_excel_files(file_dir)
-        else:
-            assert os.path.isfile(file_dir)
+            filenames = helper.enum_spreadsheet_files(file_dir)
+        elif os.path.isfile(file_dir):
             filename = os.path.abspath(file_dir)
             filenames.append(filename)
+        else:
+            return
 
         if len(self.skip_names) == 0:
             self.filenames = filenames
@@ -67,32 +66,6 @@ class ExcelStructParser:
             if not ignored:
                 self.filenames.append(filename)
 
-    def parse_kv_table(self, table, struct):
-        key_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVKeyName)
-        type_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVTypeName)
-        val_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVValueName)
-
-        struct['options']['key_column'] = key_col
-        struct['options']['type_column'] = type_col
-        struct['options']['value_column'] = val_col
-
-        data_rows = table[predef.PredefDataStartRow:]
-        for row in data_rows:
-            name = row[key_col]
-            type_name = row[type_col]
-            field_type = types.get_type_by_name(type_name)
-            comment = ''
-
-            field = {
-                "name": name,
-                "camel_case_name": strutil.camel_case(name),
-                "original_type_name": type_name,
-                "type": field_type,
-                "type_name": types.get_name_of_type(field_type),
-                "comment": comment,
-            }
-            struct['fields'].append(field)
-
     def is_match_project_kind(self, col: str) -> bool:
         if self.project_kind == '':
             return True
@@ -101,30 +74,41 @@ class ExcelStructParser:
             return True
         return col[:idx] == self.project_kind[0].title()
 
-    def parse_struct_table(self, meta, table, struct):
-        if len(table) <= predef.PredefDataStartRow:
-            return
+    @staticmethod
+    def get_type_name(has_type_row, name: str, table, col: int):
+        if has_type_row:
+            type_row = table[predef.PredefFieldTypeDefRow]
+            type_name = type_row[col]
+        else:
+            type_name = tableutil.field_type_from_name(name)
 
+        if type_name == '':
+            type_name = tableutil.infer_field_type(table, predef.PredefFieldTypeDefRow, col)
+        if types.is_valid_type_name(type_name):
+            return type_name
+        else:
+            return 'string'
+
+    def parse_struct_table(self, has_type_row, meta, table, struct):
         class_name = meta[predef.PredefClassName]
         assert len(class_name) > 0
         struct['name'] = class_name
         struct['camel_case_name'] = strutil.camel_case(class_name)
 
-        type_row = table[predef.PredefFieldTypeRow]
-        comment_row = table[predef.PredefCommentRow]
         name_row = table[predef.PredefFieldNameRow]
 
         fields_names = {}
         prev_field = None
         for col, name in enumerate(name_row):
             # skip empty column
-            if name == '' or name.startswith('#') or name.startswith('//') or type_row[col] == "":
+            if name == '' or name.startswith('#') or name.startswith('//') :
                 continue
             if not self.is_match_project_kind(name):
                 continue
 
-            name = tableutil.parse_head_field(name)
-            field_type = types.get_type_by_name(type_row[col])
+            type_name = self.get_type_name(has_type_row, name, table, col)
+            assert type_name != ''
+            field_type = types.get_type_by_name(type_name)
 
             assert name not in fields_names, name
             fields_names[name] = True
@@ -132,10 +116,10 @@ class ExcelStructParser:
             field = {
                 "name": name,
                 "camel_case_name": strutil.camel_case(name),
-                "original_type_name": type_row[col],
-                "type": field_type,
+                "original_type_name": type_name,
                 "type_name": types.get_name_of_type(field_type),
-                "comment": comment_row[col],
+                "type": field_type,
+                "comment": '',
             }
 
             if prev_field is not None:
@@ -158,14 +142,16 @@ class ExcelStructParser:
             'options': meta,
             'comment': meta.get(predef.PredefClassComment, ""),
         }
-        if meta[predef.PredefParseKVMode]:  # 全局KV模式
-            self.parse_kv_table(table, struct)
-        else:
-            self.parse_struct_table(meta, table, struct)
-
+        data_start_row = 1
+        has_type_row = False
+        if len(table) >= 2:
+            if tableutil.is_type_row(table[predef.PredefFieldTypeDefRow]):
+                has_type_row = True
+                data_start_row += 1
+        self.parse_struct_table(has_type_row, meta, table, struct)
         if self.with_data:
-            data = table[predef.PredefDataStartRow:]
-            data = strutil.pad_data_rows(struct['fields'], data)
+            data = table[data_start_row:]
+            data = strutil.pad_data_rows(table[data_start_row], data)
             struct["data_rows"] = data
         return struct
 
@@ -184,14 +170,9 @@ class ExcelStructParser:
 
     # 解析单个文件
     def parse_one_file(self, filename):
-        data_table, meta = xlsxhelp.read_workbook_data(filename)
-        if predef.PredefParseKVMode in meta:
-            text = meta[predef.PredefParseKVMode]
-            meta[predef.PredefParseKVMode] = strutil.str2bool(text)
-        else:
-            meta[predef.PredefParseKVMode] = False
-
-        struct = self.parse_data_sheet(meta, data_table)
+        table, meta = helper.read_workbook_table(filename)
+        table = tableutil.table_remove_empty(table)
+        struct = self.parse_data_sheet(meta, table)
         struct['name'] = meta[predef.PredefClassName]
         struct['camel_case_name'] = strutil.camel_case(struct['name'])
         struct['file'] = os.path.basename(filename)

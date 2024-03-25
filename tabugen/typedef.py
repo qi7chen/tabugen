@@ -1,8 +1,6 @@
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 import unittest
 from enum import Enum
@@ -47,6 +45,7 @@ name_types = {
     "float32": Type.Float32,
     "float64": Type.Float64,
     "string": Type.String,
+    "str": Type.String,
     "array": Type.Array,
     "map": Type.Map,
 }
@@ -88,7 +87,7 @@ def is_floating_type(typename: str) -> bool:
 def is_primitive_type(name: str) -> bool:
     if is_integer_type(name) or is_floating_type(name):
         return True
-    return name in ['bool', 'string']
+    return name in ['bool', 'string', 'str']
 
 
 def is_array_type(name: str) -> bool:
@@ -104,6 +103,16 @@ def is_map_type(name: str) -> bool:
             key_type = parts[0].strip()
             val_type = parts[1].strip()
             return is_primitive_type(key_type) and is_primitive_type(val_type)
+    return False
+
+
+def is_valid_type_name(name):
+    if is_primitive_type(name):
+        return True
+    if is_array_type(name):
+        return True
+    if is_map_type(name):
+        return True
     return False
 
 

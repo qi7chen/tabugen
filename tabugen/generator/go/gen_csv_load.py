@@ -117,7 +117,7 @@ class GoCsvLoadGenerator:
         return content
 
     def generate(self, struct) -> str:
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefParseKVMode in struct['options']:
             return self.gen_kv_parse_method(struct)
         else:
             return self.gen_parse_method(struct)

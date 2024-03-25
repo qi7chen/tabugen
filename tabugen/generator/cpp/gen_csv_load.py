@@ -127,7 +127,7 @@ class CppCsvLoadGenerator:
 
     # 生成源文件定义
     def gen_cpp_source(self, struct) -> str:
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefParseKVMode in struct['options']:
             return self.gen_kv_parse_method(struct)
         else:
             return self.gen_parse_method(struct)
@@ -135,7 +135,7 @@ class CppCsvLoadGenerator:
     # class静态函数声明
     def generate_method_declare(self, struct) -> str:
         content = ''
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefParseKVMode in struct['options']:
             content += '    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, %s* ptr);\n' % struct['name']
             return content
         content += '    static int ParseFrom(const std::unordered_map<std::string, std::string>& fields, %s* ptr);\n' % struct['name']

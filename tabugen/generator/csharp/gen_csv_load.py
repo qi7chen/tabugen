@@ -162,7 +162,7 @@ class CSharpCsvLoadGenerator:
         return content
 
     def generate(self, struct):
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefParseKVMode in struct['options']:
             return self.gen_kv_parse_method(struct, 1)
         else:
             return self.gen_parse_method(struct, 1)

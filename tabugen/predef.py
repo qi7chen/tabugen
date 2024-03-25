@@ -1,22 +1,20 @@
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
+
 
 # array和map的分割字符
 PredefDelim1 = '|'
 PredefDelim2 = '='
 
 PredefFieldNameRow = 0      # 这一行描述字段名称
-PredefFieldTypeRow = 1      # 这一行描述字段类型
-PredefDataStartRow = 2      # 数据从这一行开始
+PredefFieldTypeDefRow = 1   # 可选的字段类型定义行
 
 PredefMetaSheet = "@meta"            # meta sheet默认名称
 PredefClassName = "ClassName"        # meta sheet里指定生成的class名
 PredefClassComment = "ClassComment"  # meta sheet里指定生成的class注释
 
-PredefParseKVMode = "KVMode"    # 是否是KV模式
+PredefParseKVMode = 'KVMode'
 PredefKVKeyName = 'Key'         # KV模式中的key所在列
 PredefKVTypeName = 'Type'       # KV模式中的类型所在列
 PredefKVValueName = 'Value'     # KV模式中的value所在列

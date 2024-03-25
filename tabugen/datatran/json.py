@@ -148,7 +148,7 @@ class JsonDataWriter:
 
     # 生成
     def generate(self, struct, args):
-        if struct['options'][predef.PredefParseKVMode]:
+        if predef.PredefParseKVMode in struct['options']:
             return self.parse_kv_rows(struct, args)
         return self.parse_row(struct)
 
