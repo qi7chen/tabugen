@@ -15,6 +15,11 @@ import typing
 import unittest
 
 
+# array和map的分割字符
+Delim1 = '|'
+Delim2 = '='
+
+
 def current_time() -> str:
     return datetime.datetime.now().isoformat()
 

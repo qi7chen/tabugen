@@ -8,7 +8,7 @@ import os
 
 import tabugen.lang as lang
 import tabugen.predef as predef
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 import tabugen.version as version
 import tabugen.generator.go.template as go_template
@@ -41,13 +41,13 @@ class GoStructGenerator:
         if remove_suffix_num:
             name = tableutil.remove_field_suffix(name)
 
-        name = strutil.pad_spaces(name, max_name_len + 4)
-        typename = strutil.pad_spaces(typename, max_type_len + 4)
+        name = helper.pad_spaces(name, max_name_len + 4)
+        typename = helper.pad_spaces(typename, max_type_len + 4)
         if json_snake_case:
             tag_name = field['name']
             if remove_suffix_num:
                 tag_name = tableutil.remove_field_suffix(tag_name)
-            tag_name = strutil.camel_to_snake(tag_name)
+            tag_name = helper.camel_to_snake(tag_name)
             text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field['comment'])
         else:
             text += '%s%s %s // %s\n' % (space, name, typename, field['comment'])
@@ -55,14 +55,14 @@ class GoStructGenerator:
 
     # 生成嵌入类型的字段定义
     def gen_inner_fields(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
-        type_class_name = strutil.pad_spaces(type_class_name, max_type_len + 4)
-        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 4)
+        type_class_name = helper.pad_spaces(type_class_name, max_type_len + 4)
+        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 4)
         if json_snake_case:
-            tag_name = strutil.camel_to_snake(type_class_name)
+            tag_name = helper.camel_to_snake(type_class_name)
             text = '%s%s []%s `json:"%s"` // \n' % (space, inner_field_name, type_class_name, tag_name)
         else:
             text = '%s%s []%s \n' % (space, inner_field_name, type_class_name)
@@ -74,7 +74,7 @@ class GoStructGenerator:
         start = inner_fields['start']
         end = inner_fields['end']
         step = inner_fields['step']
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         assert len(type_class_name) > 0
 
         max_name_len = 0
@@ -115,8 +115,8 @@ class GoStructGenerator:
         content += 'type %s struct {\n' % struct['camel_case_name']
 
         fields = struct['fields']
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_go_type)
+        max_name_len = helper.max_field_length(fields, 'name', None)
+        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_go_type)
 
         for col, field in enumerate(fields):
             text = ''
@@ -154,7 +154,7 @@ class GoStructGenerator:
         if self.load_gen is not None and args.with_conv:
             self.load_gen.gen_helper_file(filename, version.VER_STRING, args)
 
-        strutil.save_content_if_not_same(filename, content, 'utf-8')
+        helper.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote Go source to %s' % filename)
 
         if args.go_fmt:

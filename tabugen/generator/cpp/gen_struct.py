@@ -7,7 +7,7 @@ import sys
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
 import tabugen.generator.cpp.template as cpp_template
 from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
@@ -35,19 +35,19 @@ class CppStructGenerator:
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, tabs: int) -> str:
         typename = lang.map_cpp_type(field['original_type_name'])
         assert typename != "", field['original_type_name']
-        typename = strutil.pad_spaces(typename, max_type_len + 1)
+        typename = helper.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cpp_value(field, typename, False)
-        name = strutil.pad_spaces(name, max_name_len + 8)
+        name = helper.pad_spaces(name, max_name_len + 8)
         space = self.TAB_SPACE * tabs
         return '%s%s %s // %s\n' % (space, typename, name, field['comment'])
 
     # 生成嵌入类型的字段定义
     def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, tabs: int) -> str:
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         type_name = 'std::vector<%s>' % type_class_name
-        type_name = strutil.pad_spaces(type_name, max_type_len + 1)
-        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
+        type_name = helper.pad_spaces(type_name, max_type_len + 1)
+        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
         return '%s%s %s;    // \n' % (space, type_name, inner_field_name)
@@ -58,7 +58,7 @@ class CppStructGenerator:
         start = inner_fields['start']
         end = inner_fields['end']
         step = inner_fields['step']
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         assert len(type_class_name) > 0
 
         max_name_len = 0
@@ -79,9 +79,9 @@ class CppStructGenerator:
             field = struct['fields'][col]
             typename = lang.map_cpp_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
+            typename = helper.pad_spaces(typename, max_type_len + 1)
             name = lang.name_with_default_cpp_value(field, typename, True)
-            name = strutil.pad_spaces(name, max_name_len + 8)
+            name = helper.pad_spaces(name, max_name_len + 8)
             content += '        %s %s // %s\n' % (typename, name, field['comment'])
             col += 1
         content += '    };\n'
@@ -102,10 +102,10 @@ class CppStructGenerator:
             content += '\n'
 
         fields = struct['fields']
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
+        max_name_len = helper.max_field_length(fields, 'name', None)
+        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
         if inner_start_col >= 0:
-            type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+            type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
             field_name = 'std::vector<%s>' % type_class_name
             if len(field_name) > max_type_len:
                 max_type_len = len(field_name)
@@ -148,7 +148,7 @@ class CppStructGenerator:
             header_content += '\nnamespace %s {\n\n' % args.package
 
         for struct in descriptors:
-            print(strutil.current_time(), 'start generate', struct['source'])
+            print(helper.current_time(), 'start generate', struct['source'])
             header_content += self.gen_header(struct)
 
         if args.package is not None:
@@ -168,13 +168,13 @@ class CppStructGenerator:
 
         header_filepath = filepath + '.h'
         filename = os.path.abspath(header_filepath)
-        strutil.save_content_if_not_same(filename, header_content, args.source_file_encoding)
+        helper.save_content_if_not_same(filename, header_content, args.source_file_encoding)
         print('wrote C++ header file to', filename)
 
         if len(cpp_content) > 0:
             source_filepath = filepath + '.cpp'
             filename = os.path.abspath(source_filepath)
-            modified = strutil.save_content_if_not_same(filename, cpp_content, args.source_file_encoding)
+            modified = helper.save_content_if_not_same(filename, cpp_content, args.source_file_encoding)
             if modified:
                 print('wrote C++ source file to', filename)
             else:
@@ -183,6 +183,6 @@ class CppStructGenerator:
         # 3rd party parse API
         if args.with_conv and self.load_gen is not None:
             filename = os.path.join(os.path.split(filepath)[0], 'Conv.h')
-            modified = strutil.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
+            modified = helper.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
             if modified:
                 print('wrote 3rd source file to', filename)

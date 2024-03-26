@@ -9,7 +9,7 @@ import tempfile
 import filecmp
 import shutil
 import tabugen.predef as predef
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 
 
@@ -25,7 +25,7 @@ class CsvDataWriter:
     # 将数据写入csv文件
     @staticmethod
     def write_file(name, table, filepath, encoding):
-        tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), strutil.random_word(10))
+        tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), helper.random_word(8))
         os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
         f = codecs.open(filename, "w", encoding)
@@ -86,5 +86,5 @@ class CsvDataWriter:
                 table = self.parse_kv_table(struct)
             else:
                 table = self.parse_table(struct)
-            name = strutil.camel_to_snake(struct['camel_case_name'])
+            name = helper.camel_to_snake(struct['camel_case_name'])
             self.write_file(name, table, filepath, encoding)

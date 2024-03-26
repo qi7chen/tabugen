@@ -1,8 +1,6 @@
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 import csv
 import os
@@ -17,6 +15,17 @@ def is_ignored_filename(filename: str) -> bool:
         if filename.find(text) >= 0:
             return True
     return False
+
+
+def is_default_sheet_name(name: str) -> bool:
+    idx = name.find('Sheet')
+    if idx > 0:
+        s = name[idx+1:]
+        try:
+            _ = int(s)
+        except ValueError:
+            return False
+    return True
 
 
 # 从路径种搜索所有excel文件
@@ -40,7 +49,7 @@ def read_workbook_table(filename: str):
     if filename.endswith('.xlsx'):
         return __xlsx_read_workbook(filename)
     elif filename.endswith('.xls'):
-        return __xlsx_read_workbook(filename)
+        return __xls_read_workbook(filename)
     elif filename.endswith('.csv'):
         return __read_csv_to_table(filename)
     else:
@@ -94,7 +103,7 @@ def __xlsx_read_sheet_to_table(sheet):
     return table
 
 
-# 使用openpyxl读取excel文件（.xlsx后缀格式）
+# 使用openpyxl读取excel文件（.xlsx格式）
 def __xlsx_read_workbook(filename: str):
     workbook = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     sheet_names = workbook.sheetnames
@@ -113,7 +122,11 @@ def __xlsx_read_workbook(filename: str):
         meta = parse_meta_table(__xlsx_read_sheet_to_table(meta_sheet))
 
     if predef.PredefClassName not in meta:
-        meta[predef.PredefClassName] = sheet_names[0]
+        if is_default_sheet_name(sheet_names[0]):
+            name = os.path.splitext(os.path.basename(filename))[0]
+            meta[predef.PredefClassName] = name
+        else:
+            meta[predef.PredefClassName] = sheet_names[0]
 
     workbook.close()
     return data, meta
@@ -152,6 +165,10 @@ def __xls_read_workbook(filename: str):
         meta = parse_meta_table(__xls_read_sheet_to_table(meta_sheet))
 
     if predef.PredefClassName not in meta:
-        meta[predef.PredefClassName] = sheet_names[0]
+        if is_default_sheet_name(sheet_names[0]):
+            name = os.path.splitext(os.path.basename(filename))[0]
+            meta[predef.PredefClassName] = name
+        else:
+            meta[predef.PredefClassName] = sheet_names[0]
 
     return data, meta

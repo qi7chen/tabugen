@@ -1,14 +1,33 @@
-"""
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
-Distributed under the terms and conditions of the Apache License.
-See accompanying files LICENSE.
-"""
+# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Distributed under the terms and conditions of the Apache License.
+# See accompanying files LICENSE.
 
 import sys
 import unittest
 import tabugen.predef as predef
 import tabugen.typedef as types
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
+
+max_int64 = 9223372036854775807
+min_int64 = -9223372036854775808
+max_float32 = float('3.4e+38')
+min_float32 = float('1.4e-45')
+
+
+def split_field_name(name: str):
+    kind = ''
+    type_name = ''
+    i = name.find('_')
+    if i <= 0:
+        return kind, type_name, name
+    j = name.find('_', i + 1)
+    if j > 0:
+        kind = name[:i].lower()
+        type_name = name[i + 1: j]
+        return kind, type_name.lower(), name[j + 1:]
+    else:
+        type_name = name[: i + 1]
+        return kind, type_name.lower(), name[i + 1:]
 
 
 # 这一行是否是类型定义
@@ -19,32 +38,44 @@ def is_type_row(row):
     return len(row) > 0
 
 
-# 从名字中解析类型，int_Hp, string_Level, C_string_Name
-def field_type_from_name(name: str):
-    i = name.find('_')
-    if i > 0:
-        if types.is_primitive_type(name[:i]):
-            return name[:i]
-        j = name.find('_', i + 1)
-        if j > 0:
-            if types.is_primitive_type(name[i+1:j]):
-                return name[i+1:j]
-    return ''
-
-
 def parse_elem_type(arr):
     try:
         a = [int(x) for x in arr]
         if len(a) > 0:
+            for n in a:
+                if n <= min_int64 or n >= max_int64:
+                    return 'int64'
             return 'int'
     except ValueError:
         try:
             a = [float(x) for x in arr]
             if len(a) > 0:
+                for n in a:
+                    if n <= min_float32 or n >= max_float32:
+                        return 'double'
                 return 'float'
         except ValueError:
             pass
     return 'string'
+
+
+def parse_array_elem_type(text):
+    arr = text.split(helper.Delim1)
+    return parse_elem_type(arr)
+
+
+def parse_map_elem_type(text):
+    keys = []
+    values = []
+    parts = text.split(helper.Delim1)
+    for part in parts:
+        kv = part.split(helper.Delim2)
+        if len(kv) == 2:
+            keys.append(kv[0])
+            values.append(kv[1])
+    key_type = parse_elem_type(keys)
+    value_type = parse_elem_type(values)
+    return key_type, value_type
 
 
 # 根据内容解析字段类型
@@ -58,6 +89,12 @@ def infer_field_type(table, start_row: int, col: int):
             return ''
     return parsed
 
+
+def infer_field_map_type(table, start_row: int, col: int):
+    pass
+
+def infer_field_array_type(table, start_row: int, col: int):
+    pass
 
 # 删除table的某一列
 def remove_table_column(table, column: int):
@@ -125,7 +162,7 @@ def table_remove_empty(table):
 def parse_head_field(text):
     i = text.find('_')
     if i > 0:
-        text = text[i+1:]
+        text = text[i + 1:]
     return text
 
 
@@ -220,7 +257,7 @@ def convert_table_data(struct, data):
                     row[col] = '0'  # 填充0
         elif types.is_bool_type(typename):
             for row in data:
-                b = strutil.str2bool(row[col])
+                b = helper.str2bool(row[col])
                 if b:
                     row[col] = '1'
                 else:
@@ -240,7 +277,7 @@ def convert_data(typename: str, val: str) -> str:
         if len(val) == 0:
             val = '0.0'
     elif types.is_bool_type(typename):
-        b = strutil.str2bool(val)
+        b = helper.str2bool(val)
         if b:
             val = '1'
         else:
@@ -269,7 +306,7 @@ def parse_inner_fields(struct):
             break
 
     while end + 1 < len(fields):
-        field_name = fields[end+1]['name']
+        field_name = fields[end + 1]['name']
         if len(field_name) > 3 and field_name[-1] == ']' or field_name[-3] == '[':
             end += 1
 
@@ -278,7 +315,7 @@ def parse_inner_fields(struct):
         idx = -1
         name = ''
         for n in range(loop):
-            field_name = fields[start + n*gap+s]['name']
+            field_name = fields[start + n * gap + s]['name']
             if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
                 return {}
             i = int(field_name[-2])
@@ -311,6 +348,27 @@ def find_col_by_name(row, name: str) -> int:
     return -1
 
 
+def is_kv_table(table):
+    header = table[predef.PredefFieldNameRow]
+    if len(header) < 3:
+        return False
+    if predef.PredefKVKeyName not in header:
+        return False
+    if predef.PredefKVValueName not in header:
+        return False
+    for col, name in enumerate(header):
+        if name == predef.PredefKVKeyName:  # name列是否全是名称定义
+            for n in range(1, len(table)):
+                if parse_elem_type(table[n][col]) != 'string':
+                    return False
+        # type列是否全是类型定义
+        # elif name == predef.PredefKVTypeName:
+        #     for n in range(1, len(table)):
+        #         if not types.is_valid_type_name(table[n][col]):
+        #             return False
+    return True
+
+
 class TestTypes(unittest.TestCase):
     def test_is_type_row(self):
         self.assertTrue(is_type_row(['int', 'string', 'long']))
@@ -318,10 +376,6 @@ class TestTypes(unittest.TestCase):
         self.assertTrue(is_type_row(['int', 'str', 'bool']))
         self.assertFalse(is_type_row(['int', 'str', 'boolean']))
 
-    def test_field_type_from_name(self):
-        self.assertEqual(field_type_from_name('str_Name'), 'str')
-        self.assertEqual(field_type_from_name('int_Lv'), 'int')
-        self.assertEqual(field_type_from_name('A_bool_OK'), 'bool')
 
 
 if __name__ == '__main__':

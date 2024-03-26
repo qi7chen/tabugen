@@ -7,7 +7,7 @@ import sys
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
 import tabugen.generator.csharp.template as cs_template
 from tabugen.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
@@ -39,20 +39,20 @@ class CSharpStructGenerator:
             typename += '?'
         assert typename != "", field['original_type_name']
         if not json_snake_case:
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
+            typename = helper.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cs_value(field, typename, False)
-        name = strutil.pad_spaces(name, max_name_len + 8)
+        name = helper.pad_spaces(name, max_name_len + 8)
         space = self.TAB_SPACE * tabs
         text = '%spublic %s %s // %s\n' % (space, typename, name, field['comment'])
         return text
 
     # 生成嵌入类型的字段定义
     def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         type_name = '%s[]' % type_class_name
-        type_name = strutil.pad_spaces(type_name, max_type_len + 1)
-        inner_field_name = strutil.pad_spaces(inner_field_name, max_name_len + 1)
+        type_name = helper.pad_spaces(type_name, max_type_len + 1)
+        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 1)
         assert len(inner_field_name) > 0
         space = self.TAB_SPACE * tabs
         text = '%spublic %s %s { get; set; } \n' % (space, type_name, inner_field_name)
@@ -64,7 +64,7 @@ class CSharpStructGenerator:
         start = inner_fields['start']
         end = inner_fields['end']
         step = inner_fields['step']
-        type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         assert len(type_class_name) > 0
 
         max_name_len = 0
@@ -87,9 +87,9 @@ class CSharpStructGenerator:
             field = struct['fields'][col]
             typename = lang.map_cs_type(field['original_type_name'])
             assert typename != "", field['original_type_name']
-            typename = strutil.pad_spaces(typename, max_type_len + 1)
+            typename = helper.pad_spaces(typename, max_type_len + 1)
             name = lang.name_with_default_cs_value(field, typename, True)
-            name = strutil.pad_spaces(name, max_name_len + 8)
+            name = helper.pad_spaces(name, max_name_len + 8)
             content += '%spublic %s %s // %s\n' % (space2, typename, name, field['comment'])
             col += 1
 
@@ -116,10 +116,10 @@ class CSharpStructGenerator:
             content += '\n'
 
         fields = struct['fields']
-        max_name_len = strutil.max_field_length(fields, 'name', None)
-        max_type_len = strutil.max_field_length(fields, 'original_type_name', lang.map_cs_type)
+        max_name_len = helper.max_field_length(fields, 'name', None)
+        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_cs_type)
         if inner_start_col >= 0:
-            type_class_name = strutil.camel_case(struct["options"][predef.PredefInnerTypeClass])
+            type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
             field_name = '%s[]' % type_class_name
             if len(field_name) > max_type_len:
                 max_type_len = len(field_name)
@@ -175,10 +175,10 @@ class CSharpStructGenerator:
         if not filepath.endswith('.cs'):
             filepath += '.cs'
         filename = os.path.abspath(filepath)
-        strutil.save_content_if_not_same(filename, content, 'utf-8')
+        helper.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote C# source file to', filename)
 
         if args.with_conv and self.load_gen is not None:
             filename = os.path.join(os.path.split(filepath)[0], 'Conv.cs')
-            strutil.save_content_if_not_same(filename, util_content, 'utf-8')
+            helper.save_content_if_not_same(filename, util_content, 'utf-8')
             print('wrote C# source file to', filename)

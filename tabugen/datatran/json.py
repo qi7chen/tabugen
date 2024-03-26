@@ -6,7 +6,7 @@ import os
 import json
 import tabugen.predef as predef
 import tabugen.typedef as types
-import tabugen.util.strutil as strutil
+import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 
 
@@ -82,7 +82,7 @@ class JsonDataWriter:
             # print(typename, valuetext)
             value = self.parse_value(typename, valuetext)
             if self.use_snake_case:
-                key = strutil.camel_to_snake(key)
+                key = helper.camel_to_snake(key)
             obj[key] = value
         return obj
 
@@ -99,10 +99,10 @@ class JsonDataWriter:
                 col = start + n
                 field = struct['fields'][col]
                 valuetext = row[col]
-                name = strutil.remove_suffix_number(field['name'])
+                name = helper.remove_suffix_number(field['name'])
                 value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
-                    name = strutil.camel_to_snake(name)
+                    name = helper.camel_to_snake(name)
                 obj[name] = value
             obj_list.append(obj)
             start += step
@@ -122,7 +122,7 @@ class JsonDataWriter:
                 valuetext = row[col]
                 value = self.parse_value(field['original_type_name'], valuetext)
                 if self.use_snake_case:
-                    name = strutil.camel_to_snake(field['camel_case_name'])
+                    name = helper.camel_to_snake(field['camel_case_name'])
                 else:
                     name = field['name']
                 obj[name] = value
@@ -154,14 +154,14 @@ class JsonDataWriter:
 
     # 写入JSON文件
     def write_file(self, struct, filepath, encoding, json_indent, obj):
-        filename = "%s/%s.json" % (filepath, strutil.camel_to_snake(struct['camel_case_name']))
+        filename = "%s/%s.json" % (filepath, helper.camel_to_snake(struct['camel_case_name']))
         filename = os.path.abspath(filename)
         if json_indent:
             content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
         else:
             content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True)
 
-        if strutil.save_content_if_not_same(filename, content, encoding):
+        if helper.save_content_if_not_same(filename, content, encoding):
             print("wrote JSON data to", filename)
 
     def process(self, descriptors, args):

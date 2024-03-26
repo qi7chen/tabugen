@@ -3,10 +3,6 @@
 # See accompanying files LICENSE.
 
 
-# array和map的分割字符
-PredefDelim1 = '|'
-PredefDelim2 = '='
-
 PredefFieldNameRow = 0      # 这一行描述字段名称
 PredefFieldTypeDefRow = 1   # 可选的字段类型定义行
 
@@ -25,6 +21,3 @@ PredefInnerFieldName = "InnerFieldName"
 
 OptionUniqueColumns = "UniqueFields"    # 值唯一的列名称
 
-PredefProjectKindServer = "server"      # 服务端项目
-PredefProjectKindClient = "client"      # 客户端项目
-PredefProjectKindManager = "manager"    # 管理后台项目
