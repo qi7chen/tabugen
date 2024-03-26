@@ -3,6 +3,7 @@
 # See accompanying files LICENSE.
 
 import os
+import time
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
@@ -19,6 +20,7 @@ class SpreadSheetFileParser:
         self.with_data = True
         self.filenames = []
         self.project_kind = ''
+        self.legacy = False
 
     @staticmethod
     def name():
@@ -26,6 +28,7 @@ class SpreadSheetFileParser:
 
     # 初始化导出参数
     def init(self, args):
+        self.legacy = args.legacy
         self.file_dir = args.asset_path
         self.project_kind = args.project_kind
         if args.without_data:
@@ -69,10 +72,16 @@ class SpreadSheetFileParser:
 
     # 用于指定导出字段时做筛选
     def is_match_project_kind(self, kind_name: str) -> bool:
-        return self.project_kind == '' or kind_name == self.project_kind
+        if self.project_kind == '' or kind_name == '':
+            return True
+        if kind_name == self.project_kind:
+            return True
+        if self.legacy and kind_name == 'A':  # all kind
+            return True
+        return False
 
     @staticmethod
-    def deduce_type_name(type_name: str, has_type_row: bool, col: int, table):
+    def deduce_type_name(has_type_row: bool, type_name: str,  col: int, table):
         # 有类型定义列
         if type_name == '' and has_type_row:
             type_name = table[predef.PredefFieldTypeDefRow][col]
@@ -80,8 +89,13 @@ class SpreadSheetFileParser:
         if type_name == '':  # 从内容列中推导出类型
             type_name = tableutil.infer_field_type(table, predef.PredefFieldTypeDefRow, col)
 
-        if type_name == 'map' or type_name == 'array':
-            pass
+        if type_name in types.alias:
+            type_name = types.alias[type_name]
+
+        if type_name == 'map':
+            type_name = tableutil.infer_field_map_type(table, predef.PredefFieldTypeDefRow, col)
+        if type_name == 'array':
+            type_name = tableutil.infer_field_array_type(table, predef.PredefFieldTypeDefRow, col)
 
         if types.is_valid_type_name(type_name):
             return type_name
@@ -107,17 +121,16 @@ class SpreadSheetFileParser:
             if not self.is_match_project_kind(kind_name):
                 continue
 
-            type_name = self.deduce_type_name(type_name, field_name, has_type_row, name, table, col)
+            type_name = self.deduce_type_name(has_type_row, type_name, col, table)
             assert type_name != ''
             field_type = types.get_type_by_name(type_name)
 
-            name = name.la
-            assert name not in fields_names, name
-            fields_names[name] = True
+            assert field_name not in fields_names
+            fields_names[field_name] = True
 
             field = {
-                "name": name,
-                "camel_case_name": helper.camel_case(name),
+                "name": field_name,
+                "camel_case_name": helper.camel_case(field_name),
                 "original_type_name": type_name,
                 "type_name": types.get_name_of_type(field_type),
                 "type": field_type,
@@ -175,7 +188,7 @@ class SpreadSheetFileParser:
             if tableutil.is_type_row(table[predef.PredefFieldTypeDefRow]):
                 has_type_row = True
                 data_start_row += 1
-        if not has_type_row and tableutil.is_kv_table(table):
+        if not has_type_row and tableutil.is_kv_table(table, self.legacy):
             meta[predef.PredefParseKVMode] = True
             self.parse_kv(table, struct, data_start_row)
         else:
@@ -191,7 +204,7 @@ class SpreadSheetFileParser:
     def parse_all(self):
         descriptors = []
         for filename in self.filenames:
-            print(helper.current_time(), "start parse", filename)
+            # print(helper.current_time(), "start parse", filename)
             struct = self.parse_one_file(filename)
             if struct is None:
                 print('parse file %s failed' % filename)
@@ -202,14 +215,17 @@ class SpreadSheetFileParser:
 
     # 解析单个文件
     def parse_one_file(self, filename):
+        start_at = time.time()
         table, meta = toolkit.read_workbook_table(filename)
         table = tableutil.table_remove_empty(table)
         base_filename = os.path.basename(filename)
         meta['filename'] = base_filename
         struct = self.parse_table_struct(meta, table)
+        elapsed = time.time() - start_at
         struct['name'] = meta[predef.PredefClassName]
         struct['camel_case_name'] = helper.camel_case(struct['name'])
         struct['file'] = base_filename
+        struct['parse_time'] = elapsed
         if predef.PredefInnerTypeClass in meta:
             struct['inner_fields'] = tableutil.parse_inner_fields(struct)
         return struct

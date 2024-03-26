@@ -22,7 +22,7 @@ def split_field_name(name: str):
         return kind, type_name, name
     j = name.find('_', i + 1)
     if j > 0:
-        kind = name[:i].lower()
+        kind = name[:i].upper()
         type_name = name[i + 1: j]
         return kind, type_name.lower(), name[j + 1:]
     else:
@@ -86,15 +86,33 @@ def infer_field_type(table, start_row: int, col: int):
         if parsed == '':
             parsed = type_name
         if parsed != type_name:
-            return ''
+            return 'string'
     return parsed
 
 
-def infer_field_map_type(table, start_row: int, col: int):
-    pass
-
 def infer_field_array_type(table, start_row: int, col: int):
-    pass
+    elem_type = ''
+    for n in range(start_row, len(table)):
+        type_name = parse_array_elem_type(table[n][col])
+        if elem_type == '':
+            elem_type = type_name
+        if elem_type != type_name:
+            return 'string[]'
+    return elem_type + '[]'
+
+
+def infer_field_map_type(table, start_row: int, col: int):
+    elem_ktype = ''
+    elem_vtype = ''
+    for n in range(start_row, len(table)):
+        t1, t2 = parse_map_elem_type(table[n][col])
+        if elem_ktype == '' and elem_vtype == '':
+            elem_ktype = t1
+            elem_vtype = t2
+        if t1 != elem_ktype or t2 != elem_vtype:
+            return '<string,string>'
+    return '<%s,%s>' % (elem_ktype, elem_vtype)
+
 
 # 删除table的某一列
 def remove_table_column(table, column: int):
@@ -249,7 +267,7 @@ def convert_table_data(struct, data):
                     row[col] = '0'  # 填充0
                 elif val.find('.') >= 0:
                     num = int(round(float(val)))  # 这里是四舍五入
-                    print('round integer', val, '-->', num)
+                    print('%s field %s round integer %s -> %s' % (struct['name'], field['name'], val,  num))
                     row[col] = str(num)
         elif types.is_floating_type(typename):
             for row in data:
@@ -348,7 +366,7 @@ def find_col_by_name(row, name: str) -> int:
     return -1
 
 
-def is_kv_table(table):
+def is_kv_table(table, legacy=False):
     header = table[predef.PredefFieldNameRow]
     if len(header) < 3:
         return False
@@ -361,11 +379,10 @@ def is_kv_table(table):
             for n in range(1, len(table)):
                 if parse_elem_type(table[n][col]) != 'string':
                     return False
-        # type列是否全是类型定义
-        # elif name == predef.PredefKVTypeName:
-        #     for n in range(1, len(table)):
-        #         if not types.is_valid_type_name(table[n][col]):
-        #             return False
+        elif name == predef.PredefKVTypeName and not legacy:  # type列是否全是类型定义
+            for n in range(1, len(table)):
+                if not types.is_valid_type_name(table[n][col]):
+                    return False
     return True
 
 
@@ -375,7 +392,6 @@ class TestTypes(unittest.TestCase):
         self.assertTrue(is_type_row(['int', 'str', 'float']))
         self.assertTrue(is_type_row(['int', 'str', 'bool']))
         self.assertFalse(is_type_row(['int', 'str', 'boolean']))
-
 
 
 if __name__ == '__main__':

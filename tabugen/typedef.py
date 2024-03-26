@@ -45,11 +45,14 @@ name_types = {
     "float32": Type.Float32,
     "float64": Type.Float64,
     "string": Type.String,
-    "str": Type.String,
     "array": Type.Array,
     "map": Type.Map,
 }
 
+alias = {
+    'str': 'string',
+    'arr': 'array',
+}
 
 # non-primitive type names
 composite_type_names = {
@@ -87,7 +90,7 @@ def is_floating_type(typename: str) -> bool:
 def is_primitive_type(name: str) -> bool:
     if is_integer_type(name) or is_floating_type(name):
         return True
-    return name in ['bool', 'string', 'str']
+    return name in ['bool', 'string']
 
 
 def is_array_type(name: str) -> bool:

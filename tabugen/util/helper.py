@@ -15,9 +15,9 @@ import typing
 import unittest
 
 
-# array和map的分割字符
-Delim1 = '|'
-Delim2 = '='
+# array和map的分割字符, a:1234,b:4567
+Delim1 = ','
+Delim2 = ':'
 
 
 def current_time() -> str:

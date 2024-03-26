@@ -45,7 +45,7 @@ def enum_spreadsheet_files(rootdir: str):
 
 # 读取第一个sheet为数据和meta sheet
 def read_workbook_table(filename: str):
-    print('load workbook', filename)
+    print('start load workbook', filename)
     if filename.endswith('.xlsx'):
         return __xlsx_read_workbook(filename)
     elif filename.endswith('.xls'):
