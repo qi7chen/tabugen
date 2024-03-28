@@ -303,6 +303,27 @@ def convert_data(typename: str, val: str) -> str:
     return val
 
 
+# 是否是相似的列（归为数组）
+def is_vector_fields(prev, cur) -> bool:
+    if prev["original_type_name"] != cur["original_type_name"]:
+        return False
+
+    name1 = prev['name']
+    name2 = cur['name']
+    prefix = helper.find_common_prefix(name1, name2)
+    if prefix == "":
+        return False
+    if len(prefix) == len(name1) or len(prefix) == len(name2):
+        return False
+    s1 = name1[len(prefix)]
+    s2 = name2[len(prefix)]
+    if s1.isdigit() and s2.isdigit():
+        n1 = int(s1)
+        n2 = int(s2)
+        return n1 + 1 == n2
+    return False
+
+
 # 解析出内嵌字段， 如：foo[0], bar[0], foo[1], bar[1]
 def parse_inner_fields(struct):
     fields = struct['fields']

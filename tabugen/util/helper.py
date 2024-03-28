@@ -111,27 +111,6 @@ def find_common_prefix(s1: str, s2: str) -> str:
     return prefix
 
 
-# 是否是相似的列（归为数组）
-def is_vector_fields(prev: typing.Mapping, cur: typing.Mapping) -> bool:
-    if prev["original_type_name"] != cur["original_type_name"]:
-        return False
-
-    name1 = prev['name']
-    name2 = cur['name']
-    prefix = find_common_prefix(name1, name2)
-    if prefix == "":
-        return False
-    if len(prefix) == len(name1) or len(prefix) == len(name2):
-        return False
-    s1 = name1[len(prefix)]
-    s2 = name2[len(prefix)]
-    if s1.isdigit() and s2.isdigit():
-        n1 = int(s1)
-        n2 = int(s2)
-        return n1 + 1 == n2
-    return False
-
-
 def is_last_char_digit(text: str) -> bool:
     if len(text) == 0:
         return False
@@ -152,6 +131,23 @@ def remove_suffix_number(text: str) -> str:
         else:
             break
     return text[:n]
+
+
+# field[0] => (field, 0)
+def parse_array_name_index(text: str):
+    n = len(text)
+    if n <= 3:
+        return '', 0
+    if text[n-1] != ']':
+        return '', 0
+    i = text.rfind('[')
+    if i <= 0:
+        return '', 0
+    try:
+        part = text[i+1: n-1]
+        return text[:i], int(part)
+    except ValueError:
+        return '', 0
 
 
 # 比较内容不相同时再写入文件
@@ -236,6 +232,17 @@ class TestUtils(unittest.TestCase):
             out = find_common_prefix(item[0], item[1])
             print(out)
             self.assertEqual(out, item[2])
+
+    def test_parse_array_name_index(self):
+        test_data = [
+            ('abc', '', 0),
+            ('abc[0]', 'abc', 0),
+            ('abc[10]', 'abc', 10),
+        ]
+        for tt in test_data:
+            out1, out2 = parse_array_name_index(tt[0])
+            self.assertEqual(out1, tt[1])
+            self.assertEqual(out2, tt[2])
 
 
 if __name__ == '__main__':

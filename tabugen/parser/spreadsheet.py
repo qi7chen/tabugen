@@ -6,6 +6,7 @@ import os
 import time
 import tabugen.predef as predef
 import tabugen.typedef as types
+import tabugen.structs as structs
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 import tabugen.parser.toolkit as toolkit
@@ -102,16 +103,19 @@ class SpreadSheetFileParser:
         else:
             return 'string'
 
-    def parse_struct(self, has_type_row, meta, table, struct):
+    def parse_struct(self, has_type_row, meta, table, struct: structs.LangStruct):
         class_name = meta[predef.PredefClassName]
         assert len(class_name) > 0
-        struct['name'] = class_name
-        struct['camel_case_name'] = helper.camel_case(class_name)
+        struct.name = class_name
+        struct.camel_case_name = helper.camel_case(class_name)
 
         name_row = table[predef.PredefFieldNameRow]
 
         fields_names = {}
         prev_field = None
+        array_fields = []
+        last_elem_prefix = ''
+        last_array_idx = -1
         for col, name in enumerate(name_row):
             # 跳过注释的列
             if name == '' or name.startswith('#') or name.startswith('//'):
@@ -128,14 +132,23 @@ class SpreadSheetFileParser:
             assert field_name not in fields_names
             fields_names[field_name] = True
 
-            field = {
-                "name": field_name,
-                "camel_case_name": helper.camel_case(field_name),
-                "original_type_name": type_name,
-                "type_name": types.get_name_of_type(field_type),
-                "type": field_type,
-                "comment": '',
-            }
+            field = structs.StructField()
+            field.name = field_name
+            field.camel_case_name = helper.camel_case(field_name)
+            field.original_type_name = type_name
+            field.type_name = types.get_name_of_type(field_type)
+
+            prefix, idx = helper.parse_array_name_index(field_name)
+            if prefix != '':
+                if last_elem_prefix == '':
+                    last_elem_prefix = prefix
+                if idx == last_array_idx + 1:
+                    array_fields.append(fields_names)
+                    last_array_idx = idx
+            else:
+                if len(array_fields) > 0:
+                    struct.array_field_names
+
 
             if prev_field is not None:
                 is_vector = helper.is_vector_fields(prev_field, field)
@@ -148,9 +161,9 @@ class SpreadSheetFileParser:
             assert field["type"] != types.Type.Unknown
             assert field["type_name"] != ""
 
-            struct['fields'].append(field)
+            struct.fields.append(field)
 
-    def parse_kv(self, table, struct, data_start_row):
+    def parse_kv(self, struct: structs.LangStruct, table, data_start_row: int):
         key_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVKeyName)
         type_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVTypeName)
         val_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVValueName)
@@ -177,11 +190,9 @@ class SpreadSheetFileParser:
 
     # 解析数据列
     def parse_table_struct(self, meta, table):
-        struct = {
-            'fields': [],
-            'options': meta,
-            'comment': meta.get(predef.PredefClassComment, ""),
-        }
+        struct = structs.LangStruct()
+        struct.comment = meta.get(predef.PredefClassComment, ''),
+
         data_start_row = 1
         has_type_row = False
         if len(table) >= 2:
@@ -190,7 +201,7 @@ class SpreadSheetFileParser:
                 data_start_row += 1
         if not has_type_row and tableutil.is_kv_table(table, self.legacy):
             meta[predef.PredefParseKVMode] = True
-            self.parse_kv(table, struct, data_start_row)
+            self.parse_kv(struct, table, data_start_row)
         else:
             self.parse_struct(has_type_row, meta, table, struct)
         if self.with_data:
@@ -222,10 +233,10 @@ class SpreadSheetFileParser:
         meta['filename'] = base_filename
         struct = self.parse_table_struct(meta, table)
         elapsed = time.time() - start_at
-        struct['name'] = meta[predef.PredefClassName]
-        struct['camel_case_name'] = helper.camel_case(struct['name'])
-        struct['file'] = base_filename
-        struct['parse_time'] = elapsed
+        struct.name = meta[predef.PredefClassName]
+        struct.camel_case_name = helper.camel_case(struct['name'])
+        struct.file = base_filename
+        struct.parse_time = elapsed
         if predef.PredefInnerTypeClass in meta:
             struct['inner_fields'] = tableutil.parse_inner_fields(struct)
         return struct

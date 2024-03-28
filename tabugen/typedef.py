@@ -33,15 +33,11 @@ name_types = {
     "uint8": Type.UInt8,
     "int16": Type.Int16,
     "uint16": Type.UInt16,
-    "int": Type.Int32,
-    "uint": Type.UInt32,
     "int32": Type.Int32,
     "uint32": Type.UInt32,
     "long": Type.Int64,
     "int64": Type.Int64,
     "uint64": Type.UInt64,
-    "float": Type.Float32,
-    "double": Type.Float64,
     "float32": Type.Float32,
     "float64": Type.Float64,
     "string": Type.String,
@@ -49,7 +45,14 @@ name_types = {
     "map": Type.Map,
 }
 
+# 类型别名
 alias = {
+    'long': 'int64',
+    'ulong': 'uint64',
+    'int': 'int32',
+    'uint': 'uint32',
+    'float': 'float32',
+    'double': 'float64',
     'str': 'string',
     'arr': 'array',
 }
@@ -60,8 +63,12 @@ composite_type_names = {
     "map": Type.Map,
 }
 
-integer_types = ['int8', 'uint8', 'int16', 'uint16', 'int', 'uint', 'int32', 'uint32', 'long', 'int64', 'uint64']
-floating_types = ['float', 'double', 'float32', 'float64']
+integer_types = [
+    'int8', 'int16', 'int', 'int32', 'int64', 'long',
+    'uint8', 'uint16', 'uint', 'uint32', 'uint64',
+]
+
+floating_types = ['float32', 'float64']
 
 
 # get name of an integer type
@@ -93,12 +100,14 @@ def is_primitive_type(name: str) -> bool:
     return name in ['bool', 'string']
 
 
+# int[], string[]
 def is_array_type(name: str) -> bool:
     if len(name) >= 5 and name.endswith('[]'):
         return is_primitive_type(name[:-2])
     return False
 
 
+# <int, int>, <string, int>
 def is_map_type(name: str) -> bool:
     if len(name) >= 5 and name.startswith('<') and name.endswith('>'):
         parts = name[1:-1].split(',')
@@ -109,6 +118,7 @@ def is_map_type(name: str) -> bool:
     return False
 
 
+# 是否正确的类型名称
 def is_valid_type_name(name):
     if is_primitive_type(name):
         return True
@@ -135,7 +145,7 @@ def is_defined_type(name: str) -> bool:
     return get_type_by_name(name) != Type.Unknown
 
 
-# 是否抽象类型, map, array
+# 是否复合类型, 即 map/array
 def is_composite_type(typename: str) -> str:
     if is_map_type(typename):
         return 'map'
@@ -144,13 +154,13 @@ def is_composite_type(typename: str) -> str:
     return ''
 
 
-# array<int> --> int
+# 数组的元素类型, int[] => int
 def array_element_type(typename: str) -> str:
     assert is_array_type(typename), typename
     return typename[:-2]
 
 
-# map<int, string> --> int, string
+# map的元素类型,  <int, string> => (int, string)
 def map_key_value_types(typename: str) -> Tuple:
     assert is_map_type(typename), typename
     parts = typename[1:-1].split(',')
