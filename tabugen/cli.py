@@ -83,7 +83,7 @@ def main():
     parser.add_argument("--legacy", action='store_true', help="兼容模式")
     parser.add_argument("--project_kind", default='', help="指定包含此前缀的名称才纳入解析")
     parser.add_argument("--delim1", default=",", help="map和array的分隔符")
-    parser.add_argument("--delim2", default=":", help="map的kv分隔符")
+    parser.add_argument("--delim2", default="=", help="map的kv分隔符")
     parser.add_argument("--with_csv_parse", action='store_true', help="生成csv读取代码")
     parser.add_argument("--with_conv", action='store_true', help="生成用于解析字符串的工具代码")
     parser.add_argument("--cpp_out", help="指定生成C++代码的文件名")

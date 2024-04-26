@@ -11,6 +11,7 @@ import tabugen.predef as predef
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 import tabugen.version as version
+import tabugen.structs as structs
 import tabugen.generator.go.template as go_template
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
@@ -34,9 +35,9 @@ class GoStructGenerator:
     # 生成字段定义
     def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool, remove_suffix_num: bool, tabs: int) -> str:
         text = ''
-        typename = lang.map_go_type(field['original_type_name'])
-        assert typename != "", field['original_type_name']
-        name = field['camel_case_name']
+        typename = lang.map_go_type(field.original_type_name)
+        assert typename != "", field.original_type_name
+        name = field.camel_case_name
         space = self.TAB_SPACE * tabs
         if remove_suffix_num:
             name = tableutil.remove_field_suffix(name)
@@ -44,17 +45,17 @@ class GoStructGenerator:
         name = helper.pad_spaces(name, max_name_len + 4)
         typename = helper.pad_spaces(typename, max_type_len + 4)
         if json_snake_case:
-            tag_name = field['name']
+            tag_name = field.name
             if remove_suffix_num:
                 tag_name = tableutil.remove_field_suffix(tag_name)
             tag_name = helper.camel_to_snake(tag_name)
-            text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field['comment'])
+            text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field.comment)
         else:
-            text += '%s%s %s // %s\n' % (space, name, typename, field['comment'])
+            text += '%s%s %s // %s\n' % (space, name, typename, field.comment)
         return text
 
     # 生成嵌入类型的字段定义
-    def gen_inner_fields(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
+    def gen_inner_fields(self, struct: structs.LangStruct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
         type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         assert len(inner_field_name) > 0
@@ -69,7 +70,7 @@ class GoStructGenerator:
         return text
 
     # 生成嵌入类型定义
-    def gen_inner_type(self, struct, args) -> str:
+    def gen_inner_type(self, struct: structs.LangStruct, args) -> str:
         inner_fields = struct['inner_fields']
         start = inner_fields['start']
         end = inner_fields['end']
@@ -91,7 +92,7 @@ class GoStructGenerator:
         content = 'type %s struct {\n' % type_class_name
         col = start
         while col < start + step:
-            field = struct['fields'][col]
+            field = struct.fields[col]
             text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, True, 1)
             content += text
             col += 1
@@ -99,24 +100,24 @@ class GoStructGenerator:
         return content
 
     # 生成struct
-    def gen_go_struct(self, struct, args) -> str:
+    def gen_go_struct(self, struct: structs.LangStruct, args) -> str:
         content = ''
 
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False
-        if 'inner_fields' in struct:
+        if len(struct.embed_fields) > 0:
             inner_start_col = struct['inner_fields']['start']
             inner_end_col = struct['inner_fields']['end']
             content += self.gen_inner_type(struct, args)
             content += '\n'
 
-        content += '// %s %s\n' % (struct['comment'], struct['file'])
-        content += 'type %s struct {\n' % struct['camel_case_name']
+        content += '// %s %s\n' % (struct.comment, struct.file)
+        content += 'type %s struct {\n' % struct.camel_case_name
 
-        fields = struct['fields']
-        max_name_len = helper.max_field_length(fields, 'name', None)
-        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_go_type)
+        fields = struct.fields
+        max_name_len = struct.max_field_name_length()
+        max_type_len = struct.max_field_type_length(lang.map_go_type)
 
         for col, field in enumerate(fields):
             text = ''

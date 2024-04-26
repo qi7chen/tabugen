@@ -11,6 +11,7 @@ import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
+import tabugen.structs as structs
 import tabugen.generator.go.template as go_template
 
 
@@ -42,7 +43,7 @@ class GoCsvLoadGenerator:
         return content
 
     # 生成嵌入类型的字段加载代码
-    def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
+    def gen_inner_fields_assign(self, struct: structs.LangStruct, prefix: str, rec_name: str, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerFieldName]
@@ -72,7 +73,7 @@ class GoCsvLoadGenerator:
         return content
 
     # KV模式生成`ParseFrom`方法
-    def gen_kv_parse_method(self, struct) -> str:
+    def gen_kv_parse_method(self, struct: structs.LangStruct) -> str:
         content = ''
         rows = struct['data_rows']
 
@@ -92,17 +93,17 @@ class GoCsvLoadGenerator:
         return content
 
     # 生成`ParseFrom`方法
-    def gen_parse_method(self, struct) -> str:
+    def gen_parse_method(self, struct: structs.LangStruct) -> str:
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False
-        if 'inner_fields' in struct:
+        if len(struct.embed_fields) > 0:
             inner_start_col = struct['inner_fields']['start']
             inner_end_col = struct['inner_fields']['end']
 
         content = ''
-        content += 'func (p *%s) ParseFrom(record map[string]string) error {\n' % struct['camel_case_name']
-        for col, field in enumerate(struct['fields']):
+        content += 'func (p *%s) ParseFrom(record map[string]string) error {\n' % struct.camel_case_name
+        for col, field in enumerate(struct.fields):
             if inner_start_col <= col <= inner_end_col:
                 if not inner_field_done:
                     content += self.gen_inner_fields_assign(struct, 'p.', 'record', 1)
@@ -116,8 +117,8 @@ class GoCsvLoadGenerator:
         content += '}\n'
         return content
 
-    def generate(self, struct) -> str:
-        if predef.PredefParseKVMode in struct['options']:
+    def generate(self, struct: structs.LangStruct) -> str:
+        if predef.PredefParseKVMode in struct.options:
             return self.gen_kv_parse_method(struct)
         else:
             return self.gen_parse_method(struct)

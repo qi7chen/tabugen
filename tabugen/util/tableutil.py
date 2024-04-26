@@ -7,6 +7,7 @@ import unittest
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
+import tabugen.structs as structs
 
 max_int64 = 9223372036854775807
 min_int64 = -9223372036854775808
@@ -235,20 +236,20 @@ def is_all_row_field_value_unique(rows, col: int):
 
 
 # 检查唯一主键
-def validate_unique_column(struct, rows):
-    if predef.PredefParseKVMode in struct['options']:
+def validate_unique_column(struct: structs.LangStruct, rows):
+    if predef.PredefParseKVMode in struct.options:
         return rows
 
-    if predef.OptionUniqueColumns not in struct['options']:
+    if predef.OptionUniqueColumns not in struct.options:
         return rows
-    names = struct['options'][predef.OptionUniqueColumns]
+    names = struct.options[predef.OptionUniqueColumns]
     if len(names) == 0:
         return rows
-    for col, field in enumerate(struct['fields']):
-        if field['name'] in names:
+    for col, field in enumerate(struct.fields):
+        if field.name in names:
             (is_unique, row_line, exist_line) = is_all_row_field_value_unique(rows, col)
             if not is_unique:
-                print('duplicate field %s value found, row %d and row %d' % (field['name'], exist_line, row_line))
+                print('duplicate field %s value found, row %d and row %d' % (field.name, exist_line, row_line))
                 sys.exit(1)
     return rows
 
@@ -256,10 +257,10 @@ def validate_unique_column(struct, rows):
 # 处理一下数据
 # 1，配置的数值类型如果为空，默认填充0
 # 2，如果配置的类型是整数，但实际有浮点，需要转换成整数
-def convert_table_data(struct, data):
-    fields = struct['fields']
+def convert_table_data(struct: structs.LangStruct, data):
+    fields = struct.fields
     for col, field in enumerate(fields):
-        typename = field['type_name']
+        typename = field.type_name
         if types.is_integer_type(typename):
             for row in data:
                 val = row[col]
@@ -267,7 +268,7 @@ def convert_table_data(struct, data):
                     row[col] = '0'  # 填充0
                 elif val.find('.') >= 0:
                     num = int(round(float(val)))  # 这里是四舍五入
-                    print('%s field %s round integer %s -> %s' % (struct['name'], field['name'], val,  num))
+                    print('%s field %s round integer %s -> %s' % (struct.name, field.name, val,  num))
                     row[col] = str(num)
         elif types.is_floating_type(typename):
             for row in data:
@@ -301,78 +302,6 @@ def convert_data(typename: str, val: str) -> str:
         else:
             val = '0'
     return val
-
-
-# 是否是相似的列（归为数组）
-def is_vector_fields(prev, cur) -> bool:
-    if prev["original_type_name"] != cur["original_type_name"]:
-        return False
-
-    name1 = prev['name']
-    name2 = cur['name']
-    prefix = helper.find_common_prefix(name1, name2)
-    if prefix == "":
-        return False
-    if len(prefix) == len(name1) or len(prefix) == len(name2):
-        return False
-    s1 = name1[len(prefix)]
-    s2 = name2[len(prefix)]
-    if s1.isdigit() and s2.isdigit():
-        n1 = int(s1)
-        n2 = int(s2)
-        return n1 + 1 == n2
-    return False
-
-
-# 解析出内嵌字段， 如：foo[0], bar[0], foo[1], bar[1]
-def parse_inner_fields(struct):
-    fields = struct['fields']
-    start = 0
-    end = 0
-    gap = 0
-    for i, field in enumerate(fields):
-        if field['name'].endswith('[0]'):
-            start = i
-            break
-
-    for i in range(start, len(fields)):
-        field_name = fields[i]['name']
-        if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
-            return {}
-        if field_name.endswith('[1]') and field_name[:-3] == fields[start]['name'][:-3]:
-            gap = i - start
-            end = i
-            break
-
-    while end + 1 < len(fields):
-        field_name = fields[end + 1]['name']
-        if len(field_name) > 3 and field_name[-1] == ']' or field_name[-3] == '[':
-            end += 1
-
-    for s in range(gap):
-        loop = (end - start + 1) // gap
-        idx = -1
-        name = ''
-        for n in range(loop):
-            field_name = fields[start + n * gap + s]['name']
-            if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
-                return {}
-            i = int(field_name[-2])
-            if i - idx != 1:
-                return {}
-            idx = i
-            if name == '':
-                name = field_name[:-3]
-            elif field_name[:-3] != name:
-                return {}
-
-    if 0 < start < end and gap > 0:
-        return {
-            'start': start,
-            'end': end,
-            'step': gap,
-        }
-    return {}
 
 
 def remove_field_suffix(name: str) -> str:
