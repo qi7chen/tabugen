@@ -15,7 +15,7 @@ max_float32 = float('3.4e+38')
 min_float32 = float('1.4e-45')
 
 
-def split_field_name(name: str):
+def split_field_name(name: str) -> tuple[str, str, str]:
     kind = ''
     type_name = ''
     i = name.find('_')
@@ -32,14 +32,14 @@ def split_field_name(name: str):
 
 
 # 这一行是否是类型定义
-def is_type_row(row):
+def is_type_row(row: list[str]) -> bool:
     for text in row:
         if not types.is_valid_type_name(text):
             return False
     return len(row) > 0
 
 
-def parse_elem_type(arr):
+def parse_elem_type(arr: list[str]) -> str:
     try:
         a = [int(x) for x in arr]
         if len(a) > 0:
@@ -60,12 +60,12 @@ def parse_elem_type(arr):
     return 'string'
 
 
-def parse_array_elem_type(text):
+def parse_array_elem_type(text: str) -> str:
     arr = text.split(helper.Delim1)
     return parse_elem_type(arr)
 
 
-def parse_map_elem_type(text):
+def parse_map_elem_type(text: str) -> tuple[str, str]:
     keys = []
     values = []
     parts = text.split(helper.Delim1)

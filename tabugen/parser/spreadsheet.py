@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -13,15 +13,15 @@ import tabugen.parser.toolkit as toolkit
 
 
 # 使用excel解析结构描述
-class SpreadSheetFileParser:
+class SpreadSheetParser:
 
     def __init__(self):
-        self.file_dir = ''
-        self.skip_names = ''
-        self.with_data = True
-        self.filenames = []
-        self.project_kind = ''
-        self.legacy = False
+        self.file_dir = ''      # 文件目录
+        self.skip_names = ''    # 忽略解析的文件名
+        self.with_data = True   # 是否包含数据
+        self.filenames = []     # 文件名列表
+        self.project_kind = ''  # 项目类型
+        self.legacy = False     # 是否兼容旧模式
 
     @staticmethod
     def name():

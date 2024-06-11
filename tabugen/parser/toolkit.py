@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -8,32 +8,28 @@ import codecs
 import xlrd
 import openpyxl
 import tabugen.predef as predef
+from xlrd.sheet import Sheet
+from openpyxl.worksheet.worksheet import Worksheet
 
 
 def is_ignored_filename(filename: str) -> bool:
-    for text in ['~$', '-TNP-', ' - 副本']:
-        if filename.find(text) >= 0:
-            return True
-    return False
+    return any(text in filename for text in ['~$', '-TNP-', ' - 副本'])
 
 
 def is_default_sheet_name(name: str) -> bool:
-    idx = name.find('Sheet')
-    if idx > 0:
-        s = name[idx+1:]
-        try:
-            _ = int(s)
-        except ValueError:
-            return False
-    return True
+    try:
+        int(name[name.find('Sheet') + 1:])
+        return True
+    except ValueError:
+        return False
 
 
 # 从路径种搜索所有excel文件
-def enum_spreadsheet_files(rootdir: str):
+def enum_spreadsheet_files(rootdir: str) -> list[str]:
     files = []
-    for dirpath, dirnames, filenames in os.walk(rootdir):
+    for dirpath, _, filenames in os.walk(rootdir):
         for filename in filenames:
-            if filename.endswith(".xlsx") or filename.endswith(".xls") or filename.endswith(".csv"):
+            if filename.endswith(('.xlsx', 'xls', '.csv')):
                 files.append(dirpath + os.sep + filename)
     filenames = []
     for filename in files:
@@ -44,7 +40,7 @@ def enum_spreadsheet_files(rootdir: str):
 
 
 # 读取第一个sheet为数据和meta sheet
-def read_workbook_table(filename: str):
+def read_workbook_table(filename: str) -> (list[list[str]], object):
     print('start load workbook', filename)
     if filename.endswith('.xlsx'):
         return __xlsx_read_workbook(filename)
@@ -56,44 +52,27 @@ def read_workbook_table(filename: str):
         return [], {}
 
 
-def parse_meta_table(table):
+def parse_meta_table(table: list[list[str]]) -> dict[str, str]:
+    return {row[0].strip(): row[1].strip() for row in
+            table if len(row) >= 2 and row[0].strip() and row[1].strip()}
+
+
+def __read_csv_to_table(filename: str) -> (list[str], dict[str, str]):
     meta = {}
-    for row in table:
-        if len(row) >= 2:
-            key = row[0].strip()
-            value = row[1].strip()
-            if len(key) > 0 and len(value) > 0:
-                meta[key] = value
-    return meta
-
-
-def __read_csv_to_table(filename: str):
-    table = []
-    meta = {}
-    with codecs.open(filename, 'r', 'utf-8') as csvf:
-        reader = csv.reader(csvf, skipinitialspace=True)
-        for row in reader:
-            is_empty_row = True  # 是否一行全部是空字符串
-            for text in row:
-                if len(text) > 0:
-                    is_empty_row = False
-                    break
-            if not is_empty_row:
-                table.append(row)
-
-    name = os.path.splitext(os.path.basename(filename))
-    meta[predef.PredefClassName] = name
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        table = [row for row in csv.reader(f, skipinitialspace=True) if any(text for text in row)]  # 剔除全空白行
+    meta[predef.PredefClassName] = os.path.splitext(os.path.basename(filename))
     return table, meta
 
 
-def __xlsx_read_sheet_to_table(sheet):
+def __xlsx_read_sheet_to_table(sheet: Worksheet) -> list[list[str]]:
     table = []
     for i, sheet_row in enumerate(sheet.rows):
         row = []
         is_empty_row = True  # 是否一行全部是空字符串
         for j, cell in enumerate(sheet_row):
             text = ''
-            if cell.value is not None:
+            if cell.value:
                 text = str(cell.value).strip()
             if len(text) > 0:
                 is_empty_row = False
@@ -104,7 +83,7 @@ def __xlsx_read_sheet_to_table(sheet):
 
 
 # 使用openpyxl读取excel文件（.xlsx格式）
-def __xlsx_read_workbook(filename: str):
+def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
     workbook = openpyxl.load_workbook(filename, data_only=True, read_only=True)
     sheet_names = workbook.sheetnames
     if len(sheet_names) == 0:
@@ -132,7 +111,7 @@ def __xlsx_read_workbook(filename: str):
     return data, meta
 
 
-def __xls_read_sheet_to_table(sheet):
+def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
     table = []
     for rx in range(sheet.nrows):
         cell_row = sheet.row(rx)
@@ -149,12 +128,10 @@ def __xls_read_sheet_to_table(sheet):
 
 
 # 使用xlrd读取excel文件(.xls后缀格式）
-def __xls_read_workbook(filename: str):
+def __xls_read_workbook(filename: str) -> (list[list[str]], object):
     workbook = xlrd.open_workbook(filename, on_demand=True)
     sheet_names = workbook.sheet_names()
-    if len(sheet_names) == 0:
-        return [], {}
-    if sheet_names[0] == predef.PredefMetaSheet:
+    if len(sheet_names) == 0 or sheet_names[0] == predef.PredefMetaSheet:
         return [], {}
 
     first_sheet = workbook.sheet_by_name(sheet_names[0])

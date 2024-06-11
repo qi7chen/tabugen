@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -8,11 +8,11 @@ from tabugen.generator.cpp.gen_struct import CppStructGenerator
 from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
 from tabugen.generator.go.gen_struct import GoStructGenerator
 from tabugen.generator.java.gen_struct import JavaStructGenerator
-from tabugen.parser.spreadsheet import SpreadSheetFileParser
+from tabugen.parser.spreadsheet import SpreadSheetParser
 
 # 结构体描述解析
 struct_parser_registry = {
-    SpreadSheetFileParser.name(): SpreadSheetFileParser(),
+    SpreadSheetParser.name(): SpreadSheetParser(),
 }
 
 # 源代码生成

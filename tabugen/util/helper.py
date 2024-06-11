@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -134,7 +134,7 @@ def remove_suffix_number(text: str) -> str:
 
 
 # field[0] => (field, 0)
-def parse_array_name_index(text: str):
+def parse_array_name_index(text: str) -> tuple[str, int]:
     n = len(text)
     if n <= 3:
         return '', 0
@@ -169,7 +169,7 @@ def save_content_if_not_same(filename: str, content: str, enc: str) -> bool:
 
 
 # 对齐数据行
-def pad_data_rows(fields, table):
+def pad_data_rows(fields: list[object], table: list[list[str]]):
     # pad empty row
     max_row_len = len(fields)
     for row in table:
