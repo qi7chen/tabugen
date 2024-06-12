@@ -1,13 +1,13 @@
-# Copyright (C) 2018-present ki7chen@github. All rights reserved.
+# Copyright (C) 2024 ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 from tabugen.datatran.csv import CsvDataWriter
 from tabugen.datatran.json import JsonDataWriter
-from tabugen.generator.cpp.gen_struct import CppStructGenerator
-from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
+# from tabugen.generator.cpp.gen_struct import CppStructGenerator
+# from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
 from tabugen.generator.go.gen_struct import GoStructGenerator
-from tabugen.generator.java.gen_struct import JavaStructGenerator
+# from tabugen.generator.java.gen_struct import JavaStructGenerator
 from tabugen.parser.spreadsheet import SpreadSheetParser
 
 # 结构体描述解析
@@ -17,10 +17,10 @@ struct_parser_registry = {
 
 # 源代码生成
 code_generator_registry = {
-    CppStructGenerator.name(): CppStructGenerator(),
-    CSharpStructGenerator.name(): CSharpStructGenerator(),
+    # CppStructGenerator.name(): CppStructGenerator(),
+    # CSharpStructGenerator.name(): CSharpStructGenerator(),
     GoStructGenerator.name(): GoStructGenerator(),
-    JavaStructGenerator.name(): JavaStructGenerator(),
+    # JavaStructGenerator.name(): JavaStructGenerator(),
 }
 
 # 数据文件写入

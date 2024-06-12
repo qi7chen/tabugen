@@ -15,6 +15,7 @@ max_float32 = float('3.4e+38')
 min_float32 = float('1.4e-45')
 
 
+# 拆分字段名，A_INT_Level -> A, int, level
 def split_field_name(name: str) -> tuple[str, str, str]:
     kind = ''
     type_name = ''

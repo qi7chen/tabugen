@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2018-present ki7chen@github. All rights reserved.
+# Copyright (C) 2024 ki7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -16,7 +16,7 @@ from tabugen.version import VER_STRING
 valid_delimiters = [':', ',', '|', '=']
 
 
-def run(args):
+def run(args: argparse.Namespace):
     parser = get_struct_parser('excel')
 
     pairs = [
@@ -61,7 +61,7 @@ def run(args):
 
 
 # 校验参数
-def verify_args(args):
+def verify_args(args: argparse.Namespace):
     if args.package is None:
         print('package name must be set')
         sys.exit(1)
@@ -98,7 +98,7 @@ def main():
     # output options
     parser.add_argument("--source_file_encoding", default="utf8", help="生成代码的文件编码格式")
     parser.add_argument("--data_file_encoding", default="utf8", help="导出数据的文件编码格式")
-    parser.add_argument("--out_data_format", help="导出数据的格式(csv,json)")
+    parser.add_argument("--out_data_format", default='csv', help="导出数据的格式(csv,json)")
     parser.add_argument("--out_data_path", default=".", help="导出数据文件的路径")
     parser.add_argument("--json_indent", action="store_true", help="导出的JSON使用缩进格式")
     parser.add_argument("--json_snake_case", action="store_true", help="导出的JSON使用snake_case")

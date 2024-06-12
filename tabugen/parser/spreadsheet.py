@@ -77,10 +77,11 @@ class SpreadSheetParser:
             return True
         if kind_name == self.project_kind:
             return True
-        if self.legacy and kind_name == 'A':  # all kind
+        if self.legacy and kind_name == 'A':  # A表示所有
             return True
         return False
 
+    # 推到字段类型
     @staticmethod
     def deduce_type_name(has_type_row: bool, type_name: str,  col: int, table):
         # 有类型定义列
@@ -111,11 +112,7 @@ class SpreadSheetParser:
 
         name_row = table[predef.PredefFieldNameRow]
 
-        duplicate_field_names = {}
-        prev_field = None
-        array_field_names = []
-        last_elem_prefix = ''
-        last_array_idx = -1
+        duplicate_field_names = set()
 
         for col, name in enumerate(name_row):
             # 跳过注释的列
@@ -130,8 +127,8 @@ class SpreadSheetParser:
             assert type_name != ''
             field_type = types.get_type_by_name(type_name)
 
-            assert field_name not in duplicate_field_names
-            duplicate_field_names[field_name] = True
+            assert field_name not in duplicate_field_names, f'{field_name}'
+            duplicate_field_names.add(field_name)
 
             field = structs.StructField()
             field.name = field_name
@@ -139,24 +136,6 @@ class SpreadSheetParser:
             field.original_type_name = type_name
             field.type_name = types.get_name_of_type(field_type)
             field.type = types.get_type_by_name(field.type_name)
-
-            prefix, idx = helper.parse_array_name_index(field_name)
-            if prefix != '':
-                if last_elem_prefix == '':
-                    last_elem_prefix = prefix
-                if idx == last_array_idx + 1:
-                    array_field_names.append(field_name)
-                    last_array_idx = idx
-            else:
-                if len(array_field_names) > 1:
-                    name, i = helper.parse_array_name_index(array_field_names[0])
-                    assert len(name) > 0
-                    struct.array_fields[name] = array_field_names
-                    array_field_names = []
-
-            assert field.type != types.Type.Unknown
-            assert field.type_name != ""
-
             struct.fields.append(field)
 
     def parse_kv(self, struct: structs.LangStruct, table, data_start_row: int):
@@ -185,9 +164,9 @@ class SpreadSheetParser:
             struct.fields.append(field)
 
     # 解析数据列
-    def parse_table_struct(self, meta, table):
+    def parse_table_struct(self, meta: dict, table: list[list[str]]) -> structs.LangStruct:
         struct = structs.LangStruct()
-        struct.comment = meta.get(predef.PredefClassComment, ''),
+        struct.comment = meta.get(predef.PredefClassComment, '')
 
         data_start_row = 1
         has_type_row = False
@@ -195,11 +174,7 @@ class SpreadSheetParser:
             if tableutil.is_type_row(table[predef.PredefFieldTypeDefRow]):
                 has_type_row = True
                 data_start_row += 1
-        if not has_type_row and tableutil.is_kv_table(table, self.legacy):
-            meta[predef.PredefParseKVMode] = True
-            self.parse_kv(struct, table, data_start_row)
-        else:
-            self.parse_struct(has_type_row, meta, table, struct)
+        self.parse_struct(has_type_row, meta, table, struct)
         if self.with_data:
             data = table[data_start_row:]
             if len(data) > 0:
@@ -228,60 +203,10 @@ class SpreadSheetParser:
         base_filename = os.path.basename(filename)
         meta['filename'] = base_filename
         struct = self.parse_table_struct(meta, table)
+        struct.parse_composite_fields()
         elapsed = time.time() - start_at
         struct.name = meta[predef.PredefClassName]
         struct.camel_case_name = helper.camel_case(struct.name)
-        struct.file = base_filename
         struct.parse_time = elapsed
         return struct
 
-
-# 解析出内嵌字段， 如：foo[0], bar[0], foo[1], bar[1]
-def parse_embed_fields(struct: structs.LangStruct):
-    fields = struct.fields
-    start = 0
-    end = 0
-    gap = 0
-    for i, field in enumerate(fields):
-        if field.name.endswith('[0]'):
-            start = i
-            break
-
-    for i in range(start, len(fields)):
-        field_name = fields[i].name
-        if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
-            return {}
-        if field_name.endswith('[1]') and field_name[:-3] == fields[start].name[:-3]:
-            gap = i - start
-            end = i
-            break
-
-    while end + 1 < len(fields):
-        field_name = fields[end + 1].name
-        if len(field_name) > 3 and field_name[-1] == ']' or field_name[-3] == '[':
-            end += 1
-
-    for s in range(gap):
-        loop = (end - start + 1)  # gap
-        idx = -1
-        name = ''
-        for n in range(loop):
-            field_name = fields[start + n * gap + s].name
-            if len(field_name) <= 3 or field_name[-1] != ']' or field_name[-3] != '[':
-                return {}
-            i = int(field_name[-2])
-            if i - idx != 1:
-                return {}
-            idx = i
-            if name == '':
-                name = field_name[:-3]
-            elif field_name[:-3] != name:
-                return {}
-
-    if 0 < start < end and gap > 0:
-        return {
-            'start': start,
-            'end': end,
-            'step': gap,
-        }
-    return {}

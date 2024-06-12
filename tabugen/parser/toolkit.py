@@ -93,19 +93,20 @@ def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
         workbook.close()
         return [], {}
 
+    meta = {}
     first_sheet = workbook[sheet_names[0]]
     data = __xlsx_read_sheet_to_table(first_sheet)
-    meta = {}
     if predef.PredefMetaSheet in sheet_names:
         meta_sheet = workbook[predef.PredefMetaSheet]
         meta = parse_meta_table(__xlsx_read_sheet_to_table(meta_sheet))
 
+    # 如果没有指定类名，使用文件名
     if predef.PredefClassName not in meta:
-        if is_default_sheet_name(sheet_names[0]):
+        if not is_default_sheet_name(sheet_names[0]) and sheet_names[0].isalpha():
+            meta[predef.PredefClassName] = sheet_names[0]
+        else:
             name = os.path.splitext(os.path.basename(filename))[0]
             meta[predef.PredefClassName] = name
-        else:
-            meta[predef.PredefClassName] = sheet_names[0]
 
     workbook.close()
     return data, meta
@@ -113,8 +114,9 @@ def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
 
 def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
     table = []
-    for rx in range(sheet.nrows):
-        cell_row = sheet.row(rx)
+    for i in range(sheet.nrows):
+        comments = {}
+        cell_row = sheet.row(i)
         row = []
         is_empty_row = True  # 是否一行全部是空字符串
         for cell in cell_row:
@@ -135,17 +137,18 @@ def __xls_read_workbook(filename: str) -> (list[list[str]], object):
         return [], {}
 
     first_sheet = workbook.sheet_by_name(sheet_names[0])
-    data = __xls_read_sheet_to_table(first_sheet)
     meta = {}
+    data = __xls_read_sheet_to_table(first_sheet)
     if predef.PredefMetaSheet in sheet_names:
         meta_sheet = workbook[predef.PredefMetaSheet]
         meta = parse_meta_table(__xls_read_sheet_to_table(meta_sheet))
 
+    # 如果没有指定类名，使用文件名
     if predef.PredefClassName not in meta:
-        if is_default_sheet_name(sheet_names[0]):
+        if not is_default_sheet_name(sheet_names[0]) and sheet_names[0].isalpha():
+            meta[predef.PredefClassName] = sheet_names[0]
+        else:
             name = os.path.splitext(os.path.basename(filename))[0]
             meta[predef.PredefClassName] = name
-        else:
-            meta[predef.PredefClassName] = sheet_names[0]
 
     return data, meta
