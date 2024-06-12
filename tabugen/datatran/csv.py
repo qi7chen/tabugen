@@ -8,9 +8,10 @@ import codecs
 import tempfile
 import filecmp
 import shutil
-import tabugen.predef as predef
+from argparse import Namespace
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
+from tabugen.structs import Struct
 
 
 # 写入csv文件
@@ -24,7 +25,7 @@ class CsvDataWriter:
 
     # 将数据写入csv文件
     @staticmethod
-    def write_file(name, table, filepath, encoding):
+    def write_file(name: str, table: list[list[str]], filepath:str, encoding:str):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), helper.random_word(8))
         os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
@@ -42,36 +43,21 @@ class CsvDataWriter:
             shutil.move(tmp_filename, target_filename)
             print("wrote csv rows to", target_filename)
 
-    @staticmethod
-    def header_row(struct):
+    def header_row(self, struct: Struct):
         row = []
-        for field in struct['fields']:
-            row.append(field['name'])
+        for field in struct.raw_fields:
+            row.append(field.origin_name)
         return row
 
-    # 只保留key-value
-    def parse_kv_table(self, struct):
-        table = [['Key', 'Value']]
-        data_rows = struct['data_rows']
-        keyidx = struct['options']['key_column']
-        valueidx = struct['options']['value_column']
-        for col, row in enumerate(data_rows):
-            field = struct['fields'][col]
-            name = row[keyidx]
-            value = row[valueidx]
-            value = tableutil.convert_data(field['type_name'], value)
-            table.append([name, value])
-        return table
-
     #
-    def parse_table(self, struct):
-        data = struct["data_rows"]
+    def parse_table(self, struct: Struct):
+        data = struct.data_rows
         data = tableutil.validate_unique_column(struct, data)
         data = tableutil.convert_table_data(struct, data)
-        header = CsvDataWriter.header_row(struct)
+        header = self.header_row(struct)
         return [header] + data
 
-    def process(self, descriptors, args):
+    def process(self, descriptors: list[Struct], args: Namespace):
         filepath = args.out_data_path
         encoding = args.data_file_encoding
         if filepath != '.':
@@ -82,9 +68,6 @@ class CsvDataWriter:
                 pass
 
         for struct in descriptors:
-            if predef.PredefParseKVMode in struct['options']:
-                table = self.parse_kv_table(struct)
-            else:
-                table = self.parse_table(struct)
-            name = helper.camel_to_snake(struct['camel_case_name'])
+            table = self.parse_table(struct)
+            name = helper.camel_to_snake(struct.camel_case_name)
             self.write_file(name, table, filepath, encoding)

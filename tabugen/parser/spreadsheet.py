@@ -104,7 +104,7 @@ class SpreadSheetParser:
         else:
             return 'string'
 
-    def parse_struct(self, has_type_row, meta, table, struct: structs.LangStruct):
+    def parse_struct(self, has_type_row, meta, table, struct: structs.Struct):
         class_name = meta[predef.PredefClassName]
         assert len(class_name) > 0
         struct.name = class_name
@@ -131,41 +131,18 @@ class SpreadSheetParser:
             duplicate_field_names.add(field_name)
 
             field = structs.StructField()
+            field.origin_name = name
             field.name = field_name
             field.camel_case_name = helper.camel_case(field_name)
-            field.original_type_name = type_name
+            field.origin_type_name = type_name
             field.type_name = types.get_name_of_type(field_type)
             field.type = types.get_type_by_name(field.type_name)
             struct.fields.append(field)
-
-    def parse_kv(self, struct: structs.LangStruct, table, data_start_row: int):
-        key_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVKeyName)
-        type_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVTypeName)
-        val_col = tableutil.find_col_by_name(table[predef.PredefFieldNameRow], predef.PredefKVValueName)
-
-        struct['options']['key_column'] = key_col
-        struct['options']['type_column'] = type_col
-        struct['options']['value_column'] = val_col
-
-        data_rows = table[data_start_row:]
-        for row in data_rows:
-            name = row[key_col]
-            type_name = row[type_col]
-            field_type = types.get_type_by_name(type_name)
-            comment = ''
-            field = {
-                "name": name,
-                "camel_case_name": helper.camel_case(name),
-                "original_type_name": type_name,
-                "type": field_type,
-                "type_name": types.get_name_of_type(field_type),
-                "comment": comment,
-            }
-            struct.fields.append(field)
+            struct.raw_fields.append(field)
 
     # 解析数据列
-    def parse_table_struct(self, meta: dict, table: list[list[str]]) -> structs.LangStruct:
-        struct = structs.LangStruct()
+    def parse_table_struct(self, meta: dict, table: list[list[str]]) -> structs.Struct:
+        struct = structs.Struct()
         struct.comment = meta.get(predef.PredefClassComment, '')
 
         data_start_row = 1

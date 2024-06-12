@@ -7,7 +7,7 @@ import unittest
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
-import tabugen.structs as structs
+from tabugen.structs import Struct
 
 max_int64 = 9223372036854775807
 min_int64 = -9223372036854775808
@@ -224,7 +224,7 @@ def remove_empty_columns(table):
 
 
 # 是否字段内容唯一
-def is_all_row_field_value_unique(rows, col: int):
+def is_all_row_field_value_unique(rows: list[list[str]], col: int) -> (bool, int, int):
     all_set = {}
     for i, row in enumerate(rows):
         if len(row[col]) > 0:
@@ -237,15 +237,17 @@ def is_all_row_field_value_unique(rows, col: int):
 
 
 # 检查唯一主键
-def validate_unique_column(struct: structs.LangStruct, rows):
+def validate_unique_column(struct: Struct, rows: list[list[str]]) -> list[list[str]]:
     if predef.PredefParseKVMode in struct.options:
         return rows
 
     if predef.OptionUniqueColumns not in struct.options:
         return rows
+
     names = struct.options[predef.OptionUniqueColumns]
     if len(names) == 0:
         return rows
+
     for col, field in enumerate(struct.fields):
         if field.name in names:
             (is_unique, row_line, exist_line) = is_all_row_field_value_unique(rows, col)
@@ -258,31 +260,27 @@ def validate_unique_column(struct: structs.LangStruct, rows):
 # 处理一下数据
 # 1，配置的数值类型如果为空，默认填充0
 # 2，如果配置的类型是整数，但实际有浮点，需要转换成整数
-def convert_table_data(struct: structs.LangStruct, data):
-    fields = struct.fields
-    for col, field in enumerate(fields):
+def convert_table_data(struct: Struct, rows: list[list[str]]) -> list[list[str]]:
+    for col, field in enumerate(struct.raw_fields):
         typename = field.type_name
         if types.is_integer_type(typename):
-            for row in data:
+            for i, row in enumerate(rows):
                 val = row[col]
                 if len(val) == 0:
                     row[col] = '0'  # 填充0
                 elif val.find('.') >= 0:
                     num = int(round(float(val)))  # 这里是四舍五入
                     print('%s field %s round integer %s -> %s' % (struct.name, field.name, val,  num))
-                    row[col] = str(num)
+                    rows[i][col] = str(num)
         elif types.is_floating_type(typename):
-            for row in data:
+            for i, row in enumerate(rows):
                 if len(row[col]) == 0:
-                    row[col] = '0'  # 填充0
+                    rows[i][col] = '0'  # 填充0
         elif types.is_bool_type(typename):
-            for row in data:
+            for i, row in enumerate(rows):
                 b = helper.str2bool(row[col])
-                if b:
-                    row[col] = '1'
-                else:
-                    row[col] = '0'
-    return data
+                rows[i][col] = '1' if b else '0'
+    return rows
 
 
 def convert_data(typename: str, val: str) -> str:
@@ -306,8 +304,11 @@ def convert_data(typename: str, val: str) -> str:
 
 
 def remove_field_suffix(name: str) -> str:
-    if len(name) > 3 and name[-1] == ']' or name[-3] == '[':
+    if len(name) <= 3:
+        return name
+    if name[-1] == ']' and name[-3] == '[':
         return name[:-3]
+    return name
 
 
 def find_col_by_name(row, name: str) -> int:

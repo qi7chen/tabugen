@@ -5,14 +5,13 @@ See accompanying files LICENSE.
 """
 
 import os
-
+from argparse import Namespace
 import tabugen.lang as lang
 import tabugen.predef as predef
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 import tabugen.version as version
-import tabugen.structs as structs
-import tabugen.generator.go.template as go_template
+from tabugen.structs import Struct, StructField, ArrayField, EmbedField
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
 
@@ -25,18 +24,19 @@ class GoStructGenerator:
         return "go"
 
     def __init__(self):
-        self.load_gen = None
+        self.parse_gen = None
         self.json_snake_case = False
 
     def enable_gen_parse(self, name):
         if name == 'csv':
-            self.load_gen = GoCsvLoadGenerator()
+            self.parse_gen = GoCsvLoadGenerator()
 
     # 生成字段定义
-    def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool, remove_suffix_num: bool, tabs: int) -> str:
+    def gen_field_define(self, field: StructField, max_type_len: int, max_name_len: int, json_snake_case: bool,
+                         remove_suffix_num: bool, tabs: int) -> str:
         text = ''
-        typename = lang.map_go_type(field.original_type_name)
-        assert typename != "", field.original_type_name
+        typename = lang.map_go_type(field.origin_type_name)
+        assert typename != "", field.origin_type_name
         name = field.camel_case_name
         space = self.TAB_SPACE * tabs
         if remove_suffix_num:
@@ -49,13 +49,17 @@ class GoStructGenerator:
             if remove_suffix_num:
                 tag_name = tableutil.remove_field_suffix(tag_name)
             tag_name = helper.camel_to_snake(tag_name)
-            text += '%s%s %s `json:"%s"` // %s\n' % (space, name, typename, tag_name, field.comment)
+            text += '%s%s %s `json:"%s"`' % (space, name, typename, tag_name)
         else:
-            text += '%s%s %s // %s\n' % (space, name, typename, field.comment)
+            text += '%s%s %s' % (space, name, typename)
+        if field.comment:
+            text += ' // %s' % field.comment
+        text += '\n'
         return text
 
     # 生成嵌入类型的字段定义
-    def gen_inner_fields(self, struct: structs.LangStruct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
+    def gen_embed_fields(self, struct: Struct, max_type_len: int, max_name_len: int, json_snake_case: bool,
+                         tabs: int) -> str:
         type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
         inner_field_name = struct["options"][predef.PredefInnerFieldName]
         assert len(inner_field_name) > 0
@@ -70,49 +74,30 @@ class GoStructGenerator:
         return text
 
     # 生成嵌入类型定义
-    def gen_inner_type(self, struct: structs.LangStruct, args) -> str:
-        inner_fields = struct['inner_fields']
-        start = inner_fields['start']
-        end = inner_fields['end']
-        step = inner_fields['step']
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        assert len(type_class_name) > 0
-
-        max_name_len = 0
-        max_type_len = 0
-        for col in range(start, end):
-            field = struct['fields'][col]
-            name_len = len(field['name'])
-            type_len = len(lang.map_cpp_type(field['original_type_name']))
-            if name_len > max_name_len:
-                max_name_len = name_len
-            if type_len > max_type_len:
-                max_type_len = type_len
-
-        content = 'type %s struct {\n' % type_class_name
-        col = start
-        while col < start + step:
-            field = struct.fields[col]
+    def gen_embed_type(self, embed: EmbedField, args: Namespace) -> str:
+        max_name_len, max_type_len = embed.max_length(lang.map_go_type)
+        content = 'type %s struct {\n' % embed.class_name
+        for field in embed.element_fields:
             text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, True, 1)
             content += text
-            col += 1
         content += '}\n'
+
         return content
 
+    def gen_array_type(self, struct: Struct, array: ArrayField) -> str:
+        pass
+
     # 生成struct
-    def gen_go_struct(self, struct: structs.LangStruct, args) -> str:
+    def gen_go_struct(self, struct: Struct, args: Namespace) -> str:
         content = ''
 
-        inner_start_col = -1
-        inner_end_col = -1
-        inner_field_done = False
-        if len(struct.embed_fields) > 0:
-            inner_start_col = struct['inner_fields']['start']
-            inner_end_col = struct['inner_fields']['end']
-            content += self.gen_inner_type(struct, args)
+        if struct.comment:
+            content += '// %s %s\n' % struct.comment
+
+        for embed in struct.embed_fields:
+            content += self.gen_embed_type(embed, args)
             content += '\n'
 
-        content += '// %s %s\n' % (struct.comment, struct.file)
         content += 'type %s struct {\n' % struct.camel_case_name
 
         fields = struct.fields
@@ -120,28 +105,25 @@ class GoStructGenerator:
         max_type_len = struct.max_field_type_length(lang.map_go_type)
 
         for col, field in enumerate(fields):
-            text = ''
-            if inner_start_col <= col <= inner_end_col:
-                if not inner_field_done:
-                    text = self.gen_inner_fields(struct, max_type_len, max_name_len,  args.json_snake_case, 1)
-                    inner_field_done = True
-            else:
-                text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, False, 1)
+            text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, False, 1)
             content += text
+        for array in struct.array_fields:
+            content += self.gen_array_type(struct, array)
+
         content += '}\n'
         return content
 
-    def generate(self, struct, args) -> str:
+    def generate(self, struct: Struct, args: Namespace) -> str:
         content = ''
         content += self.gen_go_struct(struct, args)
         content += '\n'
-        if self.load_gen is not None:
-            content += self.load_gen.generate(struct)
+        if self.parse_gen is not None:
+            content += self.parse_gen.generate(struct)
         return content
 
-    def run(self, descriptors, filepath, args):
-        content = ''
-        content += go_template.GO_HEAD_TEMPLATE % (version.VER_STRING, args.package)
+    def run(self, descriptors: list[Struct], filepath: str, args: Namespace):
+        content = '// This file is auto-generated by Tabugen v%s, DO NOT EDIT!\n\npackage %s\n\n'
+        content = content % (version.VER_STRING, args.package)
 
         if args.json_snake_case:
             self.json_snake_case = True
@@ -152,8 +134,6 @@ class GoStructGenerator:
         if not filepath.endswith('.go'):
             filepath += '.go'
         filename = os.path.abspath(filepath)
-        if self.load_gen is not None and args.with_conv:
-            self.load_gen.gen_helper_file(filename, version.VER_STRING, args)
 
         helper.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote Go source to %s' % filename)

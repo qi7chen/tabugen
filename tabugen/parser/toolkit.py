@@ -94,6 +94,7 @@ def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
         return [], {}
 
     meta = {}
+    meta[predef.PredefParseKVMode] = sheet_names[0].startswith('@')
     first_sheet = workbook[sheet_names[0]]
     data = __xlsx_read_sheet_to_table(first_sheet)
     if predef.PredefMetaSheet in sheet_names:
@@ -136,8 +137,9 @@ def __xls_read_workbook(filename: str) -> (list[list[str]], object):
     if len(sheet_names) == 0 or sheet_names[0] == predef.PredefMetaSheet:
         return [], {}
 
-    first_sheet = workbook.sheet_by_name(sheet_names[0])
     meta = {}
+    meta[predef.PredefParseKVMode] = sheet_names[0].startswith('@')
+    first_sheet = workbook.sheet_by_name(sheet_names[0])
     data = __xls_read_sheet_to_table(first_sheet)
     if predef.PredefMetaSheet in sheet_names:
         meta_sheet = workbook[predef.PredefMetaSheet]
