@@ -2,8 +2,8 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from tabugen.datatran.csv import CsvDataWriter
-from tabugen.datatran.json import JsonDataWriter
+from tabugen.writer.csv import CsvDataWriter
+from tabugen.writer.json import JsonDataWriter
 # from tabugen.generator.cpp.gen_struct import CppStructGenerator
 # from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
 from tabugen.generator.go.gen_struct import GoStructGenerator

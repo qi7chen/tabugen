@@ -22,11 +22,10 @@ class StructField:
 class ArrayField:
 
     def __init__(self):
-        self.name = ''
+        self.field_name = ''
         self.camel_case_name = ''
         self.comment = ''
         self.type_name = ''
-        self.field_name = ''
         self.element_fields: list[StructField] = []
 
 
@@ -92,6 +91,10 @@ class Struct:
             n = len(field.name)
             if n > max_len:
                 max_len = n
+        for array in self.array_fields:
+            n = len(array.field_name)
+            if n > max_len:
+                max_len = n
         for embed in self.embed_fields:
             n = len(embed.field_name)
             if n > max_len:
@@ -105,6 +108,10 @@ class Struct:
             n = len(field.origin_type_name)
             if mapper is not None:
                 n = len(mapper(field.origin_type_name))
+            if n > max_len:
+                max_len = n
+        for array in self.array_fields:
+            n = len(array.type_name)
             if n > max_len:
                 max_len = n
         for embed in self.embed_fields:
@@ -132,7 +139,11 @@ class Struct:
     def parse_composite_fields(self):
         start = 0
         while start + 1 < len(self.fields):
-            start = self.parse_one_array(start)
+            end = self.parse_one_array(start)
+            if end - start > 1:
+                start = end
+            else:
+                break
 
         names = set()
         for array in self.array_fields:
@@ -142,7 +153,11 @@ class Struct:
 
         start = 0
         while start < len(self.fields):
-            start = self.parse_one_embed(start)
+            end = self.parse_one_embed(start)
+            if end - start > 1:
+                start = end
+            else:
+                break
 
         names = set()
         for array in self.embed_fields:
@@ -150,70 +165,82 @@ class Struct:
                 names.add(name)
         self.remove_fields(names)
 
-    # 能解析连续的2个数组定义，能跳过embed类型
+    # 解析数组定义
     def parse_one_array(self, start: int) -> int:
-        fields = []
         last_elem_prefix = ''
         last_array_idx = -1
-        while start < len(self.fields):
-            field = self.fields[start]
+        end = start
+        for i in range(start, len(self.fields)):
+            field = self.fields[i]
             prefix, idx = helper.parse_array_name_index(field.name)
             if prefix != '':
                 if last_elem_prefix == '':
                     last_elem_prefix = prefix
+                    start = i
+                    end = start
                 if prefix == last_elem_prefix and idx == last_array_idx + 1:
-                    start += 1
-                    fields.append(field)
+                    end += 1
                     last_array_idx = idx
                 else:
-                    start += 1
                     break
             else:
-                if last_elem_prefix == '':
-                    start += 1
-                else:
+                # new array field
+                if last_elem_prefix != '':
                     break
 
-        if len(fields) < 2:
-            return start
+        if end - start < 2:
+            return end
+
+        fields = []
+        for i in range(start, end):
+            field = self.fields[i]
+            fields.append(copy.deepcopy(field))
 
         array = ArrayField()
-        array.name = last_elem_prefix
+        array.field_name = last_elem_prefix
         array.camel_case_name = helper.camel_case(last_elem_prefix)
         array.type_name = fields[0].type_name + '[]'
         for field in fields:
             array.element_fields.append(field)
         self.array_fields.append(array)
 
-        return start
+        return end
 
     # 解析嵌入类型的字段
     def parse_one_embed(self, start: int) -> int:
         all_range = []
         gap_fields = []
-        while start < len(self.fields):
-            field = self.fields[start]
-            if field.name.endswith('[0]'):
-                start += 1
-                all_range.append(field.name)
-                gap_fields.append(copy.deepcopy(field))
-            else:
-                if len(gap_fields) == 0:
-                    start += 1
+        end = start
+        last_elem_prefix = ''
+        for i in range(start, len(self.fields)):
+            field = self.fields[i]
+            prefix, idx = helper.parse_array_name_index(field.name)
+            if prefix != '' and idx == 0:
+                if last_elem_prefix == '':
+                    start = i
+                    end = start
+                if prefix != last_elem_prefix:
+                    end += 1
+                    last_elem_prefix = prefix
+                    all_range.append(field.name)
+                    gap_fields.append(copy.deepcopy(field))
                 else:
                     break
+            else:
+                if len(gap_fields) > 0:
+                    break
 
-        if len(gap_fields) < 2:
-            return start
+        if end - start < 2:
+            return end
 
         gap_len = len(gap_fields)
         index = 0
-        while start + gap_len <= len(self.fields):
-            index += 1
+        for i in range(end, len(self.fields), gap_len):
             match_count = 0
-            for i in range(gap_len):
-                field = self.fields[start + i]
-                gap_field = gap_fields[i]
+            index += 1
+            for j in range(gap_len):
+                field = self.fields[i + j]
+                gap_field = gap_fields[j]
                 expect_name = f'{gap_field.name[:-3]}[{index}]'
                 if field.name == expect_name and field.type_name == gap_field.type_name:
                     match_count += 1
@@ -223,10 +250,10 @@ class Struct:
             if match_count != gap_len:
                 break
 
-            for i in range(gap_len):
-                field = self.fields[start + i]
+            for j in range(gap_len):
+                field = self.fields[i + j]
                 all_range.append(field.name)
-            start += gap_len
+            end += gap_len
 
         if len(all_range) > 0:
             embed = EmbedField()
@@ -237,4 +264,4 @@ class Struct:
             embed.field_names = all_range
             embed.generate_field_name()
             self.embed_fields.append(embed)
-        return start
+        return end
