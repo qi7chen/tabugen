@@ -92,6 +92,10 @@ class Struct:
             n = len(field.name)
             if n > max_len:
                 max_len = n
+        for embed in self.embed_fields:
+            n = len(embed.field_name)
+            if n > max_len:
+                max_len = n
         return max_len
 
     # 获取字段类型最大长度
@@ -101,6 +105,10 @@ class Struct:
             n = len(field.origin_type_name)
             if mapper is not None:
                 n = len(mapper(field.origin_type_name))
+            if n > max_len:
+                max_len = n
+        for embed in self.embed_fields:
+            n = len(embed.class_name)
             if n > max_len:
                 max_len = n
         return max_len

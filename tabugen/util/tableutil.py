@@ -40,6 +40,19 @@ def is_type_row(row: list[str]) -> bool:
     return len(row) > 0
 
 
+def parse_cell_type(text: str) -> str:
+    try:
+        int(text)
+        return 'int'
+    except ValueError:
+        try:
+            float(text)
+            return 'float'
+        except ValueError:
+            pass
+    return 'string'
+
+
 def parse_elem_type(arr: list[str]) -> str:
     try:
         a = [int(x) for x in arr]
@@ -81,10 +94,10 @@ def parse_map_elem_type(text: str) -> tuple[str, str]:
 
 
 # 根据内容解析字段类型
-def infer_field_type(table, start_row: int, col: int):
+def infer_field_type(table: list[list[str]], start_row: int, col: int):
     parsed = ''
     for n in range(start_row, len(table)):
-        type_name = parse_elem_type(table[n][col])
+        type_name = parse_cell_type(table[n][col])
         if parsed == '':
             parsed = type_name
         if parsed != type_name:

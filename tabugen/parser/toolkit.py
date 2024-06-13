@@ -57,6 +57,18 @@ def parse_meta_table(table: list[list[str]]) -> dict[str, str]:
             table if len(row) >= 2 and row[0].strip() and row[1].strip()}
 
 
+def try_conv_float_int(text: str) -> str:
+    if text.find('.') <= 0:
+        return text
+    try:
+        f = float(text)
+        if f.is_integer():
+            return str(int(f))
+    except ValueError:
+        pass
+    return text
+
+
 def __read_csv_to_table(filename: str) -> (list[str], dict[str, str]):
     meta = {}
     with codecs.open(filename, 'r', 'utf-8') as f:
@@ -76,7 +88,8 @@ def __xlsx_read_sheet_to_table(sheet: Worksheet) -> list[list[str]]:
                 text = str(cell.value).strip()
             if len(text) > 0:
                 is_empty_row = False
-            row.append(text.strip())
+            text = try_conv_float_int(text)
+            row.append(text)
         if not is_empty_row:
             table.append(row)
     return table
@@ -113,6 +126,7 @@ def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
     return data, meta
 
 
+
 def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
     table = []
     for i in range(sheet.nrows):
@@ -124,6 +138,7 @@ def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
             text = str(cell.value).strip()
             if len(text) > 0:
                 is_empty_row = False
+            text = try_conv_float_int(text)
             row.append(text)
         if not is_empty_row:
             table.append(row)

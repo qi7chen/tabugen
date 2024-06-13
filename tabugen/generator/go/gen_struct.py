@@ -57,20 +57,20 @@ class GoStructGenerator:
         text += '\n'
         return text
 
-    # 生成嵌入类型的字段定义
-    def gen_embed_fields(self, struct: Struct, max_type_len: int, max_name_len: int, json_snake_case: bool,
-                         tabs: int) -> str:
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        inner_field_name = struct["options"][predef.PredefInnerFieldName]
-        assert len(inner_field_name) > 0
+    def gen_embed_define(self, field: EmbedField, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
+        name = helper.pad_spaces(field.field_name, max_name_len + 4)
+        typename = helper.pad_spaces(field.class_name, max_type_len + 4)
+        text = ''
         space = self.TAB_SPACE * tabs
-        type_class_name = helper.pad_spaces(type_class_name, max_type_len + 4)
-        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 4)
         if json_snake_case:
-            tag_name = helper.camel_to_snake(type_class_name)
-            text = '%s%s []%s `json:"%s"` // \n' % (space, inner_field_name, type_class_name, tag_name)
+            tag_name = field.field_name
+            tag_name = helper.camel_to_snake(tag_name)
+            text += '%s%s %s `json:"%s"`' % (space, name, typename, tag_name)
         else:
-            text = '%s%s []%s \n' % (space, inner_field_name, type_class_name)
+            text += '%s%s %s' % (space, name, typename)
+        if field.comment:
+            text += ' // %s' % field.comment
+        text += '\n'
         return text
 
     # 生成嵌入类型定义
@@ -109,6 +109,9 @@ class GoStructGenerator:
             content += text
         for array in struct.array_fields:
             content += self.gen_array_type(struct, array)
+        for embed in struct.embed_fields:
+            text = self.gen_embed_define(embed, max_type_len, max_name_len, args.json_snake_case, 1)
+            content += text
 
         content += '}\n'
         return content
