@@ -350,6 +350,14 @@ def legacy_kv_type(ty: int) -> str:
     return ''
 
 
+def is_valid_kv_name(name: str) -> bool:
+    if len(name) == 0 or name[0].isdigit():
+        return False
+    if ' ' in name or '-' in name or '.' in name:
+        return False
+    return True
+
+
 # 包含 [Key, Type, Value] 三个字段名
 def is_kv_table(table: list[list[str]], legacy=True) -> bool:
     header = table[predef.PredefFieldNameRow]
@@ -368,7 +376,8 @@ def is_kv_table(table: list[list[str]], legacy=True) -> bool:
 
     for n in range(1, min(len(table), 20)):
         row = table[n]
-        if not row[key_idx].isalnum():
+        name = row[key_idx].strip()
+        if not is_valid_kv_name(name):
             return False
 
         # 没有类型定义列默认为int64

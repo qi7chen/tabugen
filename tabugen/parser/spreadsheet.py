@@ -145,7 +145,8 @@ class SpreadSheetParser:
             field.origin_type_name = type_name
             field.type_name = types.get_name_of_type(field_type)
             field.type = types.get_type_by_name(field.type_name)
-            struct.fields.append(field)
+            if not name.startswith('#'):
+                struct.fields.append(field)
             struct.raw_fields.append(field)
 
     # 解析数据列

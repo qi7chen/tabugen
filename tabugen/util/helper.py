@@ -53,8 +53,10 @@ def camel_case(s: str) -> str:
 
 # camel case to snake case
 def camel_to_snake(name: str) -> str:
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    name = re.sub('__([A-Z])', r'_\1', name)
+    name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+    return name.lower()
 
 
 def escape_delimiter(ch: str) -> str:

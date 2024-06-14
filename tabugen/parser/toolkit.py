@@ -51,7 +51,7 @@ def read_workbook_table(filename: str, meta: dict) -> list[list[str]]:
             return []
         first_sheet = workbook[sheet_names[0]]
         table = __xlsx_read_sheet_to_table(first_sheet)
-        parse_sheet_table(filename, sheet_names[0], meta)
+        parse_sheet_table(filename, sheet_names[0], table, meta)
         return table
     elif filename.endswith('.xls'):
         workbook = xlrd.open_workbook(filename)
