@@ -11,7 +11,7 @@ import tabugen.predef as predef
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 import tabugen.version as version
-from tabugen.structs import Struct, StructField, ArrayField, EmbedField
+from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
 
@@ -33,21 +33,17 @@ class GoStructGenerator:
 
     # 生成字段定义
     def gen_field_define(self, field: StructField, max_type_len: int, max_name_len: int, json_snake_case: bool,
-                         remove_suffix_num: bool, tabs: int) -> str:
+                         tabs: int) -> str:
         text = ''
         typename = lang.map_go_type(field.origin_type_name)
         assert typename != "", field.origin_type_name
         name = field.camel_case_name
         space = self.TAB_SPACE * tabs
-        if remove_suffix_num:
-            name = tableutil.remove_field_suffix(name)
 
         name = helper.pad_spaces(name, max_name_len + 4)
         typename = helper.pad_spaces(typename, max_type_len + 4)
         if json_snake_case:
             tag_name = field.name
-            if remove_suffix_num:
-                tag_name = tableutil.remove_field_suffix(tag_name)
             tag_name = helper.camel_to_snake(tag_name)
             text += '%s%s %s `json:"%s"`' % (space, name, typename, tag_name)
         else:
@@ -57,9 +53,12 @@ class GoStructGenerator:
         text += '\n'
         return text
 
-    def gen_embed_define(self, field: EmbedField, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
-        name = helper.pad_spaces(field.field_name, max_name_len + 4)
-        typename = helper.pad_spaces(field.class_name, max_type_len + 4)
+    def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, json_snake_case: bool,
+                         tabs: int) -> str:
+        name = helper.camel_case(field.field_name)
+        name = helper.pad_spaces(name, max_name_len + 4)
+        typename = lang.map_go_type(field.type_name)
+        typename = helper.pad_spaces(typename, max_type_len + 4)
         text = ''
         space = self.TAB_SPACE * tabs
         if json_snake_case:
@@ -73,19 +72,43 @@ class GoStructGenerator:
         text += '\n'
         return text
 
-    # 生成嵌入类型定义
-    def gen_embed_type(self, embed: EmbedField, args: Namespace) -> str:
-        max_name_len, max_type_len = embed.max_length(lang.map_go_type)
-        content = 'type %s struct {\n' % embed.class_name
-        for field in embed.element_fields:
-            text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, True, 1)
-            content += text
+    def gen_kv_fields(self, struct: Struct, tabs: int, args: Namespace) -> str:
+        space = self.TAB_SPACE * tabs
+        key_idx = struct.get_column_index(predef.PredefKVKeyName)
+        assert key_idx >= 0
+        type_idx = struct.get_column_index(predef.PredefKVTypeName)
+        comment_idx = struct.get_kv_comment_col()
+
+        max_name_len, max_type_len = struct.get_kv_max_len(lang.map_go_type)
+        content = 'type %s struct {\n' % struct.camel_case_name
+        for row in struct.data_rows:
+            key = row[key_idx]
+            typename = 'int'
+            if type_idx >= 0:
+                typename = row[type_idx]
+            if key == '' or typename == '':
+                continue
+
+            if args.legacy and typename.isdigit():
+                typename = tableutil.legacy_kv_type(int(typename))
+
+            typename = lang.map_go_type(typename)
+            key_name = helper.pad_spaces(helper.camel_case(key), max_name_len + 4)
+            typename = helper.pad_spaces(typename, max_type_len + 4)
+            if args.json_snake_case:
+                tag_name = helper.camel_to_snake(key)
+                content += '%s%s %s `json:"%s"`' % (space, key_name, typename, tag_name)
+            else:
+                content += '%s%s %s' % (space, key_name, typename)
+            if comment_idx >= 0:
+                comment = row[comment_idx].strip()
+                comment = comment.replace('\n', ' ')
+                comment = comment.replace('//', '')
+                if len(content) > 0:
+                    content += '\t// %s' % comment
+            content += '\n'
         content += '}\n'
-
         return content
-
-    def gen_array_type(self, struct: Struct, array: ArrayField) -> str:
-        pass
 
     # 生成struct
     def gen_go_struct(self, struct: Struct, args: Namespace) -> str:
@@ -94,9 +117,8 @@ class GoStructGenerator:
         if struct.comment:
             content += '// %s %s\n' % struct.comment
 
-        for embed in struct.embed_fields:
-            content += self.gen_embed_type(embed, args)
-            content += '\n'
+        if struct.options[predef.PredefParseKVMode]:
+            return content + self.gen_kv_fields(struct, 1, args)
 
         content += 'type %s struct {\n' % struct.camel_case_name
 
@@ -105,13 +127,10 @@ class GoStructGenerator:
         max_type_len = struct.max_field_type_length(lang.map_go_type)
 
         for col, field in enumerate(fields):
-            text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, False, 1)
+            text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, 1)
             content += text
         for array in struct.array_fields:
-            content += self.gen_array_type(struct, array)
-        for embed in struct.embed_fields:
-            text = self.gen_embed_define(embed, max_type_len, max_name_len, args.json_snake_case, 1)
-            content += text
+            content += self.gen_array_define(array, max_type_len, max_name_len, args.json_snake_case, 1)
 
         content += '}\n'
         return content
