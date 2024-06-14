@@ -7,9 +7,10 @@ import os
 import codecs
 import xlrd
 import openpyxl
-import tabugen.predef as predef
 from xlrd.sheet import Sheet
 from openpyxl.worksheet.worksheet import Worksheet
+import tabugen.predef as predef
+import tabugen.util.tableutil as tableutil
 
 
 def is_ignored_filename(filename: str) -> bool:
@@ -40,21 +41,49 @@ def enum_spreadsheet_files(rootdir: str) -> list[str]:
 
 
 # 读取第一个sheet为数据和meta sheet
-def read_workbook_table(filename: str) -> (list[list[str]], object):
+def read_workbook_table(filename: str, meta: dict) -> list[list[str]]:
     print('start load workbook', filename)
     if filename.endswith('.xlsx'):
-        return __xlsx_read_workbook(filename)
+        workbook = openpyxl.load_workbook(filename, data_only=True, read_only=True)
+        sheet_names = workbook.sheetnames
+        if len(sheet_names) == 0:
+            workbook.close()
+            return []
+        first_sheet = workbook[sheet_names[0]]
+        table = __xlsx_read_sheet_to_table(first_sheet)
+        parse_sheet_table(filename, sheet_names[0], meta)
+        return table
     elif filename.endswith('.xls'):
-        return __xls_read_workbook(filename)
+        workbook = xlrd.open_workbook(filename)
+        sheet_names = workbook.sheet_names()
+        if len(sheet_names) == 0:
+            return []
+        first_sheet = workbook.sheet_by_name(sheet_names[0])
+        table = __xls_read_sheet_to_table(first_sheet)
+        parse_sheet_table(filename, sheet_names[0], table, meta)
+        return table
     elif filename.endswith('.csv'):
+        meta[predef.PredefClassName] = os.path.splitext(os.path.basename(filename))
         return __read_csv_to_table(filename)
     else:
-        return [], {}
+        return []
 
 
-def parse_meta_table(table: list[list[str]]) -> dict[str, str]:
-    return {row[0].strip(): row[1].strip() for row in
-            table if len(row) >= 2 and row[0].strip() and row[1].strip()}
+def parse_sheet_table(filename: str, sheet_name: str, table: list[list[str]], meta: dict):
+    meta[predef.PredefParseKVMode] = False
+    if sheet_name.startswith('@'):
+        meta[predef.PredefParseKVMode] = True
+        sheet_name = sheet_name[1:]
+    else:
+        meta[predef.PredefParseKVMode] = tableutil.is_kv_table(table)
+
+    # 如果没有指定类名，使用文件名
+    if predef.PredefClassName not in meta:
+        if not is_default_sheet_name(sheet_name) and sheet_name.isalpha():
+            meta[predef.PredefClassName] = sheet_name
+        else:
+            name = os.path.splitext(os.path.basename(filename))[0]
+            meta[predef.PredefClassName] = name
 
 
 def try_conv_float_int(text: str) -> str:
@@ -69,103 +98,49 @@ def try_conv_float_int(text: str) -> str:
     return text
 
 
-def __read_csv_to_table(filename: str) -> (list[str], dict[str, str]):
-    meta = {}
-    with codecs.open(filename, 'r', 'utf-8') as f:
-        table = [row for row in csv.reader(f, skipinitialspace=True) if any(text for text in row)]  # 剔除全空白行
-    meta[predef.PredefClassName] = os.path.splitext(os.path.basename(filename))
-    return table, meta
-
-
-def __xlsx_read_sheet_to_table(sheet: Worksheet) -> list[list[str]]:
+def __read_csv_to_table(filename: str) -> list[list[str]]:
     table = []
-    for i, sheet_row in enumerate(sheet.rows):
-        row = []
-        is_empty_row = True  # 是否一行全部是空字符串
-        for j, cell in enumerate(sheet_row):
-            text = ''
-            if cell.value:
-                text = str(cell.value).strip()
-            if len(text) > 0:
-                is_empty_row = False
-            text = try_conv_float_int(text)
-            row.append(text)
-        if not is_empty_row:
-            table.append(row)
+    with codecs.open(filename, 'r', 'utf-8') as f:
+        for csv_row in csv.reader(f, skipinitialspace=True):
+            row = [try_conv_float_int(text) for text in csv_row]
+            row_len = sum(len(s) for s in row)
+            if row_len > 0:
+                table.append(row)
     return table
 
 
 # 使用openpyxl读取excel文件（.xlsx格式）
-def __xlsx_read_workbook(filename: str) -> (list[str], dict[str, str]):
-    workbook = openpyxl.load_workbook(filename, data_only=True, read_only=True)
-    sheet_names = workbook.sheetnames
-    if len(sheet_names) == 0:
-        workbook.close()
-        return [], {}
-    if sheet_names[0] == predef.PredefMetaSheet:
-        workbook.close()
-        return [], {}
-
-    meta = {}
-    meta[predef.PredefParseKVMode] = sheet_names[0].startswith('@')
-    first_sheet = workbook[sheet_names[0]]
-    data = __xlsx_read_sheet_to_table(first_sheet)
-    if predef.PredefMetaSheet in sheet_names:
-        meta_sheet = workbook[predef.PredefMetaSheet]
-        meta = parse_meta_table(__xlsx_read_sheet_to_table(meta_sheet))
-
-    # 如果没有指定类名，使用文件名
-    if predef.PredefClassName not in meta:
-        if not is_default_sheet_name(sheet_names[0]) and sheet_names[0].isalpha():
-            meta[predef.PredefClassName] = sheet_names[0]
-        else:
-            name = os.path.splitext(os.path.basename(filename))[0]
-            meta[predef.PredefClassName] = name
-
-    workbook.close()
-    return data, meta
-
-
-
-def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
+def __xlsx_read_sheet_to_table(sheet: Worksheet) -> list[list[str]]:
     table = []
-    for i in range(sheet.nrows):
-        comments = {}
-        cell_row = sheet.row(i)
+    for i, sheet_row in enumerate(sheet.rows):
         row = []
-        is_empty_row = True  # 是否一行全部是空字符串
-        for cell in cell_row:
-            text = str(cell.value).strip()
-            if len(text) > 0:
-                is_empty_row = False
-            text = try_conv_float_int(text)
+        row_len = 0
+        for j, cell in enumerate(sheet_row):
+            text = ''
+            if cell.value:
+                text = str(cell.value).strip()
+                if len(text) > 0:
+                    row_len += len(text)
+                    text = try_conv_float_int(text)
             row.append(text)
-        if not is_empty_row:
-            table.append(row)
+        if row_len > 0:
+            table.append(row)  # 剔除全空白行
     return table
 
 
 # 使用xlrd读取excel文件(.xls后缀格式）
-def __xls_read_workbook(filename: str) -> (list[list[str]], object):
-    workbook = xlrd.open_workbook(filename, on_demand=True)
-    sheet_names = workbook.sheet_names()
-    if len(sheet_names) == 0 or sheet_names[0] == predef.PredefMetaSheet:
-        return [], {}
-
-    meta = {}
-    meta[predef.PredefParseKVMode] = sheet_names[0].startswith('@')
-    first_sheet = workbook.sheet_by_name(sheet_names[0])
-    data = __xls_read_sheet_to_table(first_sheet)
-    if predef.PredefMetaSheet in sheet_names:
-        meta_sheet = workbook[predef.PredefMetaSheet]
-        meta = parse_meta_table(__xls_read_sheet_to_table(meta_sheet))
-
-    # 如果没有指定类名，使用文件名
-    if predef.PredefClassName not in meta:
-        if not is_default_sheet_name(sheet_names[0]) and sheet_names[0].isalpha():
-            meta[predef.PredefClassName] = sheet_names[0]
-        else:
-            name = os.path.splitext(os.path.basename(filename))[0]
-            meta[predef.PredefClassName] = name
-
-    return data, meta
+def __xls_read_sheet_to_table(sheet: Sheet) -> list[list[str]]:
+    table = []
+    for i in range(sheet.nrows):
+        cell_row = sheet.row(i)
+        row = []
+        row_len = 0
+        for cell in cell_row:
+            text = str(cell.value).strip()
+            if len(text) > 0:
+                row_len += len(text)
+                text = try_conv_float_int(text)
+            row.append(text)
+        if row_len > 0:
+            table.append(row)
+    return table

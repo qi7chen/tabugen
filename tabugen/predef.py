@@ -6,7 +6,7 @@
 PredefFieldNameRow = 0      # 这一行描述字段名称
 PredefFieldTypeDefRow = 1   # 可选的字段类型定义行
 
-PredefMetaSheet = "@meta"            # meta sheet默认名称
+
 PredefClassName = "ClassName"        # meta sheet里指定生成的class名
 PredefClassComment = "ClassComment"  # meta sheet里指定生成的class注释
 PredefFieldComments = "FieldComments"   # 字段批注注释

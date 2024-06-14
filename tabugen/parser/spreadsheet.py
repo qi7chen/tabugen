@@ -115,24 +115,32 @@ class SpreadSheetParser:
         duplicate_field_names = set()
 
         for col, name in enumerate(name_row):
-            # 跳过注释的列
-            if name == '' or name.startswith('#') or name.startswith('//'):
-                continue
+            # 带换行的是注释
+            comment = ''
+            idx = name.find('\n')
+            if idx > 0:
+                comment = name[idx + 1:].replace('\n', ' ')
+                name = name[:idx]
 
-            kind_name, type_name, field_name = tableutil.split_field_name(name)
-            if not self.is_match_project_kind(kind_name):
-                continue
+            field_type = types.Type.String
+            field_name, type_name, kind_name = name, 'string', ''
+            if not name.startswith('#'):
+                kind_name, type_name, field_name = tableutil.split_field_name(name)
+                if not self.is_match_project_kind(kind_name):
+                    continue
 
-            type_name = self.deduce_type_name(has_type_row, type_name, col, table)
-            assert type_name != ''
-            field_type = types.get_type_by_name(type_name)
+                type_name = self.deduce_type_name(has_type_row, type_name, col, table)
+                assert type_name != ''
+                field_type = types.get_type_by_name(type_name)
 
             assert field_name not in duplicate_field_names, f'{field_name}'
             duplicate_field_names.add(field_name)
 
             field = structs.StructField()
+            field.column = col
             field.origin_name = name
             field.name = field_name
+            field.comment = comment
             field.camel_case_name = helper.camel_case(field_name)
             field.origin_type_name = type_name
             field.type_name = types.get_name_of_type(field_type)
@@ -175,15 +183,16 @@ class SpreadSheetParser:
     # 解析单个文件
     def parse_one_file(self, filename):
         start_at = time.time()
-        table, meta = toolkit.read_workbook_table(filename)
-        table = tableutil.table_remove_empty(table)
         base_filename = os.path.basename(filename)
-        meta['filename'] = base_filename
+        meta = {'filename': base_filename}
+        table = toolkit.read_workbook_table(filename, meta)
+        table = tableutil.trim_empty_columns(table)
         struct = self.parse_table_struct(meta, table)
-        struct.parse_composite_fields()
+        struct.parse_array_fields()
         elapsed = time.time() - start_at
         struct.name = meta[predef.PredefClassName]
         struct.camel_case_name = helper.camel_case(struct.name)
         struct.parse_time = elapsed
+        struct.options = meta
         return struct
 

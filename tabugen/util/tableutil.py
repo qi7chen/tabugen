@@ -32,6 +32,14 @@ def split_field_name(name: str) -> tuple[str, str, str]:
         return kind, type_name.lower(), name[i + 1:]
 
 
+def row_find_field_name(row: list[str], name: str) -> int:
+    for i, text in enumerate(row):
+        kind, typename, field_name = split_field_name(text)
+        if field_name == name:
+            return i
+    return -1
+
+
 # 这一行是否是类型定义
 def is_type_row(row: list[str]) -> bool:
     for text in row:
@@ -107,7 +115,7 @@ def infer_field_type(table: list[list[str]], start_row: int, col: int):
 
 def infer_field_array_type(table, start_row: int, col: int):
     elem_type = ''
-    for n in range(start_row, len(table)):
+    for n in range(start_row, min(len(table), 20)):
         type_name = parse_array_elem_type(table[n][col])
         if elem_type == '':
             elem_type = type_name
@@ -119,7 +127,7 @@ def infer_field_array_type(table, start_row: int, col: int):
 def infer_field_map_type(table, start_row: int, col: int):
     elem_ktype = ''
     elem_vtype = ''
-    for n in range(start_row, len(table)):
+    for n in range(start_row, min(len(table), 20)):
         t1, t2 = parse_map_elem_type(table[n][col])
         if elem_ktype == '' and elem_vtype == '':
             elem_ktype = t1
@@ -182,9 +190,6 @@ def table_remove_empty(table):
     header = table[predef.PredefFieldNameRow]
     for col, filed in enumerate(header):
         field = filed.strip()
-        idx = field.find('\n')
-        if idx > 0:
-            field = field[:idx]
         header[col] = field
 
     # 根据header，删除被忽略和空白的列
@@ -331,23 +336,55 @@ def find_col_by_name(row, name: str) -> int:
     return -1
 
 
-def is_kv_table(table, legacy=False):
+def legacy_kv_type(ty: int) -> str:
+    if ty == 1:
+        return 'int'
+    elif ty == 2:
+        return 'string'
+    elif ty == 3:
+        return 'int[]'
+    elif ty == 4 or ty == 6:
+        return '<int, int>'
+    elif ty == 5:
+        return 'float'
+    return ''
+
+
+# 包含 [Key, Type, Value] 三个字段名
+def is_kv_table(table: list[list[str]], legacy=True) -> bool:
     header = table[predef.PredefFieldNameRow]
     if len(header) < 3:
         return False
-    if predef.PredefKVKeyName not in header:
+
+    key_idx = row_find_field_name(header, predef.PredefKVKeyName)
+    if key_idx < 0:
         return False
-    if predef.PredefKVValueName not in header:
+    val_idx = row_find_field_name(header, predef.PredefKVValueName)
+    if val_idx < 0:
         return False
-    for col, name in enumerate(header):
-        if name == predef.PredefKVKeyName:  # name列是否全是名称定义
-            for n in range(1, len(table)):
-                if parse_elem_type(table[n][col]) != 'string':
-                    return False
-        elif name == predef.PredefKVTypeName and not legacy:  # type列是否全是类型定义
-            for n in range(1, len(table)):
-                if not types.is_valid_type_name(table[n][col]):
-                    return False
+    type_idx = row_find_field_name(header, predef.PredefKVTypeName)
+    if type_idx < 0 and not legacy:
+        return False
+
+    for n in range(1, min(len(table), 20)):
+        row = table[n]
+        if not row[key_idx].isalnum():
+            return False
+
+        # 没有类型定义列默认为int64
+        if type_idx < 0:
+            try:
+                if len(row[val_idx]) > 0:
+                    int(row[val_idx])
+            except ValueError:
+                return False
+        else:
+            type_name = row[type_idx]
+            if type_name.isdigit():
+                type_name = legacy_kv_type(int(type_name))
+            if not types.is_valid_type_name(type_name):
+                return False
+
     return True
 
 
