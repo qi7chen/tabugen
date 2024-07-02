@@ -28,6 +28,7 @@ setuptools.setup(
     install_requires=[
         'xlrd>=2.0.1',
         'openpyxl>=3.1.3',
+        'inflect>=7.2.0',
     ],
     entry_points={
         'console_scripts': [

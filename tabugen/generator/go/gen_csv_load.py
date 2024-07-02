@@ -81,7 +81,7 @@ class GoCsvLoadGenerator:
             content += '\t\t\tbreak\n'
             content += '\t\t}\n'
             origin_typename = array.element_fields[0].origin_type_name
-            content += self.gen_field_assign('', origin_typename, 'var elem', 'table.GetRow(name, row)', 2)
+            content += self.gen_field_assign('', origin_typename, 'var elem', 'table.GetCell(name, row)', 2)
             content += '\t\tp.%s = append(p.%s, elem)\n' % (array.field_name, array.field_name)
             content += '\t}\n'
 

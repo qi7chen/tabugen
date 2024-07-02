@@ -4,6 +4,7 @@
 
 import os
 import json
+import traceback
 from argparse import Namespace
 import tabugen.predef as predef
 import tabugen.typedef as types
@@ -21,7 +22,7 @@ class JsonDataWriter:
         return "json"
 
     @staticmethod
-    def parse_primary_value(typename: str, text: str):
+    def parse_primary_value(typename: str, text: str, args: Namespace):
         typename = typename.strip()
         text = text.strip()
         if typename == 'bool':
@@ -31,7 +32,14 @@ class JsonDataWriter:
         if types.is_integer_type(typename):
             if len(text) == 0:
                 return 0
-            return int(text)
+            if args.legacy:
+                try:
+                    return int(text)
+                except ValueError:
+                    return int(text, 16)  # try hex
+            else:
+                return int(text)
+
         if types.is_floating_type(typename):
             if len(text) == 0:
                 return 0.0
@@ -39,38 +47,38 @@ class JsonDataWriter:
         return text
 
     # 解析为数组
-    def parse_to_array(self, ele_type, text, dim):
+    def parse_to_array(self, ele_type: str, text: str, dim: str, args: Namespace):
         values = []
         for item in text.split(dim):
-            value = self.parse_primary_value(ele_type, item)
+            value = self.parse_primary_value(ele_type, item, args)
             values.append(value)
         return values
 
     # 解析为字典
-    def parse_to_dict(self, ktype: str, vtype: str, text: str):
+    def parse_to_dict(self, ktype: str, vtype: str, text: str, args: Namespace):
         obj = {}
         for item in text.split(helper.Delim1):
             pair = item.split(helper.Delim2)
             assert len(pair) == 2, item
-            key = self.parse_primary_value(ktype, pair[0])
-            value = self.parse_primary_value(vtype, pair[1])
+            key = self.parse_primary_value(ktype, pair[0], args)
+            value = self.parse_primary_value(vtype, pair[1], args)
             obj[key] = value
         return obj
 
     # 解析字符串为对象
-    def parse_value(self, typename: str, text: str):
+    def parse_value(self, typename: str, text: str, args: Namespace):
         abs_type = types.is_composite_type(typename)
         if abs_type == '':
-            return self.parse_primary_value(typename, text)
+            return self.parse_primary_value(typename, text, args)
 
         if abs_type == 'array':
             elem_type = types.array_element_type(typename)
-            return self.parse_to_array(elem_type, text, helper.Delim1)
+            return self.parse_to_array(elem_type, text, helper.Delim1, args)
         elif abs_type == 'map':
             ktype, vtype = types.map_key_value_types(typename)
-            return self.parse_to_dict(ktype, vtype, text)
+            return self.parse_to_dict(ktype, vtype, text, args)
 
-    def parse_kv_table(self, struct: Struct):
+    def parse_kv_table(self, struct: Struct, args: Namespace):
         rows = struct.data_rows
         obj = {}
         keyidx = struct.get_column_index(predef.PredefKVKeyName)
@@ -79,19 +87,29 @@ class JsonDataWriter:
         for row in rows:
             key = row[keyidx].strip()
             typename = row[typeidx].strip()
+            if args.legacy:
+                try:
+                    typn = int(typename)
+                    typename = types.legacy_type_to_name(typn)
+                except ValueError:
+                    pass
             valuetext = row[valueidx].strip()
             # print(typename, valuetext)
-            value = self.parse_value(typename, valuetext)
-            if self.use_snake_case:
-                key = helper.camel_to_snake(key)
-            obj[key] = value
+            try:
+                value = self.parse_value(typename, valuetext, args)
+                if self.use_snake_case:
+                    key = helper.camel_to_snake(key)
+                obj[key] = value
+            except Exception as e:
+                print(e, traceback.format_exc())
+
         return obj
 
-    def parse_row_to_dict(self, struct: Struct, row: list[str]):
+    def parse_row_to_dict(self, struct: Struct, row: list[str], args: Namespace):
         obj = {}
         for field in struct.fields:
             valuetext = row[field.column]
-            value = self.parse_value(field.origin_type_name, valuetext)
+            value = self.parse_value(field.origin_type_name, valuetext, args)
             if self.use_snake_case:
                 name = helper.camel_to_snake(field.camel_case_name)
             else:
@@ -103,27 +121,27 @@ class JsonDataWriter:
             array_obj = []
             for field in array.element_fields:
                 valuetext = row[field.column]
-                value = self.parse_value(field.origin_type_name, valuetext)
+                value = self.parse_value(field.origin_type_name, valuetext, args)
                 array_obj.append(value)
             obj[array_name] = array_obj
         return obj
 
     # 解析数据行
-    def parse_table(self, struct: Struct):
+    def parse_table(self, struct: Struct, args: Namespace):
         rows = struct.data_rows
         rows = tableutil.validate_unique_column(struct, rows)
 
         dict_list = []
         for row in rows:
-            d = self.parse_row_to_dict(struct, row)
+            d = self.parse_row_to_dict(struct, row, args)
             dict_list.append(d)
         return dict_list
 
     # 生成
     def generate(self, struct: Struct, args: Namespace):
         if struct.options[predef.PredefParseKVMode]:
-            return self.parse_kv_table(struct)
-        return self.parse_table(struct)
+            return self.parse_kv_table(struct, args)
+        return self.parse_table(struct, args)
 
     # 写入JSON文件
     def write_file(self, struct: Struct, filepath: str, encoding: str, json_indent: bool, obj: dict):
