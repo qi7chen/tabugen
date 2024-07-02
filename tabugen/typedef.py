@@ -169,6 +169,19 @@ def map_key_value_types(typename: str) -> Tuple:
     return key_type, val_type
 
 
+def legacy_type_to_name(typen: int) -> str:
+    if typen == 1:
+        return 'int32'
+    elif typen == 2:
+        return 'string'
+    elif typen == 3:
+        return 'int32[]'
+    elif typen == 4 or typen == 6:
+        return '<int,int>'
+    else:
+        return 'string'
+
+
 class TestTypes(unittest.TestCase):
 
     def test_is_primitive_type(self):

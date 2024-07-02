@@ -4,11 +4,12 @@
 
 import os
 import json
+from argparse import Namespace
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
-
+from tabugen.structs import Struct
 
 # 写入json文件
 class JsonDataWriter:
@@ -46,10 +47,10 @@ class JsonDataWriter:
         return values
 
     # 解析为字典
-    def parse_to_dict(self, ktype, vtype, text):
+    def parse_to_dict(self, ktype: str, vtype: str, text: str):
         obj = {}
-        for item in text.split(predef.PredefDelim1):
-            pair = item.split(predef.PredefDelim2)
+        for item in text.split(helper.Delim1):
+            pair = item.split(helper.Delim2)
             assert len(pair) == 2, item
             key = self.parse_primary_value(ktype, pair[0])
             value = self.parse_primary_value(vtype, pair[1])
@@ -57,24 +58,24 @@ class JsonDataWriter:
         return obj
 
     # 解析字符串为对象
-    def parse_value(self, typename, text):
+    def parse_value(self, typename: str, text: str):
         abs_type = types.is_composite_type(typename)
         if abs_type == '':
             return self.parse_primary_value(typename, text)
 
         if abs_type == 'array':
             elem_type = types.array_element_type(typename)
-            return self.parse_to_array(elem_type, text, predef.PredefDelim1)
+            return self.parse_to_array(elem_type, text, helper.Delim1)
         elif abs_type == 'map':
             ktype, vtype = types.map_key_value_types(typename)
             return self.parse_to_dict(ktype, vtype, text)
 
-    def parse_kv_rows(self, struct, params):
-        rows = struct["data_rows"]
+    def parse_kv_table(self, struct: Struct):
+        rows = struct.data_rows
         obj = {}
-        keyidx = struct['options']['key_column']
-        typeidx = struct['options']['type_column']
-        valueidx = struct['options']['value_column']
+        keyidx = struct.get_column_index(predef.PredefKVKeyName)
+        typeidx = struct.get_column_index(predef.PredefKVTypeName)
+        valueidx = struct.get_column_index(predef.PredefKVValueName)
         for row in rows:
             key = row[keyidx].strip()
             typename = row[typeidx].strip()
@@ -86,75 +87,47 @@ class JsonDataWriter:
             obj[key] = value
         return obj
 
-    #
-    def parse_row_inner_obj(self, struct, row, inner_fields):
-        obj_list = []
-        start = inner_fields['start']
-        end = inner_fields['end']
-        step = inner_fields['step']
-
-        while start < end:
-            obj = {}
-            for n in range(step):
-                col = start + n
-                field = struct['fields'][col]
-                valuetext = row[col]
-                name = helper.remove_suffix_number(field['name'])
-                value = self.parse_value(field['original_type_name'], valuetext)
-                if self.use_snake_case:
-                    name = helper.camel_to_snake(name)
-                obj[name] = value
-            obj_list.append(obj)
-            start += step
-        return obj_list
-
-    def row_to_object(self, struct, row, inner_fields):
+    def parse_row_to_dict(self, struct: Struct, row: list[str]):
         obj = {}
-        inner_class_done = False
-        for col, field in enumerate(struct['fields']):
-            if inner_fields['start'] <= col < inner_fields['end']:
-                if not inner_class_done:
-                    inner_class_done = True
-                    inner_var_name = struct['options'][predef.PredefInnerFieldName]
-                    value = self.parse_row_inner_obj(struct, row, inner_fields)
-                    obj[inner_var_name] = value
+        for field in struct.fields:
+            valuetext = row[field.column]
+            value = self.parse_value(field.origin_type_name, valuetext)
+            if self.use_snake_case:
+                name = helper.camel_to_snake(field.camel_case_name)
             else:
-                valuetext = row[col]
-                value = self.parse_value(field['original_type_name'], valuetext)
-                if self.use_snake_case:
-                    name = helper.camel_to_snake(field['camel_case_name'])
-                else:
-                    name = field['name']
-                obj[name] = value
+                name = field.name
+            obj[name] = value
+
+        for array in struct.array_fields:
+            array_name = array.field_name
+            array_obj = []
+            for field in array.element_fields:
+                valuetext = row[field.column]
+                value = self.parse_value(field.origin_type_name, valuetext)
+                array_obj.append(value)
+            obj[array_name] = array_obj
         return obj
 
     # 解析数据行
-    def parse_row(self, struct):
-        rows = struct["data_rows"]
+    def parse_table(self, struct: Struct):
+        rows = struct.data_rows
         rows = tableutil.validate_unique_column(struct, rows)
 
-        # 嵌套类
-        inner_fields = {'start': -1, 'end': -1, 'step': 0}
-        if 'inner_fields' in struct:
-            inner_fields['start'] = struct['inner_fields']['start']
-            inner_fields['end'] = struct['inner_fields']['end']
-            inner_fields['step'] = struct['inner_fields']['step']
-
-        obj_list = []
+        dict_list = []
         for row in rows:
-            obj = self.row_to_object(struct, row, inner_fields)
-            obj_list.append(obj)
-        return obj_list
+            d = self.parse_row_to_dict(struct, row)
+            dict_list.append(d)
+        return dict_list
 
     # 生成
-    def generate(self, struct, args):
-        if predef.PredefParseKVMode in struct['options']:
-            return self.parse_kv_rows(struct, args)
-        return self.parse_row(struct)
+    def generate(self, struct: Struct, args: Namespace):
+        if struct.options[predef.PredefParseKVMode]:
+            return self.parse_kv_table(struct)
+        return self.parse_table(struct)
 
     # 写入JSON文件
-    def write_file(self, struct, filepath, encoding, json_indent, obj):
-        filename = "%s/%s.json" % (filepath, helper.camel_to_snake(struct['camel_case_name']))
+    def write_file(self, struct: Struct, filepath: str, encoding: str, json_indent: bool, obj: dict):
+        filename = "%s/%s.json" % (filepath, helper.camel_to_snake(struct.camel_case_name))
         filename = os.path.abspath(filename)
         if json_indent:
             content = json.dumps(obj, ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2)
@@ -164,7 +137,7 @@ class JsonDataWriter:
         if helper.save_content_if_not_same(filename, content, encoding):
             print("wrote JSON data to", filename)
 
-    def process(self, descriptors, args):
+    def process(self, descriptors: list[Struct], args: Namespace):
         filepath = args.out_data_path
         encoding = args.data_file_encoding
 

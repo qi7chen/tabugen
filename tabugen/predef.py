@@ -11,6 +11,7 @@ PredefClassName = "ClassName"        # meta sheet里指定生成的class名
 PredefClassComment = "ClassComment"  # meta sheet里指定生成的class注释
 PredefFieldComments = "FieldComments"   # 字段批注注释
 
+# KV模式固定的列名
 PredefParseKVMode = 'KVMode'
 PredefKVKeyName = 'Key'         # KV模式中的key所在列
 PredefKVTypeName = 'Type'       # KV模式中的类型所在列

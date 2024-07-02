@@ -140,7 +140,7 @@ class GoStructGenerator:
         content += self.gen_go_struct(struct, args)
         content += '\n'
         if self.parse_gen is not None:
-            content += self.parse_gen.generate(struct)
+            content += self.parse_gen.generate(struct, args)
         return content
 
     def run(self, descriptors: list[Struct], filepath: str, args: Namespace):

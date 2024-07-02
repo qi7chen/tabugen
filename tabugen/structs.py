@@ -27,8 +27,8 @@ class StructField:
 class ArrayField:
 
     def __init__(self):
-        self.name = ''
-        self.field_name = ''
+        self.name = ''              # 数组前缀名称
+        self.field_name = ''        # 在结构中的字段名
         self.camel_case_name = ''
         self.comment = ''
         self.type_name = ''
