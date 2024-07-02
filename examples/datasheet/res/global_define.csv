@@ -1,0 +1,14 @@
+Id,#配置人,Key,Type,Value,#Description
+1,匿名,GoldExchangeTimeFactor1,float,1,金币兑换时间参数1
+2,匿名,GoldExchangeTimeFactor2,float,0.25,金币兑换时间参数2
+3,匿名,GoldExchangeTimeFactor3,float,0.1,金币兑换时间参数3
+4,匿名,GoldExchangeResource1Price,int,200,金币兑换资源1价格
+5,匿名,GoldExchangeResource2Price,int,180,金币兑换资源2价格
+6,匿名,GoldExchangeResource3Price,int,150,金币兑换资源3价格
+7,匿名,GoldExchangeResource4Price,int,20,金币兑换资源4价格
+8,匿名,FreeCompleteSeconds,int,300,免费立即完成时间
+9,匿名,CancelBuildReturnPercent,int,50,取消建造后返还资源比例
+10,匿名,EnableSearch,bool,1,开启搜索
+11,匿名,SpawnLevelLimit,int[],1|2|3|4|5,最大刷新个数显示
+12,匿名,FirstRechargeReward,"<string,int>",Food=100|Power=200|Diamond=10,首充奖励
+13,匿名,VIPItemReward,"<int,int>",1001=100|1002=100|1003=200,VIP奖励

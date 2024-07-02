@@ -52,6 +52,12 @@ func (t *GDTable) GetRow(rowIdx int) []string {
 	return nil
 }
 
+// HasColumn 是否有这列
+func (t *GDTable) HasColumn(name string) bool {
+    _, ok := t.HeadNames[name]
+    return ok
+}
+
 // GetColumns 获取指定列的所有数据
 func (t *GDTable) GetColumns(name string) []string {
 	var col = t.HeadNames[name]
