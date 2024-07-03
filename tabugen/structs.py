@@ -46,6 +46,8 @@ class Struct:
         self.parse_time = 0
         self.options = {}
         self.data_rows = []  # 数据
+        self.field_names = []
+        self.field_columns = []
         self.raw_fields: list[StructField] = []
         self.fields: list[StructField] = []
         self.array_fields: list[ArrayField] = []  # 数组字段
@@ -61,18 +63,6 @@ class Struct:
             if field.name == name:
                 return field.column
         return -1
-
-    def get_head_names(self) -> list[str]:
-        names = []
-        for field in self.fields:
-            names.append(field.origin_name)
-        return names
-
-    def get_columns(self) -> list[int]:
-        columns = []
-        for field in self.fields:
-            columns.append(field.column)
-        return columns
 
     # 获取字段名最大长度
     def max_field_name_length(self):

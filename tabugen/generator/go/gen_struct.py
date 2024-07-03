@@ -116,6 +116,8 @@ class GoStructGenerator:
 
         if struct.comment:
             content += '// %s, ' % struct.comment
+        else:
+            content += '// %s, ' % struct.name
         content += '// Created from %s\n' % struct.filepath
 
         if struct.options[predef.PredefParseKVMode]:

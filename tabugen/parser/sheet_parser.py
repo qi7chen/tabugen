@@ -147,6 +147,8 @@ class SpreadSheetParser:
             if not name.startswith('#'):
                 struct.fields.append(field)
             struct.raw_fields.append(field)
+            struct.field_names.append(field_name)
+            struct.field_columns.append(col)
 
     # 解析数据列
     def parse_table_struct(self, meta: dict, table: list[list[str]]) -> structs.Struct:

@@ -27,16 +27,12 @@ def is_default_sheet_name(name: str) -> bool:
 
 # 从路径种搜索所有excel文件
 def enum_spreadsheet_files(rootdir: str) -> list[str]:
-    files = []
-    for dirpath, _, filenames in os.walk(rootdir):
-        for filename in filenames:
-            if filename.endswith(('.xlsx', 'xls', '.csv')):
-                files.append(dirpath + os.sep + filename)
     filenames = []
-    for filename in files:
-        if not is_ignored_filename(filename):
-            filename = os.path.abspath(filename)
-            filenames.append(filename)
+    for path in os.listdir(rootdir):
+        fullpath = os.path.join(rootdir, path)
+        if os.path.isfile(fullpath) and not is_ignored_filename(fullpath):
+            if fullpath.endswith(('.xlsx', 'xls', '.csv')):
+                filenames.append(fullpath)
     return filenames
 
 
@@ -63,7 +59,7 @@ def read_workbook_table(filename: str, meta: dict) -> list[list[str]]:
         parse_sheet_table(filename, sheet_names[0], table, meta)
         return table
     elif filename.endswith('.csv'):
-        meta[predef.PredefClassName] = os.path.splitext(os.path.basename(filename))
+        meta[predef.PredefClassName] = os.path.splitext(os.path.basename(filename))[0]
         return __read_csv_to_table(filename)
     else:
         return []

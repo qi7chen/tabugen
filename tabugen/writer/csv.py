@@ -25,7 +25,7 @@ class CsvDataWriter:
 
     # 将数据写入csv文件
     @staticmethod
-    def write_file(name: str, table: list[list[str]], filepath:str, encoding:str):
+    def write_file(name: str, table: list[list[str]], filepath: str, encoding: str):
         tmp_filename = '%s/tabular_%s' % (tempfile.gettempdir(), helper.random_word(8))
         os.path.join(tempfile.gettempdir())
         filename = os.path.abspath(tmp_filename)
@@ -41,16 +41,15 @@ class CsvDataWriter:
             os.remove(tmp_filename)
         else:
             shutil.move(tmp_filename, target_filename)
-            print("wrote csv rows to", target_filename)
+            print("wrote csv file to", target_filename)
 
     #
     def parse_table(self, struct: Struct):
         data = struct.data_rows
         data = tableutil.validate_unique_column(struct, data)
         data = tableutil.convert_table_data(struct, data)
-        data = tableutil.table_remove_comment_columns(struct.get_columns(), data)
-        header = struct.get_head_names()
-        return [header] + data
+        data = tableutil.table_remove_comment_columns(struct.field_columns, data)
+        return [struct.field_names] + data
 
     def process(self, descriptors: list[Struct], args: Namespace):
         filepath = args.out_data_path
@@ -62,6 +61,7 @@ class CsvDataWriter:
             except OSError as e:
                 pass
 
+        print('csv output path is', filepath)
         for struct in descriptors:
             table = self.parse_table(struct)
             name = helper.camel_to_snake(struct.camel_case_name)

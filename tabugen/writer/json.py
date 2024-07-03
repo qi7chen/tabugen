@@ -168,6 +168,8 @@ class JsonDataWriter:
 
         if args.json_snake_case:
             self.use_snake_case = True
+
+        print('json output path is', filepath)
         for struct in descriptors:
             obj = self.generate(struct, args)
             self.write_file(struct, filepath, encoding, args.json_indent, obj)
