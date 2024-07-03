@@ -43,18 +43,13 @@ class CsvDataWriter:
             shutil.move(tmp_filename, target_filename)
             print("wrote csv rows to", target_filename)
 
-    def header_row(self, struct: Struct):
-        row = []
-        for field in struct.raw_fields:
-            row.append(field.origin_name)
-        return row
-
     #
     def parse_table(self, struct: Struct):
         data = struct.data_rows
         data = tableutil.validate_unique_column(struct, data)
         data = tableutil.convert_table_data(struct, data)
-        header = self.header_row(struct)
+        data = tableutil.table_remove_comment_columns(struct.get_columns(), data)
+        header = struct.get_head_names()
         return [header] + data
 
     def process(self, descriptors: list[Struct], args: Namespace):

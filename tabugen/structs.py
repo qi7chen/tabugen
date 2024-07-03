@@ -39,6 +39,7 @@ class ArrayField:
 class Struct:
 
     def __init__(self):
+        self.filepath = ''
         self.name = ''
         self.camel_case_name = ''
         self.comment = ''
@@ -60,6 +61,18 @@ class Struct:
             if field.name == name:
                 return field.column
         return -1
+
+    def get_head_names(self) -> list[str]:
+        names = []
+        for field in self.fields:
+            names.append(field.origin_name)
+        return names
+
+    def get_columns(self) -> list[int]:
+        columns = []
+        for field in self.fields:
+            columns.append(field.column)
+        return columns
 
     # 获取字段名最大长度
     def max_field_name_length(self):
@@ -159,6 +172,7 @@ class Struct:
         array.field_name = plural_engine.plural(elem_prefix)  # 单数转复数
         array.camel_case_name = helper.camel_case(elem_prefix)
         array.type_name = fields[0].type_name + '[]'
+        array.comment = fields[0].comment
         for field in fields:
             array.element_fields.append(field)
         self.array_fields.append(array)

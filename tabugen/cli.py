@@ -48,7 +48,7 @@ def run(args: argparse.Namespace):
         for pair in code_generators:
             codegen = pair[0]
             filepath = pair[1]
-            if args.with_csv_parse:
+            if args.gen_csv_parse:
                 codegen.enable_gen_parse('csv')
             codegen.run(descriptors, filepath, args)
 
@@ -78,13 +78,13 @@ def main():
     parser = argparse.ArgumentParser(description="一个根据表格生成代码和配置转换的工具")
     parser.add_argument("-v", "--version", action='version', version='v' + VER_STRING)
     parser.add_argument("--without_data", action="store_true", help="只生成类型定义")
-    parser.add_argument("--asset_path", help="文件名或者文件夹路径")
-    parser.add_argument("--skip_files", help="需要跳过解析的文件名列表")
+    parser.add_argument("--file_asset", action='append', help="文件名或者文件夹路径")
+    parser.add_argument("--file_skip", action='append', help="需要跳过解析的文件名列表")
     parser.add_argument("--legacy", action='store_true', help="兼容模式")
     parser.add_argument("--project_kind", default='', help="指定包含此前缀的名称才纳入解析")
     parser.add_argument("--delim1", default="|", help="列表元素分隔符")
     parser.add_argument("--delim2", default=":", help="键值分隔符")
-    parser.add_argument("--with_csv_parse", action='store_true', help="生成csv读取代码")
+    parser.add_argument("--gen_csv_parse", action='store_true', help="生成csv读取代码")
     parser.add_argument("--cpp_out", help="指定生成C++代码的文件名")
     parser.add_argument("--go_out", help="指定生成Go代码的路径")
     parser.add_argument("--cs_out", help="指定生成C#代码的路径")

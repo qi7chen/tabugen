@@ -19,17 +19,17 @@ min_float32 = float('1.4e-45')
 def split_field_name(name: str) -> tuple[str, str, str]:
     kind = ''
     type_name = ''
-    i = name.find('_')
-    if i <= 0:
+    first = name.find('_')
+    if first <= 0:
         return kind, type_name, name
-    j = name.find('_', i + 1)
-    if j > 0:
-        kind = name[:i].upper()
-        type_name = name[i + 1: j]
-        return kind, type_name.lower(), name[j + 1:]
+    second = name.find('_', first + 1)
+    if second > 0:
+        kind = name[:first].upper()
+        type_name = name[first + 1: second]
+        return kind, type_name.lower(), name[second + 1:]
     else:
-        type_name = name[: i + 1]
-        return kind, type_name.lower(), name[i + 1:]
+        type_name = name[: first]
+        return kind, type_name.lower(), name[first + 1:]
 
 
 def row_find_field_name(row: list[str], name: str) -> int:
@@ -113,7 +113,7 @@ def infer_field_type(table: list[list[str]], start_row: int, col: int):
     return parsed
 
 
-def infer_field_array_type(table, start_row: int, col: int):
+def infer_field_array_type(table: list[list[str]], start_row: int, col: int):
     elem_type = ''
     for n in range(start_row, min(len(table), 20)):
         type_name = parse_array_elem_type(table[n][col])
@@ -124,11 +124,11 @@ def infer_field_array_type(table, start_row: int, col: int):
     return elem_type + '[]'
 
 
-def infer_field_map_type(table, start_row: int, col: int):
+def infer_field_map_type(rows: list[list[str]], start_row: int, col: int):
     elem_ktype = ''
     elem_vtype = ''
-    for n in range(start_row, min(len(table), 20)):
-        t1, t2 = parse_map_elem_type(table[n][col])
+    for n in range(start_row, min(len(rows), 20)):
+        t1, t2 = parse_map_elem_type(rows[n][col])
         if elem_ktype == '' and elem_vtype == '':
             elem_ktype = t1
             elem_vtype = t2
@@ -138,13 +138,35 @@ def infer_field_map_type(table, start_row: int, col: int):
 
 
 # 删除table的某一列
-def remove_table_column(table, column: int):
-    for col in range(len(table)):
-        row = table[col]
+def remove_table_column(rows: list[list[str]], column: int):
+    for col in range(len(rows)):
+        row = rows[col]
         if column < len(row):
             row = row[:column] + row[column + 1:]
-            table[col] = row
-    return table
+            rows[col] = row
+    return rows
+
+
+# 删除首部和尾部连续的空列
+def trim_empty_columns(rows: list[list[str]]):
+    header = rows[predef.PredefFieldNameRow]
+    end = len(header)
+    start = 0
+    while start < end:
+        stop = True
+        if len(header[end - 1]) == 0:
+            end -= 1
+            stop = False
+        if len(header[start]) == 0:
+            start += 1
+            stop = False
+        if stop:
+            break
+
+    if start > 0 or end < len(header):
+        for i in range(len(rows)):
+            rows[i] = rows[i][start:end]
+    return rows
 
 
 # 删除空白列(在中间的列）
@@ -160,40 +182,20 @@ def remove_table_empty_columns(table):
     return table
 
 
-# 删除首部和尾部连续的空列
-def trim_empty_columns(table):
-    header = table[predef.PredefFieldNameRow]
-    end = len(header)
-    start = 0
-    while start < end:
-        stop = True
-        if len(header[end - 1]) == 0:
-            end -= 1
-            stop = False
-        if len(header[start]) == 0:
-            start += 1
-            stop = False
-        if stop:
-            break
+# 删除header中的注释列
+def table_remove_comment_columns(columns: list[int], rows: list[list[str]]):
+    if len(columns) == 0:
+        return []
+    if len(rows) == 0:
+        return []
 
-    if start > 0 or end < len(header):
-        for i in range(len(table)):
-            table[i] = table[i][start:end]
-    return table
-
-
-# 删除全部空白的行和列
-def table_remove_empty(table):
-    table = trim_empty_columns(table)
-
-    # 删除header中的注释和空白
-    header = table[predef.PredefFieldNameRow]
-    for col, filed in enumerate(header):
-        field = filed.strip()
-        header[col] = field
-
-    # 根据header，删除被忽略和空白的列
-    return remove_table_empty_columns(table)
+    first_row = rows[0]
+    col = len(first_row)
+    while col > 0:
+        col -= 1
+        if col not in columns:
+            rows = remove_table_column(rows, col)
+    return rows
 
 
 # 解析格式：A_XXX

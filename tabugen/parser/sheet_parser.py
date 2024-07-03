@@ -16,7 +16,6 @@ import tabugen.parser.toolkit as toolkit
 class SpreadSheetParser:
 
     def __init__(self):
-        self.file_dir = ''      # 文件目录
         self.skip_names = ''    # 忽略解析的文件名
         self.with_data = True   # 是否包含数据
         self.filenames = []     # 文件名列表
@@ -30,13 +29,13 @@ class SpreadSheetParser:
     # 初始化导出参数
     def init(self, args):
         self.legacy = args.legacy
-        self.file_dir = args.asset_path
         self.project_kind = args.project_kind
         if args.without_data:
             self.with_data = False
-        if args.skip_files is not None:
-            self.skip_names = [x.strip() for x in args.skip_files.split(' ')]
-        self.enum_filenames(self.file_dir)
+        if args.file_skip:
+            self.skip_names = [x.strip() for x in args.file_skip]
+        for filepath in args.file_asset:
+            self.enum_filenames(filepath)
 
     # 跳过忽略的文件名
     def enum_filenames(self, file_dir: str):
@@ -185,10 +184,11 @@ class SpreadSheetParser:
     def parse_one_file(self, filename):
         start_at = time.time()
         base_filename = os.path.basename(filename)
-        meta = {'filename': base_filename}
+        meta = {}
         table = toolkit.read_workbook_table(filename, meta)
         table = tableutil.trim_empty_columns(table)
         struct = self.parse_table_struct(meta, table)
+        struct.filepath = base_filename
         struct.parse_array_fields()
         elapsed = time.time() - start_at
         struct.name = meta[predef.PredefClassName]

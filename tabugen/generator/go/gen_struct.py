@@ -115,7 +115,8 @@ class GoStructGenerator:
         content = ''
 
         if struct.comment:
-            content += '// %s %s\n' % struct.comment
+            content += '// %s, ' % struct.comment
+        content += '// Created from %s\n' % struct.filepath
 
         if struct.options[predef.PredefParseKVMode]:
             return content + self.gen_kv_fields(struct, 1, args)

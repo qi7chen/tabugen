@@ -8,7 +8,7 @@ from tabugen.writer.json import JsonDataWriter
 # from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
 from tabugen.generator.go.gen_struct import GoStructGenerator
 # from tabugen.generator.java.gen_struct import JavaStructGenerator
-from tabugen.parser.spreadsheet import SpreadSheetParser
+from tabugen.parser.sheet_parser import SpreadSheetParser
 
 # 结构体描述解析
 struct_parser_registry = {

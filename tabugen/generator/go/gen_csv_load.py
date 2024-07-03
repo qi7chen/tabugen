@@ -86,7 +86,7 @@ class GoCsvLoadGenerator:
             content += '\t}\n'
 
         content += '%sreturn nil\n' % '\t'
-        content += '}\n'
+        content += '}\n\n'
         return content
 
     def generate(self, struct: Struct, args: Namespace) -> str:
