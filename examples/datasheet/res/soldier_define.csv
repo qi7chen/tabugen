@@ -1,4 +1,4 @@
-ID,Name,Level,#NameID,#Description,BuildingName,BuildingLevel,RequireSpace,Volume,UpgradeTime,UpgradeRes,UpgradeCost,ConsumeRes,ConsumeCost,ConsumeTime,Act,Hp,C_BombLoad,C_AtkFrequency,C_AtkRange,C_MovingSpeed,C_EnableBurn
+ID,Name,Level,#NameID,#Description,BuildingName,BuildingLevel,RequireSpace,Volume,UpgradeTime,UpgradeRes,UpgradeCost,ConsumeRes,ConsumeCost,ConsumeTime,Act,Hp,BombLoad,AtkFrequency,AtkRange,MovingSpeed,EnableBurn
 1,Marine,1,步兵,基础地面部队，生命值和攻击伤害都属于中等水平,Barracks,1,1,1,50,Food,1500,Food,80,20,30,140,1,0.2,4.7,3.9,
 2,Marine,2,步兵,基础地面部队，生命值和攻击伤害都属于中等水平,Barracks,2,1,1,250,Food,6000,Food,270,40,32,150,1,0.2,5.029,3.9,
 3,Marine,3,步兵,基础地面部队，生命值和攻击伤害都属于中等水平,Barracks,3,1,1,1420,Food,11600,Food,460,60,35,160,1,0.2,5.358,3.9,1

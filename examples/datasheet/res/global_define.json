@@ -1,80 +1,29 @@
-[
-  {
-    "Id": 1,
-    "Key": "GoldExchangeTimeFactor1",
-    "Type": "float",
-    "Value": "1"
+{
+  "CancelBuildReturnPercent": 50,
+  "EnableSearch": true,
+  "FirstRechargeReward": {
+    "Diamond": 10,
+    "Food": 100,
+    "Power": 200
   },
-  {
-    "Id": 2,
-    "Key": "GoldExchangeTimeFactor2",
-    "Type": "float",
-    "Value": "0.25"
-  },
-  {
-    "Id": 3,
-    "Key": "GoldExchangeTimeFactor3",
-    "Type": "float",
-    "Value": "0.1"
-  },
-  {
-    "Id": 4,
-    "Key": "GoldExchangeResource1Price",
-    "Type": "int",
-    "Value": "200"
-  },
-  {
-    "Id": 5,
-    "Key": "GoldExchangeResource2Price",
-    "Type": "int",
-    "Value": "180"
-  },
-  {
-    "Id": 6,
-    "Key": "GoldExchangeResource3Price",
-    "Type": "int",
-    "Value": "150"
-  },
-  {
-    "Id": 7,
-    "Key": "GoldExchangeResource4Price",
-    "Type": "int",
-    "Value": "20"
-  },
-  {
-    "Id": 8,
-    "Key": "FreeCompleteSeconds",
-    "Type": "int",
-    "Value": "300"
-  },
-  {
-    "Id": 9,
-    "Key": "CancelBuildReturnPercent",
-    "Type": "int",
-    "Value": "50"
-  },
-  {
-    "Id": 10,
-    "Key": "EnableSearch",
-    "Type": "bool",
-    "Value": "1"
-  },
-  {
-    "Id": 11,
-    "Key": "SpawnLevelLimit",
-    "Type": "int[]",
-    "Value": "1|2|3|4|5"
-  },
-  {
-    "Id": 12,
-    "Key": "FirstRechargeReward",
-    "Type": "<string,int>",
-    "Value": "Food=100|Power=200|Diamond=10"
-  },
-  {
-    "Id": 13,
-    "Key": "VIPItemReward",
-    "Type": "<int,int>",
-    "Value": "1001=100|1002=100|1003=200"
+  "FreeCompleteSeconds": 300,
+  "GoldExchangeResource1Price": 200,
+  "GoldExchangeResource2Price": 180,
+  "GoldExchangeResource3Price": 150,
+  "GoldExchangeResource4Price": 20,
+  "GoldExchangeTimeFactor1": "1",
+  "GoldExchangeTimeFactor2": "0.25",
+  "GoldExchangeTimeFactor3": "0.1",
+  "SpawnLevelLimit": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "VIPItemReward": {
+    "1": 100,
+    "2": 100,
+    "3": 200
   }
-]
+}

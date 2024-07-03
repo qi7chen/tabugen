@@ -1,142 +1,146 @@
 package config
 
 import (
-    "testing"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
 )
 
-func TestBoxAutogenCsvConfig(t *testing.T) {
-    filename := "../../datasheet/res/box_probability_define.csv"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
+var basePath, _ = filepath.Abs("../../datasheet/res")
 
-    records, err := ReadCSVRecords(data)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    for _, rec := range records {
-        var item BoxProbabilityDefine
-        if err := item.ParseFrom(rec); err != nil {
-            t.Fatalf("%v", err)
-        }
-        t.Logf("%v\n", item)
-    }
+func TestItemBoxAutogenCsvConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "item_box_define.csv")
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	table, err := ReadCSVTable(content)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	for row := 0; row < table.RowSize(); row++ {
+		var conf ItemBoxDefine
+		if err := conf.ParseRow(table, row); err != nil {
+			t.Fatalf("ParseRow: %v", err)
+		}
+		data, _ := json.Marshal(conf)
+		t.Logf("%s\n", data)
+	}
 }
 
-func TestBoxAutogenJsonConfig(t *testing.T) {
-    filename := "../../datasheet/res/box_probability_define.json"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    var cfgList []BoxProbabilityDefine
-    if err = json.Unmarshal(data, &cfgList); err != nil {
-        t.Fatalf("JSON: %v", err)
-    }
-    for _, item := range cfgList {
-        t.Logf("%v\n", item)
-    }
-
+func TestItemBoxAutogenJsonConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "item_box_define.json")
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	var confList []ItemBoxDefine
+	if err = json.Unmarshal(content, &confList); err != nil {
+		t.Fatalf("JSON: %v", err)
+	}
+	for _, item := range confList {
+		t.Logf("%v\n", item)
+	}
 }
 
-
-func TestGlobalAutogenCsvConfig(t *testing.T) {
-    var filename = "../../datasheet/res/global_property_define.csv"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    records, err := ReadCSVRecords(data)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    var fields = RecordsToKVMap(records)
-    var conf GlobalPropertyDefine
-    conf.ParseFrom(fields)
-    t.Logf("%v\n", conf)
+func TestGlobalDefineAutogenCsvConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "global_define.csv")
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	table, err := ReadCSVTable(content)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	var conf GlobalDefine
+	if err := conf.ParseFrom(table.ToKVMap()); err != nil {
+		t.Fatalf("ParseFrom: %v", err)
+	}
+	t.Logf("%v\n", conf)
 }
 
-func TestGlobalAutogenJsonConfig(t *testing.T) {
-    filename := "../../datasheet/res/global_property_define.json"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    var global GlobalPropertyDefine
-    if err := json.Unmarshal(data, &global); err != nil {
-        t.Fatalf("%v", err)
-    }
-    t.Logf("global properties: %v", global)
+func TestGlobalDefineAutogenJsonConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "global_define.json")
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	var conf GlobalDefine
+	if err := json.Unmarshal(data, &conf); err != nil {
+		t.Fatalf("%v", err)
+	}
+	t.Logf("global define: %v", conf)
 }
 
-
-func TestGuideAutogenCsvConfig(t *testing.T) {
-    filename := "../../datasheet/res/newbie_guide_define.csv"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    records, err := ReadCSVRecords(data)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    for _, rec := range records {
-        var item NewbieGuideDefine
-        if err := item.ParseFrom(rec); err != nil {
-            t.Fatalf("%v", err)
-        }
-        t.Logf("%v\n", item)
-    }
+func TestNewbieGuideAutogenCsvConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "newbie_guide.csv")
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	table, err := ReadCSVTable(content)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	for row := 0; row < table.RowSize(); row++ {
+		var conf NewbieGuide
+		if err := conf.ParseRow(table, row); err != nil {
+			t.Fatalf("ParseRow: %v", err)
+		}
+		data, _ := json.Marshal(conf)
+		t.Logf("%s\n", data)
+	}
 }
 
-func TestGuideAutogenJsonConfig(t *testing.T) {
-    filename := "../../datasheet/res/newbie_guide_define.json"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    var cfgList []NewbieGuideDefine
-    if err = json.Unmarshal(data, &cfgList); err != nil {
-        t.Fatalf("JSON: %v", err)
-    }
-    for _, cfg := range cfgList {
-        t.Logf("%v\n", cfg)
-    }
+func TestNewbieGuideAutogenJsonConfig(t *testing.T) {
+	filename := filepath.Join(basePath, "newbie_guide.json")
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	var cfgList []NewbieGuide
+	if err = json.Unmarshal(data, &cfgList); err != nil {
+		t.Fatalf("JSON: %v", err)
+	}
+	for _, cfg := range cfgList {
+		t.Logf("%v\n", cfg)
+	}
 }
-
 
 func TestSoldierAutogenCsvConfig(t *testing.T) {
-    filename := "../../datasheet/res/soldier_property_define.csv"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-
-    records, err := ReadCSVRecords(data)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    for _, rec := range records {
-        var item SoldierPropertyDefine
-        if err := item.ParseFrom(rec); err != nil {
-            t.Fatalf("%v", err)
-        }
-        t.Logf("%v\n", item)
-    }
+	filename := filepath.Join(basePath, "soldier_define.csv")
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	table, err := ReadCSVTable(content)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	for row := 0; row < table.RowSize(); row++ {
+		var conf SoldierDefine
+		if err := conf.ParseRow(table, row); err != nil {
+			t.Fatalf("ParseRow: %v", err)
+		}
+		data, _ := json.Marshal(conf)
+		t.Logf("%s\n", data)
+	}
 }
 
 func TestSoldierAutogenJsonConfig(t *testing.T) {
-    filename := "../../datasheet/res/soldier_property_define.json"
-    data, err := os.ReadFile(filename)
-    if err != nil {
-        t.Fatalf("%v", err)
-    }
-    var cfgList []SoldierPropertyDefine
-    if err = json.Unmarshal(data, &cfgList); err != nil {
-        t.Fatalf("JSON: %v", err)
-    }
-    for _, cfg := range cfgList {
-        t.Logf("%v\n", cfg)
-    }
+	filename := filepath.Join(basePath, "soldier_define.json")
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	var cfgList []SoldierDefine
+	if err = json.Unmarshal(data, &cfgList); err != nil {
+		t.Fatalf("JSON Unmarshal: %v", err)
+	}
+	for _, cfg := range cfgList {
+		t.Logf("%v\n", cfg)
+	}
 }

@@ -1,0 +1,122 @@
+[
+  {
+    "Accomplishment": [
+      1,
+      2,
+      3
+    ],
+    "Category": 1,
+    "Desc": "eAT_CreateBuilding",
+    "Name": "Guide_01",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 100
+    },
+    "Target": "BigSupplyDepot"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      4
+    ],
+    "Category": 1,
+    "Desc": "eAT_CreateBuilding",
+    "Name": "Guide_02",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 100
+    },
+    "Target": "CrystalRefinery"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      5
+    ],
+    "Category": 1,
+    "Desc": "eAT_ReachLevel",
+    "Name": "Guide_03",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 101
+    },
+    "Target": "SoldierLandingship"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      6
+    ],
+    "Category": 2,
+    "Desc": "eAT_DefeatNpc",
+    "Name": "Guide_04",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 102
+    },
+    "Target": "NPC"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      7
+    ],
+    "Category": 1,
+    "Desc": "eAT_CreateBuilding",
+    "Name": "Guide_05",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 103
+    },
+    "Target": "Vault"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      8
+    ],
+    "Category": 1,
+    "Desc": "eAT_CreateBuilding",
+    "Name": "Guide_06",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 104
+    },
+    "Target": "GhostTower"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      9
+    ],
+    "Category": 1,
+    "Desc": "eAT_UpgradeHero",
+    "Name": "Guide_07",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 105
+    },
+    "Target": "ColonelZhang"
+  },
+  {
+    "Accomplishment": [
+      1,
+      2,
+      10
+    ],
+    "Category": 1,
+    "Desc": "eAT_UpgradeSoldier",
+    "Name": "Guide_08",
+    "RewardGoods": {
+      "Food": 10,
+      "Gas": 106
+    },
+    "Target": "Marine"
+  }
+]

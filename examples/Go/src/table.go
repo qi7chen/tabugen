@@ -16,119 +16,10 @@ import (
 	"strings"
 )
 
-// GDTable 数据表
-type GDTable struct {
-	HeadNames map[string]int32 // header name -> column index
-	Rows      [][]string       // data rows
-}
-
-// ColSize 列数
-func (t *GDTable) ColSize() int {
-	return len(t.HeadNames)
-}
-
-// RowSize 行数
-func (t *GDTable) RowSize() int {
-	return len(t.Rows)
-}
-
-// GetCell 获取指定列（名称）指定行的数据
-func (t *GDTable) GetCell(name string, rowIdx int) string {
-	if rowIdx >= 0 && rowIdx < t.RowSize() {
-		var row = t.Rows[rowIdx]
-		var col = t.HeadNames[name]
-		if col > 0 && int(col) <= len(row) {
-			return row[col-1]
-		}
-	}
-	return ""
-}
-
-// GetRow 获取指定行的所有数据
-func (t *GDTable) GetRow(rowIdx int) []string {
-	if rowIdx >= 0 && rowIdx < t.RowSize() {
-		return t.Rows[rowIdx]
-	}
-	return nil
-}
-
-// HasColumn 是否有这列
-func (t *GDTable) HasColumn(name string) bool {
-    _, ok := t.HeadNames[name]
-    return ok
-}
-
-// GetColumns 获取指定列的所有数据
-func (t *GDTable) GetColumns(name string) []string {
-	var col = t.HeadNames[name]
-	if col > 0 {
-		var result = make([]string, 0, t.RowSize())
-		for _, row := range t.Rows {
-			if int(col) <= len(row) {
-				result = append(result, row[col-1])
-			}
-		}
-		return result
-	}
-	return nil
-}
-
-// ToKVMap 转换为key-value形式的map
-func (t *GDTable) ToKVMap() map[string]string {
-	var keyCol = t.HeadNames["Key"]
-	var ValCol = t.HeadNames["Value"]
-	if keyCol < 0 || ValCol < 0 {
-		return nil
-	}
-	var dict = make(map[string]string, len(t.Rows))
-	for _, row := range t.Rows {
-		if int(keyCol) <= len(row) && int(ValCol) <= len(row) {
-			dict[row[keyCol-1]] = row[ValCol-1]
-		}
-	}
-	return dict
-}
-
-// ReadCSVTable 读取CSV数据表
-func ReadCSVTable(data []byte) (*GDTable, error) {
-	var r = csv.NewReader(bytes.NewReader(data))
-	var table = &GDTable{
-		HeadNames: make(map[string]int32),
-	}
-	for i := 0; ; i++ {
-		row, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Printf("ReadCSVTable: read csv %v", err)
-			return nil, err
-		}
-		var size = 0
-		for n := 0; n < len(row); n++ {
-			strings.TrimSpace(row[n])
-			size += len(row[n])
-		}
-		if i == 0 {
-			for j, s := range row {
-				table.HeadNames[s] = int32(j)
-			}
-		} else {
-			if size > 0 {
-				table.Rows = append(table.Rows, row)
-			}
-		}
-	}
-	return table, nil
-}
-
-func ReadCSVFileToTable(filename string) (*GDTable, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return ReadCSVTable(data)
-}
+var (
+	Delim1 = "|"
+	Delim2 = ":"
+)
 
 func ParseBool(s string) bool {
 	if len(s) == 0 {
@@ -317,18 +208,18 @@ func ConvTo[T cmp.Ordered | bool](s string) T {
 }
 
 // ParseSlice 解析字符串为slice, 格式如：a|b|c
-func ParseSlice[T cmp.Ordered](text string, sep string) []T {
+func ParseSlice[E any](text string, f func(string) E) []E {
 	var s = strings.TrimSpace(text)
 	if s == "" {
-		var zero []T
+		var zero []E
 		return zero
 	}
-	var parts = strings.Split(text, sep)
-	var ret = make([]T, 0, len(parts))
+	var parts = strings.Split(text, Delim1)
+	var ret = make([]E, 0, len(parts))
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
 		if part != "" {
-			val := ConvTo[T](part)
+			val := f(part)
 			ret = append(ret, val)
 		}
 	}
@@ -336,24 +227,138 @@ func ParseSlice[T cmp.Ordered](text string, sep string) []T {
 }
 
 // ParseMap 解析字符串为map，格式如：a:1|b:2|c:3
-func ParseMap[K, V cmp.Ordered](text string, sep1, sep2 string) map[K]V {
+func ParseMap[K, V cmp.Ordered](text string, f1 func(string) K, f2 func(string) V) map[K]V {
 	var ret = map[K]V{}
 	var s = strings.TrimSpace(text)
 	if s == "" {
 		return ret
 	}
-	var parts = strings.Split(text, sep1)
+	var parts = strings.Split(text, Delim1)
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
 		if part == "" {
 			continue
 		}
-		pair := strings.Split(part, sep2)
+		pair := strings.Split(part, Delim2)
 		if len(pair) == 2 {
-			key := ConvTo[K](pair[0])
-			val := ConvTo[V](pair[1])
+			key := f1(pair[0])
+			val := f2(pair[1])
 			ret[key] = val
 		}
 	}
 	return ret
+}
+
+// GDTable 数据表
+type GDTable struct {
+	HeadNames map[string]int32 // header name -> column index
+	Rows      [][]string       // data rows
+}
+
+// ColSize 列数
+func (t *GDTable) ColSize() int {
+	return len(t.HeadNames)
+}
+
+// RowSize 行数
+func (t *GDTable) RowSize() int {
+	return len(t.Rows)
+}
+
+// GetCell 获取指定列（名称）指定行的数据
+func (t *GDTable) GetCell(name string, rowIdx int) string {
+	if rowIdx >= 0 && rowIdx < t.RowSize() {
+		var row = t.Rows[rowIdx]
+		var col = t.HeadNames[name]
+		if col >= 0 && int(col) < len(row) {
+			return row[col]
+		}
+	}
+	return ""
+}
+
+// GetRow 获取指定行的所有数据
+func (t *GDTable) GetRow(rowIdx int) []string {
+	if rowIdx >= 0 && rowIdx < t.RowSize() {
+		return t.Rows[rowIdx]
+	}
+	return nil
+}
+
+// HasColumn 是否有这列
+func (t *GDTable) HasColumn(name string) bool {
+	_, ok := t.HeadNames[name]
+	return ok
+}
+
+// GetColumns 获取指定列的所有数据
+func (t *GDTable) GetColumns(name string) []string {
+	var col = t.HeadNames[name]
+	if col >= 0 {
+		var result = make([]string, 0, t.RowSize())
+		for _, row := range t.Rows {
+			if int(col) < len(row) {
+				result = append(result, row[col-1])
+			}
+		}
+		return result
+	}
+	return nil
+}
+
+// ToKVMap 转换为key-value形式的map
+func (t *GDTable) ToKVMap() map[string]string {
+	var keyCol = t.HeadNames["Key"]
+	var ValCol = t.HeadNames["Value"]
+	if keyCol < 0 || ValCol < 0 {
+		return nil
+	}
+	var dict = make(map[string]string, len(t.Rows))
+	for _, row := range t.Rows {
+		if int(keyCol) < len(row) && int(ValCol) < len(row) {
+			dict[row[keyCol]] = row[ValCol]
+		}
+	}
+	return dict
+}
+
+// ReadCSVTable 读取CSV数据表
+func ReadCSVTable(data []byte) (*GDTable, error) {
+	var r = csv.NewReader(bytes.NewReader(data))
+	var table = &GDTable{
+		HeadNames: make(map[string]int32),
+	}
+	for i := 0; ; i++ {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("ReadCSVTable: read csv %v", err)
+			return nil, err
+		}
+		var size = 0
+		for n := 0; n < len(row); n++ {
+			strings.TrimSpace(row[n])
+			size += len(row[n])
+		}
+		if i == 0 {
+			for j, s := range row {
+				table.HeadNames[s] = int32(j)
+			}
+		} else {
+			if size > 0 {
+				table.Rows = append(table.Rows, row)
+			}
+		}
+	}
+	return table, nil
+}
+
+func ReadCSVFileToTable(filename string) (*GDTable, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return ReadCSVTable(data)
 }
