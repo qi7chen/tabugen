@@ -9,8 +9,8 @@ from argparse import Namespace
 import tabugen.lang as lang
 import tabugen.predef as predef
 import tabugen.util.helper as helper
-import tabugen.util.tableutil as tableutil
 import tabugen.version as version
+from tabugen.util.tableutil import legacy_kv_type
 from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.go.gen_csv_load import GoCsvLoadGenerator
 
@@ -90,7 +90,7 @@ class GoStructGenerator:
                 continue
 
             if args.legacy and typename.isdigit():
-                typename = tableutil.legacy_kv_type(int(typename))
+                typename = legacy_kv_type(int(typename))
 
             typename = lang.map_go_type(typename)
             key_name = helper.pad_spaces(helper.camel_case(key), max_name_len + 4)
@@ -113,7 +113,6 @@ class GoStructGenerator:
     # 生成struct
     def gen_go_struct(self, struct: Struct, args: Namespace) -> str:
         content = ''
-
         if struct.comment:
             content += '// %s, ' % struct.comment
         else:

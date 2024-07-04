@@ -4,11 +4,13 @@
 
 import os
 import sys
+from argparse import Namespace
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.helper as helper
-import tabugen.generator.cpp.template as cpp_template
+from tabugen.util.tableutil import legacy_kv_type
+from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
 
@@ -32,107 +34,101 @@ class CppStructGenerator:
                 sys.exit(1)
 
     # 生成字段定义
-    def gen_field_define(self, field, max_type_len: int, max_name_len: int, tabs: int) -> str:
-        typename = lang.map_cpp_type(field['original_type_name'])
-        assert typename != "", field['original_type_name']
+    def gen_field_define(self, field: StructField, max_type_len: int, max_name_len: int, tabs: int) -> str:
+        typename = lang.map_cpp_type(field.origin_type_name)
+        assert typename != "", field.origin_type_name
         typename = helper.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cpp_value(field, typename, False)
         name = helper.pad_spaces(name, max_name_len + 8)
         space = self.TAB_SPACE * tabs
-        return '%s%s %s // %s\n' % (space, typename, name, field['comment'])
+        return '%s%s %s // %s\n' % (space, typename, name, field.comment)
 
-    # 生成嵌入类型的字段定义
-    def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, tabs: int) -> str:
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        inner_field_name = struct["options"][predef.PredefInnerFieldName]
-        type_name = 'std::vector<%s>' % type_class_name
-        type_name = helper.pad_spaces(type_name, max_type_len + 1)
-        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 1)
-        assert len(inner_field_name) > 0
+    def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int) -> str:
+        name = helper.camel_case(field.field_name)
+        name = helper.pad_spaces(name + ';', max_name_len + 4)
+        typename = lang.map_cpp_type(field.type_name)
+        typename = helper.pad_spaces(typename, max_type_len + 4)
+        text = ''
         space = self.TAB_SPACE * tabs
-        return '%s%s %s;    // \n' % (space, type_name, inner_field_name)
+        text += '%s%s %s' % (space, typename, name)
+        if field.comment:
+            text += ' // %s' % field.comment
+        text += '\n'
+        return text
 
-    # 生成嵌入类型定义
-    def gen_inner_struct_define(self, struct) -> str:
-        inner_fields = struct['inner_fields']
-        start = inner_fields['start']
-        end = inner_fields['end']
-        step = inner_fields['step']
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        assert len(type_class_name) > 0
+    #
+    def gen_kv_fields(self, struct: Struct, tabs: int, args: Namespace) -> str:
+        space = self.TAB_SPACE * tabs
+        key_idx = struct.get_column_index(predef.PredefKVKeyName)
+        assert key_idx >= 0
+        type_idx = struct.get_column_index(predef.PredefKVTypeName)
+        comment_idx = struct.get_kv_comment_col()
 
-        max_name_len = 0
-        max_type_len = 0
-        for col in range(start, end):
-            field = struct['fields'][col]
-            name_len = len(field['name'])
-            type_len = len(lang.map_cpp_type(field['original_type_name']))
-            if name_len > max_name_len:
-                max_name_len = name_len
-            if type_len > max_type_len:
-                max_type_len = type_len
+        max_name_len, max_type_len = struct.get_kv_max_len(lang.map_cpp_type)
+        content = 'struct %s {\n' % struct.camel_case_name
+        for row in struct.data_rows:
+            key = row[key_idx]
+            typename = 'int'
+            if type_idx >= 0:
+                typename = row[type_idx]
+            if key == '' or typename == '':
+                continue
 
-        content = '    struct %s \n' % type_class_name
-        content += '    {\n'
-        col = start
-        while col < start + step:
-            field = struct['fields'][col]
-            typename = lang.map_cpp_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = helper.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cpp_value(field, typename, True)
-            name = helper.pad_spaces(name, max_name_len + 8)
-            content += '        %s %s // %s\n' % (typename, name, field['comment'])
-            col += 1
-        content += '    };\n'
+            if args.legacy and typename.isdigit():
+                typename = legacy_kv_type(int(typename))
+
+            typename = lang.map_cpp_type(typename)
+            key_name = helper.pad_spaces(helper.camel_case(key) + ';', max_name_len + 4)
+            typename = helper.pad_spaces(typename, max_type_len + 4)
+            content += '%s%s %s' % (space, typename, key_name)
+            if comment_idx >= 0:
+                comment = row[comment_idx].strip()
+                comment = comment.replace('\n', ' ')
+                comment = comment.replace('//', '')
+                if len(content) > 0:
+                    content += '\t// %s' % comment
+            content += '\n'
+
         return content
 
     # 生成class的结构定义
-    def gen_struct_define(self, struct) -> str:
-        content = '// %s\n' % struct['comment']
-        content += 'struct %s \n{\n' % struct['camel_case_name']
+    def gen_struct_define(self, struct: Struct, args: Namespace) -> str:
+        content = ''
+        if struct.comment:
+            content += '// %s, ' % struct.comment
+        else:
+            content += '// %s, ' % struct.name
+        content += ' Created from %s\n' % struct.filepath
 
-        inner_start_col = -1
-        inner_end_col = -1
-        inner_field_done = False
-        if 'inner_fields' in struct:
-            inner_start_col = struct['inner_fields']['start']
-            inner_end_col = struct['inner_fields']['end']
-            content += self.gen_inner_struct_define(struct)
-            content += '\n'
+        if struct.options[predef.PredefParseKVMode]:
+            return content + self.gen_kv_fields(struct, 1, args)
 
-        fields = struct['fields']
-        max_name_len = helper.max_field_length(fields, 'name', None)
-        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_cpp_type)
-        if inner_start_col >= 0:
-            type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-            field_name = 'std::vector<%s>' % type_class_name
-            if len(field_name) > max_type_len:
-                max_type_len = len(field_name)
+        content += 'struct %s \n{\n' % struct.camel_case_name
+
+        fields = struct.fields
+        max_name_len = struct.max_field_name_length()
+        max_type_len = struct.max_field_type_length(lang.map_cpp_type)
 
         for col, field in enumerate(fields):
-            text = ''
-            if inner_start_col <= col <= inner_end_col:
-                if not inner_field_done:
-                    text = self.gen_inner_field_define(struct, max_type_len, max_name_len, 1)
-                    inner_field_done = True
-            else:
-                text = self.gen_field_define(field, max_type_len, max_name_len, 1)
+            text = self.gen_field_define(field, max_type_len, max_name_len, 1)
             content += text
+        for array in struct.array_fields:
+            content += self.gen_array_define(array, max_type_len, max_name_len, 1)
+
         return content
 
     # 生成头文件声明
-    def gen_header(self, struct) -> str:
+    def gen_header(self, struct: Struct, args: Namespace) -> str:
         content = ''
-        content += self.gen_struct_define(struct)
+        content += self.gen_struct_define(struct, args)
         if self.load_gen is not None:
             content += '\n'
-            content += self.load_gen.generate_method_declare(struct)
+            content += self.load_gen.gen_method_declare(struct)
         content += '};\n\n'
         return content
 
     # 生成.h头文件内容
-    def generate(self, descriptors, args):
+    def generate(self, descriptors: list[Struct], args: Namespace):
         h_include_headers = [
             '#include <stdint.h>',
             '#include <string>',
@@ -140,22 +136,30 @@ class CppStructGenerator:
             '#include <unordered_map>',
             '#include <functional>',
         ]
+        if self.load_gen:
+            h_include_headers.append('#include "rapidcsv.h"')
 
         header_content = '// This file is auto-generated by Tabugen v%s, DO NOT EDIT!\n\n#pragma once\n\n' % version.VER_STRING
         header_content += '\n'.join(h_include_headers) + '\n\n'
 
-        if args.package is not None:
+        if args.package:
             header_content += '\nnamespace %s {\n\n' % args.package
 
+        header_content += 'using std::vector;\n'
+        header_content += 'using std::string;\n'
+        header_content += 'using std::unordered_map;\n'
+        if self.load_gen:
+            header_content += 'using rapidcsv::Document;\n'
+        header_content += '\n'
+
         for struct in descriptors:
-            print(helper.current_time(), 'start generate', struct['source'])
-            header_content += self.gen_header(struct)
+            header_content += self.gen_header(struct, args)
 
         if args.package is not None:
             header_content += '} // namespace %s\n' % args.package
         return header_content
 
-    def run(self, descriptors, filepath, args):
+    def run(self, descriptors: list[Struct], filepath: str, args: Namespace):
         outname = os.path.split(filepath)[-1]
 
         cpp_content = ''
@@ -166,6 +170,8 @@ class CppStructGenerator:
 
         header_content = self.generate(descriptors, args)
 
+        if os.path.isdir(filepath):
+            filepath += '/config'
         header_filepath = filepath + '.h'
         filename = os.path.abspath(header_filepath)
         helper.save_content_if_not_same(filename, header_content, args.source_file_encoding)
@@ -180,9 +186,3 @@ class CppStructGenerator:
             else:
                 print('file content not modified', filename)
 
-        # 3rd party parse API
-        if args.with_conv and self.load_gen is not None:
-            filename = os.path.join(os.path.split(filepath)[0], 'Conv.h')
-            modified = helper.save_content_if_not_same(filename, cpp_template.CPP_CONV_TEMPLATE, args.source_file_encoding)
-            if modified:
-                print('wrote 3rd source file to', filename)

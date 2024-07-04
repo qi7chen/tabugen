@@ -2,10 +2,10 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-from typing import Mapping
 
 import tabugen.typedef as types
 import tabugen.util.tableutil as tableutil
+from tabugen.structs import StructField
 
 
 # C++类型映射
@@ -27,7 +27,7 @@ def map_cpp_type(typ: str) -> str:
         'float64': 'double',
         'float': 'float',
         'double': 'double',
-        'string': 'std::string',
+        'string': 'string',
     }
     abs_type = types.is_composite_type(typ)
     if abs_type == '':
@@ -36,32 +36,32 @@ def map_cpp_type(typ: str) -> str:
     if abs_type == 'array':
         t = types.array_element_type(typ)
         elem_type = type_mapping[t]
-        return 'std::vector<%s>' % elem_type
+        return 'vector<%s>' % elem_type
     elif abs_type == 'map':
         k, v = types.map_key_value_types(typ)
         key_type = type_mapping[k]
         value_type = type_mapping[v]
-        return 'std::unordered_map<%s, %s>' % (key_type, value_type)
+        return 'unordered_map<%s, %s>' % (key_type, value_type)
     assert False, typ
 
 
 # C++ POD类型
 def is_cpp_pod_type(typ: str) -> bool:
     assert len(typ.strip()) > 0
-    return not typ.startswith('std::')  # std::string, std::vector, std::unordered_map
+    return typ not in ['string', 'vector', 'unordered_map']
 
 
 # C++为类型加上默认值
-def name_with_default_cpp_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
+def name_with_default_cpp_value(field: StructField, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
-    name = field['name']
+    name = field.name
     if remove_suffix_num:
         name = tableutil.remove_field_suffix(name)
     if typename == 'bool':
         return '%s = false;' % name
-    elif types.is_integer_type(field['type_name']):
+    elif types.is_integer_type(field.type_name):
         return '%s = 0;' % name
-    elif types.is_floating_type(field['type_name']):
+    elif types.is_floating_type(field.type_name):
         return '%s = 0.0;' % name
     else:
         return '%s;' % name
@@ -201,9 +201,9 @@ def map_cs_parse_func(typ: str) -> str:
 
 
 # C#类型默认值
-def name_with_default_cs_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
+def name_with_default_cs_value(field: StructField, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
-    name = field['name']
+    name = field.name
     if remove_suffix_num:
         name = tableutil.remove_field_suffix(name)
     return '%s { get; set; }' % name
@@ -261,19 +261,19 @@ def map_java_type(typ: str) -> str:
 
 
 # java类型默认值
-def name_with_default_java_value(field: Mapping, typename: str, remove_suffix_num: bool) -> str:
+def name_with_default_java_value(field: StructField, typename: str, remove_suffix_num: bool) -> str:
     typename = typename.strip()
     # print(typename)
-    name = field['name']
+    name = field.name
     if remove_suffix_num:
         name = tableutil.remove_field_suffix(name)
     if typename.startswith('bool'):
         return '%s = false;' % name
     elif typename == 'String':
         return '%s = "";' % name
-    elif types.is_integer_type(field['type_name']):
+    elif types.is_integer_type(field.type_name):
         return '%s = 0;' % name
-    elif types.is_floating_type(field['type_name']):
+    elif types.is_floating_type(field.type_name):
         return '%s = 0.0f;' % name
     else:
         return '%s = null;' % name

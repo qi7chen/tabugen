@@ -77,10 +77,10 @@ def verify_args(args: argparse.Namespace):
 def main():
     parser = argparse.ArgumentParser(description="一个根据表格生成代码和配置转换的工具")
     parser.add_argument("-v", "--version", action='version', version='v' + VER_STRING)
-    parser.add_argument("--without_data", action="store_true", help="只生成类型定义")
+    parser.add_argument("--legacy", action='store_true', help="兼容模式")
     parser.add_argument("--file_asset", action='append', help="文件名或者文件夹路径")
     parser.add_argument("--file_skip", action='append', help="需要跳过解析的文件名列表")
-    parser.add_argument("--legacy", action='store_true', help="兼容模式")
+    parser.add_argument("--without_data", action="store_true", help="只生成类型定义")
     parser.add_argument("--project_kind", default='', help="指定包含此前缀的名称才纳入解析")
     parser.add_argument("--delim1", default="|", help="列表元素分隔符")
     parser.add_argument("--delim2", default=":", help="键值分隔符")

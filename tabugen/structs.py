@@ -82,12 +82,14 @@ class Struct:
         max_len = 0
         for field in self.fields:
             n = len(field.origin_type_name)
-            if type_mapper is not None:
+            if type_mapper:
                 n = len(type_mapper(field.origin_type_name))
             if n > max_len:
                 max_len = n
         for array in self.array_fields:
             n = len(array.type_name)
+            if type_mapper:
+                n = len(type_mapper(array.type_name))
             if n > max_len:
                 max_len = n
         return max_len

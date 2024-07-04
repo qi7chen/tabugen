@@ -49,7 +49,6 @@ class GoCsvLoadGenerator:
 
         content += 'func (p *%s) ParseFrom(table map[string]string) error {\n' % struct.camel_case_name
         for row in rows:
-            text = ''
             name = row[keyidx].strip()
             origin_typename = row[typeidx].strip()
             if args.legacy:
@@ -57,10 +56,9 @@ class GoCsvLoadGenerator:
                     legacy = int(origin_typename)
                     origin_typename = types.legacy_type_to_name(legacy)
                 except ValueError:
-                    continue
+                    pass
             valuetext = 'table["%s"]' % name
             content += self.gen_field_assign('p.', origin_typename, name, valuetext, 1)
-            content += text
         content += '%sreturn nil\n' % '\t'
         content += '}\n\n'
         return content
