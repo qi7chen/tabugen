@@ -8,10 +8,8 @@
 #include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include "Conv.h"
-#include "SoldierDefine.h"
-#include "GuideDefine.h"
-#include "GlobalDefine.h"
-#include "BoxDefine.h"
+#include "Config.h"
+
 
 
 #ifndef ASSERT
@@ -20,96 +18,9 @@
 
 
 using namespace std;
+using namespace rapidcsv;
 using namespace config;
 
-// Read csv file to key-value records
-typedef unordered_map<string, string> Record;
-typedef vector<string> Row;
-
-const regex fieldsRegx(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
-
-void parseRow(const string& line, Row& row)
-{
-    // Split line to tokens
-    sregex_token_iterator ti(line.begin(), line.end(), fieldsRegx, -1);
-    sregex_token_iterator end;
-    while (ti != end)
-    {
-        string token = ti->str();
-        ++ti;
-        row.push_back(token);
-    }
-    if (line.back() == ',')
-    {
-        row.push_back(""); // last character was a separator
-    }
-}
-
-static void parseRows(const string& content, vector<Row>& rows) {
-    size_t pos = 0;
-    // UTF8-BOM
-    if (content.size() >= 3 && content[0] == '\xEF' && content[1] == '\xBB' && content[2] == '\xBF') {
-        pos = 3;
-    }
-    while (pos < content.size()) {
-        size_t begin = pos;
-        while (content[pos] != '\n') {
-            pos++;
-        }
-        size_t end = pos;
-        if (end > begin && content[end - 1] == '\r') {
-            end--;
-        }
-        pos = end + 1;
-        string line = content.substr(begin, end - begin);
-        boost::trim(line);
-        if (!line.empty()) {
-            Row row;
-            parseRow(line, row);
-            rows.push_back(row);
-        }
-    }
-}
-
-static int ReadCsvRecord(const std::string& filename, std::vector<Record>& out)
-{
-    std::ifstream infile(filename.c_str());
-    if (!infile.good()) {
-        return -1;
-    }
-    std::vector<std::string> header;
-    std::string line;
-    while (std::getline(infile, line)) {
-        Row row;
-        parseRow(line, row);
-        if (header.empty())
-        {
-            for (size_t i = 0; i < row.size(); i++)
-            {
-                header.push_back(row[i]);
-            }
-            continue;
-        }
-        Record record;
-        for (size_t i = 0; i < row.size(); i++)
-        {
-            const std::string& key = header[i];
-            const std::string& val = row[i];
-            record.emplace(key, val);
-        }
-        out.push_back(record);
-    }
-    return 0;
-}
-
-static void RecordToKVMap(const std::vector<Record>& records, Record& out)
-{
-    for (size_t i = 0; i < records.size(); i++)
-    {
-        auto record = records[i];
-        out[record["Key"]] = record["Value"];
-    }
-}
 
 static std::string resPath = "../../datasheet/res";
 
@@ -127,26 +38,20 @@ static void LoadCsvToConfig(const char* filename, vector<T>& data)
     }
 }
 
-static void printSoldierProperty(const config::SoldierPropertyDefine& item)
+static void printSoldierProperty(const config::SoldierDefine& item)
 {
     cout << item.Name << " "
         << item.Level << " "
-        << item.NameID << " "
         << item.BuildingName << " "
         << item.BuildingLevel << " "
         << item.RequireSpace << " "
         << item.UpgradeTime << " "
-        << item.UpgradeMaterialID << " "
-        << item.UpgradeMaterialNum << " "
-        << item.ConsumeMaterial << " "
-        << item.ConsumeMaterialNum << " "
+        << item.UpgradeCost << " "
+        << item.UpgradeRes << " "
         << item.ConsumeTime << " "
         << item.Act << " "
         << item.Hp << " "
         << item.BombLoad << " "
-        << item.Duration << " "
-        << item.TriggerInterval << " "
-        << item.SearchScope << " "
         << item.AtkFrequency << " "
         << item.AtkRange << " "
         << item.MovingSpeed << " "
@@ -156,22 +61,23 @@ static void printSoldierProperty(const config::SoldierPropertyDefine& item)
 
 static void testSoldierConfig()
 {
-    vector<config::SoldierPropertyDefine> data;
-    LoadCsvToConfig("soldier_property_define.csv", data);
-    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
-    for (const SoldierPropertyDefine& item : data)
-    {
+    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "soldier_property_define");
+    Document doc(filepath);
+    for (size_t row = 0; row < doc.GetRowCount(); row++) {
+        config::SoldierDefine item;
+        SoldierDefine::ParseRow(doc, int(row), &item);
         printSoldierProperty(item);
     }
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-static void printNewbieGuide(const config::NewbieGuideDefine& item)
+static void printNewbieGuide(const config::NewbieGuide& item)
 {
     cout << item.Name << " "
-        << item.Type << " "
+        << item.Category << " "
         << item.Target << " "
         ;
     cout << "{ ";
@@ -182,7 +88,7 @@ static void printNewbieGuide(const config::NewbieGuideDefine& item)
     cout << "} ";
 
     cout << "{ ";
-    for (auto iter = item.Goods.begin(); iter != item.Goods.end(); ++iter)
+    for (auto iter = item.RewardGoods.begin(); iter != item.RewardGoods.end(); ++iter)
     {
         cout << iter->first << ": " << iter->second << ", ";
     }
@@ -192,18 +98,18 @@ static void printNewbieGuide(const config::NewbieGuideDefine& item)
 
 static void testNewbieGuideConfig()
 {
-    vector<config::NewbieGuideDefine> data;
-    LoadCsvToConfig("newbie_guide_define.csv", data);
-    cout << stringPrintf("%d soldier config loaded.\n", (int)data.size());
-    for (const config::NewbieGuideDefine& item : data)
-    {
+    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "newbie_guide.csv");
+    Document doc(filepath);
+    for (size_t row = 0; row < doc.GetRowCount(); row++) {
+        config::NewbieGuide item;
+        NewbieGuide::ParseRow(doc, int(row), &item);
         printNewbieGuide(item);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-static void printGlobalProperty(const GlobalPropertyDefine& inst)
+static void printGlobalProperty(const GlobalDefine& inst)
 {
     cout << "GoldExchangeTimeFactor1: " << inst.GoldExchangeTimeFactor1 << endl
         << "GoldExchangeTimeFactor2: " << inst.GoldExchangeTimeFactor2 << endl
@@ -233,14 +139,24 @@ static void printGlobalProperty(const GlobalPropertyDefine& inst)
 
 static void testGlobalConfig()
 {
-    auto filename = stringPrintf("%s/global_property_define.csv", resPath.c_str());
-    std::vector<Record> records;
-    ReadCsvRecord(filename, records);
-    Record kvMap;
-    RecordToKVMap(records, kvMap);
+    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "global_define.csv");
+    Document doc(filepath);
+    auto keys = doc.GetColumn<string>("Key");
+    auto values = doc.GetColumn<string>("Value");
+    unordered_map<string, string> table;
+    for (size_t i = 0; i < keys.size(); i++) {
+        if (i < values.size()) {
+            table[keys[i]] = values[i];
+        }
+    }
+    for (size_t row = 0; row < doc.GetRowCount(); row++) {
+        config::NewbieGuide item;
+        NewbieGuide::ParseRow(doc, int(row), &item);
+        printNewbieGuide(item);
+    }
 
-    GlobalPropertyDefine inst;
-    GlobalPropertyDefine::ParseFrom(kvMap, &inst);
+    GlobalDefine inst;
+    GlobalDefine::ParseFrom(table, &inst);
 
     printGlobalProperty(inst);
 }
@@ -249,7 +165,7 @@ static void testGlobalConfig()
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-static void printBoxProbability(const BoxProbabilityDefine& item)
+static void printBoxProbability(const ItemBoxDefine& item)
 {
     cout << item.ID << " "
         << item.Total << " "
@@ -257,13 +173,12 @@ static void printBoxProbability(const BoxProbabilityDefine& item)
         << item.Repeat << " "
         ;
     cout << "[ ";
-    for (size_t i = 0; i < item.ProbabilityGoods.size(); i++)
+    for (size_t i = 0; i < item.GoodsIDs.size(); i++)
     {
-        const BoxProbabilityDefine::ProbabilityGoodsDefine& goods = item.ProbabilityGoods[i];
         cout << "{ "
-            << goods.GoodsID << " "
-            << goods.Num << " "
-            << goods.Probability << " "
+            << item.GoodsIDs[i] << " "
+            << item.Nums[i] << " "
+            << item.Probabilitys[i] << " "
             << "},";
     }
     cout << "]" << endl;
@@ -271,14 +186,15 @@ static void printBoxProbability(const BoxProbabilityDefine& item)
 
 static void testBoxConfig()
 {
-    vector<config::BoxProbabilityDefine> data;
-    LoadCsvToConfig("box_probability_define.csv", data);
-    cout << stringPrintf("%d box config loaded.\n", (int)data.size());
-    for (const BoxProbabilityDefine& item : data)
-    {
+    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "item_box_define.csv");
+    Document doc(filepath);
+    for (size_t row = 0; row < doc.GetRowCount(); row++) {
+        config::ItemBoxDefine item;
+        ItemBoxDefine::ParseRow(doc, int(row), &item);
         printBoxProbability(item);
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

@@ -32,6 +32,6 @@
 * `--csharp_out` 输出的C#代码文件名称
 * `--package` 指定C#命名空间
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
-* `--with_csv_parse` 是否包含CSV数据加载代码
+* `--gen_csv_parse` 是否包含CSV数据加载代码
 * `--with-conv` 生成`Conv.cs`文件
 

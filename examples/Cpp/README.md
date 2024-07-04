@@ -11,44 +11,28 @@
 
 ### 生成解析代码
 
-如果指定了生成解析代码，解析函数会需要用到3类函数
-
-* 将字符串转换为数值类型(int/float)的函数；
-* 根据格式拼接字符串的`sprintf`函数；
-* 根据分隔符分割字符串的`split`函数；
-
-这些细节都被实现在`Conv.h`里，在`--with-conv`选项开启的时候，会生成`Conv.h`文件，文件默认使用boost的实现。
-如果不想引入boost，可以自己实现`Conv.h`里的API，并在导出的时候不指定`--with-conv`选项。
+* `rapidcsv.h`是一个轻量级的CSV文件解析库，用于解析CSV文件
+* `Conv.h`里实现了几个常用但是C++标准库目前还欠缺（或者不好用）的函数，类似sprintf, split, convert等，并依赖了`boost.lexical_cast`
+* 如果项目组开启了预编译头，比如`stdafx.h`，可以通过`--pch=stdafx.h`是源文件包含预编译头文件
 
 
 ## 配置详解
-
-
-### meta表里的配置
-
-在excel文件的`@meta`表里可以定义一些配置来控制如何导入，如：
-
-在excel文件的`@meta`表里可以定义一些配置来控制如何导入，如：
-
-* `ClassName`  生成的class名称
-* `ClassComment`   生成的class注释
-* `InnerTypeClass` 嵌入类型的class名称
-* `InnerFieldName` 嵌入类型的成员变量名
-* `UniqueFields` 对于这些字段，导出的时候会检查每行的数据值是否有重复
 
 
 ### 相关命令行参数
 
 在命令行可以指定一些控制导出内容的参数，如：
 
-* `--cpp_out` 输出的C++代码文件名称
-* `--package` 指定C++命名空间
+* `--cpp_out` 输出的C++代码文件目录
+* `--package` 指定名称空间
+* `--gen_csv_parse` 是否生成代码中包含CSV数据加载函数，一般命名为`ParseRow()`
 * `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
-* `--with_csv_parse` 是否包含CSV数据加载代码
-* `--with-conv` 生成`Conv.h`文件
-* `--cpp_pch` 包含的预编译头文件
-* `--extra_cpp_include` 额外包含的C++头文件
-
-
-
-
+* `--file_asset` 指定输入的Excel文件或者目录
+* `--file_skip` 指定不导出的Excel文件
+* `--without_data` 不导出数据，只导出代码
+* `--project_kind` 指定解析特定的字段类型，如`--project_kind=C`，只解析`C_`开头和不带kind的字段
+* `--delim1` 指定第一级分隔符，默认为`|`
+* `--delim2` 指定第二级分隔符，默认为`:`
+* `--data_file_encoding` 输出的数据文件编码格式，默认为UTF-8
+* `--out_data_format` 数据文件输出格式，默认为`csv`，可以选择`json`
+* `--out_data_path` 输出的数据文件路径，默认为当前目录

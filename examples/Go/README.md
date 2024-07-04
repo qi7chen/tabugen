@@ -10,21 +10,10 @@
 3. 可选，安装IDE调试环境 [Jetbrains Goland](https://www.jetbrains.com/goland/)
 
 
-## 生成解析代码
+## 解析代码
 
-如果指定了生成解析代码，解析函数都被实现在`conv.go`里，在`--with-conv`选项开启的时候，会生成`conv.go`文件。
-如果想自己实现`conv.go`里API，用同名文件替换，并在导出的时候不指定`--with-conv`选项。
-
-
-### meta表里的配置
-
-在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
-
-* `ClassName`  生成的class名称
-* `ClassComment`   生成的class注释
-* `InnerTypeClass` 嵌入类型的class名称
-* `InnerFieldName` 嵌入类型的成员变量名
-* `UniqueFields` 对于这些字段，导出的时候会检查每行的数据值是否有重复
+* `table.go`源码文件包含了常用的从字符串解析基本类型的实现以及csv文件的读取；
+* `all_test.go` 是单元测试代码，用于测试解析代码的正确性；
 
 
 ### 相关命令行参数
@@ -33,7 +22,18 @@
 
 * `--go_out` 输出的Go代码文件名
 * `--package` 指定Go包名
-* `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
-* `--with_csv_parse` 是否包含CSV数据加载代码
-* `--with-conv` 生成`conv.go`文件
+* `--gen_csv_parse` 是否生成代码中包含CSV数据加载函数，一般命名为`ParseRow()`
 * `--go_fmt` 生成代码文件后，对文件执行go fmt格式化
+* `--source_file_encoding` 输出的源代码文件编码格式，默认为UTF-8
+* `--file_asset` 指定输入的Excel文件或者目录
+* `--file_skip` 指定不导出的Excel文件
+* `--without_data` 不导出数据，只导出Go代码
+* `--project_kind` 指定解析特定的字段类型，如`--project_kind=C`，只解析`C_`开头和不带kind的字段
+* `--delim1` 指定第一级分隔符，默认为`|`
+* `--delim2` 指定第二级分隔符，默认为`:`
+* `--data_file_encoding` 输出的数据文件编码格式，默认为UTF-8
+* `--out_data_format` 数据文件输出格式，默认为`csv`，可以选择`json`
+* `--out_data_path` 输出的数据文件路径，默认为当前目录
+* `--json_indent` 输出的json文件使用缩进格式
+* `--json_snake_case` 输出的json文件使用蛇形命名格式
+

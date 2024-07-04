@@ -37,14 +37,10 @@ if (WIN32)
 endif()
 
 set(ALL_LIB_FILES
-    ${PROJECT_ROOT_DIR}/src/BoxDefine.h
-    ${PROJECT_ROOT_DIR}/src/BoxDefine.cpp
-    ${PROJECT_ROOT_DIR}/src/GlobalDefine.h
-    ${PROJECT_ROOT_DIR}/src/GlobalDefine.cpp
-    ${PROJECT_ROOT_DIR}/src/SoldierDefine.h
-    ${PROJECT_ROOT_DIR}/src/SoldierDefine.cpp
-    ${PROJECT_ROOT_DIR}/src/GuideDefine.h
-    ${PROJECT_ROOT_DIR}/src/GuideDefine.cpp
+    ${PROJECT_ROOT_DIR}/src/Config.h
+    ${PROJECT_ROOT_DIR}/src/Config.cpp
+    ${PROJECT_ROOT_DIR}/src/Conv.h
+    ${PROJECT_ROOT_DIR}/src/rapidcsv.h
     )
 
 add_library(conflib STATIC ${ALL_LIB_FILES})

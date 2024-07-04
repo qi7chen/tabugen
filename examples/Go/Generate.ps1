@@ -11,7 +11,6 @@ $OUT_DATA_DIR = Join-Path $DATASHEET_DIR  "res"
 $Env:PYTHONPATH=$ROOT_DIR
 
 Function Generate {
-    echo "Generate Go source code" $OUT_DATA_DIR
     python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --go_out=$OUT_SRC_DIR/config.go --package=config --gen_csv_parse --go_fmt --out_data_path=$OUT_DATA_DIR --out_data_format=csv
     python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR --out_data_format=json --json_indent
 }

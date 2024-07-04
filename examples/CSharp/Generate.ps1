@@ -13,16 +13,16 @@ $Env:PYTHONPATH=$ROOT_DIR
 Function tabucli {
     $excelPath = Join-Path $DATASHEET_DIR $args[0]
     $outSrcPath = Join-Path $OUT_SRC_DIR $args[1]
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cs_out=$outSrcPath --with_csv_parse --with_conv --package=Config --json_snake_case
+    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cs_out=$outSrcPath --gen_csv_parse --with_conv --package=Config --json_snake_case
     python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=csv --out_data_path=$OUT_DATA_DIR
     python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=json --json_indent --out_data_path=$OUT_DATA_DIR
 }
 
 Function Generate {
-    tabucli ±øÖÖ.xlsx SoldierDefine.cs
-    tabucli ÐÂÊÖÈÎÎñ.xlsx GuideDefine.cs
-    tabucli Ëæ»ú±¦Ïä.xlsx BoxDefine.cs
-    tabucli È«¾Ö±äÁ¿±í.xlsx GlobalDefine.cs
+    tabucli ï¿½ï¿½ï¿½ï¿½.xlsx SoldierDefine.cs
+    tabucli ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.xlsx GuideDefine.cs
+    tabucli ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.xlsx BoxDefine.cs
+    tabucli È«ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½.xlsx GlobalDefine.cs
 }
 
 Function RunTest {

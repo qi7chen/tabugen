@@ -10,31 +10,22 @@ $OUT_DATA_DIR = Join-Path $DATASHEET_DIR  "/res"
 
 $Env:PYTHONPATH=$ROOT_DIR
 
-Function tabucli {
-    $excelPath = Join-Path $DATASHEET_DIR $args[0]
-    $outSrcPath = Join-Path $OUT_SRC_DIR $args[1]
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cpp_out=$outSrcPath --with_csv_parse --with_conv --package=config --source_file_encoding=utf_8_sig
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=csv --out_data_path=$OUT_DATA_DIR
-}
-
 Function Generate {
-    tabucli 兵种.xlsx SoldierDefine
-    tabucli 新手任务.xlsx GuideDefine
-    tabucli 随机宝箱.xlsx BoxDefine
-    tabucli 全局变量表.xlsx GlobalDefine
+    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --cpp_out=$OUT_SRC_DIR/Config --package=config --gen_csv_parse --source_file_encoding=utf_8_sig --out_data_path=$OUT_DATA_DIR --out_data_format=csv
+    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR --out_data_format=json --json_indent
 }
 
-# 需要先安装vcpkg，再通过vcpkg安装boost
+# 闇�瑕佸厛瀹夎vcpkg锛屽啀閫氳繃vcpkg瀹夎boost
 Function RunTest {
     rm cmake-build -r -fo
     md cmake-build
     cd cmake-build
-    
-    cmake -B .. -S . "-DCMAKE_TOOLCHAIN_FILE=D:/App/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+    cmake -B . -S .. "-DCMAKE_TOOLCHAIN_FILE=D:/App/vcpkg/scripts/buildsystems/vcpkg.cmake"
     cmake --build .
     cmake-build/Debug/tabugencpp
 }
 
 Generate
-RunTest
+# RunTest
 
