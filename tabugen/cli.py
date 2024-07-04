@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2024 ki7chen@github. All rights reserved.
+# Copyright (C) 2024 qi7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
