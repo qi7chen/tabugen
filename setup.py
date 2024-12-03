@@ -17,7 +17,7 @@ setuptools.setup(
     version=tabugen_version,
     license='Apache License 2.0',
     author='Johnnie Chen',
-    author_email='ichenq@outlook.com',
+    author_email='qi7chen@github',
     url='https://github.com/ki7chen/tabugen',
     description=u'a spreadsheet export and code generation tool for rapid game development',
     long_description=readme,

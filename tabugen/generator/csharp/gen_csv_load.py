@@ -1,11 +1,13 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present qi7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+from argparse import Namespace
 import tabugen.typedef as types
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.util.tableutil as tableutil
+from tabugen.structs import Struct
 
 
 # 生成C#加载CSV文件数据代码
@@ -78,7 +80,7 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成嵌入类型的字段加载代码
-    def gen_inner_fields_assign(self, struct, prefix: str, rec_name: str, tabs: int) -> str:
+    def gen_inner_fields_assign(self, struct: Struct, prefix: str, rec_name: str, tabs: int) -> str:
         inner_fields = struct['inner_fields']
         inner_class_type = struct["options"][predef.PredefInnerTypeClass]
         inner_var_name = struct["options"][predef.PredefInnerFieldName]
@@ -114,7 +116,7 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成`ParseFrom`方法
-    def gen_parse_method(self, struct, tabs: int):
+    def gen_parse_method(self, struct: Struct, args: Namespace):
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False
@@ -140,29 +142,34 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成KV模式的`ParseFrom`方法
-    def gen_kv_parse_method(self, struct, tabs: int):
-        keyidx = struct['options']['key_column']
-        validx = struct['options']['value_column']
-        typeidx = struct['options']['type_column']
-        assert keyidx >= 0 and validx >= 0 and typeidx >= 0
-
-        rows = struct['data_rows']
+    def gen_kv_parse_method(self, struct: Struct, args: Namespace):
+        tabs = 1
         space = self.TAB_SPACE * tabs
 
+        keyidx = struct.get_column_index(predef.PredefKVKeyName)
+        typeidx = struct.get_column_index(predef.PredefKVTypeName)
+
         content = ''
-        content += '%s// parse %s from string fields\n' % (space, struct['name'])
-        content += '%spublic void ParseFrom(Dictionary<string, string> fields)\n' % space
+        content += '%spublic void ParseFrom(Dictionary<string, string> table)\n' % space
         content += '%s{\n' % space
+        rows = struct.data_rows
         for row in rows:
             name = row[keyidx].strip()
             origin_typename = row[typeidx].strip()
-            value_text = 'fields["%s"]' % name
+            if args.legacy:
+                try:
+                    legacy = int(origin_typename)
+                    origin_typename = types.legacy_type_to_name(legacy)
+                except ValueError:
+                    pass
+
+            value_text = 'table["%s"]' % name
             content += self.gen_field_assign('this.', origin_typename, name, value_text, tabs + 1)
         content += '%s}\n\n' % space
         return content
 
-    def generate(self, struct):
-        if predef.PredefParseKVMode in struct['options']:
-            return self.gen_kv_parse_method(struct, 1)
+    def generate(self, struct: Struct, args: Namespace):
+        if struct.options[predef.PredefParseKVMode]:
+            return self.gen_kv_parse_method(struct, args)
         else:
-            return self.gen_parse_method(struct, 1)
+            return self.gen_parse_method(struct, args)

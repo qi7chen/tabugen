@@ -1,4 +1,4 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present qi7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
@@ -8,7 +8,6 @@ import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.helper as helper
-import tabugen.generator.java.template as java_template
 from tabugen.generator.java.gen_csv_load import JavaCsvLoadGenerator
 
 
@@ -174,11 +173,6 @@ class JavaStructGenerator:
             class_dict[filename] = content
 
         mgr_content += '}\n'
-
-        if self.load_gen is not None and args.with_conv:
-            filename = '%s/%s' % (filepath, 'Conv.java')
-            util_content = java_template.JAVA_CONV_TEMPLATE % args.package
-            class_dict[filename] = util_content
 
         for filename in class_dict:
             content = class_dict[filename]

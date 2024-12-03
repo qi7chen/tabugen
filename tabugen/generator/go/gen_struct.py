@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Copyright (C) 2018-present qi7chen@github. All rights reserved.
 Distributed under the terms and conditions of the Apache License.
 See accompanying files LICENSE.
 """
@@ -111,7 +111,7 @@ class GoStructGenerator:
         return content
 
     # 生成struct
-    def gen_go_struct(self, struct: Struct, args: Namespace) -> str:
+    def gen_struct(self, struct: Struct, args: Namespace) -> str:
         content = ''
         if struct.comment:
             content += '// %s, ' % struct.comment
@@ -139,7 +139,7 @@ class GoStructGenerator:
 
     def generate(self, struct: Struct, args: Namespace) -> str:
         content = ''
-        content += self.gen_go_struct(struct, args)
+        content += self.gen_struct(struct, args)
         content += '\n'
         if self.parse_gen is not None:
             content += self.parse_gen.generate(struct, args)

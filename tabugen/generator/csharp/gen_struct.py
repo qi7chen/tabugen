@@ -1,14 +1,16 @@
-# Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2018-present qi7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
 import os
 import sys
+from argparse import Namespace
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.helper as helper
-import tabugen.generator.csharp.template as cs_template
+from tabugen.util.tableutil import legacy_kv_type
+from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
 
@@ -32,116 +34,94 @@ class CSharpStructGenerator:
                 sys.exit(1)
 
     # 生成字段类型定义
-    def gen_field_define(self, field, max_type_len: int, max_name_len: int, json_snake_case: bool,  tabs: int) -> str:
-        origin_type = field['original_type_name']
+    def gen_field_define(self, field: StructField, max_type_len: int, max_name_len: int, json_snake_case: bool,  tabs: int) -> str:
+        origin_type = field.origin_type_name
         typename = lang.map_cs_type(origin_type)
         if origin_type.startswith('array') or origin_type.startswith('map'):
             typename += '?'
-        assert typename != "", field['original_type_name']
+        assert typename != "", field.origin_type_name
         if not json_snake_case:
             typename = helper.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cs_value(field, typename, False)
         name = helper.pad_spaces(name, max_name_len + 8)
         space = self.TAB_SPACE * tabs
-        text = '%spublic %s %s // %s\n' % (space, typename, name, field['comment'])
+        text = '%spublic %s %s // %s\n' % (space, typename, name, field.comment)
         return text
 
-    # 生成嵌入类型的字段定义
-    def gen_inner_field_define(self, struct, max_type_len: int, max_name_len: int, json_snake_case: bool, tabs: int) -> str:
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        inner_field_name = struct["options"][predef.PredefInnerFieldName]
-        type_name = '%s[]' % type_class_name
-        type_name = helper.pad_spaces(type_name, max_type_len + 1)
-        inner_field_name = helper.pad_spaces(inner_field_name, max_name_len + 1)
-        assert len(inner_field_name) > 0
+    def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int) -> str:
+        name = helper.camel_case(field.field_name)
+        name = helper.pad_spaces(name + ';', max_name_len + 4)
+        typename = lang.map_cs_type(field.type_name)
+        typename = helper.pad_spaces(typename, max_type_len + 4)
+        text = ''
         space = self.TAB_SPACE * tabs
-        text = '%spublic %s %s { get; set; } \n' % (space, type_name, inner_field_name)
+        text += '%s%s %s' % (space, typename, name)
+        if field.comment:
+            text += ' // %s' % field.comment
+        text += '\n'
         return text
 
-    # 生成嵌入类型
-    def gen_inner_type(self, struct, tabs: int) -> str:
-        inner_fields = struct['inner_fields']
-        start = inner_fields['start']
-        end = inner_fields['end']
-        step = inner_fields['step']
-        type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-        assert len(type_class_name) > 0
+    def gen_kv_fields(self, struct: Struct, args: Namespace) -> str:
+        space = self.TAB_SPACE * 1
+        key_idx = struct.get_column_index(predef.PredefKVKeyName)
+        assert key_idx >= 0
+        type_idx = struct.get_column_index(predef.PredefKVTypeName)
+        comment_idx = struct.get_kv_comment_col()
 
-        max_name_len = 0
-        max_type_len = 0
-        for col in range(start, end):
-            field = struct['fields'][col]
-            name_len = len(field['name'])
-            type_len = len(lang.map_cs_type(field['original_type_name']))
-            if name_len > max_name_len:
-                max_name_len = name_len
-            if type_len > max_type_len:
-                max_type_len = type_len
+        max_name_len, max_type_len = struct.get_kv_max_len(lang.map_cs_type)
+        content = 'struct %s {\n' % struct.camel_case_name
+        for row in struct.data_rows:
+            key = row[key_idx]
+            typename = 'int'
+            if type_idx >= 0:
+                typename = row[type_idx]
+            if key == '' or typename == '':
+                continue
 
-        space = self.TAB_SPACE * tabs
-        content = '%spublic struct %s \n' % (space, type_class_name)
-        content += '%s{\n' % space
-        col = start
-        space2 = self.TAB_SPACE * (tabs + 1)
-        while col < start + step:
-            field = struct['fields'][col]
-            typename = lang.map_cs_type(field['original_type_name'])
-            assert typename != "", field['original_type_name']
-            typename = helper.pad_spaces(typename, max_type_len + 1)
-            name = lang.name_with_default_cs_value(field, typename, True)
-            name = helper.pad_spaces(name, max_name_len + 8)
-            content += '%spublic %s %s // %s\n' % (space2, typename, name, field['comment'])
-            col += 1
+            if args.legacy and typename.isdigit():
+                typename = legacy_kv_type(int(typename))
 
-        # content += '\n%s    // default constructor\n' % space
-        # content += '%s    public %s() { \n' % (space, type_class_name)
-        # content += '%s    }\n' % space
+            typename = lang.map_cs_type(typename)
+            key_name = helper.pad_spaces(helper.camel_case(key) + ';', max_name_len + 4)
+            typename = helper.pad_spaces(typename, max_type_len + 4)
+            content += '%s%s %s' % (space, typename, key_name)
+            if comment_idx >= 0:
+                comment = row[comment_idx].strip()
+                comment = comment.replace('\n', ' ')
+                comment = comment.replace('//', '')
+                if len(content) > 0:
+                    content += '\t// %s' % comment
+            content += '\n'
 
-        content += '%s}\n' % space
         return content
 
     # 生成结构体定义
-    def gen_struct(self, struct, args):
-        content = '// %s %s\n' % (struct['comment'], struct['file'])
-        content += 'public struct %s \n' % struct['camel_case_name']
-        content += '{\n'
+    def gen_struct(self, struct: Struct, args: Namespace):
+        content = ''
+        if struct.comment:
+            content += '// %s, ' % struct.comment
+        else:
+            content += '// %s, ' % struct.name
+        content += ' Created from %s\n' % struct.filepath
 
-        inner_start_col = -1
-        inner_end_col = -1
-        inner_field_done = False
-        if 'inner_fields' in struct:
-            inner_start_col = struct['inner_fields']['start']
-            inner_end_col = struct['inner_fields']['end']
-            content += self.gen_inner_type(struct, 1)
-            content += '\n'
+        if struct.options[predef.PredefParseKVMode]:
+            return content + self.gen_kv_fields(struct, args)
 
-        fields = struct['fields']
-        max_name_len = helper.max_field_length(fields, 'name', None)
-        max_type_len = helper.max_field_length(fields, 'original_type_name', lang.map_cs_type)
-        if inner_start_col >= 0:
-            type_class_name = helper.camel_case(struct["options"][predef.PredefInnerTypeClass])
-            field_name = '%s[]' % type_class_name
-            if len(field_name) > max_type_len:
-                max_type_len = len(field_name)
+        content += 'struct %s \n{\n' % struct.camel_case_name
+
+        fields = struct.fields
+        max_name_len = struct.max_field_name_length()
+        max_type_len = struct.max_field_type_length(lang.map_cpp_type)
 
         for col, field in enumerate(fields):
-            text = ''
-            if inner_start_col <= col <= inner_end_col:
-                if not inner_field_done:
-                    text = self.gen_inner_field_define(struct, max_type_len, max_name_len, args.json_snake_case, 1)
-                    inner_field_done = True
-            else:
-                text = self.gen_field_define(field, max_type_len, max_name_len, args.json_snake_case, 1)
+            text = self.gen_field_define(field, max_type_len, max_name_len,  args.json_snake_case, 1)
             content += text
+        for array in struct.array_fields:
+            content += self.gen_array_define(array, max_type_len, max_name_len, 1)
 
-        # content += '\n    // default constructor\n'
-        # content += '    public %s() { \n' % struct['camel_case_name']
-        # content += '    }\n'
-
-        # 这里留着后续生成 `}`
         return content
 
-    def generate(self, struct, args):
+    def generate(self, struct: Struct, args: Namespace):
         content = ''
         content += self.gen_struct(struct, args)
         if self.load_gen is not None:
@@ -150,35 +130,24 @@ class CSharpStructGenerator:
         content += '}\n'
         return content
 
-    def run(self, descriptors, filepath: str, args):
+    def run(self, descriptors: list[Struct], filepath: str, args: Namespace):
         content = '// This file is auto-generated by Tabugen v%s, DO NOT EDIT!\n\n' % version.VER_STRING
         content += 'using System;\n'
         content += 'using System.Collections.Generic;\n'
         if args.json_snake_case:
             content += 'using System.Text.Json.Serialization;\n'
 
-        util_content = '// This file is auto-generated by Tabugen, DO NOT EDIT!\n\n'
-
         if args.package is not None:
             content += '\nnamespace %s\n{\n' % args.package
-            util_content += '\nnamespace %s\n{\n' % args.package
 
         for struct in descriptors:
             content += self.generate(struct, args)
 
-        util_content += cs_template.CS_CONV_TEMPLATE
-
         if args.package is not None:
             content += '\n} // namespace %s \n' % args.package
-            util_content += '\n} // namespace %s \n' % args.package
 
         if not filepath.endswith('.cs'):
             filepath += '.cs'
         filename = os.path.abspath(filepath)
         helper.save_content_if_not_same(filename, content, 'utf-8')
         print('wrote C# source file to', filename)
-
-        if args.with_conv and self.load_gen is not None:
-            filename = os.path.join(os.path.split(filepath)[0], 'Conv.cs')
-            helper.save_content_if_not_same(filename, util_content, 'utf-8')
-            print('wrote C# source file to', filename)

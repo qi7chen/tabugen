@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-present ichenq@outlook.com. All rights reserved.
+Copyright (C) 2018-present qi7chen@github. All rights reserved.
 Distributed under the terms and conditions of the Apache License.
 See accompanying files LICENSE.
 """
@@ -41,13 +41,12 @@ class GoCsvLoadGenerator:
 
     # KV模式生成`ParseFrom`方法
     def gen_kv_parse_method(self, struct: Struct, args: Namespace) -> str:
-        content = ''
-        rows = struct.data_rows
-
         keyidx = struct.get_column_index(predef.PredefKVKeyName)
         typeidx = struct.get_column_index(predef.PredefKVTypeName)
 
+        content = ''
         content += 'func (p *%s) ParseFrom(table map[string]string) error {\n' % struct.camel_case_name
+        rows = struct.data_rows
         for row in rows:
             name = row[keyidx].strip()
             origin_typename = row[typeidx].strip()

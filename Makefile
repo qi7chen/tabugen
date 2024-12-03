@@ -1,4 +1,4 @@
-# Copyright (C) 2021-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2021-present qi7chen@github. All rights reserved.
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 

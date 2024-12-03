@@ -5,7 +5,7 @@
 from tabugen.writer.csv import CsvDataWriter
 from tabugen.writer.json import JsonDataWriter
 from tabugen.generator.cpp.gen_struct import CppStructGenerator
-# from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
+from tabugen.generator.csharp.gen_struct import CSharpStructGenerator
 from tabugen.generator.go.gen_struct import GoStructGenerator
 # from tabugen.generator.java.gen_struct import JavaStructGenerator
 from tabugen.parser.sheet_parser import SpreadSheetParser
@@ -18,7 +18,7 @@ struct_parser_registry = {
 # 源代码生成
 code_generator_registry = {
     CppStructGenerator.name(): CppStructGenerator(),
-    # CSharpStructGenerator.name(): CSharpStructGenerator(),
+    CSharpStructGenerator.name(): CSharpStructGenerator(),
     GoStructGenerator.name(): GoStructGenerator(),
     # JavaStructGenerator.name(): JavaStructGenerator(),
 }
