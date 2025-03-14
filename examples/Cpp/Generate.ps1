@@ -1,5 +1,5 @@
 <#
-# Copyright (C) 2023-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2023-present qi7chen@github. All rights reserved.
 #>
 
 $CURRENT_DIR = Get-Location
@@ -15,13 +15,13 @@ Function Generate {
     python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR --out_data_format=json --json_indent
 }
 
-# 需要先安装vcpkg，再通过vcpkg安装boost
+# 需要先安装vcpkg
 Function RunTest {
     rm cmake-build -r -fo
-    md cmake-build
+    mkdir cmake-build
     cd cmake-build
 
-    cmake -B . -S .. "-DCMAKE_TOOLCHAIN_FILE=D:/App/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    cmake -B . -S .. "-DCMAKE_TOOLCHAIN_FILE=${Env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     cmake --build .
     cmake-build/Debug/tabugencpp
 }

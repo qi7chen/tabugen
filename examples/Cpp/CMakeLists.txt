@@ -1,11 +1,11 @@
 # learn you some cmake
 # https://modern-cmake-cn.github.io/Modern-CMake-zh_CN/README_GitBook.html
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.15)
 
 project(TabugenCpp LANGUAGES CXX)
 
-set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
+set(CMAKE_CXX_STANDARD 11)
 
 set(Boost_USE_STATIC_LIBS ON)  # only find static libs
 set(Boost_USE_DEBUG_LIBS OFF)  # ignore debug libs and
@@ -13,7 +13,7 @@ set(Boost_USE_RELEASE_LIBS ON)  # only find release libs
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)  # link Boost Static libraries
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS algorithm lexical_cast)
 if (Boost_FOUND)
     message(STATUS "include Boost dir ${Boost_INCLUDE_DIRS}")
     include_directories(${Boost_INCLUDE_DIRS})
@@ -36,17 +36,19 @@ if (WIN32)
     )
 endif()
 
-set(ALL_LIB_FILES
-    ${PROJECT_ROOT_DIR}/src/Config.h
-    ${PROJECT_ROOT_DIR}/src/Config.cpp
-    ${PROJECT_ROOT_DIR}/src/Conv.h
-    ${PROJECT_ROOT_DIR}/src/rapidcsv.h
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+
+set(ALL_SRC_FILES
+    ${SRC_DIR}/Config.h
+    ${SRC_DIR}/Config.cpp
+    ${SRC_DIR}/Conv.h
+    ${SRC_DIR}/rapidcsv.h
     )
 
-add_library(conflib STATIC ${ALL_LIB_FILES})
-target_include_directories(conflib PUBLIC ${PROJECT_ROOT_DIR}/src)
-target_compile_features(conflib PUBLIC cxx_std_11)
+add_library(LibConfig STATIC ${ALL_SRC_FILES})
+target_include_directories(LibConfig PUBLIC ${SRC_DIR})
+target_compile_features(LibConfig PUBLIC cxx_std_11)
 
-add_executable(tabugencpp ${PROJECT_ROOT_DIR}/src/main.cpp)
-target_link_libraries(tabugencpp PRIVATE conflib)
+add_executable(TabugenCpp ${SRC_DIR}/main.cpp)
 
+target_link_libraries(TabugenCpp PRIVATE LibConfig Boost::lexical_cast Boost::algorithm)

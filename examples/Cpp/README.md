@@ -6,7 +6,7 @@
 ### 如何编译
 
 1. 需要安装[Visual C++](https://www.visualstudio.com)和 [vcpkg](https://github.com/microsoft/vcpkg) 和[CMake](https://cmake.org/download)
-2. 再用`vcpkg`安装[boost](https://www.boost.org)
+2. 设置好`VCPKG_ROOT`路径，如 `$Env:VCPKG_ROOT="C:\vcpkg"`, `$Env:PATH="$Env:VCPKG_ROOT;$Env:PATH"`
 3. 使用powershell执行`Generate.ps1`，即可将excel导出为csv并且生成对应的C++加载解析代码
 
 ### 生成解析代码
