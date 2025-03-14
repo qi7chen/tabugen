@@ -43,12 +43,12 @@ set(ALL_SRC_FILES
     ${SRC_DIR}/Config.cpp
     ${SRC_DIR}/Conv.h
     ${SRC_DIR}/rapidcsv.h
+    ${SRC_DIR}/main.cpp
     )
 
-add_library(LibConfig STATIC ${ALL_SRC_FILES})
-target_include_directories(LibConfig PUBLIC ${SRC_DIR})
-target_compile_features(LibConfig PUBLIC cxx_std_11)
 
-add_executable(TabugenCpp ${SRC_DIR}/main.cpp)
+include_directories(${SRC_DIR})
 
-target_link_libraries(TabugenCpp PRIVATE LibConfig Boost::lexical_cast Boost::algorithm)
+add_executable(TabugenCpp ${ALL_SRC_FILES})
+
+target_link_libraries(TabugenCpp PRIVATE Boost::lexical_cast Boost::algorithm)

@@ -19,11 +19,10 @@ Function Generate {
 Function RunTest {
     rm cmake-build -r -fo
     mkdir cmake-build
-    cd cmake-build
 
-    cmake -B . -S .. "-DCMAKE_TOOLCHAIN_FILE=${Env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-    cmake --build .
-    cmake-build/Debug/tabugencpp
+    cmake -B cmake-build -S . "-DCMAKE_TOOLCHAIN_FILE=${Env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    cmake --build cmake-build
+    cmake-build/Debug/TabugenCpp
 }
 
 Generate

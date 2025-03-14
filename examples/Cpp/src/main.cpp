@@ -22,7 +22,6 @@
 
 
 using namespace std;
-using namespace rapidcsv;
 using namespace config;
 
 
@@ -65,8 +64,8 @@ static void printSoldierProperty(const config::SoldierDefine& item)
 
 static void testSoldierConfig()
 {
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "soldier_property_define");
-    Document doc(filepath);
+    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "soldier_define.csv");
+    rapidcsv::Document doc(filepath);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::SoldierDefine item;
         SoldierDefine::ParseRow(doc, int(row), &item);
@@ -103,7 +102,7 @@ static void printNewbieGuide(const config::NewbieGuide& item)
 static void testNewbieGuideConfig()
 {
     auto filepath = stringPrintf("%s/%s", resPath.c_str(), "newbie_guide.csv");
-    Document doc(filepath);
+    rapidcsv::Document doc(filepath);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::NewbieGuide item;
         NewbieGuide::ParseRow(doc, int(row), &item);
@@ -144,7 +143,7 @@ static void printGlobalProperty(const GlobalDefine& inst)
 static void testGlobalConfig()
 {
     auto filepath = stringPrintf("%s/%s", resPath.c_str(), "global_define.csv");
-    Document doc(filepath);
+    rapidcsv::Document doc(filepath);
     auto keys = doc.GetColumn<string>("Key");
     auto values = doc.GetColumn<string>("Value");
     unordered_map<string, string> table;
@@ -152,11 +151,6 @@ static void testGlobalConfig()
         if (i < values.size()) {
             table[keys[i]] = values[i];
         }
-    }
-    for (size_t row = 0; row < doc.GetRowCount(); row++) {
-        config::NewbieGuide item;
-        NewbieGuide::ParseRow(doc, int(row), &item);
-        printNewbieGuide(item);
     }
 
     GlobalDefine inst;
@@ -191,7 +185,7 @@ static void printBoxProbability(const ItemBoxDefine& item)
 static void testBoxConfig()
 {
     auto filepath = stringPrintf("%s/%s", resPath.c_str(), "item_box_define.csv");
-    Document doc(filepath);
+    rapidcsv::Document doc(filepath);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::ItemBoxDefine item;
         ItemBoxDefine::ParseRow(doc, int(row), &item);
@@ -209,10 +203,15 @@ int main(int argc, char* argv[])
         resPath = argv[1];
     }
 
-    testSoldierConfig();
-    testNewbieGuideConfig();
-    testGlobalConfig();
-    testBoxConfig();
+    try {
+        testSoldierConfig();
+        testNewbieGuideConfig();
+        testGlobalConfig();
+        testBoxConfig();
+    }
+    catch (std::exception& e) {
+        cout << e.what() << endl;
+    }
 
     return 0;
 }
