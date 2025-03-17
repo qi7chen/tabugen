@@ -10,7 +10,7 @@ import (
 var _ = fmt.Println
 var _ = strings.TrimSpace
 
-// GlobalDefine, // Created from GlobalDefine.xlsx
+// GlobalDefine, generated from GlobalDefine.xlsx
 type GlobalDefine struct {
 	GoldExchangeTimeFactor1    float32          // 金币兑换时间参数1
 	GoldExchangeTimeFactor2    float32          // 金币兑换时间参数2
@@ -27,7 +27,7 @@ type GlobalDefine struct {
 	VIPItemReward              map[int32]int32  // VIP奖励
 }
 
-func (p *GlobalDefine) ParseFrom(table map[string]string) error {
+func (p *GlobalDefine) ParseFrom(table map[string]string) {
 	p.GoldExchangeTimeFactor1 = ParseF32(table["GoldExchangeTimeFactor1"])
 	p.GoldExchangeTimeFactor2 = ParseF32(table["GoldExchangeTimeFactor2"])
 	p.GoldExchangeTimeFactor3 = ParseF32(table["GoldExchangeTimeFactor3"])
@@ -41,10 +41,9 @@ func (p *GlobalDefine) ParseFrom(table map[string]string) error {
 	p.SpawnLevelLimit = ParseSlice(table["SpawnLevelLimit"], ParseI32)
 	p.FirstRechargeReward = ParseMap(table["FirstRechargeReward"], strings.TrimSpace, ParseI32)
 	p.VIPItemReward = ParseMap(table["VIPItemReward"], ParseI32, ParseI32)
-	return nil
 }
 
-// ItemBoxDefine, // Created from ItemBox.xlsx
+// ItemBoxDefine, generated from ItemBox.xlsx
 type ItemBoxDefine struct {
 	ID           string   // 唯一ID
 	Total        int32    // 全部数量
@@ -55,7 +54,7 @@ type ItemBoxDefine struct {
 	Probabilitys []int32  // 抽取概率
 }
 
-func (p *ItemBoxDefine) ParseRow(table *GDTable, row int) error {
+func (p *ItemBoxDefine) ParseRow(table *GDTable, row int) {
 	p.ID = strings.TrimSpace(table.GetCell("ID", row))
 	p.Total = ParseI32(table.GetCell("Total", row))
 	p.Time = ParseI32(table.GetCell("Time", row))
@@ -84,10 +83,9 @@ func (p *ItemBoxDefine) ParseRow(table *GDTable, row int) error {
 		var elem = ParseI32(table.GetCell(name, row))
 		p.Probabilitys = append(p.Probabilitys, elem)
 	}
-	return nil
 }
 
-// NewbieGuide, // Created from NewbieGuide.xlsx
+// NewbieGuide, generated from NewbieGuide.xlsx
 type NewbieGuide struct {
 	Name           string           // 名称
 	Desc           string           // 描述
@@ -97,17 +95,16 @@ type NewbieGuide struct {
 	RewardGoods    map[string]int32 // 任务奖励
 }
 
-func (p *NewbieGuide) ParseRow(table *GDTable, row int) error {
+func (p *NewbieGuide) ParseRow(table *GDTable, row int) {
 	p.Name = strings.TrimSpace(table.GetCell("Name", row))
 	p.Desc = strings.TrimSpace(table.GetCell("Desc", row))
 	p.Category = ParseI32(table.GetCell("Category", row))
 	p.Target = strings.TrimSpace(table.GetCell("Target", row))
 	p.Accomplishment = ParseSlice(table.GetCell("Accomplishment", row), ParseI32)
 	p.RewardGoods = ParseMap(table.GetCell("RewardGoods", row), strings.TrimSpace, ParseI32)
-	return nil
 }
 
-// SoldierDefine, // Created from Soldier.xlsx
+// SoldierDefine, generated from Soldier.xlsx
 type SoldierDefine struct {
 	ID            int32   // 唯一ID
 	Name          string  // 兵种名称
@@ -131,7 +128,7 @@ type SoldierDefine struct {
 	EnableBurn    string  // 开启燃烧
 }
 
-func (p *SoldierDefine) ParseRow(table *GDTable, row int) error {
+func (p *SoldierDefine) ParseRow(table *GDTable, row int) {
 	p.ID = ParseI32(table.GetCell("ID", row))
 	p.Name = strings.TrimSpace(table.GetCell("Name", row))
 	p.Level = ParseI32(table.GetCell("Level", row))
@@ -152,5 +149,4 @@ func (p *SoldierDefine) ParseRow(table *GDTable, row int) error {
 	p.AtkRange = ParseF64(table.GetCell("AtkRange", row))
 	p.MovingSpeed = ParseF64(table.GetCell("MovingSpeed", row))
 	p.EnableBurn = strings.TrimSpace(table.GetCell("EnableBurn", row))
-	return nil
 }

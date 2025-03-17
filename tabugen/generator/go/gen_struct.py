@@ -54,7 +54,7 @@ class GoStructGenerator:
     def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int,
                          json_snake_case: bool) -> str:
         typename = helper.pad_spaces(field.lang_type_name, max_type_len + 4)
-        name = helper.pad_spaces(field.camel_case_name, max_name_len + 4)
+        name = helper.pad_spaces(field.field_name, max_name_len + 4)
         text = ''
         space = self.TAB_SPACE * tabs
         if json_snake_case:
@@ -70,74 +70,19 @@ class GoStructGenerator:
         return text
 
     def gen_kv_fields_define(self, struct: Struct, args: Namespace) -> str:
-        content = 'type %s struct {\n' % struct.camel_case_name
         old_fields = struct.fields
         struct.fields = struct.kv_fields
         max_type_len = struct.max_field_lang_type_length()
         max_name_len = struct.max_field_lang_var_length()
         struct.fields = old_fields
+        content = ''
         for field in struct.kv_fields:
-            text = self.gen_field_define(field, max_type_len, max_name_len, 1)
-            content += text
-        return content
-
-    def parse_kv_fields(self, struct: Struct, tabs: int, args: Namespace) -> str:
-        space = self.TAB_SPACE * tabs
-        key_idx = struct.get_column_index(predef.PredefKVKeyName)
-        assert key_idx >= 0
-        type_idx = struct.get_column_index(predef.PredefKVTypeName)
-        comment_idx = struct.get_kv_comment_col()
-
-        max_name_len, max_type_len = struct.get_kv_max_len(lang.map_go_type)
-        content = 'type %s struct {\n' % struct.camel_case_name
-        for row in struct.data_rows:
-            key = row[key_idx]
-            typename = 'int'
-            if type_idx >= 0:
-                typename = row[type_idx]
-            if key == '' or typename == '':
-                continue
-
-            if args.legacy and typename.isdigit():
-                typename = legacy_kv_type(int(typename))
-
-            typename = lang.map_go_type(typename)
-            key_name = helper.pad_spaces(helper.camel_case(key), max_name_len + 4)
-            typename = helper.pad_spaces(typename, max_type_len + 4)
-            if args.json_snake_case:
-                tag_name = helper.camel_to_snake(key)
-                content += '%s%s %s `json:"%s"`' % (space, key_name, typename, tag_name)
-            else:
-                content += '%s%s %s' % (space, key_name, typename)
-            if comment_idx >= 0:
-                comment = row[comment_idx].strip()
-                comment = comment.replace('\n', ' ')
-                comment = comment.replace('//', '')
-                if len(content) > 0:
-                    content += '\t// %s' % comment
-            content += '\n'
-        content += '}\n'
-        return content
-
-    def gen_kv_fields_define(self, struct: Struct, fields: list[StructField], args: Namespace) -> str:
-        content = 'struct %s {\n' % struct.camel_case_name
-
-        old_fields = struct.fields
-        struct.fields = fields
-        max_type_len = struct.max_field_lang_type_length()
-        max_name_len = struct.max_field_lang_var_length()
-        struct.fields = old_fields
-
-        for field in fields:
             text = self.gen_field_define(field, max_type_len, max_name_len, 1, args.json_snake_case)
             content += text
         return content
 
     def gen_fields(self, struct: Struct, args: Namespace) -> str:
-        content = 'type %s struct {\n' % struct.camel_case_name
-
         fields = struct.fields
-
         for col, field in enumerate(fields):
             field.lang_type_name = lang.map_go_type(field.origin_type_name)
             field.name_defval = field.camel_case_name
@@ -146,14 +91,13 @@ class GoStructGenerator:
 
         max_type_len = struct.max_field_lang_type_length()
         max_name_len = struct.max_field_lang_var_length()
+        content = ''
         for col, field in enumerate(fields):
             text = self.gen_field_define(field, max_type_len, max_name_len, 1, args.json_snake_case)
             content += text
         for array in struct.array_fields:
             text = self.gen_array_define(array, max_type_len, max_name_len, 1, args.json_snake_case)
             content += text
-
-        content += '}\n'
         return content
 
     # 生成struct
@@ -164,17 +108,21 @@ class GoStructGenerator:
         else:
             content += '// %s, ' % struct.name
         content += 'generated from %s\n' % struct.filepath
+        content += 'type %s struct {\n' % struct.camel_case_name
+
+        def mapper(field: StructField):
+            return field.camel_case_name
 
         if struct.options[predef.PredefParseKVMode]:
-            struct.kv_fields = parse_kv_fields(struct, args, lang.map_go_type,
-                                        lambda field: field.camel_case_name)
-            return content + self.gen_kv_fields_define(struct, args)
+            struct.kv_fields = parse_kv_fields(struct, args, lang.map_go_type, mapper)
+            content += self.gen_kv_fields_define(struct, args)
         else:
-            return content + self.gen_fields(struct, args)
+            content += self.gen_fields(struct, args)
+        content += '}\n\n'
+        return content
 
     def generate(self, struct: Struct, args: Namespace) -> str:
-        content = ''
-        content += self.gen_struct(struct, args)
+        content = self.gen_struct(struct, args)
         content += '\n'
         if self.parse_gen is not None:
             content += self.parse_gen.generate(struct, args)

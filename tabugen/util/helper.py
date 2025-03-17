@@ -6,8 +6,8 @@ import codecs
 import datetime
 import filecmp
 import os
-import random
 import re
+import random
 import shutil
 import string
 import tempfile

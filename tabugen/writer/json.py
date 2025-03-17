@@ -12,6 +12,7 @@ import tabugen.util.helper as helper
 import tabugen.util.tableutil as tableutil
 from tabugen.structs import Struct
 
+
 # 写入json文件
 class JsonDataWriter:
     def __init__(self):
@@ -62,6 +63,8 @@ class JsonDataWriter:
             assert len(pair) == 2, item
             key = self.parse_primary_value(ktype, pair[0], args)
             value = self.parse_primary_value(vtype, pair[1], args)
+            if self.use_snake_case and isinstance(key, str) and not key.isdigit():
+                key = helper.camel_to_snake(key)
             obj[key] = value
         return obj
 

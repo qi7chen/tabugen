@@ -1,5 +1,5 @@
 <#
-# Copyright (C) 2023-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2023-present qi7chen@github. All rights reserved.
 #>
 
 $CURRENT_DIR = Get-Location
@@ -12,7 +12,7 @@ $Env:PYTHONPATH=$ROOT_DIR
 
 Function Generate {
     python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --go_out=$OUT_SRC_DIR/config.go --package=config --gen_csv_parse --go_fmt --out_data_path=$OUT_DATA_DIR --out_data_format=csv
-    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR --out_data_format=json --json_indent
+    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR  --out_data_format=json --json_indent
 }
 
 Function RunTest {

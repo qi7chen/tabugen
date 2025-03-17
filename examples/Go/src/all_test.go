@@ -26,9 +26,7 @@ func TestItemBoxAutogenCsvConfig(t *testing.T) {
 	}
 	for row := 0; row < table.RowSize(); row++ {
 		var conf ItemBoxDefine
-		if err := conf.ParseRow(table, row); err != nil {
-			t.Fatalf("ParseRow: %v", err)
-		}
+		conf.ParseRow(table, row)
 		data, _ := json.Marshal(conf)
 		t.Logf("%s\n", data)
 	}
@@ -60,9 +58,7 @@ func TestGlobalDefineAutogenCsvConfig(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 	var conf GlobalDefine
-	if err := conf.ParseFrom(table.ToKVMap()); err != nil {
-		t.Fatalf("ParseFrom: %v", err)
-	}
+	conf.ParseFrom(table.ToKVMap())
 	t.Logf("%v\n", conf)
 }
 
@@ -91,9 +87,7 @@ func TestNewbieGuideAutogenCsvConfig(t *testing.T) {
 	}
 	for row := 0; row < table.RowSize(); row++ {
 		var conf NewbieGuide
-		if err := conf.ParseRow(table, row); err != nil {
-			t.Fatalf("ParseRow: %v", err)
-		}
+		conf.ParseRow(table, row)
 		data, _ := json.Marshal(conf)
 		t.Logf("%s\n", data)
 	}
@@ -126,9 +120,7 @@ func TestSoldierAutogenCsvConfig(t *testing.T) {
 	}
 	for row := 0; row < table.RowSize(); row++ {
 		var conf SoldierDefine
-		if err := conf.ParseRow(table, row); err != nil {
-			t.Fatalf("ParseRow: %v", err)
-		}
+		conf.ParseRow(table, row)
 		data, _ := json.Marshal(conf)
 		t.Logf("%s\n", data)
 	}
