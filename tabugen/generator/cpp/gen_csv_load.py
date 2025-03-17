@@ -89,24 +89,19 @@ class CppCsvLoadGenerator:
 
     # 生成KV模式的`ParseFrom`方法
     def gen_kv_parse_method(self, struct: Struct, args: Namespace):
-        keyidx = struct.get_column_index(predef.PredefKVKeyName)
-        typeidx = struct.get_column_index(predef.PredefKVTypeName)
-
         content = ''
         content += 'int %s::ParseFrom(const unordered_map<string,string>& table, %s* ptr) {\n' % (struct.name, struct.name)
         content += '    ASSERT(ptr != nullptr);\n'
-        rows = struct.data_rows
-        for row in rows:
-            name = row[keyidx].strip()
-            origin_typename = row[typeidx].strip()
+        for field in struct.kv_fields:
+            origin_typename = field.origin_type_name
             if args.legacy:
                 try:
                     legacy = int(origin_typename)
                     origin_typename = types.legacy_type_to_name(legacy)
                 except ValueError:
                     pass
-            valuetext = 'GetTableField(table, "%s")' % name
-            content += self.gen_field_assign1('ptr->', origin_typename, name, valuetext, 1)
+            valuetext = 'GetTableField(table, "%s")' % field.name
+            content += self.gen_field_assign1('ptr->', origin_typename, field.name, valuetext, 1)
         content += '    return 0;\n'
         content += '}\n\n'
         return content

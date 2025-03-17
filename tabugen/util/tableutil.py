@@ -4,10 +4,11 @@
 
 import sys
 import unittest
+from argparse import Namespace
 import tabugen.predef as predef
 import tabugen.typedef as types
 import tabugen.util.helper as helper
-from tabugen.structs import Struct
+from tabugen.structs import Struct, StructField
 
 max_int64 = 9223372036854775807
 min_int64 = -9223372036854775808
@@ -397,6 +398,43 @@ def is_kv_table(table: list[list[str]], legacy=True) -> bool:
                 return False
 
     return True
+
+
+def parse_kv_fields(struct: Struct, legacy, mapper1, mapper2) -> list[StructField]:
+    key_idx = struct.get_column_index(predef.PredefKVKeyName)
+    assert key_idx >= 0
+    type_idx = struct.get_column_index(predef.PredefKVTypeName)
+    comment_idx = struct.get_kv_comment_col()
+
+    fields = []
+    for row in struct.data_rows:
+        varname = row[key_idx]
+        typename = 'int'
+        if type_idx >= 0:
+            typename = row[type_idx]
+        if varname == '' or typename == '':
+            continue
+
+        field = StructField()
+        if legacy and typename.isdigit():
+            typename = legacy_kv_type(int(typename))
+
+        field.origin_type_name = typename
+        if typename in types.alias:
+            field.type_name = types.alias[typename]
+        else:
+            field.type_name = field.origin_type_name
+        field.lang_type_name = mapper1(typename)
+        field.name = varname
+        field.camel_case_name = varname
+        field.name_defval = mapper2(field)
+        if comment_idx >= 0:
+            comment = row[comment_idx].strip()
+            comment = comment.replace('\n', ' ')
+            comment = comment.replace('//', '')
+            field.comment = comment
+        fields.append(field)
+    return fields
 
 
 class TestTypes(unittest.TestCase):

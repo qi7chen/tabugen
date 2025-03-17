@@ -5,11 +5,12 @@
 import os
 import sys
 from argparse import Namespace
+
 import tabugen.predef as predef
 import tabugen.lang as lang
 import tabugen.version as version
 import tabugen.util.helper as helper
-from tabugen.util.tableutil import legacy_kv_type
+from tabugen.util.tableutil import parse_kv_fields
 from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.cpp.gen_csv_load import CppCsvLoadGenerator
 
@@ -35,60 +36,55 @@ class CppStructGenerator:
 
     # 生成字段定义
     def gen_field_define(self, field: StructField, max_type_len: int, max_name_len: int, tabs: int) -> str:
-        typename = lang.map_cpp_type(field.origin_type_name)
-        assert typename != "", field.origin_type_name
-        typename = helper.pad_spaces(typename, max_type_len + 1)
-        name = lang.name_with_default_cpp_value(field, typename, False)
-        name = helper.pad_spaces(name, max_name_len + 8)
+        typename = helper.pad_spaces(field.lang_type_name, max_type_len + 4)
+        name = helper.pad_spaces(field.name_defval, max_name_len + 4)
         space = self.TAB_SPACE * tabs
-        return '%s%s %s // %s\n' % (space, typename, name, field.comment)
+        return '%s%s%s // %s\n' % (space, typename, name, field.comment)
 
     def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int) -> str:
-        name = helper.camel_case(field.field_name)
-        name = helper.pad_spaces(name + ';', max_name_len + 4)
-        typename = lang.map_cpp_type(field.type_name)
-        typename = helper.pad_spaces(typename, max_type_len + 4)
-        text = ''
-        space = self.TAB_SPACE * tabs
-        text += '%s%s %s' % (space, typename, name)
+        typename = helper.pad_spaces(field.lang_type_name, max_type_len + 4)
+        name = helper.pad_spaces(field.camel_case_name + ';', max_name_len + 4)
+        text = '%s%s%s' % (self.TAB_SPACE * tabs, typename, name)
         if field.comment:
             text += ' // %s' % field.comment
         text += '\n'
         return text
 
-    #
-    def gen_kv_fields(self, struct: Struct, tabs: int, args: Namespace) -> str:
-        space = self.TAB_SPACE * tabs
-        key_idx = struct.get_column_index(predef.PredefKVKeyName)
-        assert key_idx >= 0
-        type_idx = struct.get_column_index(predef.PredefKVTypeName)
-        comment_idx = struct.get_kv_comment_col()
-
-        max_name_len, max_type_len = struct.get_kv_max_len(lang.map_cpp_type)
+    def gen_kv_fields_define(self, struct: Struct) -> str:
         content = 'struct %s {\n' % struct.camel_case_name
-        for row in struct.data_rows:
-            key = row[key_idx]
-            typename = 'int'
-            if type_idx >= 0:
-                typename = row[type_idx]
-            if key == '' or typename == '':
-                continue
 
-            if args.legacy and typename.isdigit():
-                typename = legacy_kv_type(int(typename))
+        old_fields = struct.fields
+        struct.fields = struct.kv_fields
+        max_type_len = struct.max_field_lang_type_length()
+        max_name_len = struct.max_field_lang_var_length()
+        struct.fields = old_fields
 
-            typename = lang.map_cpp_type(typename)
-            key_name = helper.pad_spaces(helper.camel_case(key) + ';', max_name_len + 4)
-            typename = helper.pad_spaces(typename, max_type_len + 4)
-            content += '%s%s %s' % (space, typename, key_name)
-            if comment_idx >= 0:
-                comment = row[comment_idx].strip()
-                comment = comment.replace('\n', ' ')
-                comment = comment.replace('//', '')
-                if len(content) > 0:
-                    content += '\t// %s' % comment
-            content += '\n'
+        for field in struct.kv_fields:
+            text = self.gen_field_define(field, max_type_len, max_name_len, 1)
+            content += text
+        return content
 
+
+
+    def gen_fields(self, struct: Struct, args: Namespace) -> str:
+        content = 'struct %s \n{\n' % struct.camel_case_name
+        fields = struct.fields
+        for col, field in enumerate(fields):
+            field.lang_type_name = lang.map_cpp_type(field.origin_type_name)
+            field.name_defval = lang.name_with_default_cpp_value(field, field.lang_type_name, False)
+        for array in struct.array_fields:
+            array.lang_type_name = lang.map_cpp_type(array.type_name)
+
+        max_type_len = struct.max_field_lang_type_length()
+        max_name_len = struct.max_field_lang_var_length()
+
+        for col, field in enumerate(fields):
+            text = self.gen_field_define(field, max_type_len, max_name_len, 1)
+            content += text
+        for array in struct.array_fields:
+            text = self.gen_array_define(array, max_type_len, max_name_len, 1)
+            content += text
+        content += '}\n'
         return content
 
     # 生成class的结构定义
@@ -98,24 +94,14 @@ class CppStructGenerator:
             content += '// %s, ' % struct.comment
         else:
             content += '// %s, ' % struct.name
-        content += ' Created from %s\n' % struct.filepath
+        content += ' generated from %s\n' % struct.filepath
 
         if struct.options[predef.PredefParseKVMode]:
-            return content + self.gen_kv_fields(struct, 1, args)
-
-        content += 'struct %s \n{\n' % struct.camel_case_name
-
-        fields = struct.fields
-        max_name_len = struct.max_field_name_length()
-        max_type_len = struct.max_field_type_length(lang.map_cpp_type)
-
-        for col, field in enumerate(fields):
-            text = self.gen_field_define(field, max_type_len, max_name_len, 1)
-            content += text
-        for array in struct.array_fields:
-            content += self.gen_array_define(array, max_type_len, max_name_len, 1)
-
-        return content
+            struct.kv_fields = parse_kv_fields(struct, args, lang.map_cpp_type,
+                                        lambda field: lang.name_with_default_cpp_value(field, field.lang_type_name, False))
+            return content + self.gen_kv_fields_define(struct)
+        else:
+            return content + self.gen_fields(struct, args)
 
     # 生成头文件声明
     def gen_header(self, struct: Struct, args: Namespace) -> str:
@@ -163,12 +149,11 @@ class CppStructGenerator:
         outname = os.path.split(filepath)[-1]
 
         cpp_content = ''
+        header_content = self.generate(descriptors, args)
         if self.load_gen is not None:
             self.load_gen.setup('')
             filename = outname + '.h'
             cpp_content = self.load_gen.generate(descriptors, args, filename)
-
-        header_content = self.generate(descriptors, args)
 
         if os.path.isdir(filepath):
             filepath += '/config'

@@ -20,8 +20,10 @@ class StructField:
         self.origin_type_name = ''  # 原始类型名，可能是type alias
         self.type_name = ''  # 类型名
         self.type = 0  # 类型
-        self.comment = ''  # 注释
+        self.lang_type_name = ''
         self.column = 0
+        self.comment = ''  # 注释
+        self.name_defval = ''
 
 
 class ArrayField:
@@ -32,6 +34,7 @@ class ArrayField:
         self.camel_case_name = ''
         self.comment = ''
         self.type_name = ''
+        self.lang_type_name = ''
         self.element_fields: list[StructField] = []
 
 
@@ -51,6 +54,7 @@ class Struct:
         self.raw_fields: list[StructField] = []
         self.fields: list[StructField] = []
         self.array_fields: list[ArrayField] = []  # 数组字段
+        self.kv_fields: list[ArrayField] = []  # kv字段
 
     def get_field_by_name(self, name: str) -> StructField | None:
         for field in self.fields:
@@ -65,31 +69,30 @@ class Struct:
         return -1
 
     # 获取字段名最大长度
-    def max_field_name_length(self):
+    def max_field_lang_var_length(self, camel_case=True) -> int:
         max_len = 0
         for field in self.fields:
-            n = len(field.name)
+            n = len(field.name_defval)
             if n > max_len:
                 max_len = n
         for array in self.array_fields:
-            n = len(array.field_name)
+            if camel_case:
+                n = len(array.camel_case_name)
+            else:
+                n = len(array.field_name)
             if n > max_len:
                 max_len = n
         return max_len
 
     # 获取字段类型最大长度
-    def max_field_type_length(self, type_mapper=None):
+    def max_field_lang_type_length(self):
         max_len = 0
         for field in self.fields:
-            n = len(field.origin_type_name)
-            if type_mapper:
-                n = len(type_mapper(field.origin_type_name))
+            n = len(field.lang_type_name)
             if n > max_len:
                 max_len = n
         for array in self.array_fields:
-            n = len(array.type_name)
-            if type_mapper:
-                n = len(type_mapper(array.type_name))
+            n = len(array.lang_type_name)
             if n > max_len:
                 max_len = n
         return max_len

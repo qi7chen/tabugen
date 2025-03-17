@@ -41,31 +41,25 @@ class GoCsvLoadGenerator:
 
     # KV模式生成`ParseFrom`方法
     def gen_kv_parse_method(self, struct: Struct, args: Namespace) -> str:
-        keyidx = struct.get_column_index(predef.PredefKVKeyName)
-        typeidx = struct.get_column_index(predef.PredefKVTypeName)
-
         content = ''
-        content += 'func (p *%s) ParseFrom(table map[string]string) error {\n' % struct.camel_case_name
-        rows = struct.data_rows
-        for row in rows:
-            name = row[keyidx].strip()
-            origin_typename = row[typeidx].strip()
+        content += 'func (p *%s) ParseFrom(table map[string]string) {\n' % struct.camel_case_name
+        for field in struct.kv_fields:
+            origin_typename = field.origin_type_name
             if args.legacy:
                 try:
                     legacy = int(origin_typename)
                     origin_typename = types.legacy_type_to_name(legacy)
                 except ValueError:
                     pass
-            valuetext = 'table["%s"]' % name
-            content += self.gen_field_assign('p.', origin_typename, name, valuetext, 1)
-        content += '%sreturn nil\n' % '\t'
+            valuetext = 'table["%s"]' % field.name
+            content += self.gen_field_assign('p.', origin_typename, field.name, valuetext, 1)
         content += '}\n\n'
         return content
 
     # 生成`ParseFrom`方法
     def gen_parse_method(self, struct: Struct) -> str:
         content = ''
-        content += 'func (p *%s) ParseRow(table *GDTable, row int) error {\n' % struct.camel_case_name
+        content += 'func (p *%s) ParseRow(table *GDTable, row int) {\n' % struct.camel_case_name
         for field in struct.fields:
             origin_typename = field.origin_type_name
             valuetext = 'table.GetCell("%s", row)' % field.name
@@ -82,7 +76,6 @@ class GoCsvLoadGenerator:
             content += '\t\tp.%s = append(p.%s, elem)\n' % (array.field_name, array.field_name)
             content += '\t}\n'
 
-        content += '%sreturn nil\n' % '\t'
         content += '}\n\n'
         return content
 

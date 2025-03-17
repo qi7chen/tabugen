@@ -43,21 +43,25 @@ class CSharpStructGenerator:
         if not json_snake_case:
             typename = helper.pad_spaces(typename, max_type_len + 1)
         name = lang.name_with_default_cs_value(field, typename, False)
-        name = helper.pad_spaces(name, max_name_len + 8)
+        name = helper.pad_spaces(name, max_name_len + 4)
         space = self.TAB_SPACE * tabs
-        text = '%spublic %s %s // %s\n' % (space, typename, name, field.comment)
+        padding = ''
+        max_len = max_type_len + max_name_len + 16
+        if len(typename) + len(name) < max_len:
+            padding = ' ' * (max_len - len(typename) + len(name))
+        text = '%spublic %s %s %s// %s\n' % (space, typename, name, padding, field.comment)
         return text
 
     def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int) -> str:
+        typename = lang.map_cs_type(field.type_name)
+        typename = helper.pad_spaces(typename, max_type_len + 1)
         name = helper.camel_case(field.field_name)
         name = helper.pad_spaces(name + ';', max_name_len + 4)
-        typename = lang.map_cs_type(field.type_name)
-        typename = helper.pad_spaces(typename, max_type_len + 4)
         text = ''
         space = self.TAB_SPACE * tabs
-        text += '%s%s %s' % (space, typename, name)
+        text += '%spublic %s %s' % (space, typename, name)
         if field.comment:
-            text += ' // %s' % field.comment
+            text += '  // %s' % field.comment
         text += '\n'
         return text
 
@@ -84,13 +88,13 @@ class CSharpStructGenerator:
             typename = lang.map_cs_type(typename)
             key_name = helper.pad_spaces(helper.camel_case(key) + ';', max_name_len + 4)
             typename = helper.pad_spaces(typename, max_type_len + 4)
-            content += '%s%s %s' % (space, typename, key_name)
+            content += '%spublic %s %s' % (space, typename, key_name)
             if comment_idx >= 0:
                 comment = row[comment_idx].strip()
                 comment = comment.replace('\n', ' ')
                 comment = comment.replace('//', '')
                 if len(content) > 0:
-                    content += '\t// %s' % comment
+                    content += '  // %s' % comment
             content += '\n'
 
         return content
@@ -102,7 +106,7 @@ class CSharpStructGenerator:
             content += '// %s, ' % struct.comment
         else:
             content += '// %s, ' % struct.name
-        content += ' Created from %s\n' % struct.filepath
+        content += ' generated from %s\n' % struct.filepath
 
         if struct.options[predef.PredefParseKVMode]:
             return content + self.gen_kv_fields(struct, args)
@@ -126,8 +130,8 @@ class CSharpStructGenerator:
         content += self.gen_struct(struct, args)
         if self.load_gen is not None:
             content += '\n'
-            content += self.load_gen.generate(struct)
-        content += '}\n'
+            content += self.load_gen.generate(struct, args)
+        content += '}\n\n'
         return content
 
     def run(self, descriptors: list[Struct], filepath: str, args: Namespace):
