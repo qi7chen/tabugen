@@ -2,11 +2,8 @@
 
 #include "Config.h"
 #include <stddef.h>
-#include "Conv.h"
 
 using namespace std;
-using rapidcsv::Document;
-
 #ifndef ASSERT
 #define ASSERT assert
 #endif
@@ -14,7 +11,7 @@ using rapidcsv::Document;
 
 namespace config {
 
-int GlobalDefine::ParseFrom(const unordered_map<string,string>& table, GlobalDefine* ptr) {
+int GlobalDefine::ParseFrom(const Table& table, GlobalDefine* ptr) {
     ASSERT(ptr != nullptr);
     ptr->GoldExchangeTimeFactor1 = ParseField<float>(GetTableField(table, "GoldExchangeTimeFactor1"));
     ptr->GoldExchangeTimeFactor2 = ParseField<float>(GetTableField(table, "GoldExchangeTimeFactor2"));
@@ -32,7 +29,7 @@ int GlobalDefine::ParseFrom(const unordered_map<string,string>& table, GlobalDef
     return 0;
 }
 
-int ItemBoxDefine::ParseRow(const Document& doc, int rowIndex, ItemBoxDefine* ptr) {
+int ItemBoxDefine::ParseRow(const rapidcsv::Document& doc, int rowIndex, ItemBoxDefine* ptr) {
     ASSERT(ptr != nullptr);
     ptr->ID = GetCellByName<string>(doc, "ID", rowIndex);
     ptr->Total = GetCellByName<int32_t>(doc, "Total", rowIndex);
@@ -68,7 +65,7 @@ int ItemBoxDefine::ParseRow(const Document& doc, int rowIndex, ItemBoxDefine* pt
     return 0;
 }
 
-int NewbieGuide::ParseRow(const Document& doc, int rowIndex, NewbieGuide* ptr) {
+int NewbieGuide::ParseRow(const rapidcsv::Document& doc, int rowIndex, NewbieGuide* ptr) {
     ASSERT(ptr != nullptr);
     ptr->Name = GetCellByName<string>(doc, "Name", rowIndex);
     ptr->Desc = GetCellByName<string>(doc, "Desc", rowIndex);
@@ -79,7 +76,7 @@ int NewbieGuide::ParseRow(const Document& doc, int rowIndex, NewbieGuide* ptr) {
     return 0;
 }
 
-int SoldierDefine::ParseRow(const Document& doc, int rowIndex, SoldierDefine* ptr) {
+int SoldierDefine::ParseRow(const rapidcsv::Document& doc, int rowIndex, SoldierDefine* ptr) {
     ASSERT(ptr != nullptr);
     ptr->ID = GetCellByName<int32_t>(doc, "ID", rowIndex);
     ptr->Name = GetCellByName<string>(doc, "Name", rowIndex);

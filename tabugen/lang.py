@@ -202,7 +202,7 @@ def map_cs_parse_func(typ: str) -> str:
 
 # C#类型默认值
 def name_with_default_cs_value(field: StructField, typename: str, remove_suffix_num: bool) -> str:
-    typename = typename.strip()
+    # typename = typename.strip()
     name = field.name
     if remove_suffix_num:
         name = tableutil.remove_field_suffix(name)

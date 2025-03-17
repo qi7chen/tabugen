@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2024-present qi7chen@github All rights reserved.
+// Copyright (C) 2024-present qi7chen@github All rights reserved.
 // Distributed under the terms and conditions of the Apache License.
 // See accompanying files LICENSE.
 
@@ -18,6 +18,7 @@
 #define TabDelim1 ("|")
 #define TabDelim2 (":")
 
+typedef std::unordered_map<std::string, std::string> Table;
 
 inline void stringAppendV(std::string* dst, const char* format, va_list ap) {
     // First try with a small fixed size buffer
@@ -133,7 +134,7 @@ inline T GetCellByName(const rapidcsv::Document& doc, const std::string& name, i
     return T();
 }
 
-inline const std::string& GetTableField(const std::unordered_map<std::string, std::string>& table, const std::string& name) {
+inline const std::string& GetTableField(const Table& table, const std::string& name) {
     auto iter = table.find(name);
     if (iter != table.end()) {
         return iter->second;

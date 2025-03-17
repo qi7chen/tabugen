@@ -63,7 +63,7 @@ class CppCsvLoadGenerator:
     def gen_parse_method(self, struct: Struct, args: Namespace) -> str:
         content = ''
 
-        content += 'int %s::ParseRow(const Document& doc, int rowIndex, %s* ptr) {\n' % (struct.name, struct.name)
+        content += 'int %s::ParseRow(const rapidcsv::Document& doc, int rowIndex, %s* ptr) {\n' % (struct.name, struct.name)
         content += '    ASSERT(ptr != nullptr);\n'
         for field in struct.fields:
             origin_typename = field.origin_type_name
@@ -90,7 +90,7 @@ class CppCsvLoadGenerator:
     # 生成KV模式的`ParseFrom`方法
     def gen_kv_parse_method(self, struct: Struct, args: Namespace):
         content = ''
-        content += 'int %s::ParseFrom(const unordered_map<string,string>& table, %s* ptr) {\n' % (struct.name, struct.name)
+        content += 'int %s::ParseFrom(const Table& table, %s* ptr) {\n' % (struct.name, struct.name)
         content += '    ASSERT(ptr != nullptr);\n'
         for field in struct.kv_fields:
             origin_typename = field.origin_type_name
@@ -117,16 +117,16 @@ class CppCsvLoadGenerator:
     def gen_method_declare(self, struct: Struct) -> str:
         content = ''
         if struct.options[predef.PredefParseKVMode]:
-            content += '    static int ParseFrom(const unordered_map<string,string>& table, %s* ptr);\n' % struct.name
+            content += '    static int ParseFrom(const Table& table, %s* ptr);\n' % struct.name
             return content
-        content += '    static int ParseRow(const Document& doc, int rowIndex, %s* ptr);\n' % struct.name
+        content += '    static int ParseRow(const rapidcsv::Document& doc, int rowIndex, %s* ptr);\n' % struct.name
         return content
 
     def generate(self, descriptors: list[Struct], args: Namespace, headerfile: str) -> str:
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
             '#include <stddef.h>',
-            '#include "Conv.h"',
+
         ]
         if len(args.extra_cpp_includes) > 0:
             extra_headers = args.extra_cpp_includes.split(',')
@@ -141,7 +141,6 @@ class CppCsvLoadGenerator:
 
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
         cpp_content += 'using namespace std;\n'
-        cpp_content += 'using rapidcsv::Document;\n\n'
         cpp_content += '#ifndef ASSERT\n'
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'

@@ -54,7 +54,7 @@ class Struct:
         self.raw_fields: list[StructField] = []
         self.fields: list[StructField] = []
         self.array_fields: list[ArrayField] = []  # 数组字段
-        self.kv_fields: list[ArrayField] = []  # kv字段
+        self.kv_fields: list[StructField] = []  # kv字段
 
     def get_field_by_name(self, name: str) -> StructField | None:
         for field in self.fields:
