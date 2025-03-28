@@ -7,8 +7,6 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
-#include "Conv.h"
-#include "rapidcsv.h"
 
 
 namespace config {
@@ -16,6 +14,14 @@ namespace config {
 using std::vector;
 using std::string;
 using std::unordered_map;
+
+
+struct IDataFrame {
+    virtual int GetColumnCount() const = 0;
+    virtual bool HasColumn(const string& name) const = 0;
+    virtual string GetRowCell(const string& cell, int rowIndex) const = 0;
+    virtual string GetKeyField(const string& key) const = 0;
+};
 
 // GlobalDefine,  generated from GlobalDefine.xlsx
 struct GlobalDefine 
@@ -34,7 +40,7 @@ struct GlobalDefine
     unordered_map<string, int>    FirstRechargeReward;                // 首充奖励
     unordered_map<int, int>       VIPItemReward;                      // VIP奖励
 
-    static int ParseFrom(const Table& table, GlobalDefine* ptr);
+    static int ParseFrom(const IDataFrame* table, GlobalDefine* ptr);
 };
 
 // ItemBoxDefine,  generated from ItemBox.xlsx
@@ -48,7 +54,7 @@ struct ItemBoxDefine
     vector<int64_t>    Nums;           // 道具数量
     vector<int32_t>    Probabilitys;   // 抽取概率
 
-    static int ParseRow(const rapidcsv::Document& doc, int rowIndex, ItemBoxDefine* ptr);
+    static int ParseRow(const IDataFrame* table, int rowIndex, ItemBoxDefine* ptr);
 };
 
 // NewbieGuide,  generated from NewbieGuide.xlsx
@@ -61,7 +67,7 @@ struct NewbieGuide
     vector<int>                   Accomplishment;     // 需要完成任务
     unordered_map<string, int>    RewardGoods;        // 任务奖励
 
-    static int ParseRow(const rapidcsv::Document& doc, int rowIndex, NewbieGuide* ptr);
+    static int ParseRow(const IDataFrame* table, int rowIndex, NewbieGuide* ptr);
 };
 
 // SoldierDefine,  generated from Soldier.xlsx
@@ -88,7 +94,7 @@ struct SoldierDefine
     double     MovingSpeed = 0.0;      // 移动速度
     string     EnableBurn;             // 开启燃烧
 
-    static int ParseRow(const rapidcsv::Document& doc, int rowIndex, SoldierDefine* ptr);
+    static int ParseRow(const IDataFrame* table, int rowIndex, SoldierDefine* ptr);
 };
 
 } // namespace config

@@ -13,6 +13,7 @@ set(Boost_USE_RELEASE_LIBS ON)  # only find release libs
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)  # link Boost Static libraries
 
+find_package(fmt CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS algorithm lexical_cast)
 if (Boost_FOUND)
     message(STATUS "include Boost dir ${Boost_INCLUDE_DIRS}")
@@ -41,7 +42,6 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(ALL_SRC_FILES
     ${SRC_DIR}/Config.h
     ${SRC_DIR}/Config.cpp
-    ${SRC_DIR}/Conv.h
     ${SRC_DIR}/rapidcsv.h
     ${SRC_DIR}/main.cpp
     )
@@ -51,4 +51,4 @@ include_directories(${SRC_DIR})
 
 add_executable(TabugenCpp ${ALL_SRC_FILES})
 
-target_link_libraries(TabugenCpp PRIVATE Boost::lexical_cast Boost::algorithm)
+target_link_libraries(TabugenCpp PRIVATE fmt::fmt Boost::lexical_cast Boost::algorithm)

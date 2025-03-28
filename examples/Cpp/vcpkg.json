@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "boost-algorithm",
-    "boost-lexical-cast"
+    "boost-lexical-cast",
+    "fmt"
   ]
 }

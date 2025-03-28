@@ -116,7 +116,15 @@ class CSharpCsvLoadGenerator:
         return content
 
     # 生成`ParseFrom`方法
-    def gen_parse_method(self, struct: Struct, args: Namespace):
+    def gen_parse_method(self, struct: Struct, args: Namespace, tabs: int) -> str:
+        content = ''
+        content += 'func (p *%s) ParseRow(table *GDTable, row int) {\n' % struct.camel_case_name
+        content += '%spublic void ParseRow(Dictionary<string, string> record) \n' % space
+        for field in struct.fields:
+            origin_typename = field.origin_type_name
+            valuetext = 'table.GetCell("%s", row)' % field.name
+            content += self.gen_field_assign('p.', origin_typename, field.name, valuetext, 1)
+
         inner_start_col = -1
         inner_end_col = -1
         inner_field_done = False

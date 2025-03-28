@@ -2,6 +2,10 @@
 
 #include "Config.h"
 #include <stddef.h>
+#include <utility>
+#include <fmt/core.h>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 #ifndef ASSERT
@@ -11,93 +15,135 @@ using namespace std;
 
 namespace config {
 
-int GlobalDefine::ParseFrom(const Table& table, GlobalDefine* ptr) {
+static const std::string TabDelim1 = "|";
+static const std::string TabDelim2 = ":";
+
+template <typename T>
+inline T parseTo(const std::string& text)
+{
+    return boost::lexical_cast<T>(text);
+}
+
+template <typename T>
+std::vector<T> parseArray(const std::string& text)
+{
+    std::vector<T> result;
+    std::vector<std::string> parts;
+    boost::split(parts, text, boost::is_any_of(TabDelim1));
+    for (size_t i = 0; i < parts.size(); i++)
+    {
+        auto val = boost::lexical_cast<T>(parts[i]);
+        result.push_back(val);
+    }
+    return result; // C42679
+}
+
+template <typename K, typename V>
+std::unordered_map<K, V> parseMap(const std::string& text)
+{
+    std::unordered_map<K, V> result;
+    std::vector<std::string> parts;
+    boost::split(parts, text, boost::is_any_of(TabDelim1));
+    for (size_t i = 0; i < parts.size(); i++)
+    {
+        std::vector<std::string> kv;
+        boost::split(kv, parts[i], boost::is_any_of(TabDelim2));
+        assert(kv.size() == 2);
+        if (kv.size() == 2)
+        {
+            auto key = boost::lexical_cast<K>(kv[0]);
+            auto val = boost::lexical_cast<V>(kv[1]);
+            assert(result.count(key) == 0);
+            result.insert(std::make_pair(key, val));
+        }
+    }
+    return result; // C42679
+}
+
+int GlobalDefine::ParseFrom(const IDataFrame* table, GlobalDefine* ptr) {
     ASSERT(ptr != nullptr);
-    ptr->GoldExchangeTimeFactor1 = ParseField<float>(GetTableField(table, "GoldExchangeTimeFactor1"));
-    ptr->GoldExchangeTimeFactor2 = ParseField<float>(GetTableField(table, "GoldExchangeTimeFactor2"));
-    ptr->GoldExchangeTimeFactor3 = ParseField<float>(GetTableField(table, "GoldExchangeTimeFactor3"));
-    ptr->GoldExchangeResource1Price = ParseField<int>(GetTableField(table, "GoldExchangeResource1Price"));
-    ptr->GoldExchangeResource2Price = ParseField<int>(GetTableField(table, "GoldExchangeResource2Price"));
-    ptr->GoldExchangeResource3Price = ParseField<int>(GetTableField(table, "GoldExchangeResource3Price"));
-    ptr->GoldExchangeResource4Price = ParseField<int>(GetTableField(table, "GoldExchangeResource4Price"));
-    ptr->FreeCompleteSeconds = ParseField<int>(GetTableField(table, "FreeCompleteSeconds"));
-    ptr->CancelBuildReturnPercent = ParseField<int>(GetTableField(table, "CancelBuildReturnPercent"));
-    ptr->EnableSearch = ParseField<bool>(GetTableField(table, "EnableSearch"));
-    ptr->SpawnLevelLimit = ParseArrayField<int>(GetTableField(table, "SpawnLevelLimit"));
-    ptr->FirstRechargeReward = ParseMapField<string,int>(GetTableField(table, "FirstRechargeReward"));
-    ptr->VIPItemReward = ParseMapField<int,int>(GetTableField(table, "VIPItemReward"));
+    ptr->GoldExchangeTimeFactor1 = parseTo<float>(table->GetKeyField("GoldExchangeTimeFactor1"));
+    ptr->GoldExchangeTimeFactor2 = parseTo<float>(table->GetKeyField("GoldExchangeTimeFactor2"));
+    ptr->GoldExchangeTimeFactor3 = parseTo<float>(table->GetKeyField("GoldExchangeTimeFactor3"));
+    ptr->GoldExchangeResource1Price = parseTo<int>(table->GetKeyField("GoldExchangeResource1Price"));
+    ptr->GoldExchangeResource2Price = parseTo<int>(table->GetKeyField("GoldExchangeResource2Price"));
+    ptr->GoldExchangeResource3Price = parseTo<int>(table->GetKeyField("GoldExchangeResource3Price"));
+    ptr->GoldExchangeResource4Price = parseTo<int>(table->GetKeyField("GoldExchangeResource4Price"));
+    ptr->FreeCompleteSeconds = parseTo<int>(table->GetKeyField("FreeCompleteSeconds"));
+    ptr->CancelBuildReturnPercent = parseTo<int>(table->GetKeyField("CancelBuildReturnPercent"));
+    ptr->EnableSearch = parseTo<bool>(table->GetKeyField("EnableSearch"));
+    ptr->SpawnLevelLimit = parseArray<int>(table->GetKeyField("SpawnLevelLimit"));
+    ptr->FirstRechargeReward = parseMap<string,int>(table->GetKeyField("FirstRechargeReward"));
+    ptr->VIPItemReward = parseMap<int,int>(table->GetKeyField("VIPItemReward"));
     return 0;
 }
 
-int ItemBoxDefine::ParseRow(const rapidcsv::Document& doc, int rowIndex, ItemBoxDefine* ptr) {
+int ItemBoxDefine::ParseRow(const IDataFrame* table, int rowIndex, ItemBoxDefine* ptr) {
     ASSERT(ptr != nullptr);
-    ptr->ID = GetCellByName<string>(doc, "ID", rowIndex);
-    ptr->Total = GetCellByName<int32_t>(doc, "Total", rowIndex);
-    ptr->Time = GetCellByName<int32_t>(doc, "Time", rowIndex);
-    ptr->Repeat = GetCellByName<string>(doc, "Repeat", rowIndex);
-    for (size_t col = 0; col < doc.GetColumnCount(); col++) {
-        const string& name = stringPrintf("GoodsID[%d]", col);
-        int idx = doc.GetColumnIdx(name);
-        if (idx < 0) {
+    ptr->ID = parseTo<string>(table->GetRowCell("ID", rowIndex));
+    ptr->Total = parseTo<int32_t>(table->GetRowCell("Total", rowIndex));
+    ptr->Time = parseTo<int32_t>(table->GetRowCell("Time", rowIndex));
+    ptr->Repeat = parseTo<string>(table->GetRowCell("Repeat", rowIndex));
+    for (int col = 0; col < table->GetColumnCount(); col++) {
+        const string& name = fmt::format("GoodsID[{}]", col);
+        if (!table->HasColumn(name)) {
             break;
         }
-        auto elem = GetCellByName<string>(doc, name, rowIndex);
+        auto elem = parseTo<string>(table->GetRowCell(name, rowIndex));
         ptr->GoodsIDs.push_back(elem);
     }
-    for (size_t col = 0; col < doc.GetColumnCount(); col++) {
-        const string& name = stringPrintf("Num[%d]", col);
-        int idx = doc.GetColumnIdx(name);
-        if (idx < 0) {
+    for (int col = 0; col < table->GetColumnCount(); col++) {
+        const string& name = fmt::format("Num[{}]", col);
+        if (!table->HasColumn(name)) {
             break;
         }
-        auto elem = GetCellByName<int64_t>(doc, name, rowIndex);
+        auto elem = parseTo<int64_t>(table->GetRowCell(name, rowIndex));
         ptr->Nums.push_back(elem);
     }
-    for (size_t col = 0; col < doc.GetColumnCount(); col++) {
-        const string& name = stringPrintf("Probability[%d]", col);
-        int idx = doc.GetColumnIdx(name);
-        if (idx < 0) {
+    for (int col = 0; col < table->GetColumnCount(); col++) {
+        const string& name = fmt::format("Probability[{}]", col);
+        if (!table->HasColumn(name)) {
             break;
         }
-        auto elem = GetCellByName<int32_t>(doc, name, rowIndex);
+        auto elem = parseTo<int32_t>(table->GetRowCell(name, rowIndex));
         ptr->Probabilitys.push_back(elem);
     }
     return 0;
 }
 
-int NewbieGuide::ParseRow(const rapidcsv::Document& doc, int rowIndex, NewbieGuide* ptr) {
+int NewbieGuide::ParseRow(const IDataFrame* table, int rowIndex, NewbieGuide* ptr) {
     ASSERT(ptr != nullptr);
-    ptr->Name = GetCellByName<string>(doc, "Name", rowIndex);
-    ptr->Desc = GetCellByName<string>(doc, "Desc", rowIndex);
-    ptr->Category = GetCellByName<int32_t>(doc, "Category", rowIndex);
-    ptr->Target = GetCellByName<string>(doc, "Target", rowIndex);
-    ptr->Accomplishment = ParseArrayField<int>(GetCellByName<string>(doc, "Accomplishment", rowIndex));
-    ptr->RewardGoods = ParseMapField<string,int>(GetCellByName<string>(doc, "RewardGoods", rowIndex));
+    ptr->Name = parseTo<string>(table->GetRowCell("Name", rowIndex));
+    ptr->Desc = parseTo<string>(table->GetRowCell("Desc", rowIndex));
+    ptr->Category = parseTo<int32_t>(table->GetRowCell("Category", rowIndex));
+    ptr->Target = parseTo<string>(table->GetRowCell("Target", rowIndex));
+    ptr->Accomplishment = parseArray<int>(table->GetRowCell("Accomplishment", rowIndex));
+    ptr->RewardGoods = parseMap<string,int>(table->GetRowCell("RewardGoods", rowIndex));
     return 0;
 }
 
-int SoldierDefine::ParseRow(const rapidcsv::Document& doc, int rowIndex, SoldierDefine* ptr) {
+int SoldierDefine::ParseRow(const IDataFrame* table, int rowIndex, SoldierDefine* ptr) {
     ASSERT(ptr != nullptr);
-    ptr->ID = GetCellByName<int32_t>(doc, "ID", rowIndex);
-    ptr->Name = GetCellByName<string>(doc, "Name", rowIndex);
-    ptr->Level = GetCellByName<int32_t>(doc, "Level", rowIndex);
-    ptr->BuildingName = GetCellByName<string>(doc, "BuildingName", rowIndex);
-    ptr->BuildingLevel = GetCellByName<int32_t>(doc, "BuildingLevel", rowIndex);
-    ptr->RequireSpace = GetCellByName<int32_t>(doc, "RequireSpace", rowIndex);
-    ptr->Volume = GetCellByName<int32_t>(doc, "Volume", rowIndex);
-    ptr->UpgradeTime = GetCellByName<int32_t>(doc, "UpgradeTime", rowIndex);
-    ptr->UpgradeRes = GetCellByName<string>(doc, "UpgradeRes", rowIndex);
-    ptr->UpgradeCost = GetCellByName<int32_t>(doc, "UpgradeCost", rowIndex);
-    ptr->ConsumeRes = GetCellByName<string>(doc, "ConsumeRes", rowIndex);
-    ptr->ConsumeCost = GetCellByName<int32_t>(doc, "ConsumeCost", rowIndex);
-    ptr->ConsumeTime = GetCellByName<int32_t>(doc, "ConsumeTime", rowIndex);
-    ptr->Act = GetCellByName<int32_t>(doc, "Act", rowIndex);
-    ptr->Hp = GetCellByName<int32_t>(doc, "Hp", rowIndex);
-    ptr->BombLoad = GetCellByName<string>(doc, "BombLoad", rowIndex);
-    ptr->AtkFrequency = GetCellByName<double>(doc, "AtkFrequency", rowIndex);
-    ptr->AtkRange = GetCellByName<double>(doc, "AtkRange", rowIndex);
-    ptr->MovingSpeed = GetCellByName<double>(doc, "MovingSpeed", rowIndex);
-    ptr->EnableBurn = GetCellByName<string>(doc, "EnableBurn", rowIndex);
+    ptr->ID = parseTo<int32_t>(table->GetRowCell("ID", rowIndex));
+    ptr->Name = parseTo<string>(table->GetRowCell("Name", rowIndex));
+    ptr->Level = parseTo<int32_t>(table->GetRowCell("Level", rowIndex));
+    ptr->BuildingName = parseTo<string>(table->GetRowCell("BuildingName", rowIndex));
+    ptr->BuildingLevel = parseTo<int32_t>(table->GetRowCell("BuildingLevel", rowIndex));
+    ptr->RequireSpace = parseTo<int32_t>(table->GetRowCell("RequireSpace", rowIndex));
+    ptr->Volume = parseTo<int32_t>(table->GetRowCell("Volume", rowIndex));
+    ptr->UpgradeTime = parseTo<int32_t>(table->GetRowCell("UpgradeTime", rowIndex));
+    ptr->UpgradeRes = parseTo<string>(table->GetRowCell("UpgradeRes", rowIndex));
+    ptr->UpgradeCost = parseTo<int32_t>(table->GetRowCell("UpgradeCost", rowIndex));
+    ptr->ConsumeRes = parseTo<string>(table->GetRowCell("ConsumeRes", rowIndex));
+    ptr->ConsumeCost = parseTo<int32_t>(table->GetRowCell("ConsumeCost", rowIndex));
+    ptr->ConsumeTime = parseTo<int32_t>(table->GetRowCell("ConsumeTime", rowIndex));
+    ptr->Act = parseTo<int32_t>(table->GetRowCell("Act", rowIndex));
+    ptr->Hp = parseTo<int32_t>(table->GetRowCell("Hp", rowIndex));
+    ptr->BombLoad = parseTo<string>(table->GetRowCell("BombLoad", rowIndex));
+    ptr->AtkFrequency = parseTo<double>(table->GetRowCell("AtkFrequency", rowIndex));
+    ptr->AtkRange = parseTo<double>(table->GetRowCell("AtkRange", rowIndex));
+    ptr->MovingSpeed = parseTo<double>(table->GetRowCell("MovingSpeed", rowIndex));
+    ptr->EnableBurn = parseTo<string>(table->GetRowCell("EnableBurn", rowIndex));
     return 0;
 }
 

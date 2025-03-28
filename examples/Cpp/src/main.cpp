@@ -10,9 +10,10 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <fmt/core.h>
 #include <boost/algorithm/string.hpp>
-#include "Conv.h"
-#include "Config.h"
+#include "dataframe.h"
+
 
 
 
@@ -26,20 +27,6 @@ using namespace config;
 
 
 static std::string resPath = "../../datasheet/res";
-
-template <typename T>
-static void LoadCsvToConfig(const char* filename, vector<T>& data)
-{
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), filename);
-    std::vector<Record> records;
-    ReadCsvRecord(filepath, records);
-    for (size_t i = 0; i < records.size(); i++)
-    {
-        T val;
-        T::ParseFrom(records[i], &val);
-        data.push_back(val);
-    }
-}
 
 static void printSoldierProperty(const config::SoldierDefine& item)
 {
@@ -64,11 +51,12 @@ static void printSoldierProperty(const config::SoldierDefine& item)
 
 static void testSoldierConfig()
 {
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "soldier_define.csv");
+    auto filepath = fmt::format("%s/soldier_define.csv", resPath);
     rapidcsv::Document doc(filepath);
+    DataFrame table(doc);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::SoldierDefine item;
-        SoldierDefine::ParseRow(doc, int(row), &item);
+        SoldierDefine::ParseRow(&table, int(row), &item);
         printSoldierProperty(item);
     }
 }
@@ -101,11 +89,12 @@ static void printNewbieGuide(const config::NewbieGuide& item)
 
 static void testNewbieGuideConfig()
 {
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "newbie_guide.csv");
+    auto filepath = fmt::format("%s/newbie_guide.csv", resPath);
     rapidcsv::Document doc(filepath);
+    DataFrame table(doc);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::NewbieGuide item;
-        NewbieGuide::ParseRow(doc, int(row), &item);
+        NewbieGuide::ParseRow(&table, int(row), &item);
         printNewbieGuide(item);
     }
 }
@@ -142,19 +131,12 @@ static void printGlobalProperty(const GlobalDefine& inst)
 
 static void testGlobalConfig()
 {
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "global_define.csv");
+    auto filepath = fmt::format("{}/global_define.csv", resPath);
     rapidcsv::Document doc(filepath);
-    auto keys = doc.GetColumn<string>("Key");
-    auto values = doc.GetColumn<string>("Value");
-    unordered_map<string, string> table;
-    for (size_t i = 0; i < keys.size(); i++) {
-        if (i < values.size()) {
-            table[keys[i]] = values[i];
-        }
-    }
-
+    DataFrame table(doc);
+    table.LoadKeyValueFields();
     GlobalDefine inst;
-    GlobalDefine::ParseFrom(table, &inst);
+    GlobalDefine::ParseFrom(&table, &inst);
 
     printGlobalProperty(inst);
 }
@@ -184,11 +166,12 @@ static void printBoxProbability(const ItemBoxDefine& item)
 
 static void testBoxConfig()
 {
-    auto filepath = stringPrintf("%s/%s", resPath.c_str(), "item_box_define.csv");
+    auto filepath = fmt::format("{}/item_box_define.csv", resPath);
     rapidcsv::Document doc(filepath);
+    DataFrame table(doc);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
         config::ItemBoxDefine item;
-        ItemBoxDefine::ParseRow(doc, int(row), &item);
+        ItemBoxDefine::ParseRow(&table, int(row), &item);
         printBoxProbability(item);
     }
 }
