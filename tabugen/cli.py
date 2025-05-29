@@ -88,7 +88,6 @@ def main():
     parser.add_argument("--cpp_out", help="指定生成C++代码的文件名")
     parser.add_argument("--go_out", help="指定生成Go代码的路径")
     parser.add_argument("--cs_out", help="指定生成C#代码的路径")
-    parser.add_argument("--java_out", help="指定生成Java代码的路径")
     parser.add_argument("--package", default="config", help="指定命名空间或者包名")
     parser.add_argument("--cpp_pch", help="指定C++包含的预编译头")
     parser.add_argument("--extra_cpp_includes", default="", help="额外包含的C++头文件")

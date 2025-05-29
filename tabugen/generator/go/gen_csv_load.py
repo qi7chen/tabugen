@@ -8,7 +8,6 @@ from argparse import Namespace
 import tabugen.lang as lang
 import tabugen.predef as predef
 import tabugen.typedef as types
-import tabugen.util.tableutil as tableutil
 from tabugen.structs import Struct
 
 

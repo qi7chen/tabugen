@@ -2,7 +2,6 @@
 # The main entry point. Invoke as `tabugen' or `python -m tabugen'.
 #
 
-
 def main():
     try:
         from tabugen.cli import main
