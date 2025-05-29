@@ -111,7 +111,7 @@ tabugen --asset_path=example.xlsx --cpp_out=MyConfig --package=config  --gen_csv
 
 这是推荐的方式，pip可以和项目的CI/CD更好的集成
 
-### 使用PyInstaller从源码打包
+### 从源码打包
 
 * `git clone https://github.com/qi7chen/tabugen.git`
 * `cd tabugen && python -m PyInstaller --name "tabugen" -F tabugen/__main__.py`

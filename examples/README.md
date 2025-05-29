@@ -4,7 +4,7 @@
 * [C++的示例](Cpp) 演示如何配合C++使用;
 * [C#的示例](CSharp) 演示如何配合C#(Unity)使用;
 * [Golang的示例](Go) 演示如何配合Golang使用;
-* [Java的示例](Java) 演示如何配合Java使用;
+
 
 ## 其它动态语言
 
