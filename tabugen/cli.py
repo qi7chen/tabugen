@@ -23,7 +23,6 @@ def run(args: argparse.Namespace):
         (args.cpp_out, 'cpp'),
         (args.go_out, 'go'),
         (args.cs_out, 'csharp'),
-        (args.java_out, 'java'),
     ]
     code_generators = []
     for item in pairs:
@@ -91,7 +90,6 @@ def main():
     parser.add_argument("--package", default="config", help="指定命名空间或者包名")
     parser.add_argument("--cpp_pch", help="指定C++包含的预编译头")
     parser.add_argument("--extra_cpp_includes", default="", help="额外包含的C++头文件")
-    parser.add_argument("--extra_cpp_func", action='store_true', help="额外包含的C++解析函数")
     parser.add_argument("--go_fmt", action="store_true", help="生成Go代码后执行go fmt")
 
     # output options

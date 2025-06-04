@@ -5,23 +5,12 @@ cmake_minimum_required(VERSION 3.15)
 
 project(TabugenCpp LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
-
-set(Boost_USE_STATIC_LIBS ON)  # only find static libs
-set(Boost_USE_DEBUG_LIBS OFF)  # ignore debug libs and
-set(Boost_USE_RELEASE_LIBS ON)  # only find release libs
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME ON)  # link Boost Static libraries
+set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_TOOLCHAIN_FILE, $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 find_package(fmt CONFIG REQUIRED)
-find_package(Boost REQUIRED COMPONENTS algorithm lexical_cast)
-if (Boost_FOUND)
-    message(STATUS "include Boost dir ${Boost_INCLUDE_DIRS}")
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-else()
-    message(WARNING "Boost not found")
-endif()
+find_package(absl CONFIG REQUIRED)
+
 
 if(MSVC)
   add_definitions (-wd4146 -wd4800)
@@ -42,7 +31,6 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(ALL_SRC_FILES
     ${SRC_DIR}/Config.h
     ${SRC_DIR}/Config.cpp
-    ${SRC_DIR}/rapidcsv.h
     ${SRC_DIR}/main.cpp
     )
 
@@ -51,4 +39,4 @@ include_directories(${SRC_DIR})
 
 add_executable(TabugenCpp ${ALL_SRC_FILES})
 
-target_link_libraries(TabugenCpp PRIVATE fmt::fmt Boost::lexical_cast Boost::algorithm)
+target_link_libraries(TabugenCpp PRIVATE fmt::fmt absl::base absl::strings)

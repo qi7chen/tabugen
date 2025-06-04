@@ -11,54 +11,6 @@ import tabugen.version as version
 from tabugen.structs import Struct
 
 
-cpp_source_template = """static const std::string TabDelim1 = "%s";
-static const std::string TabDelim2 = "%s";
-
-template <typename T>
-inline T parseTo(const std::string& text)
-{
-    return boost::lexical_cast<T>(text);
-}
-
-template <typename T>
-std::vector<T> parseArray(const std::string& text)
-{
-    std::vector<T> result;
-    std::vector<std::string> parts;
-    boost::split(parts, text, boost::is_any_of(TabDelim1));
-    for (size_t i = 0; i < parts.size(); i++)
-    {
-        auto val = boost::lexical_cast<T>(parts[i]);
-        result.push_back(val);
-    }
-    return result; // C42679
-}
-
-template <typename K, typename V>
-std::unordered_map<K, V> parseMap(const std::string& text)
-{
-    std::unordered_map<K, V> result;
-    std::vector<std::string> parts;
-    boost::split(parts, text, boost::is_any_of(TabDelim1));
-    for (size_t i = 0; i < parts.size(); i++)
-    {
-        std::vector<std::string> kv;
-        boost::split(kv, parts[i], boost::is_any_of(TabDelim2));
-        assert(kv.size() == 2);
-        if (kv.size() == 2)
-        {
-            auto key = boost::lexical_cast<K>(kv[0]);
-            auto val = boost::lexical_cast<V>(kv[1]);
-            assert(result.count(key) == 0);
-            result.insert(std::make_pair(key, val));
-        }
-    }
-    return result; // C42679
-}
-
-"""
-
-
 # 生成C++加载CSV文件数据代码
 class CppCsvLoadGenerator:
     TAB_SPACE = '    '
@@ -75,17 +27,20 @@ class CppCsvLoadGenerator:
         space = self.TAB_SPACE * tabs
         if types.is_array_type(origin_typename):
             cpp_type = lang.map_cpp_type(types.array_element_type(origin_typename))
-            content += '%s%s%s = parseArray<%s>(%s);\n' % (space, prefix, field_name, cpp_type, value_text)
+            content += '%s%s%s = parseArray<%s>(%s, TabDelim1);\n' % (space, prefix, field_name, cpp_type, value_text)
         elif types.is_map_type(origin_typename):
             (key_type, val_type) = types.map_key_value_types(origin_typename)
             cpp_type1 = lang.map_cpp_type(key_type)
             cpp_type2 = lang.map_cpp_type(val_type)
-            content += '%s%s%s = parseMap<%s,%s>(%s);\n' % (space, prefix, field_name, cpp_type1, cpp_type2, value_text)
+            content += '%s%s%s = parseMap<%s,%s>(%s, TabDelim1, TabDelim2);\n' % (space, prefix, field_name, cpp_type1, cpp_type2, value_text)
         else:
             cpp_type = lang.map_cpp_type(origin_typename)
             if value_text == field_name:
                 value_text = '"%s"' % value_text
-            content += '%s%s%s = parseTo<%s>(%s);\n' % (space, prefix, field_name, cpp_type, value_text)
+            if origin_typename == 'string':
+                content += '%s%s%s = %s;\n' % (space, prefix, field_name, value_text)
+            else:
+                content += '%s%s%s = parseTo<%s>(%s);\n' % (space, prefix, field_name, cpp_type, value_text)
         return content
 
     def gen_field_assign2(self, prefix: str, origin_typename: str, field_name: str,  tabs: int) -> str:
@@ -94,16 +49,19 @@ class CppCsvLoadGenerator:
         if types.is_array_type(origin_typename):
             cpp_type = lang.map_cpp_type(types.array_element_type(origin_typename))
             value_text = 'table->GetRowCell("%s", rowIndex)' % field_name
-            content += '%s%s%s = parseArray<%s>(%s);\n' % (space, prefix, field_name, cpp_type, value_text)
+            content += '%s%s%s = parseArray<%s>(%s, TabDelim1);\n' % (space, prefix, field_name, cpp_type, value_text)
         elif types.is_map_type(origin_typename):
             (key_type, val_type) = types.map_key_value_types(origin_typename)
             cpp_type1 = lang.map_cpp_type(key_type)
             cpp_type2 = lang.map_cpp_type(val_type)
             value_text = 'table->GetRowCell("%s", rowIndex)' % field_name
-            content += '%s%s%s = parseMap<%s,%s>(%s);\n' % (space, prefix, field_name, cpp_type1, cpp_type2, value_text)
+            content += '%s%s%s = parseMap<%s,%s>(%s, TabDelim1, TabDelim2);\n' % (space, prefix, field_name, cpp_type1, cpp_type2, value_text)
         else:
             cpp_type = lang.map_cpp_type(origin_typename)
-            content += '%s%s%s = parseTo<%s>(table->GetRowCell("%s", rowIndex));\n' % (space, prefix, field_name, cpp_type, field_name)
+            if origin_typename == 'string':
+                content += '%s%s%s = table->GetRowCell("%s", rowIndex);\n' % (space, prefix, field_name, field_name)
+            else:
+                content += '%s%s%s = parseTo<%s>(table->GetRowCell("%s", rowIndex));\n' % (space, prefix, field_name, cpp_type, field_name)
         return content
 
     # 生成`ParseRow`方法
@@ -125,7 +83,10 @@ class CppCsvLoadGenerator:
             content += '%s    }\n' % space
             origin_typename = array.element_fields[0].origin_type_name
             cpp_type = lang.map_cpp_type(origin_typename)
-            content += '%s    auto elem = parseTo<%s>(table->GetRowCell(name, rowIndex));\n' % (space, cpp_type)
+            if origin_typename == 'string':
+                content += '%s    auto elem = table->GetRowCell(name, rowIndex);\n' % space
+            else:
+                content += '%s    auto elem = parseTo<%s>(table->GetRowCell(name, rowIndex));\n' % (space, cpp_type)
             content += '%s    ptr->%s.push_back(elem);\n' % (space, array.field_name)
             content += '%s}\n' % space
 
@@ -171,15 +132,10 @@ class CppCsvLoadGenerator:
     def generate(self, descriptors: list[Struct], args: Namespace, headerfile: str) -> str:
         cpp_include_headers = [
             '#include "%s"' % os.path.basename(headerfile),
-            '#include <stddef.h>',
+            '#include <cassert>',
             '#include <utility>',
+            '#include <fmt/format.h>'
         ]
-        if args.extra_cpp_func:
-            cpp_include_headers += [
-                '#include <fmt/core.h>',
-                '#include <boost/lexical_cast.hpp>',
-                '#include <boost/algorithm/string.hpp>',
-            ]
 
         if len(args.extra_cpp_includes) > 0:
             extra_headers = args.extra_cpp_includes.split(',')
@@ -193,16 +149,13 @@ class CppCsvLoadGenerator:
             cpp_include_headers = [pchfile] + cpp_include_headers
 
         cpp_content += '\n'.join(cpp_include_headers) + '\n\n'
-        cpp_content += 'using namespace std;\n'
+        cpp_content += 'using namespace std;\n\n'
         cpp_content += '#ifndef ASSERT\n'
         cpp_content += '#define ASSERT assert\n'
         cpp_content += '#endif\n\n'
 
         if args.package is not None:
             cpp_content += '\nnamespace %s {\n\n' % args.package
-
-        if args.extra_cpp_func:
-            cpp_content += cpp_source_template % (args.delim1, args.delim2)
 
         class_content = ''
         for struct in descriptors:

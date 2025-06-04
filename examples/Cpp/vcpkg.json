@@ -1,7 +1,17 @@
 {
   "dependencies": [
-    "boost-algorithm",
-    "boost-lexical-cast",
+    "abseil",
     "fmt"
-  ]
+  ],
+  "overrides": [
+    {
+      "name": "abseil",
+      "version": "20250127.1#1"
+    },
+    {
+      "name": "fmt",
+      "version": "11.0.2"
+    }
+  ],
+  "builtin-baseline": "fbd5e098a88621bcc53328c54f96eec877d360e1"
 }

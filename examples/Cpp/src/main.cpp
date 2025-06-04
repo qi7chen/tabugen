@@ -6,16 +6,11 @@
 #include <assert.h>
 #include <string>
 #include <regex>
-#include <type_traits>
 #include <iostream>
-#include <fstream>
 #include <unordered_map>
-#include <fmt/core.h>
-#include <boost/algorithm/string.hpp>
+#include <fmt/format.h>
+
 #include "dataframe.h"
-
-
-
 
 #ifndef ASSERT
 #define ASSERT assert
@@ -51,7 +46,7 @@ static void printSoldierProperty(const config::SoldierDefine& item)
 
 static void testSoldierConfig()
 {
-    auto filepath = fmt::format("%s/soldier_define.csv", resPath);
+    auto filepath = fmt::format("{}/soldier_define.csv", resPath);
     rapidcsv::Document doc(filepath);
     DataFrame table(doc);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
@@ -89,7 +84,7 @@ static void printNewbieGuide(const config::NewbieGuide& item)
 
 static void testNewbieGuideConfig()
 {
-    auto filepath = fmt::format("%s/newbie_guide.csv", resPath);
+    auto filepath = fmt::format("{}/newbie_guide.csv", resPath);
     rapidcsv::Document doc(filepath);
     DataFrame table(doc);
     for (size_t row = 0; row < doc.GetRowCount(); row++) {
