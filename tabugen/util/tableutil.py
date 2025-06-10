@@ -416,14 +416,16 @@ def parse_kv_fields(struct: Struct, legacy, mapper1, mapper2) -> list[StructFiel
             continue
 
         field = StructField()
+        field.origin_type_name = typename
+        field.origin_name = varname
         if legacy and typename.isdigit():
             typename = legacy_kv_type(int(typename))
 
-        field.origin_type_name = typename
         if typename in types.alias:
-            field.type_name = types.alias[typename]
-        else:
-            field.type_name = field.origin_type_name
+            typename = types.alias[typename]
+
+        field.type = types.get_type_by_name(typename)
+        field.type_name = types.get_name_of_type(field.type)
         field.lang_type_name = mapper1(typename)
         field.name = varname
         field.camel_case_name = varname

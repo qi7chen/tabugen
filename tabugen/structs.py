@@ -2,59 +2,60 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
+import json
 import copy
 import inflect
+from dataclasses import dataclass, field
 import tabugen.predef as predef
 from tabugen.util import helper
 from tabugen.util import tableutil
+from tabugen.typedef import Type
 
 plural_engine = inflect.engine()
 
 # 结构的字段
+@dataclass
 class StructField:
-
-    def __init__(self):
-        self.origin_name = ''  # 原始字段名
-        self.name = ''  # 字段名
-        self.camel_case_name = ''  # 驼峰命名
-        self.origin_type_name = ''  # 原始类型名，可能是type alias
-        self.type_name = ''  # 类型名
-        self.type = 0  # 类型
-        self.lang_type_name = ''
-        self.column = 0
-        self.comment = ''  # 注释
-        self.name_defval = ''
+    origin_name: str = ''       # 原始字段名
+    name: str = ''              # 字段名
+    camel_case_name: str = ''   # 驼峰命名
+    origin_type_name: str = ''  # 原始类型名，可能是type alias
+    type_name: str = ''         # 类型名
+    type: Type = Type.Unknown   # 类型数值
+    lang_type_name: str = ''    # 对应语言的类型名
+    column: int = 0             # 所处列
+    comment: str = ''           # 注释
+    name_defval: str = ''
 
 
+@dataclass
 class ArrayField:
+    name: str = ''              # 数组前缀名称
+    field_name: str = ''        # 在结构中的字段名
+    camel_case_name: str = ''
+    comment: str = ''
+    type_name: str = ''
+    lang_type_name: str = ''
+    element_fields: list[StructField] = field(default_factory=list)
 
-    def __init__(self):
-        self.name = ''              # 数组前缀名称
-        self.field_name = ''        # 在结构中的字段名
-        self.camel_case_name = ''
-        self.comment = ''
-        self.type_name = ''
-        self.lang_type_name = ''
-        self.element_fields: list[StructField] = []
 
 
 # 一个结构定义
+@dataclass
 class Struct:
-
-    def __init__(self):
-        self.filepath = ''
-        self.name = ''
-        self.camel_case_name = ''
-        self.comment = ''
-        self.parse_time = 0
-        self.options = {}
-        self.data_rows = []  # 数据
-        self.field_names = []
-        self.field_columns = []
-        self.raw_fields: list[StructField] = []
-        self.fields: list[StructField] = []
-        self.array_fields: list[ArrayField] = []  # 数组字段
-        self.kv_fields: list[StructField] = []  # kv字段
+    filepath: str = ''
+    name: str = ''
+    camel_case_name: str = ''
+    comment: str = ''
+    parse_time: int = 0
+    options: dict[str, str] = field(default_factory=dict)
+    data_rows: list[list[str]] = field(default_factory=list)         # 数据
+    field_names: list[str] = field(default_factory=list)
+    field_columns: list[int] = field(default_factory=list)
+    raw_fields: list[StructField] = field(default_factory=list)
+    fields: list[StructField] = field(default_factory=list)
+    array_fields: list[ArrayField] = field(default_factory=list)      # 数组字段
+    kv_fields: list[StructField] = field(default_factory=list)        # kv字段
 
     def get_field_by_name(self, name: str) -> StructField | None:
         for field in self.fields:

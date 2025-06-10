@@ -14,6 +14,19 @@ from tabugen.structs import Struct, StructField, ArrayField
 from tabugen.generator.csharp.gen_csv_load import CSharpCsvLoadGenerator
 
 
+cs_template = """
+// this interface define CSV data retrieving
+public interface IDataFrame
+{
+    int ColumnCount { get; }
+    int RowCount { get; }
+    bool HasColumn(string name);
+    string GetRowCell(string name, int index);
+    string GetKeyField(string key);
+}
+
+"""
+
 # C#代码生成器
 class CSharpStructGenerator:
     TAB_SPACE = '    '
@@ -39,7 +52,7 @@ class CSharpStructGenerator:
 
     def gen_array_define(self, field: ArrayField, max_type_len: int, max_name_len: int, tabs: int) -> str:
         typename = helper.pad_spaces(field.lang_type_name, max_type_len + 4)
-        name = helper.pad_spaces(field.camel_case_name + ';', max_name_len + 4)
+        name = helper.pad_spaces(field.name_defval, max_name_len + 4)
         text = '%spublic %s%s' % (self.TAB_SPACE * tabs, typename, name)
         if field.comment:
             text += ' // %s' % field.comment
@@ -47,8 +60,7 @@ class CSharpStructGenerator:
         return text
 
     def gen_kv_fields_define(self, struct: Struct, args: Namespace) -> str:
-        content = 'struct %s {\n' % struct.camel_case_name
-
+        content = ''
         old_fields = struct.fields
         struct.fields = struct.kv_fields
         max_type_len = struct.max_field_lang_type_length()
@@ -58,16 +70,19 @@ class CSharpStructGenerator:
         for field in struct.kv_fields:
             text = self.gen_field_define(field, max_type_len, max_name_len, 1, args.json_snake_case)
             content += text
+
         return content
 
     def gen_fields(self, struct: Struct, args: Namespace) -> str:
-        content = 'struct %s \n{\n' % struct.camel_case_name
+        content = ''
         fields = struct.fields
         for col, field in enumerate(fields):
             field.lang_type_name = lang.map_cs_type(field.origin_type_name)
-            field.name_defval = lang.name_with_default_cs_value(field, field.lang_type_name, False)
+            field.name_defval = lang.cs_type_var_with_default_value(field, field.lang_type_name)
         for array in struct.array_fields:
             array.lang_type_name = lang.map_cs_type(array.type_name)
+            array.name_defval = lang.cs_type_var_with_default_value(array, array.lang_type_name)
+            print(struct.name, 'array', array)
 
         max_type_len = struct.max_field_lang_type_length()
         max_name_len = struct.max_field_lang_var_length()
@@ -78,7 +93,7 @@ class CSharpStructGenerator:
         for array in struct.array_fields:
             text = self.gen_array_define(array, max_type_len, max_name_len, 1)
             content += text
-        content += '}\n'
+
         return content
 
     # 生成结构体定义
@@ -93,23 +108,27 @@ class CSharpStructGenerator:
         def mapper(field):
             origin_type = field.origin_type_name
             typename = lang.map_cs_type(origin_type)
-            if origin_type.startswith('array') or origin_type.startswith('map'):
-                typename += '?'
-            return lang.name_with_default_cs_value(field, typename, False)
+            return lang.cs_type_var_with_default_value(field, typename)
 
+        content += 'public struct %s \n{\n' % struct.camel_case_name
         if struct.options[predef.PredefParseKVMode]:
-            struct.kv_fields = parse_kv_fields(struct, args, lang.map_cpp_type,mapper)
-            return content + self.gen_kv_fields_define(struct, args)
+            struct.kv_fields = parse_kv_fields(struct, args, lang.map_cs_type,mapper)
+            content += self.gen_kv_fields_define(struct, args)
         else:
-            return content + self.gen_fields(struct, args)
+            content += self.gen_fields(struct, args)
+
+        content += '\n\tpublic %s() {\n\t}\n\n' % struct.camel_case_name  # ctor
+
+        if self.load_gen is not None:
+            content += '\n'
+            content += self.load_gen.generate(struct, args)
+
+        content += '}\n\n'
+        return content
 
     def generate(self, struct: Struct, args: Namespace):
         content = ''
         content += self.gen_struct(struct, args)
-        if self.load_gen is not None:
-            content += '\n'
-            content += self.load_gen.generate(struct, args)
-        content += '}\n\n'
         return content
 
     def run(self, descriptors: list[Struct], filepath: str, args: Namespace):
@@ -120,7 +139,10 @@ class CSharpStructGenerator:
             content += 'using System.Text.Json.Serialization;\n'
 
         if args.package is not None:
-            content += '\nnamespace %s\n{\n' % args.package
+            content += '\nnamespace %s {\n' % args.package
+
+        if self.load_gen:
+            content += cs_template
 
         for struct in descriptors:
             content += self.generate(struct, args)

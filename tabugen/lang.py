@@ -2,10 +2,10 @@
 # Distributed under the terms and conditions of the Apache License.
 # See accompanying files LICENSE.
 
-
+from __future__ import annotations
 import tabugen.typedef as types
 import tabugen.util.tableutil as tableutil
-from tabugen.structs import StructField
+from tabugen.structs import StructField, ArrayField
 
 
 # C++类型映射
@@ -167,7 +167,7 @@ def map_cs_type(typ: str) -> str:
     if abs_type == 'array':
         t = types.array_element_type(typ)
         elem_type = type_mapping[t]
-        return '%s[]' % elem_type
+        return 'List<%s>' % elem_type
     elif abs_type == 'map':
         k, v = types.map_key_value_types(typ)
         key_type = type_mapping[k]
@@ -201,12 +201,19 @@ def map_cs_parse_func(typ: str) -> str:
 
 
 # C#类型默认值
-def name_with_default_cs_value(field: StructField, typename: str, remove_suffix_num: bool) -> str:
-    # typename = typename.strip()
-    name = field.name
-    if remove_suffix_num:
-        name = tableutil.remove_field_suffix(name)
-    return '%s { get; set; }' % name
+def cs_type_var_with_default_value(field: StructField | ArrayField, typename: str) -> str:
+    if field.type_name == 'bool':
+        return '%s = false;' % field.name
+    elif field.type_name == 'string':
+        return '%s = "";' % field.name
+    elif types.is_integer_type(field.type_name):
+        return '%s = 0;' % field.name
+    elif types.is_floating_type(field.type_name):
+        return '%s = 0;' % field.name
+    else:
+        if isinstance(field, ArrayField):
+            return '%s = new %s();' % (field.field_name, field.lang_type_name)
+        return '%s = new %s();' % (field.name, field.lang_type_name)
 
 
 # java装箱类型
