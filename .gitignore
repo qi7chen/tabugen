@@ -110,3 +110,4 @@ venv.bak/
 .vs
 .vscode
 Debug/
+cmake-build/

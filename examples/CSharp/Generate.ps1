@@ -1,5 +1,5 @@
 <#
-# Copyright (C) 2023-present ichenq@outlook.com. All rights reserved.
+# Copyright (C) 2023-present qi7chen@github. All rights reserved.
 #>
 
 $CURRENT_DIR = Get-Location
@@ -10,19 +10,10 @@ $OUT_DATA_DIR = Join-Path $DATASHEET_DIR  "/res"
 
 $Env:PYTHONPATH=$ROOT_DIR
 
-Function tabucli {
-    $excelPath = Join-Path $DATASHEET_DIR $args[0]
-    $outSrcPath = Join-Path $OUT_SRC_DIR $args[1]
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --cs_out=$outSrcPath --gen_csv_parse --with_conv --package=Config --json_snake_case
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=csv --out_data_path=$OUT_DATA_DIR
-    python $ROOT_DIR/tabugen/__main__.py --asset_path=$excelPath --out_data_format=json --json_indent --out_data_path=$OUT_DATA_DIR
-}
 
 Function Generate {
-    tabucli ����.xlsx SoldierDefine.cs
-    tabucli ��������.xlsx GuideDefine.cs
-    tabucli �������.xlsx BoxDefine.cs
-    tabucli ȫ�ֱ�����.xlsx GlobalDefine.cs
+    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --cs_out=$OUT_SRC_DIR/Config --package=Config --go_fmt --out_data_path=$OUT_DATA_DIR --out_data_format=csv --gen_csv_parse
+    python $ROOT_DIR/tabugen/__main__.py --file_asset=$DATASHEET_DIR --out_data_path=$OUT_DATA_DIR --out_data_format=json --json_indent
 }
 
 Function RunTest {
@@ -31,5 +22,5 @@ Function RunTest {
 }
 
 Generate
-RunTest
+# RunTest
 
