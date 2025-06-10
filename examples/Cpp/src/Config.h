@@ -35,12 +35,12 @@ struct GlobalDefine
     float                         GoldExchangeTimeFactor1 = 0.0;      // 金币兑换时间参数1
     float                         GoldExchangeTimeFactor2 = 0.0;      // 金币兑换时间参数2
     float                         GoldExchangeTimeFactor3 = 0.0;      // 金币兑换时间参数3
-    int                           GoldExchangeResource1Price = 0;     // 金币兑换资源1价格
-    int                           GoldExchangeResource2Price = 0;     // 金币兑换资源2价格
-    int                           GoldExchangeResource3Price = 0;     // 金币兑换资源3价格
-    int                           GoldExchangeResource4Price = 0;     // 金币兑换资源4价格
-    int                           FreeCompleteSeconds = 0;            // 免费立即完成时间
-    int                           CancelBuildReturnPercent = 0;       // 取消建造后返还资源比例
+    int32_t                       GoldExchangeResource1Price = 0;     // 金币兑换资源1价格
+    int32_t                       GoldExchangeResource2Price = 0;     // 金币兑换资源2价格
+    int32_t                       GoldExchangeResource3Price = 0;     // 金币兑换资源3价格
+    int32_t                       GoldExchangeResource4Price = 0;     // 金币兑换资源4价格
+    int32_t                       FreeCompleteSeconds = 0;            // 免费立即完成时间
+    int32_t                       CancelBuildReturnPercent = 0;       // 取消建造后返还资源比例
     bool                          EnableSearch = false;               // 开启搜索
     vector<int>                   SpawnLevelLimit;                    // 最大刷新个数显示
     unordered_map<string, int>    FirstRechargeReward;                // 首充奖励
