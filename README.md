@@ -125,3 +125,4 @@ tabugen --asset_path=example.xlsx --cpp_out=MyConfig --package=config  --gen_csv
 * C#的示例 [examples/CSharp](examples/CSharp) 演示如何配合C#(Unity)使用;
 * Golang的示例 [examples/Go](examples/Go) 演示如何配合Golang使用;
 * 对于Python, JavaScript等动态语言，将Excel导出为json即可，指定选项`--out_data_format=json`
+* 对于其它未实现语言，可以自行fork后适配

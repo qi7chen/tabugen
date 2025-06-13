@@ -12,7 +12,7 @@
 ### 生成解析代码
 
 * `rapidcsv.h`是一个轻量级的CSV文件解析库，用于解析CSV文件
-* `Conv.h`里实现了几个常用但是C++标准库目前还欠缺（或者不好用）的函数，类似sprintf, split, convert等，并依赖了`boost.lexical_cast`
+* `strconv.h`里实现了几个常用从字符串转换到具体类型的函数，如parseTo<int>("123")，并依赖了`abseil`
 * 如果项目组开启了预编译头，比如`stdafx.h`，可以通过`--pch=stdafx.h`是源文件包含预编译头文件
 
 

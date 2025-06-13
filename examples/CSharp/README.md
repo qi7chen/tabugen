@@ -11,9 +11,9 @@
 
 ### 生成解析代码
 
-如果指定了生成解析代码，解析函数都被实现在`Conv.cs`里，在`--with-conv`选项开启的时候，会生成`Conv.cs`文件。
-如果想自己实现`Conv.cs`里API，用同名文件替换，并在导出的时候不指定`--with-conv`选项。
-
+* `Conv.cs`里实现了几个常用从字符串转换到具体类型的函数，如parseTo<int>("123")，并依赖了`abseil`
+* `DataFrame.csv`是具体的表格数据IO实现，应用
+* CSV解析用到了[Sep](https://github.com/nietras/Sep)
 
 ### meta表里的配置
 

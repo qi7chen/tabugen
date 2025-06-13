@@ -14,24 +14,12 @@
 
 #### 命令行参数
 
-* `--parse_files` 指定导入的excel文件，或者包含很多excel文件的路径名称
-* `--parse_file_skip` 需要跳过的excel文件名
-* `--enable_column_skip` 如果开启这个选项，则excel里配置hide_value_columns包含的列不会被导入
+* `--file_asset` 指定导入的excel文件，或者包含很多excel文件的路径名称
+* `--file_skip` 需要跳过的excel文件名
 * `--out_data_format` 导出的数据文件格式，可以是csv，json
 * `--out_data_path` 导出的数据文件路径
+* `--delim1` 导出代码里使用的列表元素分隔符
+* `--delim2` 导出代码里使用的键值元素分隔符
 * `--data_file_encoding` 导出数据文件的编码格式，默认UTF-8
-* `--out_csv_delim` 导出的CSV数据文件的分隔符，默认为逗号
 * `--json_indent` 控制导出的JSON是否换行
 * `--json_snake_case` 控制导出的JSON使用字段名称是小写还是大写驼峰风格
-
-
-#### meta表的配置参数
-
-在excel文件的@meta表里可以定义一些配置来控制如何导入，如：
-
-* `class_name`  生成的class名称
-* `class_comment`   生成的class注释
-* `parse_kv_mode` 是否为全局变量表模式
-* `inner_type_class` 嵌入类型的class名称
-* `inner_type_name` 嵌入类型的成员变量名
-* `unique_columns` 对于这些列，导出的时候会检查每行的数据值是否有重复
